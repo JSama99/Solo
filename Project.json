@@ -1,0 +1,104 @@
+{
+  "configs": {
+    "Debug": "debug",
+    "Release": "release"
+  },
+  "name": "SoloUnicornRun",
+  "packages": {
+    "RevenueCat": {
+      "url": "https://github.com/RevenueCat/purchases-ios-spm.git",
+      "from": "5.43.0"
+    }
+  },
+  "options": {
+    "groupSortPosition": "bottom",
+    "developmentLanguage": "en",
+    "transitivelyLinkDependencies": false,
+    "deploymentTarget": {
+      "iOS": "18.0"
+    }
+  },
+  "settings": {},
+  "targets": {
+    "Solo Unicorn Run": {
+      "attributes": {
+        "SystemCapabilities": {
+          "com.apple.InAppPurchase": {
+            "enabled": 1
+          }
+        }
+      },
+      "dependencies": [
+        {
+          "package": "RevenueCat",
+          "product": "RevenueCat"
+        },
+        {
+          "package": "RevenueCat",
+          "product": "RevenueCatUI"
+        }
+      ],
+      "info": {
+        "path": "App/Info.plist",
+        "properties": {
+          "CFBundleDisplayName": "SOLO: Unicorn Run",
+          "CFBundleShortVersionString": "1.0",
+          "CFBundleVersion": "1",
+          "ITSAppUsesNonExemptEncryption": false,
+          "RevenueCatAPIKey": "$(REVENUECAT_API_KEY)",
+          "UILaunchScreen": {},
+          "UISupportedInterfaceOrientations": [
+            "UIInterfaceOrientationPortrait"
+          ]
+        }
+      },
+      "platform": "iOS",
+      "settings": {
+        "base": {
+          "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
+          "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
+          "CURRENT_PROJECT_VERSION": "1",
+          "CODE_SIGN_IDENTITY": "Apple Development",
+          "CODE_SIGN_STYLE": "Automatic",
+          "MARKETING_VERSION": "1.0",
+          "PRODUCT_BUNDLE_IDENTIFIER": "com.talonsight.solounicornrun",
+          "PRODUCT_MODULE_NAME": "Solo_Unicorn_Run",
+          "PRODUCT_NAME": "$(TARGET_NAME)",
+          "REVENUECAT_API_KEY": "",
+          "SWIFT_VERSION": "5.0",
+          "TARGETED_DEVICE_FAMILY": "1"
+        }
+      },
+      "sources": [
+        {
+          "path": "App"
+        }
+      ],
+      "type": "application"
+    },
+    "Solo Unicorn Run Tests": {
+      "dependencies": [
+        {
+          "target": "Solo Unicorn Run"
+        }
+      ],
+      "platform": "iOS",
+      "settings": {
+        "base": {
+          "GENERATE_INFOPLIST_FILE": "YES",
+          "CODE_SIGN_IDENTITY": "Apple Development",
+          "CODE_SIGN_STYLE": "Automatic",
+          "PRODUCT_BUNDLE_IDENTIFIER": "com.talonsight.solounicornrun.tests",
+          "SWIFT_VERSION": "5.0",
+          "TARGETED_DEVICE_FAMILY": "1"
+        }
+      },
+      "sources": [
+        {
+          "path": "Tests"
+        }
+      ],
+      "type": "bundle.unit-test"
+    }
+  }
+}
