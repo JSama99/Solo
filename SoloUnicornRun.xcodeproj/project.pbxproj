@@ -1,0 +1,503 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		28C211C9462EF7C2C17DC4C2 /* SimulationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CB9F64447826C8051328902 /* SimulationModels.swift */; };
+		73B35D04E243BD45B291E271 /* GameModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E7E924208E29B28AFAA264 /* GameModels.swift */; };
+		A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2513145C1504A166E8177382 /* GameStoreTests.swift */; };
+		ABDFC492407A05E2BC397A8D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 17558F294800127BE04C0EBD /* Assets.xcassets */; };
+		AD24D57DE55399F057B4B47A /* GameStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AA2809B6198CB8955EEFAC /* GameStore.swift */; };
+		B20000000000000000000001 /* RevenueCatConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* RevenueCatConfiguration.swift */; };
+		B20000000000000000000002 /* SubscriptionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* SubscriptionStore.swift */; };
+		B20000000000000000000003 /* SubscriptionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000003 /* SubscriptionScreen.swift */; };
+		B20000000000000000000004 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = B40000000000000000000001 /* RevenueCat */; };
+		B20000000000000000000005 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = B40000000000000000000002 /* RevenueCatUI */; };
+		B2BFB1EE90AB231E41812DEF /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1999948F297FBA3D5958727 /* App.swift */; };
+		B7879B5278335CFBFDA7FCD0 /* SeededRandomNumberGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE09C90DB6AC97A8F2FAA9FC /* SeededRandomNumberGenerator.swift */; };
+		FB6CDD52B76B96B369913C6B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		86A2B4AF5D561E1578E4ECD9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8E6817BAF5AD4288F91B1938 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 574DB10F4C1A7535A2094038;
+			remoteInfo = "Solo Unicorn Run";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		17558F294800127BE04C0EBD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2513145C1504A166E8177382 /* GameStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStoreTests.swift; sourceTree = "<group>"; };
+		4FB3F3A34C09C15574734B61 /* Solo Unicorn Run Tests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = "Solo Unicorn Run Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7CB9F64447826C8051328902 /* SimulationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationModels.swift; sourceTree = "<group>"; };
+		94AA2809B6198CB8955EEFAC /* GameStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStore.swift; sourceTree = "<group>"; };
+		AC4FEEA41FEA4B7CD5D02B29 /* Solo Unicorn Run.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "Solo Unicorn Run.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE09C90DB6AC97A8F2FAA9FC /* SeededRandomNumberGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeededRandomNumberGenerator.swift; sourceTree = "<group>"; };
+		D3E7E924208E29B28AFAA264 /* GameModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameModels.swift; sourceTree = "<group>"; };
+		D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		F1999948F297FBA3D5958727 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
+		FB05034A23E5A13D7BBCBDF0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B10000000000000000000001 /* RevenueCatConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCatConfiguration.swift; sourceTree = "<group>"; };
+		B10000000000000000000002 /* SubscriptionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStore.swift; sourceTree = "<group>"; };
+		B10000000000000000000003 /* SubscriptionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionScreen.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B50000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B20000000000000000000004 /* RevenueCat in Frameworks */,
+				B20000000000000000000005 /* RevenueCatUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3CEB5942FF350B9F97498E73 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4FB3F3A34C09C15574734B61 /* Solo Unicorn Run Tests.xctest */,
+				AC4FEEA41FEA4B7CD5D02B29 /* Solo Unicorn Run.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		62FFB73B4F7FB65000C228B6 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				2513145C1504A166E8177382 /* GameStoreTests.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		7775A9C13FE1CF8E12C7214B /* App */ = {
+			isa = PBXGroup;
+			children = (
+				F1999948F297FBA3D5958727 /* App.swift */,
+				17558F294800127BE04C0EBD /* Assets.xcassets */,
+				D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */,
+				D3E7E924208E29B28AFAA264 /* GameModels.swift */,
+				94AA2809B6198CB8955EEFAC /* GameStore.swift */,
+				FB05034A23E5A13D7BBCBDF0 /* Info.plist */,
+				B10000000000000000000001 /* RevenueCatConfiguration.swift */,
+				CE09C90DB6AC97A8F2FAA9FC /* SeededRandomNumberGenerator.swift */,
+				7CB9F64447826C8051328902 /* SimulationModels.swift */,
+				B10000000000000000000003 /* SubscriptionScreen.swift */,
+				B10000000000000000000002 /* SubscriptionStore.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		CA642887A779ABB6F08FCDA4 = {
+			isa = PBXGroup;
+			children = (
+				7775A9C13FE1CF8E12C7214B /* App */,
+				62FFB73B4F7FB65000C228B6 /* Tests */,
+				3CEB5942FF350B9F97498E73 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		574DB10F4C1A7535A2094038 /* Solo Unicorn Run */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A363C56A42D1900B8C2095E1 /* Build configuration list for PBXNativeTarget "Solo Unicorn Run" */;
+			buildPhases = (
+				F6A934204A4437818BECE4E5 /* Sources */,
+				B50000000000000000000001 /* Frameworks */,
+				2ED7D5BD08FB4DD23EA36D2F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Solo Unicorn Run";
+			packageProductDependencies = (
+				B40000000000000000000001 /* RevenueCat */,
+				B40000000000000000000002 /* RevenueCatUI */,
+			);
+			productName = "Solo Unicorn Run";
+			productReference = AC4FEEA41FEA4B7CD5D02B29 /* Solo Unicorn Run.app */;
+			productType = "com.apple.product-type.application";
+		};
+		5A1E8F090551D4889E080ECD /* Solo Unicorn Run Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 511D8401912941A9D055894D /* Build configuration list for PBXNativeTarget "Solo Unicorn Run Tests" */;
+			buildPhases = (
+				34F6B5B42C217D27944B1010 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0CC3224B82E8319FF9ACB411 /* PBXTargetDependency */,
+			);
+			name = "Solo Unicorn Run Tests";
+			packageProductDependencies = (
+			);
+			productName = "Solo Unicorn Run Tests";
+			productReference = 4FB3F3A34C09C15574734B61 /* Solo Unicorn Run Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8E6817BAF5AD4288F91B1938 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					574DB10F4C1A7535A2094038 = {
+						SystemCapabilities = {
+							com.apple.InAppPurchase = {
+								enabled = 1;
+							};
+						};
+					};
+				};
+			};
+			buildConfigurationList = 5759907B086A927C1477F2E3 /* Build configuration list for PBXProject "SoloUnicornRun" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = CA642887A779ABB6F08FCDA4;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B30000000000000000000001 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 3CEB5942FF350B9F97498E73 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				574DB10F4C1A7535A2094038 /* Solo Unicorn Run */,
+				5A1E8F090551D4889E080ECD /* Solo Unicorn Run Tests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2ED7D5BD08FB4DD23EA36D2F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ABDFC492407A05E2BC397A8D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		34F6B5B42C217D27944B1010 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F6A934204A4437818BECE4E5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B2BFB1EE90AB231E41812DEF /* App.swift in Sources */,
+				FB6CDD52B76B96B369913C6B /* ContentView.swift in Sources */,
+				73B35D04E243BD45B291E271 /* GameModels.swift in Sources */,
+				AD24D57DE55399F057B4B47A /* GameStore.swift in Sources */,
+				B7879B5278335CFBFDA7FCD0 /* SeededRandomNumberGenerator.swift in Sources */,
+				28C211C9462EF7C2C17DC4C2 /* SimulationModels.swift in Sources */,
+				B20000000000000000000001 /* RevenueCatConfiguration.swift in Sources */,
+				B20000000000000000000003 /* SubscriptionScreen.swift in Sources */,
+				B20000000000000000000002 /* SubscriptionStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0CC3224B82E8319FF9ACB411 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 574DB10F4C1A7535A2094038 /* Solo Unicorn Run */;
+			targetProxy = 86A2B4AF5D561E1578E4ECD9 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1F99DCF1F344076360DE634D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun;
+				PRODUCT_MODULE_NAME = Solo_Unicorn_Run;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REVENUECAT_API_KEY = "";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		21E5E16F2816C70C377777CC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun;
+				PRODUCT_MODULE_NAME = Solo_Unicorn_Run;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REVENUECAT_API_KEY = "";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		7730F666A74FD79B3483EF30 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun.tests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Solo Unicorn Run.app/Solo Unicorn Run";
+			};
+			name = Debug;
+		};
+		7A8F2A203143036DF0FE85EF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		97F743A637FF42DC0C87E942 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		B59A0E0E31315B15F4CEE679 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun.tests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Solo Unicorn Run.app/Solo Unicorn Run";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		511D8401912941A9D055894D /* Build configuration list for PBXNativeTarget "Solo Unicorn Run Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7730F666A74FD79B3483EF30 /* Debug */,
+				B59A0E0E31315B15F4CEE679 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5759907B086A927C1477F2E3 /* Build configuration list for PBXProject "SoloUnicornRun" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7A8F2A203143036DF0FE85EF /* Debug */,
+				97F743A637FF42DC0C87E942 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A363C56A42D1900B8C2095E1 /* Build configuration list for PBXNativeTarget "Solo Unicorn Run" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				21E5E16F2816C70C377777CC /* Debug */,
+				1F99DCF1F344076360DE634D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B30000000000000000000001 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.43.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B40000000000000000000001 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B30000000000000000000001 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCat;
+		};
+		B40000000000000000000002 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B30000000000000000000001 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			productName = RevenueCatUI;
+		};
+/* End XCSwiftPackageProductDependency section */
+};
+	rootObject = 8E6817BAF5AD4288F91B1938 /* Project object */;
+}

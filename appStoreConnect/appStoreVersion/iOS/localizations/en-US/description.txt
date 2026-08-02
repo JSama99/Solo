@@ -1,0 +1,13 @@
+Build an ambitious startup from a garage and see how far your decisions can take it.
+
+SOLO: Unicorn Run is a focused founder-life strategy simulation. Direct a specialized AI workforce, balance runway and revenue, protect momentum and trust, and guide your company through a twelve-sprint venture. Every choice changes the pressure on your team and the future of the business.
+
+Choose your founder doctrine, assign trusted agents, commit each sprint, and respond to the consequences. Push for growth, preserve energy, manage risk, and discover whether your company becomes a unicorn—or runs out of runway.
+
+Features:
+• A complete startup journey designed for solo play
+• Strategic tradeoffs across runway, revenue, momentum, trust, and energy
+• Distinct founder doctrines with meaningful strengths and risks
+• An AI-inspired team of research, engineering, and marketing agents
+• Persistent offline career progress
+• No account or sign-in required
