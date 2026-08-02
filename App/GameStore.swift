@@ -471,4 +471,332 @@ final class GameStore {
   private func recordEvidence(task: SoloTask, agent: SoloAgent, result: TaskResult) {
     if let index = evidence.firstIndex(where: {
       $0.venture == venture
-        
+        && $0.sprint == sprint
+        && $0.taskInstanceID == task.id.uuidString
+        && $0.agent == agent.name
+    }) {
+      guard result.verificationState.reviewAttempted else { return }
+      let actual = result.revealedActualQuality
+      evidence[index].actualQuality = actual
+      evidence[index].reviewed = true
+      evidence[index].evidenceVerified = result.verificationState.evidenceVerified
+      evidence[index].verdict = result.verificationState.label
+      evidence[index].verificationState = result.verificationState
+      evidence[index].overclaimAmount = actual.map { max(0, evidence[index].reportedQuality - $0) } ?? 0
+      evidence[index].correlatedFailureIdentifier = result.correlatedFailureIdentifier
+      if let actual {
+        evidence[index].note = "Reported \(evidence[index].reportedQuality); verified \(actual). Evidence \(evidence[index].evidenceCompleteness)%."
+      } else {
+        evidence[index].note = "Reported \(evidence[index].reportedQuality); review found incomplete evidence. Actual quality remains hidden."
+      }
+      return
+    }
+    let actual = result.revealedActualQuality
+    let note: String
+    if let actual {
+      note = "Reported \(result.reportedQuality); verified \(actual). Evidence \(result.evidenceCompleteness)%."
+    } else {
+      note = "Reported \(result.reportedQuality); actual result remains unverified. Evidence \(result.evidenceCompleteness)%."
+    }
+    evidence.insert(
+      EvidenceEntry(
+        id: task.id,
+        venture: venture,
+        sprint: sprint,
+        taskInstanceID: task.id.uuidString,
+        task: task.title,
+        agent: agent.name,
+        reviewed: result.verificationState.reviewAttempted,
+        evidenceVerified: result.verificationState.evidenceVerified,
+        verdict: result.verificationState.label,
+        note: note,
+        reportedQuality: result.reportedQuality,
+        actualQuality: actual,
+        verificationState: result.verificationState,
+        overclaimAmount: actual == nil ? 0 : result.overclaimAmount,
+        evidenceCompleteness: result.evidenceCompleteness,
+        correlatedFailureIdentifier: result.correlatedFailureIdentifier
+      ),
+      at: 0
+    )
+  }
+
+  private func apply(_ effects: SimulationEffects) {
+    stats.revenue = max(0, stats.revenue + effects.revenue)
+    stats.momentum = clamped(stats.momentum + effects.momentum)
+    stats.trust = clamped(stats.trust + effects.trust)
+    stats.energy = clamped(stats.energy + effects.energy)
+    stats.runway = max(0, stats.runway + effects.runway)
+    stats.capital = max(0, stats.capital + effects.revenue / 4)
+  }
+
+  private func apply(_ save: CareerSave) {
+    founderName = save.founderName
+    doctrine = save.doctrine
+    selectedDoctrine = save.doctrine
+    sprint = min(Self.sprintsPerVenture, max(1, save.sprint))
+    venture = min(Self.maximumVentures, max(1, save.venture))
+    intent = save.intent
+    stats = save.stats
+    agents = save.agents
+    tasks = save.tasks
+    evidence = save.evidence
+    careerOutcome = save.outcome
+    randomNumberGenerator = save.randomNumberGenerator
+    correlatedFailureEvent = save.correlatedFailureEvent
+    pendingEffects = save.pendingEffects
+    reportCache = save.reportCache
+    if save.venture > Self.maximumVentures && careerOutcome == nil {
+      careerOutcome = victoryOutcome()
+    }
+    if tasks.isEmpty && careerOutcome == nil {
+      tasks = makeTasks()
+    }
+    sanitizeState()
+    updateKnownOperationalRisks()
+    syncAssignments()
+    stage = careerOutcome == nil ? .game : .outcome
+  }
+
+  private func migrateV2(_ legacy: CareerSave) -> CareerSave {
+    var migrated = legacy
+    migrated.randomNumberGenerator = SeededRandomNumberGenerator(seed: legacySeed(for: legacy))
+    migrated.correlatedFailureEvent = nil
+    migrated.pendingEffects = []
+    for index in migrated.tasks.indices {
+      migrated.tasks[index].result = nil
+      migrated.tasks[index].isReviewed = false
+    }
+    return migrateV3(migrated)
+  }
+
+  private func migrateV1(_ legacy: CareerSave) -> CareerSave {
+    migrateV2(legacy)
+  }
+
+  private func migrateV3(_ legacy: CareerSave) -> CareerSave {
+    var migrated = legacy
+    migrated.reportCache = migrated.tasks.compactMap { task in
+      guard
+        let agentID = task.assignedAgentID,
+        let result = task.result
+      else { return nil }
+      return CachedTaskReport(
+        venture: migrated.venture,
+        sprint: migrated.sprint,
+        taskID: task.id,
+        agentID: agentID,
+        intent: migrated.intent,
+        result: result
+      )
+    }
+    for index in migrated.evidence.indices {
+      if migrated.evidence[index].venture <= 0 {
+        migrated.evidence[index].venture = max(1, migrated.venture)
+      }
+      if migrated.evidence[index].taskInstanceID.isEmpty {
+        let entry = migrated.evidence[index]
+        let currentTask = migrated.tasks.first { task in
+          guard
+            migrated.sprint == entry.sprint,
+            task.title == entry.task,
+            let agentID = task.assignedAgentID
+          else { return false }
+          return migrated.agents.first(where: { $0.id == agentID })?.name == entry.agent
+        }
+        migrated.evidence[index].taskInstanceID = currentTask?.id.uuidString
+          ?? "legacy-\(entry.id.uuidString)"
+      }
+      if migrated.evidence[index].verificationState == .evidenceIncomplete {
+        migrated.evidence[index].actualQuality = nil
+        migrated.evidence[index].evidenceVerified = false
+      } else {
+        migrated.evidence[index].evidenceVerified = migrated.evidence[index].actualQuality != nil
+      }
+    }
+    return migrated
+  }
+
+  private func legacySeed(for save: CareerSave) -> UInt64 {
+    var value: UInt64 = 0xcbf29ce484222325
+    for byte in save.founderName.utf8 {
+      value ^= UInt64(byte)
+      value &*= 0x100000001b3
+    }
+    value ^= UInt64(max(1, save.venture) * 100 + max(1, save.sprint))
+    return value
+  }
+
+  private func syncAssignments() {
+    for index in agents.indices {
+      agents[index].assignment = tasks.first(where: {
+        $0.assignedAgentID == agents[index].id
+      })?.id
+    }
+  }
+
+  private func makeTasks() -> [SoloTask] {
+    let offset = ((venture - 1) * Self.sprintsPerVenture + sprint - 1) % Self.taskPool.count
+    return (0..<3).map { index in
+      var task = Self.taskPool[(offset + index * 3) % Self.taskPool.count]
+      task.id = nextDeterministicUUID()
+      task.assignedAgentID = nil
+      task.isReviewed = false
+      task.result = nil
+      return task
+    }
+  }
+
+  private func nextDeterministicUUID() -> UUID {
+    let high = randomNumberGenerator.next()
+    let low = randomNumberGenerator.next()
+    return UUID(uuid: (
+      UInt8(truncatingIfNeeded: high >> 56), UInt8(truncatingIfNeeded: high >> 48),
+      UInt8(truncatingIfNeeded: high >> 40), UInt8(truncatingIfNeeded: high >> 32),
+      UInt8(truncatingIfNeeded: high >> 24), UInt8(truncatingIfNeeded: high >> 16),
+      UInt8(truncatingIfNeeded: high >> 8), UInt8(truncatingIfNeeded: high),
+      UInt8(truncatingIfNeeded: low >> 56), UInt8(truncatingIfNeeded: low >> 48),
+      UInt8(truncatingIfNeeded: low >> 40), UInt8(truncatingIfNeeded: low >> 32),
+      UInt8(truncatingIfNeeded: low >> 24), UInt8(truncatingIfNeeded: low >> 16),
+      UInt8(truncatingIfNeeded: low >> 8), UInt8(truncatingIfNeeded: low)
+    ))
+  }
+
+  private func save() {
+    guard stage == .game else { return }
+    saveCareer()
+  }
+
+  private func saveCareer() {
+    guard stage == .game || stage == .outcome else { return }
+    let payload = CareerSave(
+      founderName: founderName,
+      doctrine: doctrine,
+      sprint: sprint,
+      venture: venture,
+      intent: intent,
+      stats: stats,
+      agents: agents,
+      tasks: tasks,
+      evidence: evidence,
+      outcome: careerOutcome,
+      randomNumberGenerator: randomNumberGenerator,
+      correlatedFailureEvent: correlatedFailureEvent,
+      pendingEffects: pendingEffects,
+      reportCache: reportCache
+    )
+    let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
+    if let data = try? JSONEncoder().encode(envelope) {
+      UserDefaults.standard.set(data, forKey: Self.saveKey)
+      UserDefaults.standard.removeObject(forKey: Self.v3SaveKey)
+      UserDefaults.standard.removeObject(forKey: Self.v2SaveKey)
+      UserDefaults.standard.removeObject(forKey: Self.legacySaveKey)
+    }
+  }
+
+  private func sanitizeState() {
+    stats.runway = min(365, max(0, stats.runway))
+    stats.revenue = min(1_000_000_000, max(0, stats.revenue))
+    stats.momentum = clamped(stats.momentum)
+    stats.trust = clamped(stats.trust)
+    stats.energy = clamped(stats.energy)
+    stats.capital = min(1_000_000_000, max(0, stats.capital))
+    stats.trackRecord = min(1_000_000, max(0, stats.trackRecord))
+    for index in agents.indices {
+      agents[index].reliability = clamped(agents[index].reliability)
+      agents[index].calibration = safeUnitValue(agents[index].calibration)
+      agents[index].drift = safePercentage(agents[index].drift)
+      agents[index].trust = safePercentage(agents[index].trust)
+    }
+  }
+
+  private func safeUnitValue(_ value: Double) -> Double {
+    guard value.isFinite else { return 0 }
+    return min(1, max(0, value))
+  }
+
+  private func safePercentage(_ value: Double) -> Double {
+    guard value.isFinite else { return 0 }
+    return min(100, max(0, value))
+  }
+
+  private func resolvedOutcome() -> CareerOutcome? {
+    if stats.runway <= 0 {
+      return CareerOutcome(
+        kind: .bankruptcy,
+        title: "The runway ran out",
+        summary: "The company reached the end of its operating time before finding a sustainable path.",
+        score: careerScore
+      )
+    }
+    if stats.energy <= 0 {
+      return CareerOutcome(
+        kind: .burnout,
+        title: "The founder burned out",
+        summary: "Oversight outpaced recovery. The company survived its systems, but not their human cost.",
+        score: careerScore
+      )
+    }
+    if stats.trust <= 0 {
+      return CareerOutcome(
+        kind: .trustCollapse,
+        title: "Trust collapsed",
+        summary: "Unverified work and accumulated drift made the company impossible to operate confidently.",
+        score: careerScore
+      )
+    }
+    if venture == Self.maximumVentures && sprint == Self.sprintsPerVenture {
+      return victoryOutcome()
+    }
+    return nil
+  }
+
+  private func victoryOutcome() -> CareerOutcome {
+    CareerOutcome(
+      kind: .victory,
+      title: "Two ventures. One track record.",
+      summary: "You completed all 24 sprints and built a repeatable way to lead an AI-native company.",
+      score: careerScore
+    )
+  }
+
+  private var careerScore: Int {
+    max(0, stats.trackRecord * 10 + stats.revenue + stats.momentum * 20 + stats.trust * 20 + stats.energy * 10)
+  }
+
+  private var careerSprintIndex: Int {
+    (venture - 1) * Self.sprintsPerVenture + sprint
+  }
+
+  private func clamped(_ value: Int) -> Int {
+    min(100, max(0, value))
+  }
+
+  private static let saveVersion = 4
+  private static let saveKey = "solo-unicorn-run-native-save-v4"
+  private static let v3SaveKey = "solo-unicorn-run-native-save-v3"
+  private static let v2SaveKey = "solo-unicorn-run-native-save-v2"
+  private static let legacySaveKey = "solo-unicorn-run-native-save-v1"
+  private static let maximumVentures = 2
+  private static let sprintsPerVenture = 12
+
+  private static var initialAgents: [SoloAgent] {
+    [
+      SoloAgent(id: "aurora", name: "Aurora", initials: "AU", role: .research, modelFamily: "Nova-1", reliability: 78, calibration: 0.72, drift: 0, trust: 62),
+      SoloAgent(id: "stacks", name: "Stacks", initials: "ST", role: .engineering, modelFamily: "Nova-1", reliability: 82, calibration: 0.78, drift: 0, trust: 66),
+      SoloAgent(id: "brio", name: "Brio", initials: "BR", role: .marketing, modelFamily: "Atlas-2", reliability: 75, calibration: 0.61, drift: 0, trust: 58)
+    ]
+  }
+
+  private static let taskPool: [SoloTask] = [
+    SoloTask(title: "Build MVP", detail: "Implement the next product slice.", role: .engineering, impact: .momentum(8)),
+    SoloTask(title: "Review Market Research", detail: "Synthesize customer signals.", role: .research, impact: .trust(6)),
+    SoloTask(title: "Launch Landing Page", detail: "Publish a sharper promise.", role: .marketing, impact: .revenue(500)),
+    SoloTask(title: "Fix Critical Bug", detail: "Stabilize the product.", role: .engineering, impact: .trust(8)),
+    SoloTask(title: "Contact Early Customers", detail: "Turn conversations into demand.", role: .marketing, impact: .revenue(650)),
+    SoloTask(title: "Prepare Investor Update", detail: "Explain progress and risk.", role: .research, impact: .runway(4)),
+    SoloTask(title: "Improve Onboarding", detail: "Reduce friction for new users.", role: .general, impact: .revenue(400)),
+    SoloTask(title: "Audit Agent Outputs", detail: "Find uncertainty before it compounds.", role: .research, impact: .trust(7)),
+    SoloTask(title: "Run Pricing Test", detail: "Test willingness to pay.", role: .marketing, impact: .revenue(800))
+  ]
+}

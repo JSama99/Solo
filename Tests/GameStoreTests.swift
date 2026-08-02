@@ -464,6 +464,22 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(Set(RevenueCatConfiguration.productIdentifiers), ["lifetime", "yearly", "monthly"])
   }
 
+  func testBuild1V4SaveCompatibility() throws {
+    let source = makeStore(seed: 4_004)
+    try assignFirstTask(in: source)
+    let expectedResult = source.tasks[0].result
+    let expectedRNG = source.randomNumberGenerator
+
+    let restored = GameStore()
+    restored.continueCareer()
+
+    XCTAssertEqual(restored.stage, .game)
+    XCTAssertEqual(restored.tasks[0].result, expectedResult)
+    XCTAssertEqual(restored.randomNumberGenerator, expectedRNG)
+    let data = try XCTUnwrap(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v4"))
+    XCTAssertEqual(try JSONDecoder().decode(SaveEnvelope.self, from: data).version, 4)
+  }
+
   private func makeStore(seed: UInt64 = 1_234) -> GameStore {
     let store = GameStore()
     store.resetCareer()
