@@ -1,97 +1,122 @@
 # RevenueCat Setup — SOLO: Unicorn Run
 
-## Implemented in the app
+## Read this first: why Build 2's paywall was empty
 
-- Swift Package: `https://github.com/RevenueCat/purchases-ios-spm.git`
-- Version rule: RevenueCat 5.43.0 up to the next major version
-- Resolved SDK during integration: 5.83.0
-- Package products: `RevenueCat` and `RevenueCatUI`
-- Debug API key: the supplied RevenueCat Test Store public SDK key
-- Release API key: read from the `REVENUECAT_API_KEY` build setting
-- Entitlement identifier: `solo_unicorn_run_pro`
-- Entitlement display name: `Solo: Unicorn Run Pro`
-- Products: `lifetime`, `yearly`, and `monthly`
-- Offering, purchase, restore, CustomerInfo, paywall, and Customer Center support
+Build 2 could not complete a purchase, and no dashboard change would have fixed it.
 
-The Test Store key is compiled only in Debug. Before distributing a Release build, set `REVENUECAT_API_KEY` to the public Apple SDK key beginning with `appl_`. Never ship a `test_` key or embed a RevenueCat secret key.
+`SubscriptionStore.packages` filtered the current offering like this:
 
-## RevenueCat dashboard configuration
+```swift
+currentOffering?.availablePackages.filter {
+  RevenueCatConfiguration.productIdentifiers.contains($0.storeProduct.productIdentifier)
+}
+```
 
-The RevenueCat plugin is installed and connected. Configure the catalog as follows:
+`productIdentifiers` was `["lifetime", "yearly", "monthly"]`. The only product
+configured in App Store Connect is `com.talonsight.solounicornrun.founderpass`.
+Nothing matched, `packages` was always empty, and the UI rendered
+"Offering Not Ready" — which reads like a dashboard problem but was a client bug.
 
-1. Open the connected RevenueCat project and its Test Store.
-2. Create a non-consumable product:
-   - Identifier: `lifetime`
-   - Display name: Lifetime
-3. Create a one-year subscription:
-   - Identifier: `yearly`
-   - Display name: Yearly
-4. Create a one-month subscription:
-   - Identifier: `monthly`
-   - Display name: Monthly
-5. Create the entitlement:
-   - Identifier: `solo_unicorn_run_pro`
-   - Display name: Solo: Unicorn Run Pro
-6. Attach all three products to the entitlement.
-7. Create an offering with identifier `default` and make it the current offering.
-8. Add packages to the offering:
-   - Lifetime package → `lifetime`
-   - Annual package → `yearly`
-   - Monthly package → `monthly`
-9. Create and publish a RevenueCat Paywall for the `default` offering. If no custom paywall is published, RevenueCatUI presents its default paywall using the offering packages.
-10. Configure Customer Center. It appears in the app after the Pro entitlement becomes active.
+**Build 3 removes the filter entirely.** Whatever the current offering contains
+is shown, and access is decided by the entitlement alone. The dashboard catalog
+can now be named anything.
 
-RevenueCat plugin tools become available on the message after installation. Ask Codex to create this catalog in the connected RevenueCat project on the next turn.
+## What must match exactly
 
-## SwiftUI architecture
+Exactly one string is shared between the app and the dashboard:
 
-`SubscriptionStore` is the single source of truth for subscription state. It configures `Purchases` once, listens for `CustomerInfo` updates, fetches the current offering and customer, checks the entitlement, and exposes async purchase and restore methods with user-facing error handling.
+| Thing | Value |
+|---|---|
+| Entitlement identifier | `solo_unicorn_run_pro` |
 
-`SubscriptionScreen` is available from More → Solo Pro. It:
+That's it. Product identifiers, package types, offering names, and prices are
+all read at runtime and never hardcoded.
 
-- Lists configured packages and localized prices.
-- Supports direct package purchases.
-- Presents the remotely configured `PaywallView`.
-- Restores purchases.
-- Presents `CustomerCenterView` for active Pro customers.
-- Refreshes CustomerInfo and offerings when opened or pulled to refresh.
+## Dashboard checklist
 
-## Customer identification
+1. **Product** — Products → New. Import or create
+   `com.talonsight.solounicornrun.founderpass`.
+   Type: **non-consumable** (matches `appStoreConnect/inAppPurchases/…/inAppPurchase.json`,
+   which declares `NON_CONSUMABLE` at $4.99).
+2. **Entitlement** — Entitlements → New → identifier `solo_unicorn_run_pro`.
+   Attach the product above. *This identifier must be exact.*
+3. **Offering** — Offerings → New → identifier `default`.
+4. **Package** — inside that offering, add a package. Type **Lifetime**
+   (`$rc_lifetime`) is the correct fit for a non-consumable. Attach the product.
+5. **Mark the offering Current.** This is the single most commonly missed step.
+   Without a Current offering the SDK returns `offerings.current == nil` and the
+   paywall has nothing to show. Build 3 also falls back to an offering literally
+   named `default`, so either arrangement works.
+6. **Paywall** (optional) — Paywalls → publish one for the offering. If none is
+   published, RevenueCatUI renders its default paywall from the packages.
 
-The current setup uses RevenueCat anonymous App User IDs, which is appropriate for an offline game without accounts. If authentication is added later, call `Purchases.shared.logIn(stableUserID)` after sign-in and `Purchases.shared.logOut()` after sign-out. Never use an email address as the App User ID unless the privacy model explicitly permits it.
+## Diagnosing it from inside the app
 
-## Test Store testing
+Build 3 ships `PurchaseConfigurationStatus`. The unlock screen and the Founder
+Pass screen both render `PurchaseDiagnosticsCard` whenever the purchase stack is
+not ready, and each state names the fix instead of failing silently:
 
-1. Run the Debug app.
-2. Open More → Solo Pro.
-3. Open the RevenueCat Paywall or select a package.
-4. The Test Store presents controls to simulate success, failure, or cancellation.
-5. Confirm that successful purchases activate Solo: Unicorn Run Pro and reveal Customer Center.
-6. Test Restore Purchases and error/cancellation paths.
+| Status | Meaning | Fix |
+|---|---|---|
+| `notConfigured` | `configure()` never ran | Call it at launch |
+| `missingAPIKey` | No key in Info.plist | Set `REVENUECAT_API_KEY` |
+| `secretKeyOnDevice` | An `sk_` key is bundled | Remove and rotate immediately |
+| `testKeyInReleaseBuild` | `test_` key in Release | Use the public `appl_` key |
+| `noCurrentOffering` | No offering marked Current | Step 5 above |
+| `offeringHasNoPackages` | Offering is empty | Step 4 above |
+| `ready(packageCount:)` | Purchasable | — |
 
-Test Store purchases work in the built-in simulator. Real App Store sandbox purchases require the Apple products, agreements, tax/banking setup, a production `appl_` SDK key, and a real device or TestFlight.
+If the person configuring the dashboard reads one thing, make it this table.
+
+## API keys
+
+- **Debug:** falls back to the Test Store key, or an `RevenueCatAPIKey`
+  Info.plist override if present.
+- **Release:** read from `RevenueCatAPIKey` in Info.plist, populated from the
+  `REVENUECAT_API_KEY` build setting. Must begin with `appl_`.
+- **Never** ship an `sk_` secret key. `configure()` refuses to start if it finds one.
+
+## What the purchase unlocks
+
+The Founder Pass is a one-time non-consumable that unlocks:
+
+- **Venture 2** — the second twelve-sprint venture of the career
+- **Hindsight Recall** — precedents banked in Venture 1 resurfacing when
+  structurally similar conditions repeat
+- **The full career outcome** — the complete twenty-four-sprint track record
+
+Venture 1 is complete and free. When it ends without the pass, the career is
+**held**, not discarded: `awaitingFounderPass` persists in the save, and
+purchasing resumes the exact same career at the venture boundary with all
+evidence, agents, stats, and precedents intact. `resumeAfterFounderPassUnlock()`
+is idempotent and safe to call on every entitlement change.
 
 ## Production checklist
 
-- Create the same product identifiers in App Store Connect under `com.talonsight.solounicornrun`.
-- Use a non-consumable in-app purchase for `lifetime`.
-- Put `yearly` and `monthly` in the same auto-renewable subscription group.
-- Import the Apple products into RevenueCat and attach them to the same entitlement and offering packages.
-- Add the public Apple SDK key to the Release `REVENUECAT_API_KEY` build setting.
-- Configure App Store Server Notifications and RevenueCat's Apple credentials.
-- Verify the Paid Applications Agreement, tax, and banking status.
-- Test purchases with a Sandbox Apple Account on a physical device.
-- Test restore, expiration, billing retry, cancellation, upgrades/downgrades, and lifetime ownership.
-- Confirm Customer Center behavior and promotional offers before release.
+- [ ] Paid Applications Agreement active; tax and banking complete
+- [ ] `com.talonsight.solounicornrun.founderpass` approved in App Store Connect
+- [ ] Product imported into RevenueCat and attached to `solo_unicorn_run_pro`
+- [ ] Offering created, package attached, **offering marked Current**
+- [ ] `REVENUECAT_API_KEY` set to the public `appl_` key for Release
+- [ ] App Store Server Notifications configured
+- [ ] Sandbox purchase tested on a physical device
+- [ ] **Restore tested on a second device** — required for App Review
+- [ ] Purchase-then-resume verified: buy at the gate, confirm Venture 2 begins
+      with the same career intact
 
-## Best practices used
+## Testing without the App Store
 
-- Configure the shared Purchases SDK exactly once at app launch.
-- Gate access by entitlement, not by individual product identifier.
-- Let offerings control package availability remotely.
-- Treat CustomerInfo as the authoritative subscription state.
-- Refresh CustomerInfo on entry and after purchase or restore.
-- Handle cancellation separately from purchase failures.
-- Keep secret API keys off-device.
-- Keep Test Store and production API keys separated by build configuration.
-- Use Customer Center only for customers with active Pro access.
+1. Run the Debug build (Test Store key is compiled in).
+2. Play Venture 1 to completion, or use the Founder Pass screen directly.
+3. The Test Store presents success / failure / cancellation controls.
+4. Confirm: purchase → the held career resumes into Venture 2 automatically.
+5. Confirm: Restore with no purchase shows the "no previous purchase" message.
+
+## Architecture notes
+
+- `SubscriptionStore` is the only RevenueCat-aware type in the game path.
+- `GameStore` depends on `EntitlementProviding`, a two-line protocol, so the
+  simulation is fully testable without RevenueCat, StoreKit, or a network.
+  `StaticEntitlementProvider` supplies deterministic answers in tests.
+- Gate access by entitlement, never by product identifier. That rule is enforced
+  by `PurchaseConfigurationTests`.

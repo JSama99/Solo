@@ -14,14 +14,14 @@ struct SubscriptionScreen: View {
       VStack(alignment: .leading, spacing: 16) {
         VStack(alignment: .leading, spacing: 8) {
           Label(
-            subscriptions.isPro ? "Pro Active" : "Solo: Unicorn Run Pro",
+            subscriptions.isPro ? "Founder Pass active" : "Founder Pass",
             systemImage: subscriptions.isPro ? "checkmark.seal.fill" : "sparkles"
           )
           .font(.title2.bold())
           .foregroundStyle(subscriptions.isPro ? SoloTheme.mint : SoloTheme.cyan)
           Text(subscriptions.isPro
-            ? "Your Pro entitlement is active on this RevenueCat customer."
-            : "Choose Lifetime, Yearly, or Monthly access from the current RevenueCat offering.")
+            ? "Venture 2 and Hindsight Recall are unlocked on this Apple Account."
+            : "One purchase, no subscription. Unlocks Venture 2, Hindsight Recall, and the full career outcome.")
             .foregroundStyle(.secondary)
         }
         .soloCard()
@@ -31,12 +31,7 @@ struct SubscriptionScreen: View {
             .frame(maxWidth: .infinity)
             .soloCard()
         } else if subscriptions.packages.isEmpty {
-          ContentUnavailableView(
-            "Offering Not Ready",
-            systemImage: "cart.badge.questionmark",
-            description: Text("Add lifetime, yearly, and monthly to the current RevenueCat offering.")
-          )
-          .soloCard()
+          PurchaseDiagnosticsCard(status: subscriptions.configurationStatus)
         } else {
           VStack(spacing: 10) {
             ForEach(subscriptions.packages, id: \.identifier) { package in

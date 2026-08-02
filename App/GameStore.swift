@@ -8,6 +8,7 @@ final class GameStore {
     case title
     case setup
     case game
+    case ventureUnlock
     case outcome
   }
 
@@ -30,8 +31,33 @@ final class GameStore {
   var pendingEffects: [ScheduledEffect] = []
   var reportCache: [CachedTaskReport] = []
 
+  // ── Build 3: career layer ─────────────────────────────────────────
+  /// Precedents banked across the career. Recorded in every venture,
+  /// including the free one — that is what makes the unlock meaningful.
+  var precedents: [Precedent] = []
+  /// Recall surfaced for the current sprint, if any. Presentation-only.
+  private(set) var activeRecall: HindsightRecall?
+  private(set) var recallsShownThisVenture = 0
+  /// Set when Venture 1 ends without the Founder Pass. The career is intact
+  /// and resumes on unlock; nothing is discarded.
+  private(set) var awaitingFounderPass = false
+
+  /// Supplies entitlement state. Replaceable so the simulation stays testable
+  /// without RevenueCat, StoreKit, or a network.
+  var entitlements: any EntitlementProviding = StaticEntitlementProvider()
+
+  var hasFounderPass: Bool { entitlements.hasFounderPass }
+
+  /// Venture 2 is the paid content. Venture 1 is complete and free.
+  var isVentureLocked: Bool { awaitingFounderPass && !hasFounderPass }
+
+  static var freeVentureCount: Int { 1 }
+  static var totalVentures: Int { maximumVentures }
+  static var sprintsPerVentureCount: Int { sprintsPerVenture }
+
   var hasSave: Bool {
     UserDefaults.standard.data(forKey: Self.saveKey) != nil
+      || UserDefaults.standard.data(forKey: Self.v4SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v3SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v2SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.legacySaveKey) != nil
@@ -68,6 +94,10 @@ final class GameStore {
     if founderName.isEmpty { founderName = "Founder" }
     sprint = 1
     venture = 1
+    precedents = []
+    activeRecall = nil
+    recallsShownThisVenture = 0
+    awaitingFounderPass = false
     intent = .build
     stats = FounderStats()
     agents = Self.initialAgents
@@ -97,6 +127,10 @@ final class GameStore {
        let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
        envelope.version == Self.saveVersion {
       loadedSave = envelope.career
+    } else if let data = UserDefaults.standard.data(forKey: Self.v4SaveKey),
+              let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
+              envelope.version == 4 {
+      loadedSave = migrateV4(envelope.career)
     } else if let data = UserDefaults.standard.data(forKey: Self.v3SaveKey),
               let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
               envelope.version == 3 {
@@ -302,19 +336,121 @@ final class GameStore {
       riskyOutcomes: riskyOutcomes
     )
 
+    recordPrecedentIfConsequential(
+      assignedIndices: assignedIndices,
+      effects: effects,
+      reviewedCount: reviewed
+    )
+
     careerOutcome = resolvedOutcome()
     if careerOutcome == nil && sprint == Self.sprintsPerVenture {
-      sprint = 1
-      venture += 1
-      stats.trackRecord += max(8, (stats.momentum + stats.trust) / 8)
-      stats.runway = max(stats.runway, 38)
-      stats.energy = max(stats.energy, 72)
-      prepareSprint()
+      if venture >= Self.freeVentureCount && !hasFounderPass {
+        // Venture 1 is finished and free. Hold the career here rather than
+        // advancing or discarding: unlocking resumes exactly at this point.
+        awaitingFounderPass = true
+        report = nil
+        stage = .ventureUnlock
+        saveCareer()
+        return
+      }
+      advanceToNextVenture()
     } else if careerOutcome == nil {
       sprint += 1
       prepareSprint()
     }
     saveCareer()
+  }
+
+  /// Called when the Founder Pass becomes active while a career is held at the
+  /// venture gate. Idempotent and safe to call on every entitlement change.
+  func resumeAfterFounderPassUnlock() {
+    guard awaitingFounderPass, hasFounderPass else { return }
+    awaitingFounderPass = false
+    advanceToNextVenture()
+    saveCareer()
+  }
+
+  private func advanceToNextVenture() {
+    sprint = 1
+    venture += 1
+    recallsShownThisVenture = 0
+    activeRecall = nil
+    stats.trackRecord += max(8, (stats.momentum + stats.trust) / 8)
+    stats.runway = max(stats.runway, 38)
+    stats.energy = max(stats.energy, 72)
+    prepareSprint()
+  }
+
+  /// Bucketed snapshot of the conditions the current sprint is being run under.
+  func currentPrecedentContext() -> PrecedentContext {
+    PrecedentContext(
+      doctrine: doctrine,
+      intent: intent,
+      driftBand: .drift(averageDrift),
+      runwayBand: .runway(stats.runway),
+      unverifiedBand: .unverified(tasks.filter { $0.assignedAgentID != nil && !$0.isReviewed }.count)
+    )
+  }
+
+  /// Surface a matching precedent for the live situation, if one clears the
+  /// floor. Consumes no RNG and mutates no simulation value.
+  func refreshHindsightRecall() {
+    guard hasFounderPass else { activeRecall = nil; return }
+    let recall = HindsightEngine.recall(
+      from: precedents,
+      matching: currentPrecedentContext(),
+      currentVenture: venture,
+      recallsAlreadyShown: recallsShownThisVenture
+    )
+    if let recall, activeRecall?.id != recall.id {
+      recallsShownThisVenture += 1
+    }
+    activeRecall = recall
+  }
+
+  func dismissRecall() { activeRecall = nil }
+
+  /// Leave the unlock screen without purchasing. The career stays held at the
+  /// gate; the player can review the finished venture, evidence, and roster.
+  func reviewCompletedVenture() {
+    guard awaitingFounderPass else { return }
+    stage = .game
+  }
+
+  private func recordPrecedentIfConsequential(
+    assignedIndices: [Int],
+    effects: SimulationEffects,
+    reviewedCount: Int
+  ) {
+    var outcome = PrecedentOutcome()
+    outcome.trustDelta = effects.trust
+    outcome.runwayDelta = effects.runway
+    outcome.momentumDelta = effects.momentum
+
+    for index in assignedIndices {
+      guard let result = tasks[index].result else { continue }
+      switch result.verificationState {
+      case .overclaimed: outcome.overclaimsSurfaced += 1
+      case .driftDetected: outcome.driftDetections += 1
+      case .unverified, .reported: outcome.unverifiedCommitted += 1
+      default: break
+      }
+    }
+
+    guard HindsightEngine.isConsequential(outcome) else { return }
+
+    let unreviewed = assignedIndices.count - reviewedCount
+    precedents.append(
+      Precedent(
+        id: HindsightEngine.identifier(venture: venture, sprint: sprint),
+        venture: venture,
+        sprint: sprint,
+        context: currentPrecedentContext(),
+        decisionSummary: "Committed \(assignedIndices.count) task\(assignedIndices.count == 1 ? "" : "s") "
+          + "with \(reviewedCount) verified and \(unreviewed) unverified.",
+        outcome: outcome
+      )
+    )
   }
 
   func finishReport() {
@@ -327,6 +463,7 @@ final class GameStore {
 
   func resetCareer() {
     UserDefaults.standard.removeObject(forKey: Self.saveKey)
+    UserDefaults.standard.removeObject(forKey: Self.v4SaveKey)
     UserDefaults.standard.removeObject(forKey: Self.v3SaveKey)
     UserDefaults.standard.removeObject(forKey: Self.v2SaveKey)
     UserDefaults.standard.removeObject(forKey: Self.legacySaveKey)
@@ -334,11 +471,16 @@ final class GameStore {
     report = nil
     pendingEffects = []
     reportCache = []
+    precedents = []
+    activeRecall = nil
+    recallsShownThisVenture = 0
+    awaitingFounderPass = false
     stage = .title
   }
 
   private func prepareSprint() {
     reportCache = []
+    defer { refreshHindsightRecall() }
     correlatedFailureEvent = generateCorrelatedFailureEvent()
     tasks = makeTasks()
     syncAssignments()
@@ -546,6 +688,10 @@ final class GameStore {
     correlatedFailureEvent = save.correlatedFailureEvent
     pendingEffects = save.pendingEffects
     reportCache = save.reportCache
+    precedents = save.precedents
+    awaitingFounderPass = save.awaitingFounderPass
+    recallsShownThisVenture = 0
+    activeRecall = nil
     if save.venture > Self.maximumVentures && careerOutcome == nil {
       careerOutcome = victoryOutcome()
     }
@@ -555,7 +701,13 @@ final class GameStore {
     sanitizeState()
     updateKnownOperationalRisks()
     syncAssignments()
-    stage = careerOutcome == nil ? .game : .outcome
+    if careerOutcome != nil {
+      stage = .outcome
+    } else if awaitingFounderPass && !hasFounderPass {
+      stage = .ventureUnlock
+    } else {
+      stage = .game
+    }
   }
 
   private func migrateV2(_ legacy: CareerSave) -> CareerSave {
@@ -572,6 +724,17 @@ final class GameStore {
 
   private func migrateV1(_ legacy: CareerSave) -> CareerSave {
     migrateV2(legacy)
+  }
+
+  /// v4 -> v5. Build 2 careers predate the career layer: they have no
+  /// precedents and were never held at a venture gate. A v4 career that already
+  /// reached Venture 2 keeps its progress — the gate is never applied
+  /// retroactively to work the player already did.
+  private func migrateV4(_ legacy: CareerSave) -> CareerSave {
+    var migrated = legacy
+    migrated.precedents = []
+    migrated.awaitingFounderPass = false
+    return migrated
   }
 
   private func migrateV3(_ legacy: CareerSave) -> CareerSave {
@@ -668,7 +831,7 @@ final class GameStore {
   }
 
   private func saveCareer() {
-    guard stage == .game || stage == .outcome else { return }
+    guard stage == .game || stage == .outcome || stage == .ventureUnlock else { return }
     let payload = CareerSave(
       founderName: founderName,
       doctrine: doctrine,
@@ -683,11 +846,14 @@ final class GameStore {
       randomNumberGenerator: randomNumberGenerator,
       correlatedFailureEvent: correlatedFailureEvent,
       pendingEffects: pendingEffects,
-      reportCache: reportCache
+      reportCache: reportCache,
+      precedents: precedents,
+      awaitingFounderPass: awaitingFounderPass
     )
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
       UserDefaults.standard.set(data, forKey: Self.saveKey)
+      UserDefaults.standard.removeObject(forKey: Self.v4SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v3SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v2SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.legacySaveKey)
@@ -772,8 +938,9 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  private static let saveVersion = 4
-  private static let saveKey = "solo-unicorn-run-native-save-v4"
+  private static let saveVersion = 5
+  private static let saveKey = "solo-unicorn-run-native-save-v5"
+  private static let v4SaveKey = "solo-unicorn-run-native-save-v4"
   private static let v3SaveKey = "solo-unicorn-run-native-save-v3"
   private static let v2SaveKey = "solo-unicorn-run-native-save-v2"
   private static let legacySaveKey = "solo-unicorn-run-native-save-v1"

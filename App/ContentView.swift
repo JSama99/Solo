@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
   @State private var store = GameStore()
+  @Environment(SubscriptionStore.self) private var subscriptions
 
   var body: some View {
     ZStack {
@@ -16,12 +17,24 @@ struct ContentView: View {
       case .game:
         GameDashboard(store: store)
           .transition(.opacity)
+      case .ventureUnlock:
+        VentureUnlockScreen(store: store)
+          .transition(.move(edge: .bottom).combined(with: .opacity))
       case .outcome:
         CareerOutcomeScreen(store: store)
           .transition(.opacity.combined(with: .scale(scale: 0.97)))
       }
     }
     .animation(.smooth, value: store.stage)
+    .onAppear {
+      // Bind the real entitlement source once the environment is available.
+      store.entitlements = subscriptions
+      store.resumeAfterFounderPassUnlock()
+    }
+    .onChange(of: subscriptions.isPro) { _, isPro in
+      // A purchase or restore completed anywhere in the app resumes a held career.
+      if isPro { store.resumeAfterFounderPassUnlock() }
+    }
     .alert("Garage Console", isPresented: Binding(
       get: { store.alertMessage != nil },
       set: { if !$0 { store.alertMessage = nil } }
@@ -197,6 +210,18 @@ private struct GameDashboard: View {
   @State private var presentation = PresentationCoordinator()
 
   var body: some View {
+    VStack(spacing: 0) {
+      if store.isVentureLocked {
+        VentureLockBanner(store: store)
+      }
+      if let recall = store.activeRecall {
+        HindsightRecallCard(recall: recall) { store.dismissRecall() }
+      }
+      dashboardTabs
+    }
+  }
+
+  private var dashboardTabs: some View {
     TabView {
       Tab("Garage", systemImage: "house.fill") {
         FounderEnvironmentScreen(store: store, presentation: presentation)
@@ -834,6 +859,9 @@ enum SoloTheme {
   static let purple = Color(red: 0.56, green: 0.31, blue: 0.96)
   static let mint = Color(red: 0.32, green: 0.88, blue: 0.77)
   static let amber = Color(red: 1, green: 0.68, blue: 0.2)
+  /// Failure/risk accent. Paired with a symbol everywhere it is used so meaning
+  /// never depends on colour alone.
+  static let coral = Color(red: 1, green: 0.44, blue: 0.51)
 }
 
 extension View {
@@ -841,5 +869,74 @@ extension View {
     frame(maxWidth: .infinity, alignment: .leading)
       .padding(16)
       .background(SoloTheme.card, in: .rect(cornerRadius: 18))
+  }
+}
+
+/// Persistent banner while a career is held at the Venture 2 gate.
+private struct VentureLockBanner: View {
+  var store: GameStore
+
+  var body: some View {
+    Button {
+      store.stage = .ventureUnlock
+    } label: {
+      HStack(spacing: 10) {
+        Image(systemName: "lock.fill")
+        VStack(alignment: .leading, spacing: 1) {
+          Text("Venture 1 complete").font(.subheadline.bold())
+          Text("Unlock Venture 2 to continue this career")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+        Spacer()
+        Image(systemName: "chevron.right").font(.caption.bold())
+      }
+      .padding(.horizontal, 16)
+      .padding(.vertical, 10)
+      .frame(maxWidth: .infinity)
+      .background(SoloTheme.card)
+      .foregroundStyle(SoloTheme.amber)
+    }
+    .buttonStyle(.plain)
+    .accessibilityLabel("Venture 1 complete. Unlock Venture 2 to continue this career.")
+  }
+}
+
+/// Hindsight Recall. Reports the conditions and what followed — never advice.
+private struct HindsightRecallCard: View {
+  var recall: HindsightRecall
+  var onDismiss: () -> Void
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 6) {
+      HStack {
+        Label("Hindsight — \(recall.precedent.recallTitle)", systemImage: "brain.head.profile")
+          .font(.caption.bold())
+          .foregroundStyle(SoloTheme.amber)
+        Spacer()
+        Text(recall.strengthLabel)
+          .font(.caption2)
+          .foregroundStyle(.secondary)
+        Button {
+          onDismiss()
+        } label: {
+          Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Dismiss hindsight recall")
+      }
+      Text(recall.precedent.decisionSummary).font(.caption)
+      Text(recall.precedent.context.summary)
+        .font(.caption2)
+        .foregroundStyle(.secondary)
+      Text(recall.precedent.outcome.summary)
+        .font(.caption2)
+        .foregroundStyle(SoloTheme.cyan)
+    }
+    .padding(.horizontal, 16)
+    .padding(.vertical, 10)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(SoloTheme.card)
+    .accessibilityElement(children: .combine)
   }
 }
