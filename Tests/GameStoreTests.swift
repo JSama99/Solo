@@ -97,7 +97,8 @@ final class GameStoreTests: XCTestCase {
 
     XCTAssertEqual(migrated.founderName, "Founder")
     XCTAssertEqual(migrated.stage, .game)
-    XCTAssertNotNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v4"))
+    let data = try XCTUnwrap(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v5"))
+    XCTAssertEqual(try JSONDecoder().decode(SaveEnvelope.self, from: data).version, 5)
     XCTAssertNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v1"))
   }
 
@@ -326,7 +327,7 @@ final class GameStoreTests: XCTestCase {
     XCTAssertNotNil(store.evidence.first(where: { $0.venture == 2 }))
   }
 
-  func testV2SaveMigratesExplicitlyToV4() throws {
+  func testV2SaveMigratesExplicitlyToV5() throws {
     let source = makeStore(seed: 321)
     let envelope = SaveEnvelope(version: 2, career: careerSave(from: source))
     let encoded = try JSONEncoder().encode(envelope)
@@ -350,11 +351,12 @@ final class GameStoreTests: XCTestCase {
 
     XCTAssertEqual(migrated.stage, .game)
     XCTAssertNil(migrated.tasks[0].result)
-    XCTAssertNotNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v4"))
+    let data = try XCTUnwrap(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v5"))
+    XCTAssertEqual(try JSONDecoder().decode(SaveEnvelope.self, from: data).version, 5)
     XCTAssertNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v2"))
   }
 
-  func testV3SaveMigratesExplicitlyToV4() throws {
+  func testV3SaveMigratesExplicitlyToV5() throws {
     let source = makeStore(seed: 3_004)
     try assignFirstTask(in: source)
     source.review(taskID: source.tasks[0].id)
@@ -382,13 +384,16 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(migrated.reportCache.count, 1)
     XCTAssertEqual(migrated.evidence.first?.venture, migrated.venture)
     XCTAssertFalse(migrated.evidence.first?.taskInstanceID.isEmpty ?? true)
-    XCTAssertNotNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v4"))
+    let data = try XCTUnwrap(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v5"))
+    XCTAssertEqual(try JSONDecoder().decode(SaveEnvelope.self, from: data).version, 5)
     XCTAssertNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v3"))
   }
 
   func testIdenticalSeedsProduceIdenticalCompleteSimulationResults() throws {
     let first = makeStore(seed: 20_260_801)
     let second = makeStore(seed: 20_260_801)
+    first.entitlements = StaticEntitlementProvider(hasFounderPass: true)
+    second.entitlements = StaticEntitlementProvider(hasFounderPass: true)
 
     for _ in 1...24 {
       for store in [first, second] {
@@ -407,10 +412,13 @@ final class GameStoreTests: XCTestCase {
       try encoder.encode(careerSave(from: first)),
       try encoder.encode(careerSave(from: second))
     )
+    XCTAssertEqual(first.careerOutcome?.kind, .victory)
+    XCTAssertEqual(second.careerOutcome?.kind, .victory)
   }
 
   func testFullTwoVentureCompletion() throws {
     let store = makeStore(seed: 2_024)
+    store.entitlements = StaticEntitlementProvider(hasFounderPass: true)
 
     for _ in 1...24 {
       store.stats.runway = 100
@@ -460,8 +468,11 @@ final class GameStoreTests: XCTestCase {
 
   func testRevenueCatCatalogIdentifiers() {
     XCTAssertEqual(RevenueCatConfiguration.entitlementIdentifier, "solo_unicorn_run_pro")
-    XCTAssertEqual(RevenueCatConfiguration.entitlementDisplayName, "Solo: Unicorn Run Pro")
-    XCTAssertEqual(Set(RevenueCatConfiguration.productIdentifiers), ["lifetime", "yearly", "monthly"])
+    XCTAssertEqual(RevenueCatConfiguration.entitlementDisplayName, "Founder Pass")
+    XCTAssertEqual(
+      RevenueCatConfiguration.expectedStoreProductIdentifier,
+      "com.talonsight.solounicornrun.founderpass"
+    )
   }
 
   func testBuild1V4SaveCompatibility() throws {
@@ -469,6 +480,16 @@ final class GameStoreTests: XCTestCase {
     try assignFirstTask(in: source)
     let expectedResult = source.tasks[0].result
     let expectedRNG = source.randomNumberGenerator
+    let envelope = SaveEnvelope(version: 4, career: careerSave(from: source))
+    let encoded = try JSONEncoder().encode(envelope)
+    var object = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+    var career = try XCTUnwrap(object["career"] as? [String: Any])
+    career.removeValue(forKey: "precedents")
+    career.removeValue(forKey: "awaitingFounderPass")
+    object["career"] = career
+    let v4Data = try JSONSerialization.data(withJSONObject: object)
+    source.resetCareer()
+    UserDefaults.standard.set(v4Data, forKey: "solo-unicorn-run-native-save-v4")
 
     let restored = GameStore()
     restored.continueCareer()
@@ -476,8 +497,35 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(restored.stage, .game)
     XCTAssertEqual(restored.tasks[0].result, expectedResult)
     XCTAssertEqual(restored.randomNumberGenerator, expectedRNG)
-    let data = try XCTUnwrap(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v4"))
-    XCTAssertEqual(try JSONDecoder().decode(SaveEnvelope.self, from: data).version, 4)
+    let data = try XCTUnwrap(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v5"))
+    XCTAssertEqual(try JSONDecoder().decode(SaveEnvelope.self, from: data).version, 5)
+    XCTAssertNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v4"))
+  }
+
+  func testExistingVentureTwoV4SaveRemainsUngated() throws {
+    let source = makeStore(seed: 4_204)
+    source.venture = 2
+    source.sprint = 4
+    let envelope = SaveEnvelope(version: 4, career: careerSave(from: source))
+    let encoded = try JSONEncoder().encode(envelope)
+    var object = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+    var career = try XCTUnwrap(object["career"] as? [String: Any])
+    career.removeValue(forKey: "precedents")
+    career.removeValue(forKey: "awaitingFounderPass")
+    object["career"] = career
+    let v4Data = try JSONSerialization.data(withJSONObject: object)
+    source.resetCareer()
+    UserDefaults.standard.set(v4Data, forKey: "solo-unicorn-run-native-save-v4")
+
+    let restored = GameStore()
+    restored.entitlements = StaticEntitlementProvider(hasFounderPass: false)
+    restored.continueCareer()
+
+    XCTAssertEqual(restored.venture, 2)
+    XCTAssertEqual(restored.sprint, 4)
+    XCTAssertEqual(restored.stage, .game)
+    XCTAssertFalse(restored.isVentureLocked)
+    XCTAssertFalse(restored.awaitingFounderPass)
   }
 
   private func makeStore(seed: UInt64 = 1_234) -> GameStore {

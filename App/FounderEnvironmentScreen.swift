@@ -31,6 +31,7 @@ struct FounderEnvironmentScreen: View {
             presentation.commit(in: store, progression: progression)
           }
           .buttonStyle(SoloPrimaryButtonStyle())
+          .disabled(store.awaitingFounderPass)
         }
         .padding(16)
         .frame(maxWidth: .infinity)

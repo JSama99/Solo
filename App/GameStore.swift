@@ -154,6 +154,10 @@ final class GameStore {
 
   @discardableResult
   func setIntent(_ newIntent: SprintIntent) -> Bool {
+    guard !awaitingFounderPass else {
+      alertMessage = "This venture is complete. Unlock Venture 2 to continue the career."
+      return false
+    }
     guard newIntent != intent else { return true }
     guard tasks.allSatisfy({ $0.assignedAgentID == nil }) else {
       alertMessage = "Clear all assignments to change sprint intent."
@@ -165,6 +169,10 @@ final class GameStore {
   }
 
   func assign(agentID: String?, to taskID: UUID) {
+    guard !awaitingFounderPass else {
+      alertMessage = "This venture is complete. Unlock Venture 2 to continue the career."
+      return
+    }
     sanitizeState()
     guard let taskIndex = tasks.firstIndex(where: { $0.id == taskID }) else { return }
     guard !tasks[taskIndex].isReviewed else {
@@ -216,6 +224,10 @@ final class GameStore {
   }
 
   func review(taskID: UUID) {
+    guard !awaitingFounderPass else {
+      alertMessage = "This venture is complete. Unlock Venture 2 to continue the career."
+      return
+    }
     guard let taskIndex = tasks.firstIndex(where: { $0.id == taskID }) else { return }
     guard !tasks[taskIndex].isReviewed else { return }
     guard attentionRemaining > 0 else {
@@ -256,6 +268,10 @@ final class GameStore {
   }
 
   func commitSprint() {
+    guard !awaitingFounderPass else {
+      alertMessage = "This venture is complete. Unlock Venture 2 to continue the career."
+      return
+    }
     sanitizeState()
     let assignedIndices = tasks.indices.filter { tasks[$0].assignedAgentID != nil }
     guard !assignedIndices.isEmpty else {

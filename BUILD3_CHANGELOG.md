@@ -1,117 +1,70 @@
 # SOLO: UNICORN RUN — Build 3 Change Log
 
-Fixes the blocking monetization defect, gives the Founder Pass real content to
-unlock, and restores the career layer that made a second venture meaningful.
+Build 3 completes the Founder Pass release path without changing the deterministic
+simulation, hidden-truth boundaries, approved Founder Garage artwork, facility
+progression foundation, or save compatibility established by Builds 1 and 2.
 
-## 1. Blocking fix — nothing could be purchased
+## Founder Pass and career boundary
 
-`SubscriptionStore.packages` filtered the current offering against a hardcoded
-`["lifetime", "yearly", "monthly"]`. The only configured App Store product is
-`com.talonsight.solounicornrun.founderpass`, so nothing ever matched, `packages`
-was permanently empty, and the paywall rendered "Offering Not Ready".
+- Venture 1 remains a complete free experience.
+- Founder Pass unlocks Venture 2, Hindsight Recall, and the complete career
+  outcome.
+- The resolved Venture 1 state is persisted before the gate and restored to the
+  same gate after relaunch.
+- Purchase, restore, and repeated entitlement refreshes converge on one
+  idempotent resume operation.
+- Simulation mutations are rejected while the career is held, preventing
+  duplicate rewards, evidence, sprint advancement, cached results, or RNG use.
+- Existing Venture 2 saves remain ungated.
+- Cancellation, failure, empty offerings, and service errors preserve all career
+  state and expose Retry and Restore Purchases.
 
-This presented as a dashboard problem and was not one — no catalog change could
-have fixed it.
+## RevenueCat readiness
 
-- The product allow list is deleted. Whatever the current offering contains is
-  displayed; access is decided by the **entitlement only**.
-- `offerings.current` now falls back to an offering named `default`, covering
-  the most common dashboard omission (forgetting to mark one Current).
-- `PurchaseConfigurationStatus` diagnoses the whole stack — missing key, secret
-  key on device, test key in Release, no current offering, empty offering — and
-  each state names its fix. `PurchaseDiagnosticsCard` surfaces it in-app instead
-  of failing silently.
-- `configure()` refuses to start on an `sk_` secret key.
-- `PurchaseConfigurationTests` prevents a product allow list from returning.
+- Exact entitlement: `solo_unicorn_run_pro`.
+- Exact product: `com.talonsight.solounicornrun.founderpass`.
+- Current offering is preferred; `default` is the fallback.
+- Paywalls render the packages returned by RevenueCat and make no hard-coded
+  package-count assumption.
+- Release configuration accepts only public Apple `appl_` keys in the actual SDK
+  setup path; blank, Test Store, secret, and malformed keys are refused.
+- Production keys are injected through an ignored `.xcconfig`; only a placeholder
+  example is checked in.
+- Provider/developer wording was replaced with player-facing Founder Pass copy.
 
-## 2. The Founder Pass now unlocks something
+## Privacy and store readiness
 
-In Build 2 the `isPro` entitlement appeared in exactly one file and only changed
-a label and a colour. No content was gated anywhere.
+- Added an app-level `PrivacyInfo.xcprivacy` with tracking disabled, no tracking
+  domains, and UserDefaults required-reason code `CA92.1`.
+- Updated App Review notes with the legitimate sandbox purchase and restore path.
+- Updated English subtitle, description, and Founder Pass copy to accurately
+  describe the living garage, AI workforce, evidence verification, two ventures,
+  free experience, and non-advisory Hindsight Recall.
+- Added exact manual RevenueCat and App Store privacy checklists.
 
-- **Venture 1 is complete and free.** Twelve sprints, a real ending, full loop.
-- **Founder Pass unlocks Venture 2, Hindsight Recall, and the full career
-  outcome.**
-- When Venture 1 ends without the pass the career is **held, not discarded**:
-  `awaitingFounderPass` persists in the save and the run resumes at the exact
-  venture boundary on purchase, with evidence, agents, stats, and precedents
-  intact.
-- `resumeAfterFounderPassUnlock()` is idempotent and fires from any purchase or
-  restore anywhere in the app.
-- `VentureUnlockScreen` pitches the precedents the player already earned;
-  `VentureLockBanner` keeps the held career reachable from the dashboard.
+## Regression coverage
 
-## 3. Hindsight restored
+- Expanded migration coverage through v5, including a real v4 payload and an
+  already-started Venture 2 save.
+- Added deterministic gate, relaunch, purchase, restore, failure, key validation,
+  offering fallback, privacy manifest, and held-state mutation tests.
+- Preserved hidden-information, correlated failure, Hindsight, progression,
+  Reduced Motion, and lifecycle coverage.
 
-Build 2 had zero references to hindsight or precedents. It was the highest-value
-mechanic in the design and the reason a *career* beats two disconnected runs.
+## Build metadata
 
-- `Precedent` records a consequential sprint: bucketed conditions plus what
-  measurably followed.
-- `HindsightEngine` matches a live situation against earlier ventures —
-  deterministic field comparison, 0.62 similarity floor, max 3 recalls per
-  venture.
-- **Load-bearing rule enforced by test:** a precedent reports conditions and
-  outcomes and never judges or advises. `testRecallReportsConditionsAndNeverGivesAdvice`
-  fails on "should", "wrong", "mistake", "avoid", "instead", "recommend", "better".
-- Precedent identity derives from career position, **not** the simulation RNG, so
-  recording a precedent cannot perturb the run being recorded. Proven by
-  `testSeededRunsAreReproducibleWithPrecedentRecordingActive`.
-- Recall is suppressed without the pass and consumes no RNG.
+- Bundle ID: `com.talonsight.solounicornrun`
+- Marketing version: `1.0`
+- Build number: `3`
 
-## 4. Save schema v5
+Submitted TestFlight Build 1 is unchanged.
 
-- `CareerSave` gains `precedents` and `awaitingFounderPass`, both decoded
-  optionally so every v1–v4 save still loads.
-- New `migrateV4`. A v4 career that already reached Venture 2 keeps its progress
-  — the gate is never applied retroactively to work already done.
-- `hasSave`, `resetCareer`, and `saveCareer` updated for the v4 key.
+## Remaining external work
 
-## Added files
-
-- `App/EntitlementProviding.swift`
-- `App/Hindsight.swift`
-- `App/VentureUnlockScreen.swift`
-- `Tests/FounderPassGateTests.swift`
-- `Tests/HindsightTests.swift`
-
-## Modified files
-
-- `App/RevenueCatConfiguration.swift` (rewritten)
-- `App/SubscriptionStore.swift` (rewritten)
-- `App/SubscriptionScreen.swift`
-- `App/GameStore.swift`
-- `App/GameModels.swift`
-- `App/ContentView.swift`
-- `SoloUnicornRun.xcodeproj/project.pbxproj`
-- `REVENUECAT_SETUP.md` (rewritten against the real product)
-
-## Verification still required on macOS
-
-This pass was authored on Linux, where no Swift toolchain is available. Verified
-here: brace balance, symbol existence for every referenced API, and Xcode project
-registration (each new file has all four required pbxproj entries). **Not** yet
-verified: compilation and the test run.
-
-```sh
-xcodebuild -quiet -project SoloUnicornRun.xcodeproj -scheme "Solo Unicorn Run" \
-  -configuration Debug test CODE_SIGNING_ALLOWED=NO \
-  -destination "platform=iOS Simulator,name=iPhone 17 Pro Max"
-```
-
-Expected: the 50 Build 2 tests plus roughly 35 new ones.
-
-Several gate tests use `XCTSkipUnless` when a seeded career ends on merit before
-reaching the venture boundary — that is intended, not a silent pass.
-
-## Remaining limitations
-
-- Founder Loft and later facility tiers remain locked pending approved art;
-  unchanged from Build 2.
-- The App Store description does not yet mention the two-venture career, the
-  verification mechanic, or the Founder Pass. It undersells the actual hook and
-  should be rewritten before submission.
-- Hindsight recall surfaces at sprint preparation only. Surfacing it at the
-  moment of assignment would be stronger and is the natural next pass.
-- No promo code has been generated for App Review or Shipaton judges; both need
-  a way past the Venture 2 gate.
+- RevenueCat dashboard state must be confirmed manually because its dashboard
+  connector was unavailable in this environment.
+- The real `appl_` key must be injected only at archive time.
+- App Store Connect privacy answers, IAP readiness/review screenshot, sandbox
+  transaction, and store-listing sync must be completed in the service.
+- Founder Loft and future headquarters tiers remain unavailable pending approved
+  art and are not advertised as playable.

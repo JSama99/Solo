@@ -172,6 +172,21 @@ final class PresentationMappingTests: XCTestCase {
     XCTAssertEqual(treatments.count, 4)
   }
 
+  func testAppPrivacyManifestIsBundledAndDeclaresRequiredReason() throws {
+    let url = try XCTUnwrap(Bundle.main.url(forResource: "PrivacyInfo", withExtension: "xcprivacy"))
+    let data = try Data(contentsOf: url)
+    let object = try XCTUnwrap(
+      PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]
+    )
+    XCTAssertEqual(object["NSPrivacyTracking"] as? Bool, false)
+    XCTAssertEqual(object["NSPrivacyTrackingDomains"] as? [String], [])
+    let accessed = try XCTUnwrap(object["NSPrivacyAccessedAPITypes"] as? [[String: Any]])
+    let defaults = try XCTUnwrap(accessed.first {
+      $0["NSPrivacyAccessedAPIType"] as? String == "NSPrivacyAccessedAPICategoryUserDefaults"
+    })
+    XCTAssertEqual(defaults["NSPrivacyAccessedAPITypeReasons"] as? [String], ["CA92.1"])
+  }
+
   private func makeAgent() -> SoloAgent {
     SoloAgent(
       id: "test-agent",

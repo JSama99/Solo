@@ -1,122 +1,94 @@
-# RevenueCat Setup — SOLO: Unicorn Run
+# RevenueCat Release Setup — SOLO: UNICORN RUN
 
-## Read this first: why Build 2's paywall was empty
+Build 3 uses RevenueCat for one non-consumable Founder Pass. Venture 1 remains
+fully playable without RevenueCat; an unavailable purchase service leaves the
+resolved career safely paused at the Venture 1 boundary with a visible Retry
+and Restore Purchases path.
 
-Build 2 could not complete a purchase, and no dashboard change would have fixed it.
+## Identifiers
 
-`SubscriptionStore.packages` filtered the current offering like this:
+- Bundle ID: `com.talonsight.solounicornrun`
+- Product: `com.talonsight.solounicornrun.founderpass`
+- Entitlement: `solo_unicorn_run_pro`
+- Preferred offering: whichever offering RevenueCat marks Current
+- Fallback offering: `default`
+- Package type: Lifetime / `$rc_lifetime` (the product is non-consumable)
 
-```swift
-currentOffering?.availablePackages.filter {
-  RevenueCatConfiguration.productIdentifiers.contains($0.storeProduct.productIdentifier)
-}
+The client renders every package RevenueCat returns for the resolved offering.
+It does not assume a package count or gate access by product identifier.
+
+## Release key injection
+
+The production key is not stored in source control. Copy the checked-in example
+and edit only the ignored local file:
+
+```sh
+cp Configuration/ReleaseSecrets.xcconfig.example \
+  Configuration/ReleaseSecrets.xcconfig
 ```
 
-`productIdentifiers` was `["lifetime", "yearly", "monthly"]`. The only product
-configured in App Store Connect is `com.talonsight.solounicornrun.founderpass`.
-Nothing matched, `packages` was always empty, and the UI rendered
-"Offering Not Ready" — which reads like a dashboard problem but was a client bug.
+Set `RC_RELEASE_KEY` to RevenueCat's public Apple SDK key beginning with
+`appl_`, then archive with the configuration file:
 
-**Build 3 removes the filter entirely.** Whatever the current offering contains
-is shown, and access is decided by the entitlement alone. The dashboard catalog
-can now be named anything.
+```sh
+xcodebuild -project SoloUnicornRun.xcodeproj \
+  -scheme "Solo Unicorn Run" \
+  -configuration Release \
+  -xcconfig Configuration/ReleaseSecrets.xcconfig \
+  archive
+```
 
-## What must match exactly
+`REVENUECAT_API_KEY` expands into `RevenueCatAPIKey` in the built Info.plist.
+The real configuration path refuses blank values, `test_` keys, `sk_` secret
+keys, and values that do not begin with `appl_` in Release. Debug builds may use
+the RevenueCat Test Store key. Never print, screenshot, or commit the real key.
 
-Exactly one string is shared between the app and the dashboard:
+## RevenueCat dashboard checklist
 
-| Thing | Value |
-|---|---|
-| Entitlement identifier | `solo_unicorn_run_pro` |
+Dashboard access was unavailable during this pass, so complete and verify these
+steps manually:
 
-That's it. Product identifiers, package types, offering names, and prices are
-all read at runtime and never hardcoded.
+1. Create or select the RevenueCat project and add an App Store app with bundle
+   ID `com.talonsight.solounicornrun`.
+2. Add the Apple In-App Purchase Key so RevenueCat can validate transactions.
+3. Import `com.talonsight.solounicornrun.founderpass` from App Store Connect.
+4. Create entitlement `solo_unicorn_run_pro` and attach that product.
+5. Add the product to a Lifetime package in the Current offering. Also keep a
+   published `default` offering as the client fallback.
+6. Confirm the Current or `default` offering returns at least one purchasable
+   package in sandbox.
+7. Copy only the public Apple SDK key (`appl_…`) into the ignored release file.
+8. Test purchase, cancellation, failure, and restore on an Apple sandbox device.
 
-## Dashboard checklist
+## App Store Connect checklist
 
-1. **Product** — Products → New. Import or create
-   `com.talonsight.solounicornrun.founderpass`.
-   Type: **non-consumable** (matches `appStoreConnect/inAppPurchases/…/inAppPurchase.json`,
-   which declares `NON_CONSUMABLE` at $4.99).
-2. **Entitlement** — Entitlements → New → identifier `solo_unicorn_run_pro`.
-   Attach the product above. *This identifier must be exact.*
-3. **Offering** — Offerings → New → identifier `default`.
-4. **Package** — inside that offering, add a package. Type **Lifetime**
-   (`$rc_lifetime`) is the correct fit for a non-consumable. Attach the product.
-5. **Mark the offering Current.** This is the single most commonly missed step.
-   Without a Current offering the SDK returns `offerings.current == nil` and the
-   paywall has nothing to show. Build 3 also falls back to an offering literally
-   named `default`, so either arrangement works.
-6. **Paywall** (optional) — Paywalls → publish one for the offering. If none is
-   published, RevenueCatUI renders its default paywall from the packages.
+1. Confirm the non-consumable Founder Pass is Ready to Submit, priced at $4.99,
+   available in the intended territories, and has its review screenshot.
+2. Confirm the Paid Applications agreement, banking, and tax setup are active.
+3. Submit the in-app purchase with the app version when required.
+4. Under App Privacy, disclose Purchase History for App Functionality and
+   Analytics. Mark tracking as No. Confirm whether it is linked to identity
+   against the final RevenueCat configuration; this app requires no account and
+   does not add advertising identifiers or tracking.
+5. Test purchase and Restore Purchases using Apple's sandbox, including restore
+   on a second device or clean installation.
 
-## Diagnosing it from inside the app
+## App Review and Shipathon access
 
-Build 3 ships `PurchaseConfigurationStatus`. The unlock screen and the Founder
-Pass screen both render `PurchaseDiagnosticsCard` whenever the purchase stack is
-not ready, and each state names the fix instead of failing silently:
+No review bypass, embedded credential, or hardcoded entitlement exists. Reviewers
+and judges can play Venture 1 to its completion gate, purchase Founder Pass in
+Apple's sandbox without a real charge, then continue into Venture 2. Restore
+Purchases is prominent on both Founder Pass screens. If faster legitimate access
+is needed, issue an official App Store promo code or grant a temporary
+RevenueCat promotional entitlement to the reviewer's supplied app user ID, then
+revoke it after review; never commit the code or ID.
 
-| Status | Meaning | Fix |
-|---|---|---|
-| `notConfigured` | `configure()` never ran | Call it at launch |
-| `missingAPIKey` | No key in Info.plist | Set `REVENUECAT_API_KEY` |
-| `secretKeyOnDevice` | An `sk_` key is bundled | Remove and rotate immediately |
-| `testKeyInReleaseBuild` | `test_` key in Release | Use the public `appl_` key |
-| `noCurrentOffering` | No offering marked Current | Step 5 above |
-| `offeringHasNoPackages` | Offering is empty | Step 4 above |
-| `ready(packageCount:)` | Purchasable | — |
+## What Founder Pass unlocks
 
-If the person configuring the dashboard reads one thing, make it this table.
+- Venture 2
+- Hindsight Recall, which reports historical precedents without advice
+- The complete career conclusion
 
-## API keys
-
-- **Debug:** falls back to the Test Store key, or an `RevenueCatAPIKey`
-  Info.plist override if present.
-- **Release:** read from `RevenueCatAPIKey` in Info.plist, populated from the
-  `REVENUECAT_API_KEY` build setting. Must begin with `appl_`.
-- **Never** ship an `sk_` secret key. `configure()` refuses to start if it finds one.
-
-## What the purchase unlocks
-
-The Founder Pass is a one-time non-consumable that unlocks:
-
-- **Venture 2** — the second twelve-sprint venture of the career
-- **Hindsight Recall** — precedents banked in Venture 1 resurfacing when
-  structurally similar conditions repeat
-- **The full career outcome** — the complete twenty-four-sprint track record
-
-Venture 1 is complete and free. When it ends without the pass, the career is
-**held**, not discarded: `awaitingFounderPass` persists in the save, and
-purchasing resumes the exact same career at the venture boundary with all
-evidence, agents, stats, and precedents intact. `resumeAfterFounderPassUnlock()`
-is idempotent and safe to call on every entitlement change.
-
-## Production checklist
-
-- [ ] Paid Applications Agreement active; tax and banking complete
-- [ ] `com.talonsight.solounicornrun.founderpass` approved in App Store Connect
-- [ ] Product imported into RevenueCat and attached to `solo_unicorn_run_pro`
-- [ ] Offering created, package attached, **offering marked Current**
-- [ ] `REVENUECAT_API_KEY` set to the public `appl_` key for Release
-- [ ] App Store Server Notifications configured
-- [ ] Sandbox purchase tested on a physical device
-- [ ] **Restore tested on a second device** — required for App Review
-- [ ] Purchase-then-resume verified: buy at the gate, confirm Venture 2 begins
-      with the same career intact
-
-## Testing without the App Store
-
-1. Run the Debug build (Test Store key is compiled in).
-2. Play Venture 1 to completion, or use the Founder Pass screen directly.
-3. The Test Store presents success / failure / cancellation controls.
-4. Confirm: purchase → the held career resumes into Venture 2 automatically.
-5. Confirm: Restore with no purchase shows the "no previous purchase" message.
-
-## Architecture notes
-
-- `SubscriptionStore` is the only RevenueCat-aware type in the game path.
-- `GameStore` depends on `EntitlementProviding`, a two-line protocol, so the
-  simulation is fully testable without RevenueCat, StoreKit, or a network.
-  `StaticEntitlementProvider` supplies deterministic answers in tests.
-- Gate access by entitlement, never by product identifier. That rule is enforced
-  by `PurchaseConfigurationTests`.
+The resolved Venture 1 state is saved before the gate. Relaunch returns to that
+gate, and entitlement refresh, purchase, and restore all use the same idempotent
+resume operation so the career can advance only once.

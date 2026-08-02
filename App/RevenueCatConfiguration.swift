@@ -30,15 +30,29 @@ enum RevenueCatConfiguration {
   /// Offering identifier RevenueCat serves when none is explicitly requested.
   static let defaultOfferingIdentifier = "default"
 
+  enum BuildChannel {
+    case debug
+    case release
+  }
+
+  enum KeyValidation: Equatable {
+    case valid
+    case missing
+    case secret
+    case testKeyInRelease
+    case invalidApplePublicKey
+  }
+
   static var apiKey: String {
     #if DEBUG
     if let override = Bundle.main.object(forInfoDictionaryKey: "RevenueCatAPIKey") as? String,
        !override.isEmpty {
-      return override
+      return override.trimmingCharacters(in: .whitespacesAndNewlines)
     }
     return testStoreAPIKey
     #else
-    return Bundle.main.object(forInfoDictionaryKey: "RevenueCatAPIKey") as? String ?? ""
+    return (Bundle.main.object(forInfoDictionaryKey: "RevenueCatAPIKey") as? String ?? "")
+      .trimmingCharacters(in: .whitespacesAndNewlines)
     #endif
   }
 
@@ -52,6 +66,41 @@ enum RevenueCatConfiguration {
 
   /// Guards against the classic shipping mistake: a secret key on device.
   static func isSecretKey(_ key: String) -> Bool { key.hasPrefix("sk_") }
+
+  static func validateAPIKey(_ rawKey: String, for channel: BuildChannel) -> KeyValidation {
+    let key = rawKey.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !key.isEmpty else { return .missing }
+    guard !isSecretKey(key) else { return .secret }
+
+    switch channel {
+    case .debug:
+      return isTestStoreKey(key) || isAppleProductionKey(key) ? .valid : .invalidApplePublicKey
+    case .release:
+      if isTestStoreKey(key) { return .testKeyInRelease }
+      return isAppleProductionKey(key) ? .valid : .invalidApplePublicKey
+    }
+  }
+
+  static var runtimeKeyValidation: KeyValidation {
+    #if DEBUG
+    validateAPIKey(apiKey, for: .debug)
+    #else
+    validateAPIKey(apiKey, for: .release)
+    #endif
+  }
+
+  static func preferredOfferingIdentifier(
+    currentIdentifier: String?,
+    availableIdentifiers: Set<String>
+  ) -> String? {
+    if let currentIdentifier, availableIdentifiers.contains(currentIdentifier) {
+      return currentIdentifier
+    }
+    if availableIdentifiers.contains(defaultOfferingIdentifier) {
+      return defaultOfferingIdentifier
+    }
+    return nil
+  }
 }
 
 /// Machine-checkable diagnosis of the purchase stack.
@@ -63,6 +112,7 @@ enum PurchaseConfigurationStatus: Equatable {
   case missingAPIKey
   case secretKeyOnDevice
   case testKeyInReleaseBuild
+  case invalidApplePublicKey
   case noCurrentOffering
   case offeringHasNoPackages
   case ready(packageCount: Int)
@@ -74,31 +124,22 @@ enum PurchaseConfigurationStatus: Equatable {
 
   var headline: String {
     switch self {
-    case .notConfigured: "Purchases not configured"
-    case .missingAPIKey: "Missing RevenueCat API key"
-    case .secretKeyOnDevice: "Secret key detected"
-    case .testKeyInReleaseBuild: "Test key in a Release build"
-    case .noCurrentOffering: "No current offering"
-    case .offeringHasNoPackages: "Offering has no packages"
-    case .ready: "Ready to purchase"
+    case .notConfigured, .missingAPIKey, .secretKeyOnDevice,
+         .testKeyInReleaseBuild, .invalidApplePublicKey,
+         .noCurrentOffering, .offeringHasNoPackages:
+      "Founder Pass temporarily unavailable"
+    case .ready: "Founder Pass options ready"
     }
   }
 
-  /// The exact next action. Written for whoever is staring at the dashboard.
+  /// Player-facing recovery guidance. Provider diagnostics belong in logs and
+  /// release documentation, never in the production interface.
   var remedy: String {
     switch self {
-    case .notConfigured:
-      "Call SubscriptionStore.configure() at launch."
-    case .missingAPIKey:
-      "Set the RevenueCatAPIKey Info.plist value from the REVENUECAT_API_KEY build setting."
-    case .secretKeyOnDevice:
-      "Remove the sk_ key immediately and rotate it. Ship only the public appl_ key."
-    case .testKeyInReleaseBuild:
-      "Replace the test_ key with the public Apple SDK key beginning with appl_."
-    case .noCurrentOffering:
-      "In RevenueCat: Offerings → mark one offering Current. Without a current offering the SDK returns nothing."
-    case .offeringHasNoPackages:
-      "In RevenueCat: add a package to the current offering and attach the product \(RevenueCatConfiguration.expectedStoreProductIdentifier)."
+    case .notConfigured, .missingAPIKey, .secretKeyOnDevice,
+         .testKeyInReleaseBuild, .invalidApplePublicKey,
+         .noCurrentOffering, .offeringHasNoPackages:
+      "Founder Pass options are temporarily unavailable. Your career is safe. Try again later."
     case .ready(let count):
       "\(count) package\(count == 1 ? "" : "s") available."
     }

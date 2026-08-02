@@ -99,7 +99,7 @@ private struct TitleScreen: View {
           }
         }
         .padding(.horizontal, 24)
-        Text("Native iOS edition • offline save • RevenueCat Test Store")
+        Text("Native iOS edition • offline career save")
           .font(.caption)
           .foregroundStyle(.tertiary)
         Spacer(minLength: 32)
@@ -352,7 +352,7 @@ private struct CommandScreen: View {
             }
           }
           .pickerStyle(.segmented)
-          .disabled(store.tasks.contains { $0.assignedAgentID != nil })
+          .disabled(store.awaitingFounderPass || store.tasks.contains { $0.assignedAgentID != nil })
 
           if store.tasks.contains(where: { $0.assignedAgentID != nil }) {
             Text("Clear all assignments to change sprint intent.")
@@ -377,12 +377,14 @@ private struct CommandScreen: View {
             } onReview: {
               presentation.review(taskID: task.id, in: store)
             }
+            .disabled(store.awaitingFounderPass)
           }
 
           Button("Commit Sprint", systemImage: "bolt.fill") {
             presentation.commit(in: store, progression: progression)
           }
           .buttonStyle(SoloPrimaryButtonStyle())
+          .disabled(store.awaitingFounderPass)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -570,7 +572,7 @@ private struct RecordsScreen: View {
           NavigationLink {
             SubscriptionScreen()
           } label: {
-            RecordLink(title: "Solo Pro", subtitle: "Plans, purchases, and subscription management", symbol: "sparkles", count: 3)
+            RecordLink(title: "Founder Pass", subtitle: "Venture 2, Hindsight, and the career finale", symbol: "sparkles", count: 3)
           }
           .buttonStyle(.plain)
 
