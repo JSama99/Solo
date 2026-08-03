@@ -61,10 +61,10 @@ Submitted TestFlight Build 1 is unchanged.
 
 ## Remaining external work
 
-- RevenueCat dashboard state must be confirmed manually because its dashboard
-  connector was unavailable in this environment.
-- The real `appl_` key must be injected only at archive time.
-- App Store Connect privacy answers, IAP readiness/review screenshot, sandbox
-  transaction, and store-listing sync must be completed in the service.
+- Attach the production Founder Pass to RevenueCat entitlement
+  `solo_unicorn_run_pro` and to the Lifetime package in `default`.
+- Perform a purchase and cross-install restore on a physical sandbox device.
+- Publish the App Store privacy questionnaire and include the first in-app
+  purchase with the app-version submission.
 - Founder Loft and future headquarters tiers remain unavailable pending approved
   art and are not advertised as playable.

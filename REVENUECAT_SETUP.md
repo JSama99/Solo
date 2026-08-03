@@ -43,27 +43,28 @@ The real configuration path refuses blank values, `test_` keys, `sk_` secret
 keys, and values that do not begin with `appl_` in Release. Debug builds may use
 the RevenueCat Test Store key. Never print, screenshot, or commit the real key.
 
-## RevenueCat dashboard checklist
+## RevenueCat dashboard status
 
-Dashboard access was unavailable during this pass, so complete and verify these
-steps manually:
+The production App Store app now exists for `com.talonsight.solounicornrun`.
+Its Apple In-App Purchase key, App Store Connect API key, vendor number, and
+public Apple SDK key are configured. The public key is present only in the
+ignored release configuration and has passed a redacted Release-build check.
 
-1. Create or select the RevenueCat project and add an App Store app with bundle
-   ID `com.talonsight.solounicornrun`.
-2. Add the Apple In-App Purchase Key so RevenueCat can validate transactions.
-3. Import `com.talonsight.solounicornrun.founderpass` from App Store Connect.
-4. Create entitlement `solo_unicorn_run_pro` and attach that product.
-5. Add the product to a Lifetime package in the Current offering. Also keep a
-   published `default` offering as the client fallback.
-6. Confirm the Current or `default` offering returns at least one purchasable
-   package in sandbox.
-7. Copy only the public Apple SDK key (`appl_…`) into the ignored release file.
-8. Test purchase, cancellation, failure, and restore on an Apple sandbox device.
+Still required in RevenueCat:
+
+1. Create entitlement identifier `solo_unicorn_run_pro`. Do not substitute the
+   display-style `Solo: Unicorn Run Pro` key used by the earlier Test Store setup.
+2. Attach `com.talonsight.solounicornrun.founderpass` to that entitlement.
+3. Attach the production product to the Lifetime package in the Current
+   `default` offering while preserving Test Store products for Debug.
+4. Confirm the production app resolves that offering to one purchasable package.
+5. Test purchase, cancellation, failure, and restore on an Apple sandbox device.
 
 ## App Store Connect checklist
 
-1. Confirm the non-consumable Founder Pass is Ready to Submit, priced at $4.99,
-   available in the intended territories, and has its review screenshot.
+1. The non-consumable Founder Pass is verified **Ready to Submit**, priced at
+   $9.99 in the USA, available worldwide, localized in en-US, and has its App
+   Review screenshot.
 2. Confirm the Paid Applications agreement, banking, and tax setup are active.
 3. Submit the in-app purchase with the app version when required.
 4. Under App Privacy, disclose Purchase History for App Functionality and

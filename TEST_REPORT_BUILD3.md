@@ -103,27 +103,27 @@ truthfully certified. The Venture 1 completion gate, entitled Hindsight screen,
 career restart, and Reduced Motion were covered by tests but were not all reached
 manually in this simulator session.
 
-## Release blocker: RevenueCat Test Store configuration
+## RevenueCat and App Store follow-up verification
 
-RevenueCat dashboard tools were unavailable, so production dashboard state could
-not be verified. The connected Debug Test Store returned three generic products
-(`monthly`, `yearly`, and `lifetime`) rather than evidence of the expected
-`com.talonsight.solounicornrun.founderpass` catalog setup. A simulated valid
-Lifetime purchase did **not** activate `solo_unicorn_run_pro`, and Restore then
-reported no previous Founder Pass purchase.
+The production RevenueCat App Store app now has Apple purchase validation,
+App Store Connect catalog credentials, and a public Apple SDK key. The key is
+stored only in the ignored release configuration. A clean Release build verified
+the injected value matched, was nonblank and `appl_`-class, without printing it.
 
-The client code and unit tests correctly use the expected identifiers, but this
-external configuration result blocks a release-safe end-to-end Founder Pass
-claim. Before archive, complete `REVENUECAT_SETUP.md`, verify the production
-Current or `default` offering contains the expected non-consumable, and perform a
-successful Apple sandbox purchase and cross-install restore.
+App Store Connect directly reports the production Founder Pass as a $9.99
+non-consumable with worldwide availability and en-US metadata. An App Review
+screenshot of the actual Founder Pass entry was uploaded successfully, moving
+the product from `MISSING_METADATA` to `READY_TO_SUBMIT`.
+
+The remaining RevenueCat blocker is identifier alignment: the client correctly
+requires `solo_unicorn_run_pro`, while the earlier Test Store configuration used
+the display-style key `Solo: Unicorn Run Pro`. Create the exact production
+entitlement, attach the Founder Pass to it and to the Lifetime package in
+`default`, then perform a physical-device sandbox purchase and restore.
 
 ## App Store Connect work still required
 
-- Inject the real public Apple `appl_` key only at archive time.
-- Verify and publish the RevenueCat product/entitlement/offering configuration.
-- Add the Founder Pass review screenshot and confirm the IAP is Ready to Submit.
-- Apply the validated local listing edits.
+- Include the first in-app purchase with the app-version submission.
 - Complete Purchase History privacy disclosures for App Functionality and
   Analytics and confirm linkage against the final RevenueCat setup.
 - Perform Apple sandbox purchase/restore on physical devices.
