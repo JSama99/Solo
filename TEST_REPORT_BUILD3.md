@@ -115,11 +115,10 @@ non-consumable with worldwide availability and en-US metadata. An App Review
 screenshot of the actual Founder Pass entry was uploaded successfully, moving
 the product from `MISSING_METADATA` to `READY_TO_SUBMIT`.
 
-The remaining RevenueCat blocker is identifier alignment: the client correctly
-requires `solo_unicorn_run_pro`, while the earlier Test Store configuration used
-the display-style key `Solo: Unicorn Run Pro`. Create the exact production
-entitlement, attach the Founder Pass to it and to the Lifetime package in
-`default`, then perform a physical-device sandbox purchase and restore.
+The client entitlement lookup now matches the confirmed production RevenueCat
+key `Solo: Unicorn Run Pro`. Attach the Founder Pass to that entitlement and to
+the Lifetime package in `default`, then perform a physical-device sandbox
+purchase and restore.
 
 ## App Store Connect work still required
 

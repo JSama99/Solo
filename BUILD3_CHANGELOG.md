@@ -21,7 +21,7 @@ progression foundation, or save compatibility established by Builds 1 and 2.
 
 ## RevenueCat readiness
 
-- Exact entitlement: `solo_unicorn_run_pro`.
+- Exact entitlement lookup key: `Solo: Unicorn Run Pro`.
 - Exact product: `com.talonsight.solounicornrun.founderpass`.
 - Current offering is preferred; `default` is the fallback.
 - Paywalls render the packages returned by RevenueCat and make no hard-coded
@@ -61,8 +61,8 @@ Submitted TestFlight Build 1 is unchanged.
 
 ## Remaining external work
 
-- Attach the production Founder Pass to RevenueCat entitlement
-  `solo_unicorn_run_pro` and to the Lifetime package in `default`.
+- Attach the production Founder Pass to RevenueCat entitlement lookup key
+  `Solo: Unicorn Run Pro` and to the Lifetime package in `default`.
 - Perform a purchase and cross-install restore on a physical sandbox device.
 - Publish the App Store privacy questionnaire and include the first in-app
   purchase with the app-version submission.

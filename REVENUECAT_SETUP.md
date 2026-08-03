@@ -9,7 +9,7 @@ and Restore Purchases path.
 
 - Bundle ID: `com.talonsight.solounicornrun`
 - Product: `com.talonsight.solounicornrun.founderpass`
-- Entitlement: `solo_unicorn_run_pro`
+- Entitlement lookup key: `Solo: Unicorn Run Pro`
 - Preferred offering: whichever offering RevenueCat marks Current
 - Fallback offering: `default`
 - Package type: Lifetime / `$rc_lifetime` (the product is non-consumable)
@@ -52,13 +52,12 @@ ignored release configuration and has passed a redacted Release-build check.
 
 Still required in RevenueCat:
 
-1. Create entitlement identifier `solo_unicorn_run_pro`. Do not substitute the
-   display-style `Solo: Unicorn Run Pro` key used by the earlier Test Store setup.
-2. Attach `com.talonsight.solounicornrun.founderpass` to that entitlement.
-3. Attach the production product to the Lifetime package in the Current
+1. Attach `com.talonsight.solounicornrun.founderpass` to entitlement lookup key
+   `Solo: Unicorn Run Pro`.
+2. Attach the production product to the Lifetime package in the Current
    `default` offering while preserving Test Store products for Debug.
-4. Confirm the production app resolves that offering to one purchasable package.
-5. Test purchase, cancellation, failure, and restore on an Apple sandbox device.
+3. Confirm the production app resolves that offering to one purchasable package.
+4. Test purchase, cancellation, failure, and restore on an Apple sandbox device.
 
 ## App Store Connect checklist
 
