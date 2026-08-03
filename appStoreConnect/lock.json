@@ -2,7 +2,17 @@
   "appId": "6797107175",
   "derived": {
     "appStoreVersionScreenshotSets": {
-
+      "IOS:1.0:en-US:APP_IPHONE_65": {
+        "screenshots": [
+          {
+            "fileName": "founder-garage-65.jpg",
+            "fileSize": 527569,
+            "id": "21585bb8-7d5a-4ab5-9a8e-46e4f1e33264",
+            "sourceFileChecksum": "eb27dc45103acb033c8ec795757aa064"
+          }
+        ],
+        "setID": "9704cd2a-a1e9-4b11-923e-af15b2ee8c5f"
+      }
     },
     "inAppPurchasePricing": {
       "com.talonsight.solounicornrun.founderpass": {
@@ -1463,7 +1473,7 @@
       "fields": {
         "name": "SOLO: Unicorn Run",
         "privacyPolicyUrl": "https://www.talonsight.com/privacy",
-        "subtitle": "Build Your AI Startup Empire"
+        "subtitle": "Lead Your AI Workforce"
       },
       "id": "783c7ec9-0e87-418b-a1bb-de572eaab12c",
       "type": "appInfoLocalizations"
@@ -1475,7 +1485,7 @@
         "contactLastName": "Nelson",
         "contactPhone": "+1 678 847 8569",
         "demoAccountRequired": false,
-        "notes": "SOLO: Unicorn Run is an offline startup strategy simulation. No account or sign-in is required. Start a new career, enter any founder name, choose a doctrine, and tap Open the Garage to access gameplay."
+        "notes": "SOLO: Unicorn Run is an offline founder-life strategy simulation. No account or sign-in is required.\n\nVenture 1 is fully playable at no charge. To reach the Founder Pass gate, start a new career, enter any founder name, choose a doctrine, open the garage, assign at least one agent, and commit each sprint. Continue until Venture 1 ends after Sprint 12. The resolved Venture 1 state is saved before the gate appears.\n\nFounder Pass is a one-time non-consumable purchase. It unlocks Venture 2, Hindsight Recall, and the complete career conclusion. On the gate, tap Unlock Venture 2 and complete the purchase using Apple's App Review sandbox. No real charge is made in the review environment. A successful purchase resumes the held career once at Venture 2, Sprint 1.\n\nTo verify restoration, use Restore Purchase on the Venture 1 gate or Restore Purchases on the Founder Pass screen. Restoring the non-consumable resumes the same held career once and does not duplicate sprint rewards, evidence, advancement, or random-number generation.\n\nIf the store service is temporarily unavailable, the gate preserves the full career and displays a retry action. The player may return to the garage and review Venture 1 while remaining safely held at the boundary.\n\nHindsight Recall only appears in Venture 2 for Founder Pass owners. It displays historical conditions and outcomes from the player's own Venture 1 record and never gives prescriptive financial, legal, investment, or business advice."
       },
       "id": "34dcdcac-504f-4744-a426-48d6fba45a88",
       "type": "appStoreReviewDetails"
@@ -1491,12 +1501,25 @@
     },
     "appStoreVersionLocalization:IOS:1.0:en-US": {
       "fields": {
-        "description": "Build an ambitious startup from a garage and see how far your decisions can take it.\n\nSOLO: Unicorn Run is a focused founder-life strategy simulation. Direct a specialized AI workforce, balance runway and revenue, protect momentum and trust, and guide your company through a twelve-sprint venture. Every choice changes the pressure on your team and the future of the business.\n\nChoose your founder doctrine, assign trusted agents, commit each sprint, and respond to the consequences. Push for growth, preserve energy, manage risk, and discover whether your company becomes a unicorn—or runs out of runway.\n\nFeatures:\n• A complete startup journey designed for solo play\n• Strategic tradeoffs across runway, revenue, momentum, trust, and energy\n• Distinct founder doctrines with meaningful strengths and risks\n• An AI-inspired team of research, engineering, and marketing agents\n• Persistent offline career progress\n• No account or sign-in required",
+        "description": "Build an ambitious startup inside a living, 3D-styled founder garage—and discover what it takes to lead an AI-native company without losing sight of the evidence.\n\nSOLO: Unicorn Run is a founder-life strategy simulation about directing an AI workforce under pressure. Assign research, engineering, and marketing agents, review their reports, verify the evidence behind confident claims, and decide what deserves your trust.\n\nEvery sprint tests the systems you build. Watch for drift, overclaiming, incomplete evidence, and correlated failures across agents that share a model family. Balance runway, energy, workload, trust, revenue, capital, and momentum while the garage evolves around your progress.\n\nFeatures:\n• A living high-resolution founder garage with an active AI workforce\n• Deterministic, replayable careers shaped by your decisions\n• Task assignment, founder review, evidence, and verification systems\n• Hidden outcomes that stay hidden until legitimately investigated\n• Correlated model-family risks that must be detected through play\n• Two ventures across a complete twenty-four-sprint career\n• Persistent offline career and headquarters progression\n• No account or sign-in required\n\nVenture 1 is the complete free experience. The one-time Founder Pass unlocks Venture 2, Hindsight Recall, and the full career conclusion. Hindsight Recall surfaces historical patterns from your own prior decisions and outcomes; it is descriptive, non-prescriptive, and does not provide financial, legal, investment, or business advice.",
         "keywords": "startup,founder,simulation,strategy,AI,business,management,indie,offline,unicorn",
         "supportUrl": "https://www.talonsight.com/contact"
       },
       "id": "e7f5c61d-b566-4683-b1bd-740e13017dd2",
       "type": "appStoreVersionLocalizations"
+    },
+    "appStoreVersionScreenshotSet:IOS:1.0:en-US:APP_IPHONE_65": {
+      "fields": {
+        "screenshots": [
+          {
+            "file": "founder-garage-65.jpg",
+            "fileSize": 527569,
+            "sourceFileChecksum": "eb27dc45103acb033c8ec795757aa064"
+          }
+        ]
+      },
+      "id": "9704cd2a-a1e9-4b11-923e-af15b2ee8c5f",
+      "type": "appScreenshotSets"
     },
     "availability": {
       "fields": {
@@ -1511,7 +1534,8 @@
       "fields": {
         "familySharable": false,
         "inAppPurchaseType": "NON_CONSUMABLE",
-        "name": "Founder Pass Lifetime Unlock"
+        "name": "Founder Pass Lifetime Unlock",
+        "reviewNote": "Founder Pass is a one-time non-consumable. It unlocks Venture 2, Hindsight Recall, and the full twenty-four-sprint career. Reach the purchase screen by completing Venture 1 after Sprint 12, then tap Unlock Venture 2. Restore Purchase is available on the same screen."
       },
       "id": "6797110708",
       "type": "inAppPurchases"
@@ -1702,7 +1726,7 @@
     },
     "inAppPurchaseLocalization:com.talonsight.solounicornrun.founderpass:en-US": {
       "fields": {
-        "description": "Unlock the complete SOLO founder experience.",
+        "description": "Venture 2, Hindsight, and the full career.",
         "name": "Founder Pass"
       },
       "id": "625f03f0-07f6-44f3-9e2b-5e0fc85ada32",
