@@ -2,34 +2,60 @@ import Foundation
 import Observation
 import RevenueCat
 
+/// Source of truth for entitlement state.
+///
+/// Build 3 change: `packages` no longer filters the current offering against a
+/// hardcoded product-identifier list. Whatever the offering contains is what the
+/// player sees. Access is decided by the entitlement alone.
 @MainActor
 @Observable
-final class SubscriptionStore: NSObject, PurchasesDelegate {
+final class SubscriptionStore: NSObject, PurchasesDelegate, EntitlementProviding {
   static let shared = SubscriptionStore()
 
   private(set) var customerInfo: CustomerInfo?
   private(set) var currentOffering: Offering?
   private(set) var isLoading = false
   private(set) var purchasingPackageID: String?
+  private(set) var lastRefreshFailed = false
   var errorMessage: String?
 
   private var isConfigured = false
 
+  /// The one question the rest of the app asks.
   var isPro: Bool {
     customerInfo?.entitlements[RevenueCatConfiguration.entitlementIdentifier]?.isActive == true
   }
 
+  /// `EntitlementProviding`. Named for the product, not the plumbing.
+  var hasFounderPass: Bool { isPro }
+
+  /// Every package in the current offering, unfiltered — see the type doc.
   var packages: [Package] {
-    currentOffering?.availablePackages.filter {
-      RevenueCatConfiguration.productIdentifiers.contains($0.storeProduct.productIdentifier)
-    } ?? []
+    currentOffering?.availablePackages ?? []
+  }
+
+  /// Structured diagnosis so a misconfiguration is legible instead of silent.
+  var configurationStatus: PurchaseConfigurationStatus {
+    switch RevenueCatConfiguration.runtimeKeyValidation {
+    case .valid: break
+    case .missing: return .missingAPIKey
+    case .secret: return .secretKeyOnDevice
+    case .testKeyInRelease: return .testKeyInReleaseBuild
+    case .invalidApplePublicKey: return .invalidApplePublicKey
+    }
+    guard isConfigured else { return .notConfigured }
+    guard let offering = currentOffering else { return .noCurrentOffering }
+    guard !offering.availablePackages.isEmpty else { return .offeringHasNoPackages }
+    return .ready(packageCount: offering.availablePackages.count)
   }
 
   func configure() {
     guard !isConfigured else { return }
+    guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
     let apiKey = RevenueCatConfiguration.apiKey
-    guard !apiKey.isEmpty else {
-      errorMessage = "Add the production RevenueCat public SDK key before making a Release build."
+
+    guard RevenueCatConfiguration.runtimeKeyValidation == .valid else {
+      errorMessage = "Founder Pass purchases are temporarily unavailable. Your career is safe. Try again later."
       return
     }
 
@@ -42,9 +68,7 @@ final class SubscriptionStore: NSObject, PurchasesDelegate {
     Purchases.shared.delegate = self
     isConfigured = true
 
-    Task {
-      await refresh()
-    }
+    Task { await refresh() }
   }
 
   func refresh() async {
@@ -52,12 +76,19 @@ final class SubscriptionStore: NSObject, PurchasesDelegate {
     isLoading = true
     defer { isLoading = false }
     do {
-      async let customerInfo = Purchases.shared.customerInfo()
+      async let info = Purchases.shared.customerInfo()
       async let offerings = Purchases.shared.offerings()
-      apply(try await customerInfo)
-      currentOffering = try await offerings.current
+      apply(try await info)
+      let resolved = try await offerings
+      let selectedIdentifier = RevenueCatConfiguration.preferredOfferingIdentifier(
+        currentIdentifier: resolved.current?.identifier,
+        availableIdentifiers: Set(resolved.all.keys)
+      )
+      currentOffering = selectedIdentifier.flatMap { resolved.offering(identifier: $0) }
+      lastRefreshFailed = false
       errorMessage = nil
     } catch {
+      lastRefreshFailed = true
       errorMessage = "Unable to refresh purchases: \(error.localizedDescription)"
     }
   }
@@ -69,9 +100,7 @@ final class SubscriptionStore: NSObject, PurchasesDelegate {
     do {
       let result = try await Purchases.shared.purchase(package: package)
       apply(result.customerInfo)
-      if !result.userCancelled {
-        errorMessage = nil
-      }
+      errorMessage = nil
     } catch {
       errorMessage = "Purchase failed: \(error.localizedDescription)"
     }
@@ -83,7 +112,7 @@ final class SubscriptionStore: NSObject, PurchasesDelegate {
     defer { isLoading = false }
     do {
       apply(try await Purchases.shared.restorePurchases())
-      errorMessage = isPro ? nil : "No active Solo: Unicorn Run Pro purchase was found."
+      errorMessage = isPro ? nil : "No previous Founder Pass purchase was found on this Apple Account."
     } catch {
       errorMessage = "Restore failed: \(error.localizedDescription)"
     }
@@ -94,8 +123,6 @@ final class SubscriptionStore: NSObject, PurchasesDelegate {
   }
 
   nonisolated func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
-    Task { @MainActor in
-      self.apply(customerInfo)
-    }
+    Task { @MainActor in self.apply(customerInfo) }
   }
 }

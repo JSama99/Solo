@@ -1,8 +1,10 @@
+import AppIntents
 import SwiftUI
 
 @main
 struct SoloUnicornRunApp: App {
   @State private var subscriptions = SubscriptionStore.shared
+  @State private var progression = FounderProgressionStore()
 
   init() {
     SubscriptionStore.shared.configure()
@@ -12,6 +14,7 @@ struct SoloUnicornRunApp: App {
     WindowGroup {
       ContentView()
         .environment(subscriptions)
+        .environment(progression)
         .preferredColorScheme(.dark)
     }
   }

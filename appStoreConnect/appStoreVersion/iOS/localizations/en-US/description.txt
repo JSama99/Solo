@@ -1,13 +1,17 @@
-Build an ambitious startup from a garage and see how far your decisions can take it.
+Build an ambitious startup inside a living, 3D-styled founder garage—and discover what it takes to lead an AI-native company without losing sight of the evidence.
 
-SOLO: Unicorn Run is a focused founder-life strategy simulation. Direct a specialized AI workforce, balance runway and revenue, protect momentum and trust, and guide your company through a twelve-sprint venture. Every choice changes the pressure on your team and the future of the business.
+SOLO: Unicorn Run is a founder-life strategy simulation about directing an AI workforce under pressure. Assign research, engineering, and marketing agents, review their reports, verify the evidence behind confident claims, and decide what deserves your trust.
 
-Choose your founder doctrine, assign trusted agents, commit each sprint, and respond to the consequences. Push for growth, preserve energy, manage risk, and discover whether your company becomes a unicorn—or runs out of runway.
+Every sprint tests the systems you build. Watch for drift, overclaiming, incomplete evidence, and correlated failures across agents that share a model family. Balance runway, energy, workload, trust, revenue, capital, and momentum while the garage evolves around your progress.
 
 Features:
-• A complete startup journey designed for solo play
-• Strategic tradeoffs across runway, revenue, momentum, trust, and energy
-• Distinct founder doctrines with meaningful strengths and risks
-• An AI-inspired team of research, engineering, and marketing agents
-• Persistent offline career progress
+• A living high-resolution founder garage with an active AI workforce
+• Deterministic, replayable careers shaped by your decisions
+• Task assignment, founder review, evidence, and verification systems
+• Hidden outcomes that stay hidden until legitimately investigated
+• Correlated model-family risks that must be detected through play
+• Two ventures across a complete twenty-four-sprint career
+• Persistent offline career and headquarters progression
 • No account or sign-in required
+
+Venture 1 is the complete free experience. The one-time Founder Pass unlocks Venture 2, Hindsight Recall, and the full career conclusion. Hindsight Recall surfaces historical patterns from your own prior decisions and outcomes; it is descriptive, non-prescriptive, and does not provide financial, legal, investment, or business advice.

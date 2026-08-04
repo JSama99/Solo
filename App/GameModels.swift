@@ -367,6 +367,8 @@ struct CareerSave: Codable {
   var correlatedFailureEvent: CorrelatedFailureEvent?
   var pendingEffects: [ScheduledEffect]
   var reportCache: [CachedTaskReport]
+  var precedents: [Precedent]
+  var awaitingFounderPass: Bool
 
   private enum CodingKeys: String, CodingKey {
     case founderName
@@ -383,6 +385,8 @@ struct CareerSave: Codable {
     case correlatedFailureEvent
     case pendingEffects
     case reportCache
+    case precedents
+    case awaitingFounderPass
   }
 
   init(
@@ -399,7 +403,9 @@ struct CareerSave: Codable {
     randomNumberGenerator: SeededRandomNumberGenerator,
     correlatedFailureEvent: CorrelatedFailureEvent?,
     pendingEffects: [ScheduledEffect],
-    reportCache: [CachedTaskReport] = []
+    reportCache: [CachedTaskReport] = [],
+    precedents: [Precedent] = [],
+    awaitingFounderPass: Bool = false
   ) {
     self.founderName = founderName
     self.doctrine = doctrine
@@ -415,6 +421,8 @@ struct CareerSave: Codable {
     self.correlatedFailureEvent = correlatedFailureEvent
     self.pendingEffects = pendingEffects
     self.reportCache = reportCache
+    self.precedents = precedents
+    self.awaitingFounderPass = awaitingFounderPass
   }
 
   init(from decoder: Decoder) throws {
@@ -437,6 +445,9 @@ struct CareerSave: Codable {
       CorrelatedFailureEvent.self,
       forKey: .correlatedFailureEvent
     )
+    // Build 3 fields decode optionally so every v1-v4 save still loads.
+    precedents = try container.decodeIfPresent([Precedent].self, forKey: .precedents) ?? []
+    awaitingFounderPass = try container.decodeIfPresent(Bool.self, forKey: .awaitingFounderPass) ?? false
     pendingEffects = try container.decodeIfPresent([ScheduledEffect].self, forKey: .pendingEffects) ?? []
     reportCache = try container.decodeIfPresent([CachedTaskReport].self, forKey: .reportCache) ?? []
   }

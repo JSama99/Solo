@@ -7,10 +7,31 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B20000000000000000000010 /* EntitlementProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000010 /* EntitlementProviding.swift */; };
+		B20000000000000000000011 /* Hindsight.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* Hindsight.swift */; };
+		B20000000000000000000012 /* VentureUnlockScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000012 /* VentureUnlockScreen.swift */; };
+		B20000000000000000000020 /* FounderPassGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* FounderPassGateTests.swift */; };
+		B20000000000000000000021 /* HindsightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* HindsightTests.swift */; };
+		C20000000000000000000001 /* AgentVisualState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000001 /* AgentVisualState.swift */; };
+		C20000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift */; };
+		C20000000000000000000003 /* EnvironmentPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000003 /* EnvironmentPresentation.swift */; };
+		C20000000000000000000004 /* FacilityProgressionConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000004 /* FacilityProgressionConfiguration.swift */; };
+		C20000000000000000000005 /* FacilityTier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000005 /* FacilityTier.swift */; };
+		C20000000000000000000006 /* FounderEnvironmentScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000006 /* FounderEnvironmentScreen.swift */; };
+		C20000000000000000000007 /* FounderGarageEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000007 /* FounderGarageEnvironment.swift */; };
+		C20000000000000000000008 /* FounderProgressionSave.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000008 /* FounderProgressionSave.swift */; };
+		C20000000000000000000009 /* FounderProgressionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000009 /* FounderProgressionStore.swift */; };
+		C2000000000000000000000A /* HeadquartersProgressScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000A /* HeadquartersProgressScreen.swift */; };
+		C2000000000000000000000B /* PresentationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000B /* PresentationCoordinator.swift */; };
+		C2000000000000000000000C /* PresentationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000C /* PresentationPolicy.swift */; };
+		C2000000000000000000000D /* VisibleSimulationProjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000D /* VisibleSimulationProjection.swift */; };
+		C2000000000000000000000E /* FacilityProgressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000E /* FacilityProgressionTests.swift */; };
+		C2000000000000000000000F /* PresentationMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000F /* PresentationMappingTests.swift */; };
 		28C211C9462EF7C2C17DC4C2 /* SimulationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CB9F64447826C8051328902 /* SimulationModels.swift */; };
 		73B35D04E243BD45B291E271 /* GameModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E7E924208E29B28AFAA264 /* GameModels.swift */; };
 		A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2513145C1504A166E8177382 /* GameStoreTests.swift */; };
 		ABDFC492407A05E2BC397A8D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 17558F294800127BE04C0EBD /* Assets.xcassets */; };
+		D20000000000000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000001 /* PrivacyInfo.xcprivacy */; };
 		AD24D57DE55399F057B4B47A /* GameStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AA2809B6198CB8955EEFAC /* GameStore.swift */; };
 		B20000000000000000000001 /* RevenueCatConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* RevenueCatConfiguration.swift */; };
 		B20000000000000000000002 /* SubscriptionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* SubscriptionStore.swift */; };
@@ -33,6 +54,26 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B10000000000000000000010 /* EntitlementProviding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementProviding.swift; sourceTree = "<group>"; };
+		B10000000000000000000011 /* Hindsight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hindsight.swift; sourceTree = "<group>"; };
+		B10000000000000000000012 /* VentureUnlockScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureUnlockScreen.swift; sourceTree = "<group>"; };
+		B10000000000000000000020 /* FounderPassGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderPassGateTests.swift; sourceTree = "<group>"; };
+		B10000000000000000000021 /* HindsightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HindsightTests.swift; sourceTree = "<group>"; };
+		C10000000000000000000001 /* AgentVisualState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentVisualState.swift; sourceTree = "<group>"; };
+		C10000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CareerOutcomeEnvironmentBackdrop.swift; sourceTree = "<group>"; };
+		C10000000000000000000003 /* EnvironmentPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentPresentation.swift; sourceTree = "<group>"; };
+		C10000000000000000000004 /* FacilityProgressionConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacilityProgressionConfiguration.swift; sourceTree = "<group>"; };
+		C10000000000000000000005 /* FacilityTier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacilityTier.swift; sourceTree = "<group>"; };
+		C10000000000000000000006 /* FounderEnvironmentScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderEnvironmentScreen.swift; sourceTree = "<group>"; };
+		C10000000000000000000007 /* FounderGarageEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageEnvironment.swift; sourceTree = "<group>"; };
+		C10000000000000000000008 /* FounderProgressionSave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderProgressionSave.swift; sourceTree = "<group>"; };
+		C10000000000000000000009 /* FounderProgressionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderProgressionStore.swift; sourceTree = "<group>"; };
+		C1000000000000000000000A /* HeadquartersProgressScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadquartersProgressScreen.swift; sourceTree = "<group>"; };
+		C1000000000000000000000B /* PresentationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationCoordinator.swift; sourceTree = "<group>"; };
+		C1000000000000000000000C /* PresentationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationPolicy.swift; sourceTree = "<group>"; };
+		C1000000000000000000000D /* VisibleSimulationProjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisibleSimulationProjection.swift; sourceTree = "<group>"; };
+		C1000000000000000000000E /* FacilityProgressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacilityProgressionTests.swift; sourceTree = "<group>"; };
+		C1000000000000000000000F /* PresentationMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationMappingTests.swift; sourceTree = "<group>"; };
 		17558F294800127BE04C0EBD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2513145C1504A166E8177382 /* GameStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStoreTests.swift; sourceTree = "<group>"; };
 		4FB3F3A34C09C15574734B61 /* Solo Unicorn Run Tests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = "Solo Unicorn Run Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -44,6 +85,7 @@
 		D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		F1999948F297FBA3D5958727 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		FB05034A23E5A13D7BBCBDF0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D10000000000000000000001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B10000000000000000000001 /* RevenueCatConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCatConfiguration.swift; sourceTree = "<group>"; };
 		B10000000000000000000002 /* SubscriptionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStore.swift; sourceTree = "<group>"; };
 		B10000000000000000000003 /* SubscriptionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionScreen.swift; sourceTree = "<group>"; };
@@ -75,6 +117,10 @@
 			isa = PBXGroup;
 			children = (
 				2513145C1504A166E8177382 /* GameStoreTests.swift */,
+				B10000000000000000000020 /* FounderPassGateTests.swift */,
+				B10000000000000000000021 /* HindsightTests.swift */,
+				C1000000000000000000000E /* FacilityProgressionTests.swift */,
+				C1000000000000000000000F /* PresentationMappingTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -82,17 +128,34 @@
 		7775A9C13FE1CF8E12C7214B /* App */ = {
 			isa = PBXGroup;
 			children = (
+				C10000000000000000000001 /* AgentVisualState.swift */,
 				F1999948F297FBA3D5958727 /* App.swift */,
 				17558F294800127BE04C0EBD /* Assets.xcassets */,
+				C10000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift */,
 				D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */,
+				C10000000000000000000003 /* EnvironmentPresentation.swift */,
+				C10000000000000000000004 /* FacilityProgressionConfiguration.swift */,
+				C10000000000000000000005 /* FacilityTier.swift */,
+				C10000000000000000000006 /* FounderEnvironmentScreen.swift */,
+				C10000000000000000000007 /* FounderGarageEnvironment.swift */,
+				C10000000000000000000008 /* FounderProgressionSave.swift */,
+				C10000000000000000000009 /* FounderProgressionStore.swift */,
 				D3E7E924208E29B28AFAA264 /* GameModels.swift */,
 				94AA2809B6198CB8955EEFAC /* GameStore.swift */,
+				C1000000000000000000000A /* HeadquartersProgressScreen.swift */,
 				FB05034A23E5A13D7BBCBDF0 /* Info.plist */,
+				D10000000000000000000001 /* PrivacyInfo.xcprivacy */,
+				C1000000000000000000000B /* PresentationCoordinator.swift */,
+				C1000000000000000000000C /* PresentationPolicy.swift */,
 				B10000000000000000000001 /* RevenueCatConfiguration.swift */,
+				B10000000000000000000010 /* EntitlementProviding.swift */,
+				B10000000000000000000011 /* Hindsight.swift */,
+				B10000000000000000000012 /* VentureUnlockScreen.swift */,
 				CE09C90DB6AC97A8F2FAA9FC /* SeededRandomNumberGenerator.swift */,
 				7CB9F64447826C8051328902 /* SimulationModels.swift */,
 				B10000000000000000000003 /* SubscriptionScreen.swift */,
 				B10000000000000000000002 /* SubscriptionStore.swift */,
+				C1000000000000000000000D /* VisibleSimulationProjection.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -195,6 +258,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ABDFC492407A05E2BC397A8D /* Assets.xcassets in Resources */,
+				D20000000000000000000001 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -206,6 +270,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */,
+				B20000000000000000000020 /* FounderPassGateTests.swift in Sources */,
+				B20000000000000000000021 /* HindsightTests.swift in Sources */,
+				C2000000000000000000000E /* FacilityProgressionTests.swift in Sources */,
+				C2000000000000000000000F /* PresentationMappingTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -213,15 +281,31 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C20000000000000000000001 /* AgentVisualState.swift in Sources */,
 				B2BFB1EE90AB231E41812DEF /* App.swift in Sources */,
+				C20000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift in Sources */,
 				FB6CDD52B76B96B369913C6B /* ContentView.swift in Sources */,
+				C20000000000000000000003 /* EnvironmentPresentation.swift in Sources */,
+				C20000000000000000000004 /* FacilityProgressionConfiguration.swift in Sources */,
+				C20000000000000000000005 /* FacilityTier.swift in Sources */,
+				C20000000000000000000006 /* FounderEnvironmentScreen.swift in Sources */,
+				C20000000000000000000007 /* FounderGarageEnvironment.swift in Sources */,
+				C20000000000000000000008 /* FounderProgressionSave.swift in Sources */,
+				C20000000000000000000009 /* FounderProgressionStore.swift in Sources */,
 				73B35D04E243BD45B291E271 /* GameModels.swift in Sources */,
 				AD24D57DE55399F057B4B47A /* GameStore.swift in Sources */,
+				B20000000000000000000010 /* EntitlementProviding.swift in Sources */,
+				B20000000000000000000011 /* Hindsight.swift in Sources */,
+				B20000000000000000000012 /* VentureUnlockScreen.swift in Sources */,
+				C2000000000000000000000A /* HeadquartersProgressScreen.swift in Sources */,
+				C2000000000000000000000B /* PresentationCoordinator.swift in Sources */,
+				C2000000000000000000000C /* PresentationPolicy.swift in Sources */,
 				B7879B5278335CFBFDA7FCD0 /* SeededRandomNumberGenerator.swift in Sources */,
 				28C211C9462EF7C2C17DC4C2 /* SimulationModels.swift in Sources */,
 				B20000000000000000000001 /* RevenueCatConfiguration.swift in Sources */,
 				B20000000000000000000003 /* SubscriptionScreen.swift in Sources */,
 				B20000000000000000000002 /* SubscriptionStore.swift in Sources */,
+				C2000000000000000000000D /* VisibleSimulationProjection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -243,7 +327,9 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APPINTENTS_METADATA_EXTRACTION = NO;
+				LM_FILTER_WARNINGS = YES;
+				CURRENT_PROJECT_VERSION = 3;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -253,7 +339,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun;
 				PRODUCT_MODULE_NAME = Solo_Unicorn_Run;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				REVENUECAT_API_KEY = "";
+				REVENUECAT_API_KEY = "$(RC_RELEASE_KEY)";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -267,7 +353,9 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APPINTENTS_METADATA_EXTRACTION = NO;
+				LM_FILTER_WARNINGS = YES;
+				CURRENT_PROJECT_VERSION = 3;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -277,7 +365,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun;
 				PRODUCT_MODULE_NAME = Solo_Unicorn_Run;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				REVENUECAT_API_KEY = "";
+				REVENUECAT_API_KEY = "$(RC_RELEASE_KEY)";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -290,6 +378,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				LM_FILTER_WARNINGS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -429,6 +518,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				LM_FILTER_WARNINGS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
