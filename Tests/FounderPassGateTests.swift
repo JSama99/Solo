@@ -163,7 +163,7 @@ final class PurchaseConfigurationTests: XCTestCase {
     XCTAssertEqual(RevenueCatConfiguration.entitlementIdentifier, "solo_unicorn_run_pro")
     XCTAssertEqual(
       RevenueCatConfiguration.expectedStoreProductIdentifier,
-      "com.talonsight.solounicornrun.founderpass"
+      "com.talonsight.solounicornrun.founderpass.lifetime"
     )
   }
 

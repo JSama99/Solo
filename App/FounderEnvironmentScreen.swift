@@ -14,11 +14,15 @@ struct FounderEnvironmentScreen: View {
         VStack(spacing: 16) {
           environmentHeader
           StatsStripBridge(stats: store.stats)
-          FounderGarageEnvironment(
-            store: store,
-            presentation: presentation,
-            policy: presentationPolicy
-          )
+          if #available(iOS 18.0, *) {
+            FounderGarage3DPrototype(store: store)
+          } else {
+            FounderGarageEnvironment(
+              store: store,
+              presentation: presentation,
+              policy: presentationPolicy
+            )
+          }
           operationsSummary
           agentStatusList
           NavigationLink {
