@@ -1498,6 +1498,19 @@
       "id": "e7f5c61d-b566-4683-b1bd-740e13017dd2",
       "type": "appStoreVersionLocalizations"
     },
+    "appStoreVersionScreenshotSet:IOS:1.0:en-US:APP_IPHONE_65": {
+      "fields": {
+        "screenshots": [
+          {
+            "file": "founder-garage-65.jpg",
+            "fileSize": 527569,
+            "sourceFileChecksum": "eb27dc45103acb033c8ec795757aa064"
+          }
+        ]
+      },
+      "id": "9704cd2a-a1e9-4b11-923e-af15b2ee8c5f",
+      "type": "appScreenshotSets"
+    },
     "availability": {
       "fields": {
         "territories": [
@@ -1720,6 +1733,16 @@
       },
       "id": "6797110708",
       "type": "inAppPurchasePriceSchedules"
+    },
+    "inAppPurchaseReviewScreenshot:com.talonsight.solounicornrun.founderpass": {
+      "fields": {
+        "screenshot": {
+          "fileSize": 253430,
+          "sourceFileChecksum": "529cfd78dc6ef1faad81eb6dc2bbdcdc"
+        }
+      },
+      "id": "96872132-9ecc-4776-b592-ee8368268114",
+      "type": "inAppPurchaseAppStoreReviewScreenshots"
     },
     "pricing": {
       "fields": {
