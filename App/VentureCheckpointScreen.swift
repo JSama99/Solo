@@ -48,6 +48,11 @@ struct VentureCheckpointScreen: View {
                  + "interesting, or stop here and let this be the record that stands.")
               .font(.callout)
               .foregroundStyle(.secondary)
+            if !store.hasFounderPass {
+              Label("Founder Pass is required only to continue. Retirement remains available.", systemImage: "lock.fill")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(SoloTheme.amber)
+            }
           }
           .soloCard()
 

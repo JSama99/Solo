@@ -9,7 +9,10 @@ import XCTest
 @MainActor
 final class ContinuousModeTests: XCTestCase {
   override func tearDown() {
-    GameStore().resetCareer()
+    for key in UserDefaults.standard.dictionaryRepresentation().keys
+    where key.hasPrefix("solo-unicorn-run-native-save-") {
+      UserDefaults.standard.removeObject(forKey: key)
+    }
     super.tearDown()
   }
 
@@ -37,9 +40,13 @@ final class ContinuousModeTests: XCTestCase {
         let agent = store.agents[offset % store.agents.count]
         store.assign(agentID: agent.id, to: task.id)
       }
-      if let choice = store.activeDilemma?.choices.first {
+      if let dilemma = store.activeDilemma,
+         let choice = dilemma.choices.first(where: { $0.id != "sell" }) ?? dilemma.choices.first {
         store.selectDilemmaChoice(choice.id)
       }
+      store.stats.runway = max(store.stats.runway, 80)
+      store.stats.energy = max(store.stats.energy, 80)
+      store.stats.trust = max(store.stats.trust, 60)
       store.commitSprint()
       store.report = nil
     }
@@ -125,10 +132,22 @@ final class ContinuousModeTests: XCTestCase {
         store.continueFromCheckpoint()
       }
     }
-    // The whole point: bounded mode cannot exceed venture 2. This must be able to.
-    if store.careerOutcome == nil {
-      XCTAssertGreaterThanOrEqual(store.venture, 2)
-    }
+    XCTAssertNil(store.careerOutcome)
+    XCTAssertGreaterThan(store.venture, 2, "continuous mode must prove it advanced beyond the bounded cap")
+  }
+
+  func testContinuousFreePlayerSeesCheckpointBeforeFounderPassGate() throws {
+    let store = makeStore(mode: .continuous, hasPass: false)
+    playToVentureEnd(store)
+    XCTAssertNotNil(store.pendingVentureCheckpoint)
+    XCTAssertEqual(store.stage, .ventureCheckpoint)
+    XCTAssertFalse(store.isVentureLocked)
+
+    store.continueFromCheckpoint()
+
+    XCTAssertTrue(store.isVentureLocked)
+    XCTAssertEqual(store.stage, .ventureUnlock)
+    XCTAssertNotNil(store.pendingVentureCheckpoint, "the checkpoint must remain available until purchase or retirement")
   }
 
   func testRetireCareerEndsWithAGenuineVictoryOutcome() throws {
@@ -151,6 +170,13 @@ final class ContinuousModeTests: XCTestCase {
     let task = try XCTUnwrap(store.tasks.first)
     store.assign(agentID: store.agents[0].id, to: task.id)
     store.stats.trust = 1
+    store.pendingEffects = [
+      ScheduledEffect(
+        dueCareerSprint: 0,
+        source: "Deterministic trust-collapse test",
+        effects: SimulationEffects(trust: -1_000)
+      )
+    ]
 
     store.commitSprint()
 

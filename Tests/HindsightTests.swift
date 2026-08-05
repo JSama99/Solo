@@ -182,7 +182,10 @@ final class HindsightTests: XCTestCase {
 @MainActor
 final class HindsightIntegrationTests: XCTestCase {
   override func tearDown() {
-    GameStore().resetCareer()
+    for key in UserDefaults.standard.dictionaryRepresentation().keys
+    where key.hasPrefix("solo-unicorn-run-native-save-") {
+      UserDefaults.standard.removeObject(forKey: key)
+    }
     super.tearDown()
   }
 
@@ -255,7 +258,10 @@ final class PrecedentIdentityTests: XCTestCase {
 @MainActor
 final class PrecedentRecordingDeterminismTests: XCTestCase {
   override func tearDown() {
-    GameStore().resetCareer()
+    for key in UserDefaults.standard.dictionaryRepresentation().keys
+    where key.hasPrefix("solo-unicorn-run-native-save-") {
+      UserDefaults.standard.removeObject(forKey: key)
+    }
     super.tearDown()
   }
 

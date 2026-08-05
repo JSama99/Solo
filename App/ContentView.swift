@@ -400,6 +400,8 @@ private struct CommandScreen: View {
               .foregroundStyle(.secondary)
           }
 
+          SprintPhaseTracker(current: store.sprintPhase)
+
           if let dilemma = store.activeDilemma {
             FounderDilemmaCard(
               dilemma: dilemma,
@@ -409,7 +411,7 @@ private struct CommandScreen: View {
           }
 
           if let objective = store.currentObjective {
-            SprintObjectiveCard(objective: objective)
+            SprintObjectiveCard(objective: objective, progress: store.objectiveProgressText)
           }
 
           Picker("Sprint intent", selection: Binding(
@@ -472,6 +474,33 @@ private struct CommandScreen: View {
   }
 }
 
+private struct SprintPhaseTracker: View {
+  var current: SprintPhase
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      HStack {
+        Label("SPRINT FLOW", systemImage: current.symbol)
+          .font(.caption.weight(.black))
+          .foregroundStyle(SoloTheme.cyan)
+        Spacer()
+        Text("STEP \(current.rawValue) OF 5")
+          .font(.caption2.weight(.black))
+          .foregroundStyle(.secondary)
+      }
+      Text(current.title).font(.headline)
+      HStack(spacing: 6) {
+        ForEach(SprintPhase.allCases) { phase in
+          Capsule()
+            .fill(phase.rawValue <= current.rawValue ? SoloTheme.cyan : .white.opacity(0.09))
+            .frame(height: 6)
+        }
+      }
+    }
+    .soloCard()
+  }
+}
+
 private struct FounderDilemmaCard: View {
   var dilemma: FounderDilemma
   var selectedChoiceID: String?
@@ -513,6 +542,7 @@ private struct FounderDilemmaCard: View {
 
 private struct SprintObjectiveCard: View {
   var objective: SprintObjective
+  var progress: String
 
   var body: some View {
     HStack(alignment: .top, spacing: 12) {
@@ -525,6 +555,9 @@ private struct SprintObjectiveCard: View {
           .foregroundStyle(SoloTheme.mint)
         Text(objective.title).font(.headline)
         Text(objective.detail).font(.caption).foregroundStyle(.secondary)
+        Text(progress)
+          .font(.caption.weight(.bold))
+          .foregroundStyle(SoloTheme.cyan)
         Text("Reward: \(objective.rewardLabel)")
           .font(.caption.weight(.semibold))
           .foregroundStyle(SoloTheme.mint)
@@ -745,6 +778,46 @@ private struct VentureScreen: View {
           }
           .soloCard()
 
+          VStack(alignment: .leading, spacing: 8) {
+            Label("Venture pressure", systemImage: "gauge.with.dots.needle.67percent")
+              .font(.headline)
+            Text(store.venturePressureSummary)
+              .font(.callout)
+              .foregroundStyle(.secondary)
+            Text("Later ventures increase provider instability and no longer restore the company to fixed Runway or Energy floors.")
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
+          .soloCard()
+
+          VStack(alignment: .leading, spacing: 10) {
+            Text("Company consequences").font(.headline)
+            if store.companyFlags.isEmpty && store.activeObligations.isEmpty {
+              Text("Founder decisions will appear here when they create lasting company state.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            } else {
+              ForEach(store.companyFlags.sorted(by: { $0.name < $1.name })) { flag in
+                Label(flag.name, systemImage: "point.topleft.down.curvedto.point.bottomright.up")
+                  .font(.subheadline.weight(.semibold))
+                  .foregroundStyle(SoloTheme.cyan)
+              }
+              ForEach(store.activeObligations) { obligation in
+                VStack(alignment: .leading, spacing: 3) {
+                  Text(obligation.title).font(.subheadline.bold())
+                  Text(obligation.detail).font(.caption).foregroundStyle(.secondary)
+                  Text("\(obligation.effectsPerSprint.conciseLossLabel) • \(obligation.durationLabel)")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(SoloTheme.amber)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(10)
+                .background(.white.opacity(0.035), in: .rect(cornerRadius: 10))
+              }
+            }
+          }
+          .soloCard()
+
           VStack(alignment: .leading, spacing: 10) {
             Text("Garage upgrades").font(.headline)
             if store.unlockedGarageUpgrades.isEmpty {
@@ -773,7 +846,9 @@ private struct VentureScreen: View {
 
           VStack(alignment: .leading, spacing: 12) {
             Text("Career objective").font(.headline)
-            Text("Complete two ventures and 24 sprints while choosing which work to ignore, handling founder dilemmas, and protecting runway, trust, and energy. Reviews reveal the truth; your follow-up decision changes the outcome.")
+            Text(store.careerMode == .bounded
+              ? "Complete two ventures and 24 sprints while protecting runway, trust, energy, and the company you create through persistent decisions."
+              : "Build for as many ventures as you can sustain. Each checkpoint lets you retire, while operating pressure, obligations, and provider risk continue to rise.")
               .foregroundStyle(.secondary)
           }
           .soloCard()
@@ -836,6 +911,22 @@ private struct RecordsScreen: View {
           .buttonStyle(.plain)
 
           NavigationLink {
+            CompanyStoryScreen(
+              flags: store.companyFlags.sorted(by: { $0.name < $1.name }),
+              obligations: store.activeObligations,
+              decisions: store.decisionHistory
+            )
+          } label: {
+            RecordLink(
+              title: "Company Story",
+              subtitle: "Persistent decisions, obligations, and narrative state",
+              symbol: "point.topleft.down.curvedto.point.bottomright.up",
+              count: store.decisionHistory.count
+            )
+          }
+          .buttonStyle(.plain)
+
+          NavigationLink {
             SubscriptionScreen()
           } label: {
             RecordLink(title: "Solo Pro", subtitle: "Plans, purchases, and subscription management", symbol: "sparkles", count: 3)
@@ -881,6 +972,73 @@ private struct RecordLink: View {
       Image(systemName: "chevron.right").foregroundStyle(.tertiary)
     }
     .soloCard()
+  }
+}
+
+private struct CompanyStoryScreen: View {
+  var flags: [CompanyFlag]
+  var obligations: [CompanyObligation]
+  var decisions: [CareerDecisionRecord]
+
+  var body: some View {
+    ScrollView {
+      VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 10) {
+          Text("Company identity").font(.headline)
+          if flags.isEmpty {
+            Text("No persistent company flags yet.").font(.caption).foregroundStyle(.secondary)
+          } else {
+            ForEach(flags) { flag in
+              Label(flag.name, systemImage: "flag.fill")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(SoloTheme.cyan)
+            }
+          }
+        }
+        .soloCard()
+
+        VStack(alignment: .leading, spacing: 10) {
+          Text("Active obligations").font(.headline)
+          if obligations.isEmpty {
+            Text("No recurring obligations are active.").font(.caption).foregroundStyle(.secondary)
+          } else {
+            ForEach(obligations) { obligation in
+              VStack(alignment: .leading, spacing: 3) {
+                Text(obligation.title).font(.subheadline.bold())
+                Text(obligation.detail).font(.caption).foregroundStyle(.secondary)
+                Text("\(obligation.effectsPerSprint.conciseLossLabel) • \(obligation.durationLabel)")
+                  .font(.caption2.weight(.semibold))
+                  .foregroundStyle(SoloTheme.amber)
+              }
+            }
+          }
+        }
+        .soloCard()
+
+        VStack(alignment: .leading, spacing: 10) {
+          Text("Decision record").font(.headline)
+          if decisions.isEmpty {
+            Text("Founder dilemma choices will be recorded here.").font(.caption).foregroundStyle(.secondary)
+          } else {
+            ForEach(decisions) { decision in
+              VStack(alignment: .leading, spacing: 3) {
+                Text("V\(decision.venture) • S\(decision.sprint)")
+                  .font(.caption2.weight(.black)).foregroundStyle(SoloTheme.cyan)
+                Text(decision.dilemmaTitle).font(.subheadline.bold())
+                Text(decision.choiceTitle).font(.caption.weight(.semibold))
+                Text(decision.consequence).font(.caption).foregroundStyle(.secondary)
+              }
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .padding(10)
+              .background(.white.opacity(0.035), in: .rect(cornerRadius: 10))
+            }
+          }
+        }
+        .soloCard()
+      }
+      .padding(16)
+    }
+    .navigationTitle("Company Story")
   }
 }
 

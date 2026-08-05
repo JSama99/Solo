@@ -45,7 +45,7 @@ struct DoctrineProfile: Hashable {
         reviewEnergyCost: 1,
         neglectDriftIncrease: 6.5,
         actualQualityBonus: 0,
-        startingStatAdjustment: SimulationEffects(trust: 12, momentum: -4)
+        startingStatAdjustment: SimulationEffects(momentum: -4, trust: 12)
       )
     }
   }

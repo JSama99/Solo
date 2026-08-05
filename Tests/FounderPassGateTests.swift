@@ -6,7 +6,10 @@ import XCTest
 @MainActor
 final class FounderPassGateTests: XCTestCase {
   override func tearDown() {
-    GameStore().resetCareer()
+    for key in UserDefaults.standard.dictionaryRepresentation().keys
+    where key.hasPrefix("solo-unicorn-run-native-save-") {
+      UserDefaults.standard.removeObject(forKey: key)
+    }
     super.tearDown()
   }
 
@@ -28,9 +31,13 @@ final class FounderPassGateTests: XCTestCase {
         let agent = store.agents[offset % store.agents.count]
         store.assign(agentID: agent.id, to: task.id)
       }
-      if let choice = store.activeDilemma?.choices.first {
+      if let dilemma = store.activeDilemma,
+         let choice = dilemma.choices.first(where: { $0.id != "sell" }) ?? dilemma.choices.first {
         store.selectDilemmaChoice(choice.id)
       }
+      store.stats.runway = max(store.stats.runway, 100)
+      store.stats.energy = max(store.stats.energy, 100)
+      store.stats.trust = max(store.stats.trust, 100)
       store.commitSprint()
       store.report = nil
       if store.venture != startingVenture { return }
@@ -48,7 +55,7 @@ final class FounderPassGateTests: XCTestCase {
   func testGateHoldsCareerWithoutPass() throws {
     let store = makeStore(hasPass: false)
     playVenture(store)
-    try XCTSkipUnless(store.isVentureLocked, "career ended on merit before reaching the gate")
+    XCTAssertTrue(store.isVentureLocked, "the protected test run must reach the Founder Pass gate")
 
     XCTAssertEqual(store.stage, .ventureUnlock)
     XCTAssertEqual(store.venture, 1, "the gate must not consume the venture increment")
@@ -58,7 +65,7 @@ final class FounderPassGateTests: XCTestCase {
   func testGatePreservesCareerProgress() throws {
     let store = makeStore(hasPass: false)
     playVenture(store)
-    try XCTSkipUnless(store.isVentureLocked)
+    XCTAssertTrue(store.isVentureLocked, "the protected test run must reach the Founder Pass gate")
 
     XCTAssertFalse(store.evidence.isEmpty, "evidence from the free venture must survive the gate")
     XCTAssertGreaterThanOrEqual(store.stats.trackRecord, 0)
@@ -67,7 +74,7 @@ final class FounderPassGateTests: XCTestCase {
   func testPassAdvancesIntoSecondVenture() throws {
     let store = makeStore(hasPass: true)
     playVenture(store)
-    try XCTSkipUnless(store.careerOutcome == nil, "career ended on merit before the venture boundary")
+    XCTAssertNil(store.careerOutcome, "the protected test run must survive the free venture")
 
     XCTAssertFalse(store.isVentureLocked)
     XCTAssertEqual(store.venture, 2)
@@ -77,7 +84,7 @@ final class FounderPassGateTests: XCTestCase {
   func testUnlockResumesTheSameCareer() throws {
     let store = makeStore(hasPass: false)
     playVenture(store)
-    try XCTSkipUnless(store.isVentureLocked)
+    XCTAssertTrue(store.isVentureLocked, "the protected test run must reach the Founder Pass gate")
 
     let evidenceBefore = store.evidence.count
     let precedentsBefore = store.precedents.count
@@ -95,7 +102,7 @@ final class FounderPassGateTests: XCTestCase {
   func testResumeWithoutPassDoesNothing() throws {
     let store = makeStore(hasPass: false)
     playVenture(store)
-    try XCTSkipUnless(store.isVentureLocked)
+    XCTAssertTrue(store.isVentureLocked, "the protected test run must reach the Founder Pass gate")
 
     store.resumeAfterFounderPassUnlock()
 
@@ -106,7 +113,7 @@ final class FounderPassGateTests: XCTestCase {
   func testResumeIsIdempotent() throws {
     let store = makeStore(hasPass: false)
     playVenture(store)
-    try XCTSkipUnless(store.isVentureLocked)
+    XCTAssertTrue(store.isVentureLocked, "the protected test run must reach the Founder Pass gate")
 
     store.entitlements = StaticEntitlementProvider(hasFounderPass: true)
     store.resumeAfterFounderPassUnlock()
@@ -118,7 +125,7 @@ final class FounderPassGateTests: XCTestCase {
   func testHeldCareerSurvivesReloadAndStillShowsTheGate() throws {
     let store = makeStore(hasPass: false)
     playVenture(store)
-    try XCTSkipUnless(store.isVentureLocked)
+    XCTAssertTrue(store.isVentureLocked, "the protected test run must reach the Founder Pass gate")
 
     let reloaded = GameStore()
     reloaded.entitlements = StaticEntitlementProvider(hasFounderPass: false)
@@ -133,7 +140,7 @@ final class FounderPassGateTests: XCTestCase {
   func testHeldCareerReloadedWithPassResumesImmediately() throws {
     let store = makeStore(hasPass: false)
     playVenture(store)
-    try XCTSkipUnless(store.isVentureLocked)
+    XCTAssertTrue(store.isVentureLocked, "the protected test run must reach the Founder Pass gate")
 
     let reloaded = GameStore()
     reloaded.entitlements = StaticEntitlementProvider(hasFounderPass: true)

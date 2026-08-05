@@ -30,7 +30,7 @@ final class SimulationEngineTests: XCTestCase {
     XCTAssertEqual(trust.reviewEnergyCost, 1)
     XCTAssertEqual(trust.neglectDriftIncrease, 6.5)
     XCTAssertEqual(trust.actualQualityBonus, 0)
-    XCTAssertEqual(trust.startingStatAdjustment, SimulationEffects(trust: 12, momentum: -4))
+    XCTAssertEqual(trust.startingStatAdjustment, SimulationEffects(momentum: -4, trust: 12))
   }
 
   func testDoctrineProfileCoversEveryDoctrine() {
@@ -118,6 +118,44 @@ final class SimulationEngineTests: XCTestCase {
     XCTAssertEqual(risk, "Shared model-family exposure")
   }
 
+  func testRelationshipAndPersonalityAffectSimulationQuality() throws {
+    let task = ContentLibrary.allTaskPool.first(where: { $0.role == .research })!
+    var low = ContentLibrary.initialAgents.first(where: { $0.id == "aurora" })!
+    var high = low
+    low.relationship = 20
+    high.relationship = 90
+    var lowRNG = SeededRandomNumberGenerator(seed: 6_100)
+    var highRNG = SeededRandomNumberGenerator(seed: 6_100)
+    var lowResult = SimulationEngine.makeResult(
+      for: task, agent: low, intent: .learn, doctrine: .guided,
+      correlatedFailureEvent: nil, allTasks: [task], allAgents: [low], rng: &lowRNG
+    )
+    var highResult = SimulationEngine.makeResult(
+      for: task, agent: high, intent: .learn, doctrine: .guided,
+      correlatedFailureEvent: nil, allTasks: [task], allAgents: [high], rng: &highRNG
+    )
+    _ = lowResult.verify()
+    _ = highResult.verify()
+    XCTAssertGreaterThan(
+      try XCTUnwrap(highResult.revealedActualQuality),
+      try XCTUnwrap(lowResult.revealedActualQuality)
+    )
+    XCTAssertGreaterThan(highResult.evidenceCompleteness, lowResult.evidenceCompleteness)
+  }
+
+  func testDetailedCareerScoreRewardsQualityAndPenalizesObligations() {
+    let stats = FounderStats()
+    let strong = SimulationEngine.careerScore(
+      stats: stats, verifiedEvidence: 12, completedObjectives: 8,
+      averageRelationship: 80, unresolvedObligations: 0, completedVentures: 2
+    )
+    let fragile = SimulationEngine.careerScore(
+      stats: stats, verifiedEvidence: 2, completedObjectives: 1,
+      averageRelationship: 30, unresolvedObligations: 5, completedVentures: 2
+    )
+    XCTAssertGreaterThan(strong, fragile)
+  }
+
   // ── careerScore: the actual fix, verified numerically ───────────────
 
   func testCareerScoreCapsRevenueContribution() {
@@ -177,8 +215,8 @@ final class SimulationEngineTests: XCTestCase {
 
   // ── ContentLibrary: the extraction must not have lost or duplicated content ──
 
-  func testContentLibraryTaskCountUnchangedFromBuild4() {
-    XCTAssertEqual(ContentLibrary.taskPool.count, 38)
+  func testBuild6ContentLibraryContainsSixtyUniqueTasks() {
+    XCTAssertEqual(ContentLibrary.allTaskPool.count, 60)
   }
 
   func testContentLibraryDilemmaCountUnchangedFromBuild4() {
@@ -204,7 +242,7 @@ final class SimulationEngineTests: XCTestCase {
   }
 
   func testTaskPoolTitlesAreUnique() {
-    let titles = ContentLibrary.taskPool.map(\.title)
+    let titles = ContentLibrary.allTaskPool.map(\.title)
     XCTAssertEqual(Set(titles).count, titles.count, "duplicate task titles would break the repeat-spacing exclusion logic")
   }
 }

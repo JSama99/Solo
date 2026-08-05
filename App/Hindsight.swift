@@ -149,16 +149,17 @@ enum HindsightEngine {
     recallsAlreadyShown: Int
   ) -> HindsightRecall? {
     guard recallsAlreadyShown < maximumRecallsPerVenture else { return nil }
-    return precedents
-      .filter { $0.venture < currentVenture }
-      .map { HindsightRecall(precedent: $0, similarity: similarity($0, context)) }
-      .filter { $0.similarity >= similarityFloor }
-      .sorted {
-        $0.similarity == $1.similarity
-          ? $0.precedent.sprint > $1.precedent.sprint
-          : $0.similarity > $1.similarity
+    let earlier = precedents.filter { $0.venture < currentVenture }
+    let recalls = earlier.map { precedent in
+      HindsightRecall(precedent: precedent, similarity: similarity(precedent, context))
+    }
+    let viable = recalls.filter { $0.similarity >= similarityFloor }
+    return viable.sorted { lhs, rhs in
+      if lhs.similarity == rhs.similarity {
+        return lhs.precedent.sprint > rhs.precedent.sprint
       }
-      .first
+      return lhs.similarity > rhs.similarity
+    }.first
   }
 
   /// Whether a sprint was consequential enough to be worth remembering.

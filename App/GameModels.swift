@@ -233,6 +233,129 @@ enum SprintObjectiveKind: String, Codable {
   case repairTrust
 }
 
+
+enum SprintPhase: Int, Codable, CaseIterable, Identifiable {
+  case founderEvent = 1
+  case chooseCommitments = 2
+  case assignTeam = 3
+  case reviewAndResolve = 4
+  case readyToCommit = 5
+
+  var id: Self { self }
+
+  var title: String {
+    switch self {
+    case .founderEvent: "Founder Event"
+    case .chooseCommitments: "Choose Commitments"
+    case .assignTeam: "Assign Team"
+    case .reviewAndResolve: "Review and Resolve"
+    case .readyToCommit: "Commit Sprint"
+    }
+  }
+
+  var symbol: String {
+    switch self {
+    case .founderEvent: "bubble.left.and.exclamationmark.bubble.right.fill"
+    case .chooseCommitments: "square.stack.3d.up.fill"
+    case .assignTeam: "person.3.fill"
+    case .reviewAndResolve: "checkmark.shield.fill"
+    case .readyToCommit: "bolt.fill"
+    }
+  }
+}
+
+enum CompanyFlag: String, Codable, CaseIterable, Identifiable, Hashable {
+  case focusedProduct
+  case featureDebt
+  case evidenceLedClaims
+  case hypeFirst
+  case protectedFounderHealth
+  case burnoutCulture
+  case paidPilot
+  case customerFirst
+  case liabilityDenied
+  case discountDependency
+  case premiumPositioning
+  case annualContracts
+  case launchPaused
+  case limitedLaunchMode
+  case outageGamble
+  case publicTransparency
+  case simplifiedNarrative
+  case mediaAverse
+  case competitorRace
+  case evidenceDifferentiation
+  case focusedExecution
+  case acceptedInvestment
+  case bootstrapIndependent
+  case founderFriendlyTerms
+  case humanCustomerSuccess
+  case agentOnlyCompany
+  case contractorSupport
+  case acquisitionAccepted
+  case acquisitionRejected
+  case licensedTechnology
+
+  var id: Self { self }
+
+  var name: String {
+    switch self {
+    case .focusedProduct: "Focused Product"
+    case .featureDebt: "Custom Feature Debt"
+    case .evidenceLedClaims: "Evidence-Led Claims"
+    case .hypeFirst: "Hype-First Positioning"
+    case .protectedFounderHealth: "Protected Founder Health"
+    case .burnoutCulture: "Burnout Culture"
+    case .paidPilot: "Paid Pilot"
+    case .customerFirst: "Customer-First Recovery"
+    case .liabilityDenied: "Liability Dispute"
+    case .discountDependency: "Discount Dependency"
+    case .premiumPositioning: "Premium Positioning"
+    case .annualContracts: "Annual Contracts"
+    case .launchPaused: "Launch Paused"
+    case .limitedLaunchMode: "Limited Launch Mode"
+    case .outageGamble: "Outage Gamble"
+    case .publicTransparency: "Public Transparency"
+    case .simplifiedNarrative: "Simplified Narrative"
+    case .mediaAverse: "Media Averse"
+    case .competitorRace: "Competitor Race"
+    case .evidenceDifferentiation: "Evidence Differentiation"
+    case .focusedExecution: "Focused Execution"
+    case .acceptedInvestment: "Investor Control Rights"
+    case .bootstrapIndependent: "Bootstrap Independence"
+    case .founderFriendlyTerms: "Founder-Friendly Terms"
+    case .humanCustomerSuccess: "Human Customer Success"
+    case .agentOnlyCompany: "Agent-Only Company"
+    case .contractorSupport: "Contractor Support"
+    case .acquisitionAccepted: "Acquisition Accepted"
+    case .acquisitionRejected: "Acquisition Rejected"
+    case .licensedTechnology: "Licensed Technology"
+    }
+  }
+}
+
+struct CompanyObligation: Codable, Identifiable, Hashable {
+  var id: String
+  var title: String
+  var detail: String
+  var sourceDecision: String
+  var remainingSprints: Int
+  var effectsPerSprint: SimulationEffects
+
+  var durationLabel: String {
+    remainingSprints == 1 ? "1 sprint remaining" : "\(remainingSprints) sprints remaining"
+  }
+}
+
+struct CareerDecisionRecord: Codable, Identifiable, Hashable {
+  var id: String
+  var venture: Int
+  var sprint: Int
+  var dilemmaTitle: String
+  var choiceTitle: String
+  var consequence: String
+}
+
 struct FounderStats: Codable, Hashable {
   var runway = 42
   var revenue = 500
@@ -505,6 +628,7 @@ struct SprintObjective: Codable, Identifiable, Hashable {
   var detail: String
   var reward: SimulationEffects
   var rewardLabel: String
+  var targetAgentID: String? = nil
 }
 
 enum GarageUpgrade: String, CaseIterable, Identifiable {
@@ -755,6 +879,15 @@ struct CareerSave: Codable {
   var awaitingFounderPass: Bool
   var careerMode: CareerMode
   var pendingVentureCheckpoint: VentureCheckpoint?
+  var recentTaskTitles: [String]
+  var taskDeckTitles: [String]
+  var dilemmaDeckTemplateIDs: [String]
+  var dilemmaDeckChapter: VentureChapter?
+  var recentObjectiveKinds: [SprintObjectiveKind]
+  var companyFlags: Set<CompanyFlag>
+  var activeObligations: [CompanyObligation]
+  var decisionHistory: [CareerDecisionRecord]
+  var completedObjectives: Int
 
   private enum CodingKeys: String, CodingKey {
     case founderName, doctrine, sprint, venture, intent, stats, agents, tasks
@@ -762,6 +895,8 @@ struct CareerSave: Codable {
     case evidence, outcome, randomNumberGenerator, correlatedFailureEvent
     case pendingEffects, reportCache, precedents, awaitingFounderPass
     case careerMode, pendingVentureCheckpoint
+    case recentTaskTitles, taskDeckTitles, dilemmaDeckTemplateIDs, dilemmaDeckChapter
+    case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives
   }
 
   init(
@@ -787,7 +922,16 @@ struct CareerSave: Codable {
     precedents: [Precedent] = [],
     awaitingFounderPass: Bool = false,
     careerMode: CareerMode = .bounded,
-    pendingVentureCheckpoint: VentureCheckpoint? = nil
+    pendingVentureCheckpoint: VentureCheckpoint? = nil,
+    recentTaskTitles: [String] = [],
+    taskDeckTitles: [String] = [],
+    dilemmaDeckTemplateIDs: [String] = [],
+    dilemmaDeckChapter: VentureChapter? = nil,
+    recentObjectiveKinds: [SprintObjectiveKind] = [],
+    companyFlags: Set<CompanyFlag> = [],
+    activeObligations: [CompanyObligation] = [],
+    decisionHistory: [CareerDecisionRecord] = [],
+    completedObjectives: Int = 0
   ) {
     self.founderName = founderName
     self.doctrine = doctrine
@@ -812,6 +956,15 @@ struct CareerSave: Codable {
     self.awaitingFounderPass = awaitingFounderPass
     self.careerMode = careerMode
     self.pendingVentureCheckpoint = pendingVentureCheckpoint
+    self.recentTaskTitles = recentTaskTitles
+    self.taskDeckTitles = taskDeckTitles
+    self.dilemmaDeckTemplateIDs = dilemmaDeckTemplateIDs
+    self.dilemmaDeckChapter = dilemmaDeckChapter
+    self.recentObjectiveKinds = recentObjectiveKinds
+    self.companyFlags = companyFlags
+    self.activeObligations = activeObligations
+    self.decisionHistory = decisionHistory
+    self.completedObjectives = completedObjectives
   }
 
   init(from decoder: Decoder) throws {
@@ -851,6 +1004,15 @@ struct CareerSave: Codable {
     pendingVentureCheckpoint = try container.decodeIfPresent(
       VentureCheckpoint.self, forKey: .pendingVentureCheckpoint
     )
+    recentTaskTitles = try container.decodeIfPresent([String].self, forKey: .recentTaskTitles) ?? []
+    taskDeckTitles = try container.decodeIfPresent([String].self, forKey: .taskDeckTitles) ?? []
+    dilemmaDeckTemplateIDs = try container.decodeIfPresent([String].self, forKey: .dilemmaDeckTemplateIDs) ?? []
+    dilemmaDeckChapter = try container.decodeIfPresent(VentureChapter.self, forKey: .dilemmaDeckChapter)
+    recentObjectiveKinds = try container.decodeIfPresent([SprintObjectiveKind].self, forKey: .recentObjectiveKinds) ?? []
+    companyFlags = try container.decodeIfPresent(Set<CompanyFlag>.self, forKey: .companyFlags) ?? []
+    activeObligations = try container.decodeIfPresent([CompanyObligation].self, forKey: .activeObligations) ?? []
+    decisionHistory = try container.decodeIfPresent([CareerDecisionRecord].self, forKey: .decisionHistory) ?? []
+    completedObjectives = try container.decodeIfPresent(Int.self, forKey: .completedObjectives) ?? 0
   }
 }
 

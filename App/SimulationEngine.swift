@@ -24,7 +24,8 @@ enum SimulationEngine {
     agents: [SoloAgent],
     rng: inout SeededRandomNumberGenerator
   ) -> CorrelatedFailureEvent? {
-    guard rng.probability() < 0.24 else { return nil }
+    let escalation = min(0.18, Double(max(0, venture - 1)) * 0.025)
+    guard rng.probability() < 0.24 + escalation else { return nil }
     let families = Array(Set(agents.map(\.modelFamily))).sorted()
     guard !families.isEmpty else { return nil }
     let family = families[rng.integer(in: 0 ... families.count - 1)]
@@ -32,7 +33,7 @@ enum SimulationEngine {
     return CorrelatedFailureEvent(
       id: "V\(venture)-S\(sprint)-\(eventCode)",
       modelFamily: family,
-      qualityPenalty: rng.integer(in: 16 ... 24)
+      qualityPenalty: rng.integer(in: 16 ... 24) + min(10, max(0, venture - 1) * 2)
     )
   }
 
@@ -63,11 +64,24 @@ enum SimulationEngine {
       ? correlatedFailureEvent
       : nil
     let actualNoise = rng.integer(in: -12 ... 12)
+    let relationshipAdjustment = min(8, max(-8, (agent.relationship - 55) / 5))
+    let personalityAdjustment: Int
+    switch agent.id {
+    case "aurora":
+      personalityAdjustment = task.role == .research || task.category == .trust ? 4 : (intent == .sell ? -2 : 0)
+    case "stacks":
+      personalityAdjustment = task.role == .engineering ? 4 : (task.urgency == .critical ? 2 : 0)
+    case "brio":
+      personalityAdjustment = task.role == .marketing || task.category == .sales ? 4 : (task.category == .trust ? -3 : 0)
+    default:
+      personalityAdjustment = 0
+    }
     let rawActual = Double(agent.reliability) * 0.55
       + agent.calibration * 18
       + agent.trust * 0.18
       - agent.drift * 0.35
-      + Double(roleAdjustment + intentAdjustment + DoctrineProfile.profile(for: doctrine).actualQualityBonus + actualNoise)
+      + Double(roleAdjustment + intentAdjustment + relationshipAdjustment + personalityAdjustment
+        + DoctrineProfile.profile(for: doctrine).actualQualityBonus + actualNoise)
       - Double(correlation?.qualityPenalty ?? 0)
     let actualQuality = clampedPercent(Int(rawActual.rounded()))
 
@@ -75,8 +89,12 @@ enum SimulationEngine {
     let reportedQuality = clampedPercent(
       actualQuality + rng.integer(in: -reportSpread ... reportSpread)
     )
+    var evidenceAdjustment = agent.relationship >= 75 ? 6 : (agent.relationship < 35 ? -8 : 0)
+    if agent.id == "aurora" && (task.role == .research || task.category == .trust) { evidenceAdjustment += 5 }
+    if agent.id == "brio" && task.urgency == .critical && intent == .sell { evidenceAdjustment -= 5 }
     let evidenceCompleteness = clampedPercent(
       Int((agent.calibration * 70 + Double(agent.reliability) * 0.25 - agent.drift * 0.25).rounded())
+        + evidenceAdjustment
         + rng.integer(in: -10 ... 10)
     )
     let confidenceWidth = max(
@@ -137,6 +155,9 @@ enum SimulationEngine {
       guard let assignedID = assignedTask.assignedAgentID else { return false }
       return allAgents.first(where: { $0.id == assignedID })?.modelFamily == agent.modelFamily
     }.count
+    if agent.relationship >= 75 && evidenceCompleteness < 45 {
+      return "Agent voluntarily flagged weak evidence"
+    }
     if familyAssignments > 1 { return "Shared model-family exposure" }
     if agent.role != task.role && agent.role != .general && task.role != .general { return "Role mismatch" }
     if agent.drift >= 35 { return "Elevated operational drift" }
@@ -169,6 +190,25 @@ enum SimulationEngine {
         + stats.trust * 20
         + stats.energy * 10
     )
+  }
+
+
+
+  static func careerScore(
+    stats: FounderStats,
+    verifiedEvidence: Int,
+    completedObjectives: Int,
+    averageRelationship: Int,
+    unresolvedObligations: Int,
+    completedVentures: Int
+  ) -> Int {
+    let base = careerScore(stats: stats)
+    let qualityBonus = max(0, verifiedEvidence) * 35
+    let objectiveBonus = max(0, completedObjectives) * 120
+    let relationshipBonus = max(0, min(100, averageRelationship)) * 8
+    let ventureBonus = max(0, completedVentures) * 250
+    let obligationPenalty = max(0, unresolvedObligations) * 180
+    return max(0, base + qualityBonus + objectiveBonus + relationshipBonus + ventureBonus - obligationPenalty)
   }
 
   private static func clampedPercent(_ value: Int) -> Int {

@@ -69,6 +69,39 @@ enum ContentLibrary {
       SoloTask(title: "Respond to Viral Spike", detail: "Capture attention without collapsing operations.", role: .general, category: .crisis, urgency: .critical, impact: .revenue(1_120), skipEffects: SimulationEffects(trust: -3, runway: -2))
     ]
 
+    /// Build 6 expands the task deck to sixty authored opportunities. A full
+    /// twelve-sprint venture can now show five unique choices per sprint before
+    /// the deck needs to recycle.
+    static let build6TaskExpansion: [SoloTask] = [
+      SoloTask(title: "Prototype Agent Memory", detail: "Give the workforce a durable record of what happened before.", role: .engineering, category: .product, impact: .momentum(8), skipEffects: SimulationEffects(trust: -2)),
+      SoloTask(title: "Refactor Fragile Workflow", detail: "Remove the shortcut that keeps breaking under real use.", role: .engineering, category: .operations, urgency: .important, impact: .trust(7), skipEffects: SimulationEffects(momentum: -2, trust: -2)),
+      SoloTask(title: "Build Offline Recovery", detail: "Keep the company usable when a provider or connection disappears.", role: .engineering, category: .crisis, impact: .trust(8), skipEffects: SimulationEffects(trust: -4)),
+      SoloTask(title: "Instrument Founder Attention", detail: "Measure where founder judgment is actually being consumed.", role: .engineering, category: .operations, impact: .momentum(6), skipEffects: SimulationEffects(energy: -2)),
+      SoloTask(title: "Ship Team Dashboard", detail: "Make agent workload, drift, and evidence visible in one place.", role: .engineering, category: .product, impact: .momentum(8), skipEffects: SimulationEffects(trust: -2)),
+      SoloTask(title: "Secure Customer Data", detail: "Close the access gap before a customer finds it first.", role: .engineering, category: .trust, urgency: .critical, impact: .trust(11), skipEffects: SimulationEffects(revenue: -180, trust: -7)),
+
+      SoloTask(title: "Map Founder Churn", detail: "Learn why serious users stop before the product becomes a habit.", role: .research, category: .research, impact: .revenue(700), skipEffects: SimulationEffects(revenue: -180)),
+      SoloTask(title: "Validate Enterprise Workflow", detail: "Test whether the product survives a real operating process.", role: .research, category: .research, urgency: .important, impact: .trust(8), skipEffects: SimulationEffects(momentum: -2)),
+      SoloTask(title: "Audit Pricing Claims", detail: "Prove the value story before the paywall makes the promise public.", role: .research, category: .trust, impact: .trust(7), skipEffects: SimulationEffects(trust: -3)),
+      SoloTask(title: "Study Founder Burnout", detail: "Find which operating patterns turn growth into personal collapse.", role: .research, category: .founderLife, impact: .energy(8), skipEffects: SimulationEffects(energy: -4)),
+      SoloTask(title: "Forecast Runway Scenarios", detail: "Model the downside before the company is forced to live it.", role: .research, category: .operations, impact: .runway(5), skipEffects: SimulationEffects(runway: -2)),
+      SoloTask(title: "Investigate Model Bias", detail: "Test whether one family is producing systematically weaker decisions.", role: .research, category: .trust, urgency: .critical, impact: .trust(10), skipEffects: SimulationEffects(trust: -6)),
+
+      SoloTask(title: "Publish Customer Proof", detail: "Turn one verified result into a credible market story.", role: .marketing, category: .sales, impact: .revenue(820), skipEffects: SimulationEffects(momentum: -2)),
+      SoloTask(title: "Run Founder Community Event", detail: "Create a place where early users teach each other how to win.", role: .marketing, category: .sales, impact: .momentum(8), skipEffects: SimulationEffects(revenue: -100)),
+      SoloTask(title: "Negotiate Channel Partnership", detail: "Trade margin for distribution without losing the product story.", role: .marketing, category: .sales, urgency: .important, impact: .runway(5), skipEffects: SimulationEffects(runway: -2)),
+      SoloTask(title: "Recover Failed Launch", detail: "Own the miss publicly and rebuild attention with evidence.", role: .marketing, category: .crisis, urgency: .critical, impact: .trust(9), skipEffects: SimulationEffects(momentum: -3, trust: -6)),
+      SoloTask(title: "Create Upgrade Campaign", detail: "Show existing users why the next tier is worth paying for.", role: .marketing, category: .sales, impact: .revenue(960), skipEffects: SimulationEffects(revenue: -240)),
+      SoloTask(title: "Pitch App Reviewers", detail: "Earn attention through a clear, defensible product story.", role: .marketing, category: .sales, impact: .momentum(9), skipEffects: SimulationEffects(momentum: -3)),
+
+      SoloTask(title: "Renegotiate Vendor Costs", detail: "Reduce recurring burn before scale makes it permanent.", role: .general, category: .operations, impact: .runway(6), skipEffects: SimulationEffects(runway: -2)),
+      SoloTask(title: "Document Incident Response", detail: "Turn emergency improvisation into a repeatable operating system.", role: .general, category: .operations, impact: .trust(7), skipEffects: SimulationEffects(trust: -3)),
+      SoloTask(title: "Schedule Founder Day Off", detail: "Protect recovery before exhaustion becomes an operating dependency.", role: .general, category: .founderLife, impact: .energy(10), skipEffects: SimulationEffects(energy: -6)),
+      SoloTask(title: "Reconcile Customer Promises", detail: "Align sales language, product behavior, and the evidence ledger.", role: .general, category: .trust, urgency: .important, impact: .trust(9), skipEffects: SimulationEffects(trust: -5))
+    ]
+
+    static var allTaskPool: [SoloTask] { taskPool + build6TaskExpansion }
+
     static let objectivePool: [SprintObjective] = [
       SprintObjective(id: "evidence", kind: .evidenceFirst, title: "Evidence First", detail: "Review at least two committed tasks.", reward: SimulationEffects(trust: 4), rewardLabel: "+4 Trust"),
       SprintObjective(id: "diversify", kind: .diversifiedModels, title: "Avoid the Single Point", detail: "Use at least two model families this sprint.", reward: SimulationEffects(momentum: 3, trust: 2), rewardLabel: "+3 Momentum • +2 Trust"),

@@ -60,6 +60,12 @@ final class GameStore {
   /// mode never populates this — it goes straight to `careerOutcome`.
   private(set) var pendingVentureCheckpoint: VentureCheckpoint?
 
+  // ── Build 6: persistent company story ───────────────────────────────
+  private(set) var companyFlags: Set<CompanyFlag> = []
+  private(set) var activeObligations: [CompanyObligation] = []
+  private(set) var decisionHistory: [CareerDecisionRecord] = []
+  private(set) var completedObjectives = 0
+
   /// Supplies entitlement state. Replaceable so the simulation stays testable
   /// without RevenueCat, StoreKit, or a network.
   var entitlements: any EntitlementProviding = StaticEntitlementProvider()
@@ -75,6 +81,7 @@ final class GameStore {
 
   var hasSave: Bool {
     UserDefaults.standard.data(forKey: Self.saveKey) != nil
+      || UserDefaults.standard.data(forKey: Self.v7SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v6SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v5SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v4SaveKey) != nil
@@ -96,6 +103,55 @@ final class GameStore {
   var selectedDilemmaChoice: DilemmaChoice? {
     guard let activeDilemma, let selectedDilemmaChoiceID else { return nil }
     return activeDilemma.choices.first(where: { $0.id == selectedDilemmaChoiceID })
+  }
+
+
+  var sprintPhase: SprintPhase {
+    if activeDilemma != nil && selectedDilemmaChoice == nil { return .founderEvent }
+    if tasks.allSatisfy({ $0.assignedAgentID == nil }) { return .chooseCommitments }
+    if tasks.filter({ $0.assignedAgentID != nil }).count < tasks.count { return .assignTeam }
+    if tasks.contains(where: { $0.isReviewed && !$0.resolutionLocked }) { return .reviewAndResolve }
+    return .readyToCommit
+  }
+
+  var averageRelationship: Int {
+    guard !agents.isEmpty else { return 0 }
+    return agents.map(\.relationship).reduce(0, +) / agents.count
+  }
+
+  var venturePressureSummary: String {
+    let runwayCost = 3 + min(4, max(0, venture - 1) / 2)
+    let energyCost = 2 + min(2, max(0, venture - 1) / 3)
+    return "Operating pressure: -\(runwayCost) Runway and -\(energyCost) Energy per sprint"
+  }
+
+  var objectiveProgressText: String {
+    guard let objective = currentObjective else { return "No objective" }
+    let assigned = tasks.filter { $0.assignedAgentID != nil }
+    switch objective.kind {
+    case .evidenceFirst:
+      return "\(tasks.filter(\.isReviewed).count)/2 reviews completed"
+    case .diversifiedModels:
+      let families = Set<String>(assigned.compactMap { task in
+        guard let id = task.assignedAgentID else { return nil }
+        return agents.first(where: { $0.id == id })?.modelFamily
+      })
+      return "\(families.count)/2 model families • role fit required"
+    case .roleDiscipline:
+      let fit = assigned.filter { task in
+        guard let id = task.assignedAgentID, let agent = agents.first(where: { $0.id == id }) else { return false }
+        return agent.role == task.role || agent.role == .general || task.role == .general
+      }.count
+      return "\(fit)/3 role-fit assignments"
+    case .protectFounder:
+      return "\(founderAttentionSpent)/1 Attention used"
+    case .calculatedRisk:
+      return tasks.contains(where: { $0.resolution == .shipAnyway }) ? "Aggressive shipment selected" : "Ship one reviewed result aggressively"
+    case .repairTrust:
+      guard let targetID = objective.targetAgentID,
+            let agent = agents.first(where: { $0.id == targetID }) else { return "Stabilize the named agent" }
+      return "\(agent.name) drift: \(Int(agent.drift))"
+    }
   }
 
   var unlockedGarageUpgrades: [GarageUpgrade] {
@@ -138,6 +194,15 @@ final class GameStore {
     recallsShownThisVenture = 0
     awaitingFounderPass = false
     pendingVentureCheckpoint = nil
+    companyFlags = []
+    activeObligations = []
+    decisionHistory = []
+    completedObjectives = 0
+    recentTaskTitles = []
+    taskDeckTitles = []
+    dilemmaDeckTemplateIDs = []
+    dilemmaDeckChapter = nil
+    recentObjectiveKinds = []
     intent = .build
     stats = FounderStats()
     agents = ContentLibrary.initialAgents
@@ -170,6 +235,10 @@ final class GameStore {
        let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
        envelope.version == Self.saveVersion {
       loadedSave = envelope.career
+    } else if let data = UserDefaults.standard.data(forKey: Self.v7SaveKey),
+              let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
+              envelope.version == 7 {
+      loadedSave = migrateV7(envelope.career)
     } else if let data = UserDefaults.standard.data(forKey: Self.v6SaveKey),
               let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
               envelope.version == 6 {
@@ -467,17 +536,20 @@ final class GameStore {
     let dueEffects = pendingEffects.filter { $0.dueCareerSprint <= careerSprintIndex }
     pendingEffects.removeAll { $0.dueCareerSprint <= careerSprintIndex }
     var effects = dueEffects.reduce(SimulationEffects()) { $0 + $1.effects }
+    applyActiveObligations(to: &effects)
     effects = effects + skippedConsequences
-    if let dilemmaChoice {
+    var acquisitionAccepted = false
+    if let dilemmaChoice, let activeDilemma {
       effects = effects + dilemmaChoice.effects
+      acquisitionAccepted = applyPersistentConsequence(dilemma: activeDilemma, choice: dilemmaChoice)
       for (agentID, delta) in dilemmaChoice.relationshipDeltas {
         if let index = agents.firstIndex(where: { $0.id == agentID }) {
           agents[index].relationship = clamped(agents[index].relationship + delta)
         }
       }
     }
-    effects.runway -= 3
-    effects.energy -= 2
+    effects.runway -= 3 + min(4, max(0, venture - 1) / 2)
+    effects.energy -= 2 + min(2, max(0, venture - 1) / 3)
     switch intent {
     case .build:
       effects.momentum += 3
@@ -532,6 +604,7 @@ final class GameStore {
     let objectiveCompleted = evaluateCurrentObjective(assignedIndices: assignedIndices, riskyOutcomes: riskyOutcomes)
     if objectiveCompleted, let currentObjective {
       effects = effects + currentObjective.reward
+      completedObjectives += 1
     }
 
     apply(effects)
@@ -562,27 +635,21 @@ final class GameStore {
       reviewedCount: reviewed
     )
 
-    careerOutcome = resolvedOutcome()
+    careerOutcome = acquisitionAccepted ? acquisitionOutcome() : resolvedOutcome()
     if careerOutcome == nil && sprint == Self.sprintsPerVenture {
-      if venture >= Self.freeVentureCount && !hasFounderPass {
-        // Venture 1 is finished and free. Hold the career here rather than
-        // advancing or discarding: unlocking resumes exactly at this point.
-        awaitingFounderPass = true
-        report = nil
-        stage = .ventureUnlock
-        saveCareer()
-        return
-      }
       switch careerMode {
       case .bounded:
-        // Unchanged from Build 4: the venture cap and the forced victory at
-        // maximumVentures live entirely in resolvedOutcome(), so this just
-        // keeps advancing until that check fires on its own.
+        if venture >= Self.freeVentureCount && !hasFounderPass {
+          awaitingFounderPass = true
+          report = nil
+          stage = .ventureUnlock
+          saveCareer()
+          return
+        }
         advanceToNextVenture()
       case .continuous:
-        // No cap to check against. Completing a venture is a real, payoff
-        // moment here, not a silent rollover -- present the checkpoint and
-        // let the player choose to continue or retire on their own terms.
+        // Every continuous venture reaches its checkpoint first. The player
+        // may always retire; Founder Pass gates only the Continue decision.
         presentVentureCheckpoint()
       }
     } else if careerOutcome == nil {
@@ -597,7 +664,11 @@ final class GameStore {
   func resumeAfterFounderPassUnlock() {
     guard awaitingFounderPass, hasFounderPass else { return }
     awaitingFounderPass = false
+    if pendingVentureCheckpoint != nil {
+      pendingVentureCheckpoint = nil
+    }
     advanceToNextVenture()
+    stage = .game
     saveCareer()
   }
 
@@ -607,8 +678,14 @@ final class GameStore {
     recallsShownThisVenture = 0
     activeRecall = nil
     stats.trackRecord += max(8, (stats.momentum + stats.trust) / 8)
-    stats.runway = max(stats.runway, 38)
-    stats.energy = max(stats.energy, 72)
+    let earnedRunwayRecovery = max(4, min(10, (stats.trust + stats.momentum) / 24))
+    let earnedEnergyRecovery = max(6, min(14, averageRelationship / 8))
+    stats.runway = min(365, stats.runway + earnedRunwayRecovery)
+    stats.energy = min(100, stats.energy + earnedEnergyRecovery)
+    recentTaskTitles = []
+    taskDeckTitles = []
+    dilemmaDeckTemplateIDs = []
+    dilemmaDeckChapter = nil
     prepareSprint()
   }
 
@@ -632,6 +709,12 @@ final class GameStore {
   /// The player's choice at a venture checkpoint: keep going.
   func continueFromCheckpoint() {
     guard careerMode == .continuous, pendingVentureCheckpoint != nil else { return }
+    if venture >= Self.freeVentureCount && !hasFounderPass {
+      awaitingFounderPass = true
+      stage = .ventureUnlock
+      saveCareer()
+      return
+    }
     pendingVentureCheckpoint = nil
     advanceToNextVenture()
     stage = .game
@@ -682,7 +765,7 @@ final class GameStore {
   /// gate; the player can review the finished venture, evidence, and roster.
   func reviewCompletedVenture() {
     guard awaitingFounderPass else { return }
-    stage = .game
+    stage = pendingVentureCheckpoint == nil ? .game : .ventureCheckpoint
   }
 
   private func recordPrecedentIfConsequential(
@@ -731,6 +814,7 @@ final class GameStore {
 
   func resetCareer() {
     UserDefaults.standard.removeObject(forKey: Self.saveKey)
+    UserDefaults.standard.removeObject(forKey: Self.v7SaveKey)
     UserDefaults.standard.removeObject(forKey: Self.v6SaveKey)
     UserDefaults.standard.removeObject(forKey: Self.v5SaveKey)
     UserDefaults.standard.removeObject(forKey: Self.v4SaveKey)
@@ -750,6 +834,16 @@ final class GameStore {
     activeRecall = nil
     recallsShownThisVenture = 0
     awaitingFounderPass = false
+    pendingVentureCheckpoint = nil
+    companyFlags = []
+    activeObligations = []
+    decisionHistory = []
+    completedObjectives = 0
+    recentTaskTitles = []
+    taskDeckTitles = []
+    dilemmaDeckTemplateIDs = []
+    dilemmaDeckChapter = nil
+    recentObjectiveKinds = []
     stage = .title
   }
 
@@ -861,7 +955,12 @@ final class GameStore {
     case .evidenceFirst:
       return assignedIndices.filter { tasks[$0].isReviewed }.count >= 2
     case .diversifiedModels:
-      return Set(assignedAgents.map(\.modelFamily)).count >= 2
+      let roleFit = assignedIndices.allSatisfy { index in
+        guard let agentID = tasks[index].assignedAgentID,
+              let agent = agents.first(where: { $0.id == agentID }) else { return false }
+        return agent.role == tasks[index].role || agent.role == .general || tasks[index].role == .general
+      }
+      return assignedIndices.count == 3 && roleFit && Set(assignedAgents.map(\.modelFamily)).count >= 2
     case .roleDiscipline:
       return !assignedIndices.isEmpty && assignedIndices.allSatisfy { index in
         guard let agentID = tasks[index].assignedAgentID,
@@ -873,12 +972,93 @@ final class GameStore {
     case .calculatedRisk:
       return tasks.contains(where: { $0.resolution == .shipAnyway }) && riskyOutcomes <= 1
     case .repairTrust:
-      return tasks.contains { task in
-        guard task.isReviewed, let state = task.result?.verificationState else { return false }
-        let foundProblem = state == .overclaimed || state == .driftDetected || state == .evidenceIncomplete
-        return foundProblem && (task.resolution == .rework || task.resolution == .escalate)
-      }
+      guard let targetID = currentObjective.targetAgentID,
+            let target = agents.first(where: { $0.id == targetID }) else { return false }
+      return target.drift < 35 && tasks.contains { $0.assignedAgentID == targetID && $0.isReviewed }
     }
+  }
+
+  private func applyActiveObligations(to effects: inout SimulationEffects) {
+    for obligation in activeObligations { effects = effects + obligation.effectsPerSprint }
+    for index in activeObligations.indices { activeObligations[index].remainingSprints -= 1 }
+    activeObligations.removeAll { $0.remainingSprints <= 0 }
+  }
+
+  @discardableResult
+  private func applyPersistentConsequence(dilemma: FounderDilemma, choice: DilemmaChoice) -> Bool {
+    let templateID = dilemma.id.split(separator: "-").dropFirst(2).joined(separator: "-")
+    decisionHistory.insert(
+      CareerDecisionRecord(
+        id: "V\(venture)-S\(sprint)-\(templateID)-\(choice.id)",
+        venture: venture,
+        sprint: sprint,
+        dilemmaTitle: dilemma.title,
+        choiceTitle: choice.title,
+        consequence: choice.consequencePreview
+      ), at: 0
+    )
+    if decisionHistory.count > 50 { decisionHistory.removeLast(decisionHistory.count - 50) }
+
+    func flag(_ value: CompanyFlag) { companyFlags.insert(value) }
+    func obligation(_ id: String, _ title: String, _ detail: String, _ sprints: Int, _ effects: SimulationEffects) {
+      activeObligations.removeAll { $0.id == id }
+      activeObligations.append(CompanyObligation(
+        id: id, title: title, detail: detail, sourceDecision: dilemma.title,
+        remainingSprints: sprints, effectsPerSprint: effects
+      ))
+    }
+
+    switch (templateID, choice.id) {
+    case ("prototype-scope", "cut"): flag(.focusedProduct)
+    case ("prototype-scope", "build"):
+      flag(.featureDebt); obligation("feature-debt", "Custom Feature Debt", "The extra feature keeps consuming maintenance capacity.", 4, SimulationEffects(momentum: -1, runway: -1))
+    case ("prototype-claim", "narrow"), ("prototype-claim", "proof"): flag(.evidenceLedClaims)
+    case ("prototype-claim", "bold"):
+      flag(.hypeFirst); obligation("claim-exposure", "Claim Exposure", "The market now expects proof behind the autonomy claim.", 3, SimulationEffects(trust: -2))
+    case ("prototype-night", "sleep"): flag(.protectedFounderHealth)
+    case ("prototype-night", "push"):
+      flag(.burnoutCulture); obligation("burnout-culture", "Burnout Culture", "The company learned that founder exhaustion is available capacity.", 4, SimulationEffects(energy: -2))
+    case ("customer-custom", "accept"):
+      flag(.featureDebt); obligation("enterprise-custom-debt", "Enterprise Custom Debt", "A one-customer feature now competes with the roadmap.", 5, SimulationEffects(momentum: -1, runway: -1))
+    case ("customer-custom", "pilot"):
+      flag(.paidPilot); obligation("paid-pilot", "Paid Pilot Delivery", "The pilot brings cash but requires high-touch delivery.", 3, SimulationEffects(revenue: 80, energy: -1))
+    case ("customer-refund", "refund"), ("customer-refund", "investigate"): flag(.customerFirst)
+    case ("customer-refund", "deny"):
+      flag(.liabilityDenied); obligation("liability-dispute", "Liability Dispute", "The denied claim keeps returning through support and reputation.", 3, SimulationEffects(revenue: -60, trust: -2))
+    case ("customer-discount", "discount"):
+      flag(.discountDependency); obligation("discount-dependency", "Discount Dependency", "Growth is arriving with weaker unit economics.", 5, SimulationEffects(revenue: 70, trust: -1, runway: -1))
+    case ("customer-discount", "hold"): flag(.premiumPositioning)
+    case ("customer-discount", "annual"):
+      flag(.annualContracts); obligation("annual-contracts", "Annual Commitments", "Annual terms improve cash while raising delivery expectations.", 4, SimulationEffects(revenue: 90, trust: -1))
+    case ("launch-outage", "pause"):
+      flag(.launchPaused); obligation("launch-pause", "Launch Recovery", "The pause protects trust but costs another sprint of momentum.", 1, SimulationEffects(momentum: -2, trust: 1))
+    case ("launch-outage", "degrade"): flag(.limitedLaunchMode)
+    case ("launch-outage", "continue"):
+      flag(.outageGamble); obligation("outage-gamble", "Outage Exposure", "Customers are discovering the launch was kept live through instability.", 2, SimulationEffects(momentum: -2, trust: -3))
+    case ("launch-press", "transparent"): flag(.publicTransparency)
+    case ("launch-press", "simple"): flag(.simplifiedNarrative)
+    case ("launch-press", "decline"): flag(.mediaAverse)
+    case ("launch-copycat", "race"):
+      flag(.competitorRace); obligation("competitor-race", "Competitor Race", "Higher launch spend is now part of the operating baseline.", 4, SimulationEffects(momentum: 1, runway: -2))
+    case ("launch-copycat", "differentiate"): flag(.evidenceDifferentiation)
+    case ("launch-copycat", "ignore"): flag(.focusedExecution)
+    case ("scale-investor", "take"):
+      flag(.acceptedInvestment); obligation("board-control", "Board Control Rights", "Investor oversight adds runway and recurring founder overhead.", 8, SimulationEffects(energy: -1, runway: 1))
+    case ("scale-investor", "bootstrap"): flag(.bootstrapIndependent)
+    case ("scale-investor", "counter"): flag(.founderFriendlyTerms)
+    case ("scale-hire", "hire"):
+      flag(.humanCustomerSuccess); obligation("human-hire", "Customer Success Payroll", "A human owner raises trust and recurring burn.", 12, SimulationEffects(trust: 1, runway: -1))
+    case ("scale-hire", "agents"): flag(.agentOnlyCompany)
+    case ("scale-hire", "contract"):
+      flag(.contractorSupport); obligation("support-contractor", "Support Contractor", "Contract coverage helps temporarily and consumes runway.", 5, SimulationEffects(trust: 1, runway: -1))
+    case ("scale-acquisition", "sell"):
+      flag(.acquisitionAccepted); return true
+    case ("scale-acquisition", "continue"): flag(.acquisitionRejected)
+    case ("scale-acquisition", "license"):
+      flag(.licensedTechnology); obligation("license-revenue", "Technology License", "The license creates recurring cash and support expectations.", 6, SimulationEffects(revenue: 110, energy: -1))
+    default: break
+    }
+    return false
   }
 
   private func apply(_ effects: SimulationEffects) {
@@ -923,6 +1103,15 @@ final class GameStore {
     precedents = save.precedents
     awaitingFounderPass = save.awaitingFounderPass
     pendingVentureCheckpoint = save.pendingVentureCheckpoint
+    recentTaskTitles = save.recentTaskTitles
+    taskDeckTitles = save.taskDeckTitles
+    dilemmaDeckTemplateIDs = save.dilemmaDeckTemplateIDs
+    dilemmaDeckChapter = save.dilemmaDeckChapter
+    recentObjectiveKinds = save.recentObjectiveKinds
+    companyFlags = save.companyFlags
+    activeObligations = save.activeObligations
+    decisionHistory = save.decisionHistory
+    completedObjectives = save.completedObjectives
     recallsShownThisVenture = 0
     activeRecall = nil
     // This safety net is bounded-mode-only, same reasoning as the clamp above:
@@ -981,6 +1170,10 @@ final class GameStore {
   /// no-op made explicit -- a v6 career keeps playing exactly as it did,
   /// under the rules that existed when it started. Continuous mode is opt-in
   /// for new careers only, never retrofitted onto one already in progress.
+  private func migrateV7(_ legacy: CareerSave) -> CareerSave {
+    legacy
+  }
+
   private func migrateV6(_ legacy: CareerSave) -> CareerSave {
     legacy
   }
@@ -1067,28 +1260,22 @@ final class GameStore {
     }
   }
 
-  /// Titles drafted in the last few sprints, so continuous mode spaces
-  /// repeats out instead of drawing purely at random every time. Not
-  /// persisted across app relaunches -- an in-memory-only smoothing pass,
-  /// not a durable fix for the deeper content-scale limitation (38 tasks
-  /// repeats heavily over a long continuous career regardless; see
-  /// BUILD5_CHANGELOG.md).
+  /// Persisted deterministic content decks. Save/reload now produces the same
+  /// future drafts, dilemmas, and objectives as uninterrupted play.
   private var recentTaskTitles: [String] = []
+  private var taskDeckTitles: [String] = []
+  private var dilemmaDeckTemplateIDs: [String] = []
+  private var dilemmaDeckChapter: VentureChapter?
+  private var recentObjectiveKinds: [SprintObjectiveKind] = []
   private static let recentTaskTitleWindow = 10
 
   private func makeTaskDraft() -> (active: [SoloTask], backlog: [SoloTask]) {
-    let fullPool = ContentLibrary.taskPool
-    let recent = Set(recentTaskTitles)
-    // Prefer titles outside the recent window; only fall back to the full
-    // pool if excluding recents would leave fewer than 5 to draw from, so a
-    // draft can always be filled exactly as it could before this change.
-    let preferredPool = fullPool.filter { !recent.contains($0.title) }
-    var candidates = preferredPool.count >= 5 ? preferredPool : fullPool
-
+    if taskDeckTitles.count < 5 { refillTaskDeck() }
     var draft: [SoloTask] = []
-    while draft.count < 5, !candidates.isEmpty {
-      let index = randomNumberGenerator.integer(in: 0 ... candidates.count - 1)
-      var task = candidates.remove(at: index)
+    let templates = Dictionary(uniqueKeysWithValues: ContentLibrary.allTaskPool.map { ($0.title, $0) })
+    while draft.count < 5, !taskDeckTitles.isEmpty {
+      let title = taskDeckTitles.removeFirst()
+      guard var task = templates[title] else { continue }
       task.id = nextDeterministicUUID()
       task.assignedAgentID = nil
       task.isReviewed = false
@@ -1097,18 +1284,37 @@ final class GameStore {
       task.resolutionLocked = false
       draft.append(task)
     }
-
+    if draft.count < 5 {
+      refillTaskDeck()
+      return makeTaskDraft()
+    }
     recentTaskTitles.append(contentsOf: draft.map(\.title))
     if recentTaskTitles.count > Self.recentTaskTitleWindow {
       recentTaskTitles.removeFirst(recentTaskTitles.count - Self.recentTaskTitleWindow)
     }
-
     return (Array(draft.prefix(3)), Array(draft.dropFirst(3)))
+  }
+
+  private func refillTaskDeck() {
+    let excluded = Set(taskDeckTitles + recentTaskTitles.suffix(5))
+    var titles = ContentLibrary.allTaskPool.map(\.title).filter { !excluded.contains($0) }
+    if titles.count < 5 { titles = ContentLibrary.allTaskPool.map(\.title) }
+    taskDeckTitles.append(contentsOf: deterministicallyShuffled(titles))
+  }
+
+  private func deterministicallyShuffled<T>(_ values: [T]) -> [T] {
+    var values = values
+    guard values.count > 1 else { return values }
+    for index in stride(from: values.count - 1, through: 1, by: -1) {
+      let swapIndex = randomNumberGenerator.integer(in: 0 ... index)
+      if index != swapIndex { values.swapAt(index, swapIndex) }
+    }
+    return values
   }
 
   private func makeLegacyBacklog(excluding activeTasks: [SoloTask]) -> [SoloTask] {
     let activeTitles = Set(activeTasks.map(\.title))
-    return ContentLibrary.taskPool
+    return ContentLibrary.allTaskPool
       .filter { !activeTitles.contains($0.title) }
       .prefix(2)
       .map { template in
@@ -1126,18 +1332,67 @@ final class GameStore {
   private func makeDilemma() -> FounderDilemma? {
     let candidates = ContentLibrary.dilemmaPool.filter { $0.chapter == chapter }
     guard !candidates.isEmpty else { return nil }
-    let index = randomNumberGenerator.integer(in: 0 ... candidates.count - 1)
-    var dilemma = candidates[index]
+    if dilemmaDeckChapter != chapter || dilemmaDeckTemplateIDs.isEmpty {
+      dilemmaDeckChapter = chapter
+      dilemmaDeckTemplateIDs = deterministicallyShuffled(candidates.map(\.id))
+    }
+    let templateID = dilemmaDeckTemplateIDs.removeFirst()
+    guard var dilemma = candidates.first(where: { $0.id == templateID }) else { return nil }
     dilemma.id = "V\(venture)-S\(sprint)-\(dilemma.id)"
     return dilemma
   }
 
   private func makeObjective() -> SprintObjective {
-    let objectives = ContentLibrary.objectivePool
-    let offset = (careerSprintIndex - 1 + randomNumberGenerator.integer(in: 0 ... objectives.count - 1)) % objectives.count
-    var objective = objectives[offset]
+    var valid = ContentLibrary.objectivePool.filter { template in
+      switch template.kind {
+      case .roleDiscipline, .diversifiedModels:
+        return hasRoleFitDraftSolution()
+      case .repairTrust:
+        return agents.contains(where: { $0.drift >= 35 && $0.drift < 50 })
+      case .evidenceFirst, .protectFounder, .calculatedRisk:
+        return true
+      }
+    }
+    let recent = Set(recentObjectiveKinds.suffix(2))
+    let fresh = valid.filter { !recent.contains($0.kind) }
+    if !fresh.isEmpty { valid = fresh }
+    if valid.isEmpty { valid = ContentLibrary.objectivePool.filter { $0.kind == .protectFounder } }
+    let index = randomNumberGenerator.integer(in: 0 ... max(0, valid.count - 1))
+    var objective = valid[index]
+    if objective.kind == .repairTrust,
+       let target = agents.filter({ $0.drift >= 35 && $0.drift < 50 }).max(by: { $0.drift < $1.drift }) {
+      objective.targetAgentID = target.id
+      objective.title = "Stabilize \(target.name)"
+      objective.detail = "Assign and review \(target.name), then reduce drift below 35."
+    }
     objective.id = "V\(venture)-S\(sprint)-\(objective.id)"
+    recentObjectiveKinds.append(objective.kind)
+    if recentObjectiveKinds.count > 3 { recentObjectiveKinds.removeFirst(recentObjectiveKinds.count - 3) }
     return objective
+  }
+
+  private func hasRoleFitDraftSolution() -> Bool {
+    let options = tasks + taskBacklog
+    guard options.count >= 3, agents.count >= 3 else { return false }
+    for a in 0 ..< options.count {
+      for b in (a + 1) ..< options.count {
+        for c in (b + 1) ..< options.count {
+          let chosen = [options[a], options[b], options[c]]
+          for first in agents.indices {
+            for second in agents.indices where second != first {
+              for third in agents.indices where third != first && third != second {
+                let assigned = [agents[first], agents[second], agents[third]]
+                let fits = zip(chosen, assigned).allSatisfy { task, agent in
+                  agent.role == task.role || agent.role == .general || task.role == .general
+                }
+                if fits { return true }
+              }
+            }
+          }
+        }
+      }
+    }
+    return false
   }
 
   private func nextDeterministicUUID() -> UUID {
@@ -1191,11 +1446,21 @@ final class GameStore {
       precedents: precedents,
       awaitingFounderPass: awaitingFounderPass,
       careerMode: careerMode,
-      pendingVentureCheckpoint: pendingVentureCheckpoint
+      pendingVentureCheckpoint: pendingVentureCheckpoint,
+      recentTaskTitles: recentTaskTitles,
+      taskDeckTitles: taskDeckTitles,
+      dilemmaDeckTemplateIDs: dilemmaDeckTemplateIDs,
+      dilemmaDeckChapter: dilemmaDeckChapter,
+      recentObjectiveKinds: recentObjectiveKinds,
+      companyFlags: companyFlags,
+      activeObligations: activeObligations,
+      decisionHistory: decisionHistory,
+      completedObjectives: completedObjectives
     )
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
       UserDefaults.standard.set(data, forKey: Self.saveKey)
+      UserDefaults.standard.removeObject(forKey: Self.v7SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v6SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v5SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v4SaveKey)
@@ -1266,6 +1531,15 @@ final class GameStore {
     return nil
   }
 
+  private func acquisitionOutcome() -> CareerOutcome {
+    CareerOutcome(
+      kind: .victory,
+      title: "The company was acquired",
+      summary: "You accepted the offer in Venture \(venture). The run ended with an exit, unresolved obligations, and a record of the company you chose to build.",
+      score: careerScore
+    )
+  }
+
   private func victoryOutcome() -> CareerOutcome {
     let completedSprints = careerMode == .bounded
       ? Self.maximumVentures * Self.sprintsPerVenture
@@ -1285,7 +1559,14 @@ final class GameStore {
   }
 
   private var careerScore: Int {
-    SimulationEngine.careerScore(stats: stats)
+    SimulationEngine.careerScore(
+      stats: stats,
+      verifiedEvidence: evidence.filter(\.evidenceVerified).count,
+      completedObjectives: completedObjectives,
+      averageRelationship: averageRelationship,
+      unresolvedObligations: activeObligations.count,
+      completedVentures: max(0, venture - (sprint == Self.sprintsPerVenture ? 0 : 1))
+    )
   }
 
   private var careerSprintIndex: Int {
@@ -1296,8 +1577,9 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  private static let saveVersion = 7
-  private static let saveKey = "solo-unicorn-run-native-save-v7"
+  private static let saveVersion = 8
+  private static let saveKey = "solo-unicorn-run-native-save-v8"
+  private static let v7SaveKey = "solo-unicorn-run-native-save-v7"
   private static let v6SaveKey = "solo-unicorn-run-native-save-v6"
   private static let v5SaveKey = "solo-unicorn-run-native-save-v5"
   private static let v4SaveKey = "solo-unicorn-run-native-save-v4"

@@ -19,13 +19,14 @@ struct VentureUnlockScreen: View {
     ScrollView {
       VStack(alignment: .leading, spacing: 18) {
         VStack(alignment: .leading, spacing: 10) {
-          Label("Venture 1 complete", systemImage: "checkmark.seal.fill")
+          Label("Venture \(store.venture) complete", systemImage: "checkmark.seal.fill")
             .font(.headline)
             .foregroundStyle(SoloTheme.mint)
-          Text("Two ventures. One track record.")
+          Text(store.careerMode == .continuous ? "Continue—or retire here." : "Two ventures. One track record.")
             .font(.largeTitle.bold())
-          Text("You finished twelve sprints and banked what they taught you. "
-               + "Venture 2 is where that record starts compounding.")
+          Text(store.careerMode == .continuous
+               ? "The checkpoint is yours. Retirement is always available; Founder Pass unlocks the next venture."
+               : "You finished twelve sprints and banked what they taught you. Venture 2 is where that record starts compounding.")
             .foregroundStyle(.secondary)
         }
         .soloCard()
@@ -62,7 +63,11 @@ struct VentureUnlockScreen: View {
         VStack(alignment: .leading, spacing: 10) {
           Text("Founder Pass unlocks")
             .font(.headline)
-          unlockRow("arrow.right.circle.fill", "Venture 2", "Twelve more sprints, carrying this career forward.")
+          unlockRow(
+            "arrow.right.circle.fill",
+            store.careerMode == .continuous ? "Venture \(store.venture + 1)" : "Venture 2",
+            "Twelve more sprints, carrying this company and its obligations forward."
+          )
           unlockRow("brain.head.profile", "Hindsight Recall", "Past precedents surface when the conditions repeat.")
           unlockRow("trophy.fill", "Full career outcome", "Complete the twenty-four-sprint track record.")
           Text("One purchase. No subscription.")
@@ -80,7 +85,7 @@ struct VentureUnlockScreen: View {
           Button {
             showsPaywall = true
           } label: {
-            Label("Unlock Venture 2", systemImage: "lock.open.fill")
+            Label("Unlock Venture \(store.venture + 1)", systemImage: "lock.open.fill")
               .frame(maxWidth: .infinity)
           }
           .buttonStyle(.borderedProminent)
@@ -93,7 +98,9 @@ struct VentureUnlockScreen: View {
           .buttonStyle(.bordered)
           .frame(maxWidth: .infinity)
 
-          Button("Back to Garage") { store.reviewCompletedVenture() }
+          Button(store.pendingVentureCheckpoint == nil ? "Back to Garage" : "Back to Checkpoint") {
+            store.reviewCompletedVenture()
+          }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
             .padding(.top, 2)
