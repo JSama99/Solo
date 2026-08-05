@@ -1,13 +1,29 @@
-Build an ambitious startup from a garage and see how far your decisions can take it.
+You are a solo founder. Your entire team is AI. They finish the work fast, they hand you a report — and the report is not always the truth.
 
-SOLO: Unicorn Run is a focused founder-life strategy simulation. Direct a specialized AI workforce, balance runway and revenue, protect momentum and trust, and guide your company through a twelve-sprint venture. Every choice changes the pressure on your team and the future of the business.
+SOLO: Unicorn Run is a founder-life strategy game about the one problem nobody warns you about: when your workers are AI agents, the hardest job isn't doing the work. It's knowing which results you can actually trust.
 
-Choose your founder doctrine, assign trusted agents, commit each sprint, and respond to the consequences. Push for growth, preserve energy, manage risk, and discover whether your company becomes a unicorn—or runs out of runway.
+THE CORE LOOP
+Every sprint, five opportunities land on your desk and you can only commit to three. You assign your agents by role fit, model family, drift, and trust. Then each one reports back — and here's the catch: what an agent REPORTS and what it actually DID are two different numbers, and one of them is hidden from you. Spend your scarce Founder Attention to review a result and you'll learn the truth: solid work, quiet overclaim, or a correlated failure quietly spreading across every agent sharing the same model family. Then you decide. Approve it. Rework it. Cross-check it against a second model family. Or ship it anyway and pray.
 
-Features:
-• A complete startup journey designed for solo play
-• Strategic tradeoffs across runway, revenue, momentum, trust, and energy
-• Distinct founder doctrines with meaningful strengths and risks
-• An AI-inspired team of research, engineering, and marketing agents
-• Persistent offline career progress
-• No account or sign-in required
+Review everything and you'll run out of energy and runway. Review nothing and you'll scale a company built on reports you never verified. That tension is the whole game.
+
+A COMPANY THAT REMEMBERS
+Your choices don't reset each sprint. Founder dilemmas — the custom feature that pays now but haunts your roadmap, the refund you fight or honor, the acquisition offer that could end the run today — leave permanent marks: company flags, recurring obligations, relationships that warm or sour, and a readable Company Story you can look back on. An evidence ledger records every verified and unverified claim. And in later ventures, Hindsight surfaces earlier moments that resemble the one you're in now — never telling you what to do, only what happened last time.
+
+TWO WAYS TO PLAY
+- Career — two ventures, twenty-four sprints, one complete story with a real ending.
+- Continuous — keep building through unlimited ventures under rising operating pressure, and retire on your own terms whenever you choose to stop.
+
+Pick a founder doctrine — Pure Agent, Human-Guided, or Trust-First — that reshapes your attention budget, your risk, and how your agents behave.
+
+FEATURES
+- A verification mechanic you won't find in other tycoon games: hidden actual quality, reported quality, evidence completeness, and correlated model-family risk
+- 60 authored opportunities, 12 founder dilemmas, and branching consequences that persist across your whole career
+- Three AI agents with distinct archetypes, ambitions, and relationships that shift with your decisions
+- Deterministic simulation — the same seed always plays out the same way
+- Fully offline. No account, no sign-in, no ads.
+
+FREE AND PAID
+Your first venture is completely free — the full loop, a real ending, and every core mechanic. The optional Founder Pass is a one-time unlock (not a subscription) that opens the second venture, continuous mode, and Hindsight recall for the rest of your career.
+
+Build the company. Verify the work. Find out whether you've got a unicorn — or a runway that's about to run out.

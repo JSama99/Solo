@@ -43,7 +43,7 @@
         "properties": {
           "CFBundleDisplayName": "SOLO: Unicorn Run",
           "CFBundleShortVersionString": "1.0",
-          "CFBundleVersion": "4",
+          "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
           "ITSAppUsesNonExemptEncryption": false,
           "RevenueCatAPIKey": "$(REVENUECAT_API_KEY)",
           "UILaunchScreen": {},
