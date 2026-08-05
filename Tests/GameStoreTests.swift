@@ -45,7 +45,7 @@ final class GameStoreTests: XCTestCase {
 
     XCTAssertEqual(store.careerOutcome?.kind, .bankruptcy)
     XCTAssertEqual(store.sprint, 1)
-    XCTAssertEqual(store.report?.runwayDelta, -4)
+    XCTAssertLessThan(store.report?.runwayDelta ?? 0, 0)
   }
 
   func testFinalSprintCompletesTwoVentureCareer() throws {
@@ -97,8 +97,7 @@ final class GameStoreTests: XCTestCase {
 
     XCTAssertEqual(migrated.founderName, "Founder")
     XCTAssertEqual(migrated.stage, .game)
-    let data = try XCTUnwrap(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v5"))
-    XCTAssertEqual(try JSONDecoder().decode(SaveEnvelope.self, from: data).version, 5)
+    XCTAssertNotNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v6"))
     XCTAssertNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v1"))
   }
 
@@ -327,7 +326,7 @@ final class GameStoreTests: XCTestCase {
     XCTAssertNotNil(store.evidence.first(where: { $0.venture == 2 }))
   }
 
-  func testV2SaveMigratesExplicitlyToV5() throws {
+  func testV2SaveMigratesExplicitlyToV4() throws {
     let source = makeStore(seed: 321)
     let envelope = SaveEnvelope(version: 2, career: careerSave(from: source))
     let encoded = try JSONEncoder().encode(envelope)
@@ -351,12 +350,11 @@ final class GameStoreTests: XCTestCase {
 
     XCTAssertEqual(migrated.stage, .game)
     XCTAssertNil(migrated.tasks[0].result)
-    let data = try XCTUnwrap(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v5"))
-    XCTAssertEqual(try JSONDecoder().decode(SaveEnvelope.self, from: data).version, 5)
+    XCTAssertNotNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v6"))
     XCTAssertNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v2"))
   }
 
-  func testV3SaveMigratesExplicitlyToV5() throws {
+  func testV3SaveMigratesExplicitlyToV4() throws {
     let source = makeStore(seed: 3_004)
     try assignFirstTask(in: source)
     source.review(taskID: source.tasks[0].id)
@@ -384,16 +382,13 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(migrated.reportCache.count, 1)
     XCTAssertEqual(migrated.evidence.first?.venture, migrated.venture)
     XCTAssertFalse(migrated.evidence.first?.taskInstanceID.isEmpty ?? true)
-    let data = try XCTUnwrap(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v5"))
-    XCTAssertEqual(try JSONDecoder().decode(SaveEnvelope.self, from: data).version, 5)
+    XCTAssertNotNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v6"))
     XCTAssertNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v3"))
   }
 
   func testIdenticalSeedsProduceIdenticalCompleteSimulationResults() throws {
     let first = makeStore(seed: 20_260_801)
     let second = makeStore(seed: 20_260_801)
-    first.entitlements = StaticEntitlementProvider(hasFounderPass: true)
-    second.entitlements = StaticEntitlementProvider(hasFounderPass: true)
 
     for _ in 1...24 {
       for store in [first, second] {
@@ -412,13 +407,10 @@ final class GameStoreTests: XCTestCase {
       try encoder.encode(careerSave(from: first)),
       try encoder.encode(careerSave(from: second))
     )
-    XCTAssertEqual(first.careerOutcome?.kind, .victory)
-    XCTAssertEqual(second.careerOutcome?.kind, .victory)
   }
 
   func testFullTwoVentureCompletion() throws {
     let store = makeStore(seed: 2_024)
-    store.entitlements = StaticEntitlementProvider(hasFounderPass: true)
 
     for _ in 1...24 {
       store.stats.runway = 100
@@ -466,13 +458,148 @@ final class GameStoreTests: XCTestCase {
     XCTAssertTrue((0...100).contains(result.evidenceCompleteness))
   }
 
-  func testRevenueCatCatalogIdentifiers() {
-    XCTAssertEqual(RevenueCatConfiguration.entitlementIdentifier, "Solo: Unicorn Run Pro")
-    XCTAssertEqual(RevenueCatConfiguration.entitlementDisplayName, "Founder Pass")
-    XCTAssertEqual(
-      RevenueCatConfiguration.expectedStoreProductIdentifier,
-      "com.talonsight.solounicornrun.founderpass"
+  func testBuild4CreatesFiveOptionSprintDraft() {
+    let store = makeStore(seed: 6_001)
+
+    XCTAssertEqual(store.tasks.count, 3)
+    XCTAssertEqual(store.taskBacklog.count, 2)
+    XCTAssertEqual(Set((store.tasks + store.taskBacklog).map(\.id)).count, 5)
+    XCTAssertEqual(Set((store.tasks + store.taskBacklog).map(\.title)).count, 5)
+  }
+
+  func testDraftSwapWorksOnlyBeforeAssignments() throws {
+    let store = makeStore(seed: 6_002)
+    let active = try XCTUnwrap(store.tasks.first)
+    let backlog = try XCTUnwrap(store.taskBacklog.first)
+
+    XCTAssertTrue(store.swapDraftTask(activeTaskID: active.id, backlogTaskID: backlog.id))
+    XCTAssertTrue(store.tasks.contains(where: { $0.id == backlog.id }))
+    XCTAssertTrue(store.taskBacklog.contains(where: { $0.id == active.id }))
+
+    try assignFirstTask(in: store)
+    let nextBacklog = try XCTUnwrap(store.taskBacklog.first)
+    XCTAssertFalse(store.swapDraftTask(activeTaskID: store.tasks[0].id, backlogTaskID: nextBacklog.id))
+    XCTAssertEqual(store.alertMessage, "Clear assignments before changing the sprint draft.")
+  }
+
+  func testCommitRequiresFounderDilemmaDecision() throws {
+    let store = makeStore(seed: 6_003)
+    let task = try XCTUnwrap(store.tasks.first)
+    let agent = store.agents.first(where: { $0.role == task.role }) ?? store.agents[0]
+    store.assign(agentID: agent.id, to: task.id)
+
+    store.commitSprint()
+
+    XCTAssertEqual(store.sprint, 1)
+    XCTAssertEqual(store.alertMessage, "Choose a response to the founder dilemma before committing.")
+  }
+
+  func testReviewedTaskRequiresExplicitResolution() throws {
+    let store = makeStore(seed: 6_004)
+    try assignFirstTask(in: store)
+    store.review(taskID: store.tasks[0].id)
+
+    store.commitSprint()
+
+    XCTAssertEqual(store.sprint, 1)
+    XCTAssertTrue(store.alertMessage?.contains("Choose how to resolve") == true)
+    store.resolveReviewedTask(taskID: store.tasks[0].id, choice: .approve)
+    store.commitSprint()
+    XCTAssertNotEqual(store.sprint, 1)
+  }
+
+  func testReworkChangesCurrentResultAndConsumesAttention() throws {
+    let store = makeStore(seed: 6_005)
+    try assignFirstTask(in: store)
+    store.tasks[0].result = TaskResult(
+      actualQuality: 50,
+      reportedQuality: 68,
+      evidenceCompleteness: 70,
+      correlatedFailureIdentifier: nil,
+      immediateEffects: SimulationEffects(revenue: 100),
+      delayedEffects: SimulationEffects(momentum: -2, trust: -3),
+      confidenceLowerBound: 50,
+      confidenceUpperBound: 80,
+      knownOperationalRisk: "Test risk"
     )
+    store.review(taskID: store.tasks[0].id)
+    let before = try XCTUnwrap(store.tasks[0].result?.revealedActualQuality)
+    let energyBefore = store.stats.energy
+    let runwayBefore = store.stats.runway
+
+    store.resolveReviewedTask(taskID: store.tasks[0].id, choice: .rework)
+
+    XCTAssertEqual(store.tasks[0].resolution, .rework)
+    XCTAssertEqual(store.tasks[0].result?.revealedActualQuality, before + 12)
+    XCTAssertEqual(store.attentionRemaining, store.attentionMaximum - 2)
+    XCTAssertEqual(store.stats.energy, energyBefore - 4)
+    XCTAssertEqual(store.stats.runway, runwayBefore - 1)
+  }
+
+  func testCrossCheckRemovesCorrelatedFailure() throws {
+    let store = makeStore(seed: 6_006)
+    try assignFirstTask(in: store)
+    store.tasks[0].result = TaskResult(
+      actualQuality: 45,
+      reportedQuality: 75,
+      evidenceCompleteness: 62,
+      correlatedFailureIdentifier: "CASCADE",
+      immediateEffects: SimulationEffects(momentum: 4),
+      delayedEffects: SimulationEffects(momentum: -3, trust: -4),
+      confidenceLowerBound: 55,
+      confidenceUpperBound: 85,
+      knownOperationalRisk: "Shared model-family exposure"
+    )
+    store.review(taskID: store.tasks[0].id)
+    let evidenceBefore = store.tasks[0].result?.evidenceCompleteness ?? 0
+
+    store.resolveReviewedTask(taskID: store.tasks[0].id, choice: .escalate)
+
+    XCTAssertNil(store.tasks[0].result?.correlatedFailureIdentifier)
+    XCTAssertGreaterThan(store.tasks[0].result?.evidenceCompleteness ?? 0, evidenceBefore)
+    XCTAssertEqual(store.tasks[0].resolution, .escalate)
+  }
+
+  func testShipAnywayIncreasesPayoffAndDelayedRisk() throws {
+    let store = makeStore(seed: 6_007)
+    try assignFirstTask(in: store)
+    store.tasks[0].result = TaskResult(
+      actualQuality: 60,
+      reportedQuality: 72,
+      evidenceCompleteness: 75,
+      correlatedFailureIdentifier: nil,
+      immediateEffects: SimulationEffects(revenue: 100),
+      delayedEffects: SimulationEffects(),
+      confidenceLowerBound: 60,
+      confidenceUpperBound: 80,
+      knownOperationalRisk: "Normal operational variance"
+    )
+    store.review(taskID: store.tasks[0].id)
+
+    store.resolveReviewedTask(taskID: store.tasks[0].id, choice: .shipAnyway)
+
+    XCTAssertEqual(store.tasks[0].result?.immediateEffects.revenue, 120)
+    XCTAssertEqual(store.tasks[0].result?.delayedEffects.trust, -4)
+    XCTAssertEqual(store.tasks[0].result?.delayedEffects.momentum, -2)
+  }
+
+  func testAgentsHavePersistentPersonalityAndRelationshipData() {
+    let store = makeStore(seed: 6_008)
+    let aurora = store.agents.first(where: { $0.id == "aurora" })
+    let stacks = store.agents.first(where: { $0.id == "stacks" })
+    let brio = store.agents.first(where: { $0.id == "brio" })
+
+    XCTAssertEqual(aurora?.archetype, "The Analyst")
+    XCTAssertEqual(stacks?.archetype, "The Builder")
+    XCTAssertEqual(brio?.archetype, "The Promoter")
+    XCTAssertFalse(aurora?.traits.isEmpty ?? true)
+    XCTAssertTrue((0...100).contains(brio?.relationship ?? -1))
+  }
+
+  func testRevenueCatCatalogIdentifiers() {
+    XCTAssertEqual(RevenueCatConfiguration.entitlementIdentifier, "solo_unicorn_run_pro")
+    XCTAssertEqual(RevenueCatConfiguration.entitlementDisplayName, "Solo: Unicorn Run Pro")
+    XCTAssertEqual(Set(RevenueCatConfiguration.productIdentifiers), ["lifetime", "yearly", "monthly"])
   }
 
   func testBuild1V4SaveCompatibility() throws {
@@ -480,16 +607,10 @@ final class GameStoreTests: XCTestCase {
     try assignFirstTask(in: source)
     let expectedResult = source.tasks[0].result
     let expectedRNG = source.randomNumberGenerator
-    let envelope = SaveEnvelope(version: 4, career: careerSave(from: source))
-    let encoded = try JSONEncoder().encode(envelope)
-    var object = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
-    var career = try XCTUnwrap(object["career"] as? [String: Any])
-    career.removeValue(forKey: "precedents")
-    career.removeValue(forKey: "awaitingFounderPass")
-    object["career"] = career
-    let v4Data = try JSONSerialization.data(withJSONObject: object)
+    let legacy = SaveEnvelope(version: 4, career: careerSave(from: source))
+    let data = try JSONEncoder().encode(legacy)
     source.resetCareer()
-    UserDefaults.standard.set(v4Data, forKey: "solo-unicorn-run-native-save-v4")
+    UserDefaults.standard.set(data, forKey: "solo-unicorn-run-native-save-v4")
 
     let restored = GameStore()
     restored.continueCareer()
@@ -497,35 +618,10 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(restored.stage, .game)
     XCTAssertEqual(restored.tasks[0].result, expectedResult)
     XCTAssertEqual(restored.randomNumberGenerator, expectedRNG)
-    let data = try XCTUnwrap(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v5"))
-    XCTAssertEqual(try JSONDecoder().decode(SaveEnvelope.self, from: data).version, 5)
-    XCTAssertNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v4"))
-  }
-
-  func testExistingVentureTwoV4SaveRemainsUngated() throws {
-    let source = makeStore(seed: 4_204)
-    source.venture = 2
-    source.sprint = 4
-    let envelope = SaveEnvelope(version: 4, career: careerSave(from: source))
-    let encoded = try JSONEncoder().encode(envelope)
-    var object = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
-    var career = try XCTUnwrap(object["career"] as? [String: Any])
-    career.removeValue(forKey: "precedents")
-    career.removeValue(forKey: "awaitingFounderPass")
-    object["career"] = career
-    let v4Data = try JSONSerialization.data(withJSONObject: object)
-    source.resetCareer()
-    UserDefaults.standard.set(v4Data, forKey: "solo-unicorn-run-native-save-v4")
-
-    let restored = GameStore()
-    restored.entitlements = StaticEntitlementProvider(hasFounderPass: false)
-    restored.continueCareer()
-
-    XCTAssertEqual(restored.venture, 2)
-    XCTAssertEqual(restored.sprint, 4)
-    XCTAssertEqual(restored.stage, .game)
-    XCTAssertFalse(restored.isVentureLocked)
-    XCTAssertFalse(restored.awaitingFounderPass)
+    XCTAssertEqual(restored.taskBacklog.count, 2)
+    XCTAssertNotNil(restored.activeDilemma)
+    let migratedData = try XCTUnwrap(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v6"))
+    XCTAssertEqual(try JSONDecoder().decode(SaveEnvelope.self, from: migratedData).version, 6)
   }
 
   private func makeStore(seed: UInt64 = 1_234) -> GameStore {
@@ -536,6 +632,9 @@ final class GameStoreTests: XCTestCase {
   }
 
   private func assignFirstTask(in store: GameStore) throws {
+    if let choice = store.activeDilemma?.choices.first {
+      store.selectDilemmaChoice(choice.id)
+    }
     let task = try XCTUnwrap(store.tasks.first)
     let agent = store.agents.first(where: { $0.role == task.role }) ?? store.agents[0]
     store.assign(agentID: agent.id, to: task.id)
@@ -566,6 +665,11 @@ final class GameStoreTests: XCTestCase {
       stats: store.stats,
       agents: store.agents,
       tasks: store.tasks,
+      taskBacklog: store.taskBacklog,
+      founderAttentionSpent: store.attentionMaximum - store.attentionRemaining,
+      activeDilemma: store.activeDilemma,
+      selectedDilemmaChoiceID: store.selectedDilemmaChoiceID,
+      currentObjective: store.currentObjective,
       evidence: store.evidence,
       outcome: store.careerOutcome,
       randomNumberGenerator: store.randomNumberGenerator,

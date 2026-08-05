@@ -5,6 +5,7 @@ import SwiftUI
 struct SubscriptionScreen: View {
   @Environment(SubscriptionStore.self) private var subscriptions
   @State private var showsPaywall = false
+  @State private var showsCustomerCenter = false
 
   var body: some View {
     @Bindable var subscriptions = subscriptions
@@ -30,9 +31,7 @@ struct SubscriptionScreen: View {
             .frame(maxWidth: .infinity)
             .soloCard()
         } else if subscriptions.packages.isEmpty {
-          PurchaseDiagnosticsCard(status: subscriptions.configurationStatus) {
-            Task { await subscriptions.refresh() }
-          }
+          PurchaseDiagnosticsCard(status: subscriptions.configurationStatus)
         } else {
           VStack(spacing: 10) {
             ForEach(subscriptions.packages, id: \.identifier) { package in
@@ -43,7 +42,7 @@ struct SubscriptionScreen: View {
                   VStack(alignment: .leading, spacing: 3) {
                     Text(package.storeProduct.localizedTitle)
                       .font(.headline)
-                    Text(package.storeProduct.localizedDescription)
+                    Text(package.storeProduct.productIdentifier)
                       .font(.caption)
                       .foregroundStyle(.secondary)
                   }
@@ -65,11 +64,10 @@ struct SubscriptionScreen: View {
           }
         }
 
-        Button("View Founder Pass Options", systemImage: "rectangle.portrait.and.arrow.right") {
+        Button("View RevenueCat Paywall", systemImage: "rectangle.portrait.and.arrow.right") {
           showsPaywall = true
         }
         .buttonStyle(SoloPrimaryButtonStyle())
-        .disabled(subscriptions.currentOffering == nil)
 
         Button("Restore Purchases", systemImage: "arrow.clockwise") {
           Task { await subscriptions.restorePurchases() }
@@ -77,11 +75,17 @@ struct SubscriptionScreen: View {
         .buttonStyle(SoloSecondaryButtonStyle())
         .disabled(subscriptions.isLoading)
 
+        if subscriptions.isPro {
+          Button("Manage Subscription", systemImage: "person.crop.circle") {
+            showsCustomerCenter = true
+          }
+          .buttonStyle(SoloSecondaryButtonStyle())
+        }
       }
       .padding(16)
       .frame(maxWidth: .infinity, alignment: .leading)
     }
-    .navigationTitle("Founder Pass")
+    .navigationTitle("Solo Pro")
     .task {
       await subscriptions.refresh()
     }
@@ -89,15 +93,19 @@ struct SubscriptionScreen: View {
       await subscriptions.refresh()
     }
     .sheet(isPresented: $showsPaywall) {
-      if let offering = subscriptions.currentOffering {
-        PaywallView(offering: offering, displayCloseButton: true)
-          .onPurchaseCompleted { customerInfo in
-            subscriptions.apply(customerInfo)
-          }
-          .onRestoreCompleted { customerInfo in
-            subscriptions.apply(customerInfo)
-          }
-      }
+      PaywallView()
+        .onPurchaseCompleted { customerInfo in
+          subscriptions.apply(customerInfo)
+        }
+        .onRestoreCompleted { customerInfo in
+          subscriptions.apply(customerInfo)
+        }
+    }
+    .sheet(isPresented: $showsCustomerCenter) {
+      CustomerCenterView()
+        .onCustomerCenterRestoreCompleted { customerInfo in
+          subscriptions.apply(customerInfo)
+        }
     }
     .alert("Purchase Status", isPresented: Binding(
       get: { subscriptions.errorMessage != nil },

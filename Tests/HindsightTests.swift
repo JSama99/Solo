@@ -271,6 +271,9 @@ final class PrecedentRecordingDeterminismTests: XCTestCase {
       for (offset, task) in store.tasks.enumerated() {
         store.assign(agentID: store.agents[offset % store.agents.count].id, to: task.id)
       }
+      if let choice = store.activeDilemma?.choices.first {
+        store.selectDilemmaChoice(choice.id)
+      }
       store.commitSprint()
       store.report = nil
       parts.append("\(store.stats.revenue)|\(store.stats.trust)|\(store.stats.runway)|\(store.averageDrift)")
@@ -299,6 +302,9 @@ final class PrecedentRecordingDeterminismTests: XCTestCase {
       for (offset, task) in store.tasks.enumerated() {
         store.assign(agentID: store.agents[offset % store.agents.count].id, to: task.id)
       }
+      if let choice = store.activeDilemma?.choices.first {
+        store.selectDilemmaChoice(choice.id)
+      }
       store.commitSprint()
       store.report = nil
     }
@@ -320,6 +326,9 @@ final class PrecedentRecordingDeterminismTests: XCTestCase {
       iterations += 1
       for (offset, task) in store.tasks.enumerated() {
         store.assign(agentID: store.agents[offset % store.agents.count].id, to: task.id)
+      }
+      if let choice = store.activeDilemma?.choices.first {
+        store.selectDilemmaChoice(choice.id)
       }
       store.commitSprint()
       store.report = nil

@@ -2,715 +2,705 @@
   "appId": "6797107175",
   "derived": {
     "appStoreVersionScreenshotSets": {
-      "IOS:1.0:en-US:APP_IPHONE_65": {
-        "screenshots": [
-          {
-            "fileName": "founder-garage-65.jpg",
-            "fileSize": 527569,
-            "id": "21585bb8-7d5a-4ab5-9a8e-46e4f1e33264",
-            "sourceFileChecksum": "eb27dc45103acb033c8ec795757aa064"
-          }
-        ],
-        "setID": "9704cd2a-a1e9-4b11-923e-af15b2ee8c5f"
-      }
+
     },
     "inAppPurchasePricing": {
       "com.talonsight.solounicornrun.founderpass": {
         "automaticPrices": [
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "AFG"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "AGO"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "AIA"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "ALB"
           },
           {
-            "customerPrice": "39.99",
+            "customerPrice": "19.99",
             "territory": "ARE"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "ARG"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "ARM"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "ATG"
           },
           {
-            "customerPrice": "14.99",
+            "customerPrice": "7.99",
             "territory": "AUS"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "AUT"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "AZE"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "BEL"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "BEN"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "BFA"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "BGR"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "BHR"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "BHS"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "BIH"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "BLR"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "BLZ"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "BMU"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "BOL"
           },
           {
-            "customerPrice": "59.9",
+            "customerPrice": "29.9",
             "territory": "BRA"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "BRB"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "BRN"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "BTN"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "BWA"
           },
           {
-            "customerPrice": "12.99",
+            "customerPrice": "6.99",
             "territory": "CAN"
           },
           {
-            "customerPrice": "9",
+            "customerPrice": "4",
             "territory": "CHE"
           },
           {
-            "customerPrice": "9990",
+            "customerPrice": "5990",
             "territory": "CHL"
           },
           {
-            "customerPrice": "68",
+            "customerPrice": "38",
             "territory": "CHN"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "CIV"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "CMR"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "COD"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "COG"
           },
           {
-            "customerPrice": "49900",
+            "customerPrice": "24900",
             "territory": "COL"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "CPV"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "CRI"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "CYM"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "CYP"
           },
           {
-            "customerPrice": "249",
+            "customerPrice": "129",
             "territory": "CZE"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "DEU"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "DMA"
           },
           {
-            "customerPrice": "89",
+            "customerPrice": "39",
             "territory": "DNK"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "DOM"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "DZA"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "ECU"
           },
           {
-            "customerPrice": "499.99",
+            "customerPrice": "249.99",
             "territory": "EGY"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "ESP"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "EST"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "FIN"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "FJI"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "FRA"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "FSM"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "GAB"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "GBR"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "GEO"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "GHA"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "GMB"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "GNB"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "GRC"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "GRD"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "GTM"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "GUY"
           },
           {
-            "customerPrice": "88",
+            "customerPrice": "38",
             "territory": "HKG"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "HND"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "HRV"
           },
           {
-            "customerPrice": "4490",
+            "customerPrice": "1990",
             "territory": "HUN"
           },
           {
-            "customerPrice": "169000",
+            "customerPrice": "89000",
             "territory": "IDN"
           },
           {
-            "customerPrice": "999",
+            "customerPrice": "499",
             "territory": "IND"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "IRL"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "IRQ"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "ISL"
           },
           {
-            "customerPrice": "34.9",
+            "customerPrice": "17.9",
             "territory": "ISR"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "ITA"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "JAM"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "JOR"
           },
           {
-            "customerPrice": "1500",
+            "customerPrice": "800",
             "territory": "JPN"
           },
           {
-            "customerPrice": "5990",
+            "customerPrice": "2990",
             "territory": "KAZ"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "KEN"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "KGZ"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "KHM"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "KNA"
           },
           {
-            "customerPrice": "17000",
+            "customerPrice": "7700",
             "territory": "KOR"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "KWT"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "LAO"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "LBN"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "LBR"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "LBY"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "LCA"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "LKA"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "LTU"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "LUX"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "LVA"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "MAC"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "MAR"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "MDA"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "MDG"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "MDV"
           },
           {
-            "customerPrice": "199",
+            "customerPrice": "99",
             "territory": "MEX"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "MKD"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "MLI"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "MLT"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "MMR"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "MNE"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "MNG"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "MOZ"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "MRT"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "MSR"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "MUS"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "MWI"
           },
           {
-            "customerPrice": "49.9",
+            "customerPrice": "22.9",
             "territory": "MYS"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "NAM"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "NER"
           },
           {
-            "customerPrice": "14900",
+            "customerPrice": "7900",
             "territory": "NGA"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "NIC"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "NLD"
           },
           {
-            "customerPrice": "129",
+            "customerPrice": "59",
             "territory": "NOR"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "NPL"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "NRU"
           },
           {
-            "customerPrice": "19.99",
+            "customerPrice": "9.99",
             "territory": "NZL"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "OMN"
           },
           {
-            "customerPrice": "2900",
+            "customerPrice": "1300",
             "territory": "PAK"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "PAN"
           },
           {
-            "customerPrice": "44.9",
+            "customerPrice": "22.9",
             "territory": "PER"
           },
           {
-            "customerPrice": "599",
+            "customerPrice": "299",
             "territory": "PHL"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "PLW"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "PNG"
           },
           {
-            "customerPrice": "49.99",
+            "customerPrice": "24.99",
             "territory": "POL"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "PRT"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "PRY"
           },
           {
-            "customerPrice": "39.99",
+            "customerPrice": "19.99",
             "territory": "QAT"
           },
           {
-            "customerPrice": "49.99",
+            "customerPrice": "29.99",
             "territory": "ROU"
           },
           {
-            "customerPrice": "899",
+            "customerPrice": "449",
             "territory": "RUS"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "RWA"
           },
           {
-            "customerPrice": "39.99",
+            "customerPrice": "19.99",
             "territory": "SAU"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "SEN"
           },
           {
-            "customerPrice": "14.98",
+            "customerPrice": "6.98",
             "territory": "SGP"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "SLB"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "SLE"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "SLV"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "SRB"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "STP"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "SUR"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "SVK"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "SVN"
           },
           {
-            "customerPrice": "129",
+            "customerPrice": "69",
             "territory": "SWE"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "SWZ"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "SYC"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "TCA"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "TCD"
           },
           {
-            "customerPrice": "399",
+            "customerPrice": "199",
             "territory": "THA"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "TJK"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "TKM"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "TON"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "TTO"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "TUN"
           },
           {
-            "customerPrice": "499.99",
+            "customerPrice": "249.99",
             "territory": "TUR"
           },
           {
-            "customerPrice": "320",
+            "customerPrice": "150",
             "territory": "TWN"
           },
           {
-            "customerPrice": "29900",
+            "customerPrice": "14900",
             "territory": "TZA"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "UGA"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "UKR"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "URY"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "UZB"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "VCT"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "VEN"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "VGB"
           },
           {
-            "customerPrice": "299000",
+            "customerPrice": "149000",
             "territory": "VNM"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "VUT"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "5.99",
             "territory": "XKS"
           },
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "YEM"
           },
           {
-            "customerPrice": "199.99",
+            "customerPrice": "99.99",
             "territory": "ZAF"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "ZMB"
           },
           {
-            "customerPrice": "11.99",
+            "customerPrice": "5.99",
             "territory": "ZWE"
           }
         ]
@@ -1473,7 +1463,7 @@
       "fields": {
         "name": "SOLO: Unicorn Run",
         "privacyPolicyUrl": "https://www.talonsight.com/privacy",
-        "subtitle": "Lead Your AI Workforce"
+        "subtitle": "Build Your AI Startup Empire"
       },
       "id": "783c7ec9-0e87-418b-a1bb-de572eaab12c",
       "type": "appInfoLocalizations"
@@ -1485,7 +1475,7 @@
         "contactLastName": "Nelson",
         "contactPhone": "+1 678 847 8569",
         "demoAccountRequired": false,
-        "notes": "SOLO: Unicorn Run is an offline founder-life strategy simulation. No account or sign-in is required.\n\nVenture 1 is fully playable at no charge. To reach the Founder Pass gate, start a new career, enter any founder name, choose a doctrine, open the garage, assign at least one agent, and commit each sprint. Continue until Venture 1 ends after Sprint 12. The resolved Venture 1 state is saved before the gate appears.\n\nFounder Pass is a one-time non-consumable purchase. It unlocks Venture 2, Hindsight Recall, and the complete career conclusion. On the gate, tap Unlock Venture 2 and complete the purchase using Apple's App Review sandbox. No real charge is made in the review environment. A successful purchase resumes the held career once at Venture 2, Sprint 1.\n\nTo verify restoration, use Restore Purchase on the Venture 1 gate or Restore Purchases on the Founder Pass screen. Restoring the non-consumable resumes the same held career once and does not duplicate sprint rewards, evidence, advancement, or random-number generation.\n\nIf the store service is temporarily unavailable, the gate preserves the full career and displays a retry action. The player may return to the garage and review Venture 1 while remaining safely held at the boundary.\n\nHindsight Recall only appears in Venture 2 for Founder Pass owners. It displays historical conditions and outcomes from the player's own Venture 1 record and never gives prescriptive financial, legal, investment, or business advice."
+        "notes": "SOLO: Unicorn Run is an offline startup strategy simulation. No account or sign-in is required. Start a new career, enter any founder name, choose a doctrine, and tap Open the Garage to access gameplay."
       },
       "id": "34dcdcac-504f-4744-a426-48d6fba45a88",
       "type": "appStoreReviewDetails"
@@ -1501,25 +1491,12 @@
     },
     "appStoreVersionLocalization:IOS:1.0:en-US": {
       "fields": {
-        "description": "Build an ambitious startup inside a living, 3D-styled founder garage—and discover what it takes to lead an AI-native company without losing sight of the evidence.\n\nSOLO: Unicorn Run is a founder-life strategy simulation about directing an AI workforce under pressure. Assign research, engineering, and marketing agents, review their reports, verify the evidence behind confident claims, and decide what deserves your trust.\n\nEvery sprint tests the systems you build. Watch for drift, overclaiming, incomplete evidence, and correlated failures across agents that share a model family. Balance runway, energy, workload, trust, revenue, capital, and momentum while the garage evolves around your progress.\n\nFeatures:\n• A living high-resolution founder garage with an active AI workforce\n• Deterministic, replayable careers shaped by your decisions\n• Task assignment, founder review, evidence, and verification systems\n• Hidden outcomes that stay hidden until legitimately investigated\n• Correlated model-family risks that must be detected through play\n• Two ventures across a complete twenty-four-sprint career\n• Persistent offline career and headquarters progression\n• No account or sign-in required\n\nVenture 1 is the complete free experience. The one-time Founder Pass unlocks Venture 2, Hindsight Recall, and the full career conclusion. Hindsight Recall surfaces historical patterns from your own prior decisions and outcomes; it is descriptive, non-prescriptive, and does not provide financial, legal, investment, or business advice.",
+        "description": "Build an ambitious startup from a garage and see how far your decisions can take it.\n\nSOLO: Unicorn Run is a focused founder-life strategy simulation. Direct a specialized AI workforce, balance runway and revenue, protect momentum and trust, and guide your company through a twelve-sprint venture. Every choice changes the pressure on your team and the future of the business.\n\nChoose your founder doctrine, assign trusted agents, commit each sprint, and respond to the consequences. Push for growth, preserve energy, manage risk, and discover whether your company becomes a unicorn—or runs out of runway.\n\nFeatures:\n• A complete startup journey designed for solo play\n• Strategic tradeoffs across runway, revenue, momentum, trust, and energy\n• Distinct founder doctrines with meaningful strengths and risks\n• An AI-inspired team of research, engineering, and marketing agents\n• Persistent offline career progress\n• No account or sign-in required",
         "keywords": "startup,founder,simulation,strategy,AI,business,management,indie,offline,unicorn",
         "supportUrl": "https://www.talonsight.com/contact"
       },
       "id": "e7f5c61d-b566-4683-b1bd-740e13017dd2",
       "type": "appStoreVersionLocalizations"
-    },
-    "appStoreVersionScreenshotSet:IOS:1.0:en-US:APP_IPHONE_65": {
-      "fields": {
-        "screenshots": [
-          {
-            "file": "founder-garage-65.jpg",
-            "fileSize": 527569,
-            "sourceFileChecksum": "eb27dc45103acb033c8ec795757aa064"
-          }
-        ]
-      },
-      "id": "9704cd2a-a1e9-4b11-923e-af15b2ee8c5f",
-      "type": "appScreenshotSets"
     },
     "availability": {
       "fields": {
@@ -1534,8 +1511,7 @@
       "fields": {
         "familySharable": false,
         "inAppPurchaseType": "NON_CONSUMABLE",
-        "name": "Founder Pass Lifetime Unlock",
-        "reviewNote": "Founder Pass is a one-time non-consumable. It unlocks Venture 2, Hindsight Recall, and the full twenty-four-sprint career. Reach the purchase screen by completing Venture 1 after Sprint 12, then tap Unlock Venture 2. Restore Purchase is available on the same screen."
+        "name": "Founder Pass Lifetime Unlock"
       },
       "id": "6797110708",
       "type": "inAppPurchases"
@@ -1726,7 +1702,7 @@
     },
     "inAppPurchaseLocalization:com.talonsight.solounicornrun.founderpass:en-US": {
       "fields": {
-        "description": "Venture 2, Hindsight, and the full career.",
+        "description": "Unlock the complete SOLO founder experience.",
         "name": "Founder Pass"
       },
       "id": "625f03f0-07f6-44f3-9e2b-5e0fc85ada32",
@@ -1737,7 +1713,7 @@
         "baseTerritory": "USA",
         "manualPrices": [
           {
-            "customerPrice": "9.99",
+            "customerPrice": "4.99",
             "territory": "USA"
           }
         ]

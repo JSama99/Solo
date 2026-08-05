@@ -30,6 +30,9 @@ struct FounderGarageEnvironment: View {
         equipmentLayer(in: geometry.size)
           .accessibilityHidden(true)
 
+        upgradeLayer(in: geometry.size)
+          .accessibilityHidden(true)
+
         ForEach(store.agents) { agent in
           let point = stationPoint(for: agent.id)
           let state = AgentVisualState.derive(
@@ -129,6 +132,39 @@ struct FounderGarageEnvironment: View {
         .stroke(SoloTheme.mint.opacity(ambientPulse ? 0.8 : 0.45), lineWidth: 2)
         .frame(width: size.width * 0.065, height: size.height * 0.17)
         .position(x: size.width * 0.79, y: size.height * 0.31)
+    }
+  }
+
+  @ViewBuilder
+  private func upgradeLayer(in size: CGSize) -> some View {
+    ForEach(store.unlockedGarageUpgrades) { upgrade in
+      let point = upgradePoint(for: upgrade)
+      VStack(spacing: 2) {
+        Image(systemName: upgrade.symbol)
+          .font(.caption.weight(.bold))
+        Text(upgrade.name)
+          .font(.system(size: 6, weight: .black))
+          .lineLimit(1)
+      }
+      .foregroundStyle(SoloTheme.mint)
+      .padding(.horizontal, 6)
+      .padding(.vertical, 4)
+      .background(.black.opacity(0.72), in: .rect(cornerRadius: 7))
+      .overlay {
+        RoundedRectangle(cornerRadius: 7)
+          .stroke(SoloTheme.mint.opacity(0.55))
+      }
+      .position(x: size.width * point.x, y: size.height * point.y)
+    }
+  }
+
+  private func upgradePoint(for upgrade: GarageUpgrade) -> CGPoint {
+    switch upgrade {
+    case .strategyWall: CGPoint(x: 0.29, y: 0.22)
+    case .customerMap: CGPoint(x: 0.43, y: 0.30)
+    case .evidenceShelf: CGPoint(x: 0.76, y: 0.23)
+    case .operationsRack: CGPoint(x: 0.83, y: 0.43)
+    case .recoveryCorner: CGPoint(x: 0.11, y: 0.72)
     }
   }
 

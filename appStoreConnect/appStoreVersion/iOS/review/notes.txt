@@ -1,11 +1,1 @@
-SOLO: Unicorn Run is an offline founder-life strategy simulation. No account or sign-in is required.
-
-Venture 1 is fully playable at no charge. To reach the Founder Pass gate, start a new career, enter any founder name, choose a doctrine, open the garage, assign at least one agent, and commit each sprint. Continue until Venture 1 ends after Sprint 12. The resolved Venture 1 state is saved before the gate appears.
-
-Founder Pass is a one-time non-consumable purchase. It unlocks Venture 2, Hindsight Recall, and the complete career conclusion. On the gate, tap Unlock Venture 2 and complete the purchase using Apple's App Review sandbox. No real charge is made in the review environment. A successful purchase resumes the held career once at Venture 2, Sprint 1.
-
-To verify restoration, use Restore Purchase on the Venture 1 gate or Restore Purchases on the Founder Pass screen. Restoring the non-consumable resumes the same held career once and does not duplicate sprint rewards, evidence, advancement, or random-number generation.
-
-If the store service is temporarily unavailable, the gate preserves the full career and displays a retry action. The player may return to the garage and review Venture 1 while remaining safely held at the boundary.
-
-Hindsight Recall only appears in Venture 2 for Founder Pass owners. It displays historical conditions and outcomes from the player's own Venture 1 record and never gives prescriptive financial, legal, investment, or business advice.
+SOLO: Unicorn Run is an offline startup strategy simulation. No account or sign-in is required. Start a new career, enter any founder name, choose a doctrine, and tap Open the Garage to access gameplay.

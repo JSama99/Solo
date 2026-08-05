@@ -31,7 +31,6 @@ struct FounderEnvironmentScreen: View {
             presentation.commit(in: store, progression: progression)
           }
           .buttonStyle(SoloPrimaryButtonStyle())
-          .disabled(store.awaitingFounderPass)
         }
         .padding(16)
         .frame(maxWidth: .infinity)
@@ -72,7 +71,7 @@ struct FounderEnvironmentScreen: View {
       VStack(alignment: .leading, spacing: 3) {
         Text(progression.currentFacility.name)
           .font(.headline)
-        Text("Venture \(store.venture) • Sprint \(store.sprint)/12")
+        Text("Venture \(store.venture) • \(store.chapter.name) • Sprint \(store.sprint)/12")
           .font(.caption)
           .foregroundStyle(.secondary)
       }
@@ -100,6 +99,7 @@ struct FounderEnvironmentScreen: View {
       ForEach(store.agents) { agent in
         EnvironmentAgentRow(
           agent: agent,
+          dialogue: store.agentDialogue(for: agent.id),
           state: AgentVisualState.derive(
             agent: agent,
             task: store.tasks.first(where: { $0.assignedAgentID == agent.id }),
@@ -118,7 +118,7 @@ struct FounderEnvironmentScreen: View {
         .background(SoloTheme.cyan.opacity(0.12), in: .rect(cornerRadius: 12))
       VStack(alignment: .leading, spacing: 3) {
         Text("Headquarters Progress").font(.headline)
-        Text("Garage active • Future environments locked")
+        Text("\(store.unlockedGarageUpgrades.count) garage upgrades active • Future facilities remain progression rewards")
           .font(.caption)
           .foregroundStyle(.secondary)
       }
@@ -174,6 +174,7 @@ private struct EnvironmentMetricChip: View {
 
 private struct EnvironmentAgentRow: View {
   var agent: SoloAgent
+  var dialogue: String
   var state: AgentVisualState
 
   var body: some View {
@@ -190,6 +191,10 @@ private struct EnvironmentAgentRow: View {
         Text(state.accessibilityValue)
           .font(.caption)
           .foregroundStyle(markerColor)
+          .lineLimit(1)
+        Text("“\(dialogue)”")
+          .font(.caption2)
+          .foregroundStyle(.secondary)
           .lineLimit(2)
       }
       Spacer()
@@ -201,7 +206,7 @@ private struct EnvironmentAgentRow: View {
     .background(SoloTheme.card, in: .rect(cornerRadius: 16))
     .accessibilityElement(children: .combine)
     .accessibilityLabel("\(agent.name), \(agent.role.rawValue) agent")
-    .accessibilityValue(state.accessibilityValue)
+    .accessibilityValue("\(state.accessibilityValue). \(dialogue)")
   }
 
   private var markerColor: Color {

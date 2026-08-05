@@ -1,5 +1,38 @@
 import Foundation
 
+/// How long a career runs. Both are first-class, player-chosen options —
+/// continuous mode does not replace the original bounded arc, it sits
+/// alongside it. Existing saves default to `.bounded` on migration, so a
+/// career already in progress keeps behaving exactly as it did in Build 4.
+enum CareerMode: String, Codable, CaseIterable, Identifiable {
+  /// The original arc: 2 ventures, 12 sprints each, a defined ending.
+  case bounded
+  /// Unlimited sequential ventures. Each venture keeps its normal 12-sprint
+  /// shape and its own real ending moment (a checkpoint, not a stop) — only
+  /// the career-level cap is removed. See BUILD5_CHANGELOG.md for why this,
+  /// rather than one uncapped venture, is the sound foundation: Hindsight's
+  /// venture-index comparison already generalizes to N ventures with zero
+  /// changes, where a single endless venture would need a full redesign of
+  /// what "an earlier, comparable stretch" even means.
+  case continuous
+
+  var id: Self { self }
+
+  var name: String {
+    switch self {
+    case .bounded: "Career"
+    case .continuous: "Continuous"
+    }
+  }
+
+  var summary: String {
+    switch self {
+    case .bounded: "Two ventures, twenty-four sprints, one complete story."
+    case .continuous: "Keep building. Retire whenever you choose to stop."
+    }
+  }
+}
+
 enum FounderDoctrine: String, Codable, CaseIterable, Identifiable {
   case pure
   case guided
@@ -46,7 +79,6 @@ enum SprintIntent: String, Codable, CaseIterable, Identifiable {
   case sell
 
   var id: Self { self }
-
   var name: String { rawValue.capitalized }
 
   var symbol: String {
@@ -82,7 +114,126 @@ enum AgentRole: String, Codable, CaseIterable {
   }
 }
 
-struct FounderStats: Codable {
+enum TaskCategory: String, Codable, CaseIterable, Identifiable {
+  case product = "Product"
+  case research = "Research"
+  case sales = "Sales"
+  case operations = "Operations"
+  case trust = "Trust"
+  case founderLife = "Founder Life"
+  case crisis = "Crisis"
+
+  var id: Self { self }
+
+  var symbol: String {
+    switch self {
+    case .product: "shippingbox.fill"
+    case .research: "magnifyingglass.circle.fill"
+    case .sales: "person.2.wave.2.fill"
+    case .operations: "gearshape.2.fill"
+    case .trust: "checkmark.shield.fill"
+    case .founderLife: "heart.fill"
+    case .crisis: "exclamationmark.triangle.fill"
+    }
+  }
+}
+
+enum TaskUrgency: Int, Codable, CaseIterable {
+  case normal = 1
+  case important = 2
+  case critical = 3
+
+  var label: String {
+    switch self {
+    case .normal: "Normal"
+    case .important: "Important"
+    case .critical: "Critical"
+    }
+  }
+}
+
+enum TaskResolutionChoice: String, Codable, CaseIterable, Identifiable {
+  case approve
+  case rework
+  case shipAnyway
+  case escalate
+
+  var id: Self { self }
+
+  var title: String {
+    switch self {
+    case .approve: "Approve"
+    case .rework: "Rework"
+    case .shipAnyway: "Ship Anyway"
+    case .escalate: "Cross-Check"
+    }
+  }
+
+  var symbol: String {
+    switch self {
+    case .approve: "checkmark.circle.fill"
+    case .rework: "arrow.triangle.2.circlepath"
+    case .shipAnyway: "paperplane.fill"
+    case .escalate: "person.2.badge.gearshape.fill"
+    }
+  }
+
+  var summary: String {
+    switch self {
+    case .approve: "Accept the verified result as it stands."
+    case .rework: "Spend energy and runway to improve the current work."
+    case .shipAnyway: "Take a faster payoff and accept more delayed risk."
+    case .escalate: "Use another model family to verify and stabilize the work."
+    }
+  }
+}
+
+enum VentureChapter: Int, Codable, CaseIterable, Identifiable {
+  case prototype = 1
+  case firstCustomers = 2
+  case launchPressure = 3
+  case surviveOrScale = 4
+
+  var id: Self { self }
+
+  var name: String {
+    switch self {
+    case .prototype: "Prototype"
+    case .firstCustomers: "First Customers"
+    case .launchPressure: "Launch Pressure"
+    case .surviveOrScale: "Survive or Scale"
+    }
+  }
+
+  var subtitle: String {
+    switch self {
+    case .prototype: "Prove the product deserves to exist."
+    case .firstCustomers: "Turn early interest into trust and revenue."
+    case .launchPressure: "Ship under attention, uncertainty, and rising stakes."
+    case .surviveOrScale: "Choose what the company becomes next."
+    }
+  }
+
+  static func chapter(for sprint: Int) -> Self {
+    switch sprint {
+    case ...3: .prototype
+    case 4...6: .firstCustomers
+    case 7...9: .launchPressure
+    default: .surviveOrScale
+    }
+  }
+}
+
+enum SprintObjectiveKind: String, Codable {
+  case evidenceFirst
+  case diversifiedModels
+  case roleDiscipline
+  case protectFounder
+  case calculatedRisk
+  case repairTrust
+}
+
+struct FounderStats: Codable, Hashable {
   var runway = 42
   var revenue = 500
   var momentum = 18
@@ -103,10 +254,13 @@ struct SoloAgent: Codable, Identifiable, Hashable {
   var drift: Double
   var trust: Double
   var assignment: UUID?
+  var archetype: String
+  var traits: [String]
+  var ambition: String
+  var stressTrigger: String
+  var relationship: Int
 
-  var status: String {
-    assignment == nil ? "Ready" : "Assigned"
-  }
+  var status: String { assignment == nil ? "Ready" : "Assigned" }
 
   var trustLabel: String {
     switch trust {
@@ -116,6 +270,95 @@ struct SoloAgent: Codable, Identifiable, Hashable {
     default: "Relied upon"
     }
   }
+
+  var relationshipLabel: String {
+    switch relationship {
+    case ..<30: "Distant"
+    case ..<55: "Professional"
+    case ..<78: "Aligned"
+    default: "Founder Bond"
+    }
+  }
+
+  var traitSummary: String { traits.joined(separator: " • ") }
+
+  private enum CodingKeys: String, CodingKey {
+    case id, name, initials, role, modelFamily, reliability, calibration, drift, trust, assignment
+    case archetype, traits, ambition, stressTrigger, relationship
+  }
+
+  init(
+    id: String,
+    name: String,
+    initials: String,
+    role: AgentRole,
+    modelFamily: String,
+    reliability: Int,
+    calibration: Double,
+    drift: Double,
+    trust: Double,
+    assignment: UUID? = nil,
+    archetype: String = "AI Teammate",
+    traits: [String] = [],
+    ambition: String = "Help the company succeed.",
+    stressTrigger: String = "Unclear priorities.",
+    relationship: Int = 55
+  ) {
+    self.id = id
+    self.name = name
+    self.initials = initials
+    self.role = role
+    self.modelFamily = modelFamily
+    self.reliability = reliability
+    self.calibration = calibration
+    self.drift = drift
+    self.trust = trust
+    self.assignment = assignment
+    let defaults = Self.personalityDefaults(for: id)
+    self.archetype = archetype == "AI Teammate" ? defaults.archetype : archetype
+    self.traits = traits.isEmpty ? defaults.traits : traits
+    self.ambition = ambition == "Help the company succeed." ? defaults.ambition : ambition
+    self.stressTrigger = stressTrigger == "Unclear priorities." ? defaults.stressTrigger : stressTrigger
+    self.relationship = relationship
+  }
+
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    id = try container.decode(String.self, forKey: .id)
+    name = try container.decode(String.self, forKey: .name)
+    initials = try container.decode(String.self, forKey: .initials)
+    role = try container.decode(AgentRole.self, forKey: .role)
+    modelFamily = try container.decode(String.self, forKey: .modelFamily)
+    reliability = try container.decode(Int.self, forKey: .reliability)
+    calibration = try container.decode(Double.self, forKey: .calibration)
+    drift = try container.decode(Double.self, forKey: .drift)
+    trust = try container.decode(Double.self, forKey: .trust)
+    assignment = try container.decodeIfPresent(UUID.self, forKey: .assignment)
+    let defaults = Self.personalityDefaults(for: id)
+    archetype = try container.decodeIfPresent(String.self, forKey: .archetype) ?? defaults.archetype
+    traits = try container.decodeIfPresent([String].self, forKey: .traits) ?? defaults.traits
+    ambition = try container.decodeIfPresent(String.self, forKey: .ambition) ?? defaults.ambition
+    stressTrigger = try container.decodeIfPresent(String.self, forKey: .stressTrigger) ?? defaults.stressTrigger
+    relationship = try container.decodeIfPresent(Int.self, forKey: .relationship) ?? 55
+  }
+
+  private static func personalityDefaults(for id: String) -> (
+    archetype: String,
+    traits: [String],
+    ambition: String,
+    stressTrigger: String
+  ) {
+    switch id {
+    case "aurora":
+      ("The Analyst", ["Cautious", "Evidence-driven"], "Become the founder's most trusted strategic advisor.", "Being forced to claim certainty without proof.")
+    case "stacks":
+      ("The Builder", ["Fast", "Systems-minded"], "Build infrastructure that can survive real scale.", "Constant priority changes and avoidable shortcuts.")
+    case "brio":
+      ("The Promoter", ["Bold", "Customer-obsessed"], "Turn the company into something the market cannot ignore.", "Playing too safely when momentum is available.")
+    default:
+      ("AI Teammate", ["Adaptive"], "Help the company succeed.", "Unclear priorities.")
+    }
+  }
 }
 
 enum TaskImpact: Codable, Hashable {
@@ -123,6 +366,7 @@ enum TaskImpact: Codable, Hashable {
   case momentum(Int)
   case trust(Int)
   case runway(Int)
+  case energy(Int)
 
   var label: String {
     switch self {
@@ -130,6 +374,7 @@ enum TaskImpact: Codable, Hashable {
     case .momentum(let amount): "+\(amount) Momentum"
     case .trust(let amount): "+\(amount) Trust"
     case .runway(let amount): "+\(amount) Runway"
+    case .energy(let amount): "+\(amount) Energy"
     }
   }
 }
@@ -139,22 +384,22 @@ struct SoloTask: Codable, Identifiable, Hashable {
   var title: String
   var detail: String
   var role: AgentRole
+  var category: TaskCategory
+  var urgency: TaskUrgency
   var impact: TaskImpact
+  var skipEffects: SimulationEffects
   var assignedAgentID: String?
   var isReviewed = false
   var result: TaskResult?
+  var resolution: TaskResolutionChoice?
+  var resolutionLocked = false
 
   var reward: String { impact.label }
+  var consequenceLabel: String { skipEffects.conciseLossLabel }
 
   private enum CodingKeys: String, CodingKey {
-    case id
-    case title
-    case detail
-    case role
-    case impact
-    case assignedAgentID
-    case isReviewed
-    case result
+    case id, title, detail, role, category, urgency, impact, skipEffects
+    case assignedAgentID, isReviewed, result, resolution, resolutionLocked
   }
 
   init(
@@ -162,19 +407,29 @@ struct SoloTask: Codable, Identifiable, Hashable {
     title: String,
     detail: String,
     role: AgentRole,
+    category: TaskCategory? = nil,
+    urgency: TaskUrgency = .normal,
     impact: TaskImpact,
+    skipEffects: SimulationEffects = SimulationEffects(),
     assignedAgentID: String? = nil,
     isReviewed: Bool = false,
-    result: TaskResult? = nil
+    result: TaskResult? = nil,
+    resolution: TaskResolutionChoice? = nil,
+    resolutionLocked: Bool = false
   ) {
     self.id = id
     self.title = title
     self.detail = detail
     self.role = role
+    self.category = category ?? Self.legacyCategory(for: role)
+    self.urgency = urgency
     self.impact = impact
+    self.skipEffects = skipEffects
     self.assignedAgentID = assignedAgentID
     self.isReviewed = isReviewed
     self.result = result
+    self.resolution = resolution
+    self.resolutionLocked = resolutionLocked
   }
 
   init(from decoder: Decoder) throws {
@@ -183,11 +438,25 @@ struct SoloTask: Codable, Identifiable, Hashable {
     title = try container.decode(String.self, forKey: .title)
     detail = try container.decode(String.self, forKey: .detail)
     role = try container.decode(AgentRole.self, forKey: .role)
+    category = try container.decodeIfPresent(TaskCategory.self, forKey: .category) ?? Self.legacyCategory(for: role)
+    urgency = try container.decodeIfPresent(TaskUrgency.self, forKey: .urgency) ?? .normal
     impact = try container.decodeIfPresent(TaskImpact.self, forKey: .impact)
       ?? Self.legacyImpact(for: title, role: role)
+    skipEffects = try container.decodeIfPresent(SimulationEffects.self, forKey: .skipEffects) ?? SimulationEffects()
     assignedAgentID = try container.decodeIfPresent(String.self, forKey: .assignedAgentID)
     isReviewed = try container.decodeIfPresent(Bool.self, forKey: .isReviewed) ?? false
     result = try container.decodeIfPresent(TaskResult.self, forKey: .result)
+    resolution = try container.decodeIfPresent(TaskResolutionChoice.self, forKey: .resolution)
+    resolutionLocked = try container.decodeIfPresent(Bool.self, forKey: .resolutionLocked) ?? false
+  }
+
+  private static func legacyCategory(for role: AgentRole) -> TaskCategory {
+    switch role {
+    case .engineering: .product
+    case .research: .research
+    case .marketing: .sales
+    case .general: .operations
+    }
   }
 
   private static func legacyImpact(for title: String, role: AgentRole) -> TaskImpact {
@@ -211,6 +480,63 @@ struct SoloTask: Codable, Identifiable, Hashable {
   }
 }
 
+struct DilemmaChoice: Codable, Identifiable, Hashable {
+  var id: String
+  var title: String
+  var detail: String
+  var consequencePreview: String
+  var effects: SimulationEffects
+  var relationshipDeltas: [String: Int] = [:]
+}
+
+struct FounderDilemma: Codable, Identifiable, Hashable {
+  var id: String
+  var title: String
+  var setup: String
+  var chapter: VentureChapter
+  var featuredAgentID: String?
+  var choices: [DilemmaChoice]
+}
+
+struct SprintObjective: Codable, Identifiable, Hashable {
+  var id: String
+  var kind: SprintObjectiveKind
+  var title: String
+  var detail: String
+  var reward: SimulationEffects
+  var rewardLabel: String
+}
+
+enum GarageUpgrade: String, CaseIterable, Identifiable {
+  case strategyWall
+  case customerMap
+  case evidenceShelf
+  case operationsRack
+  case recoveryCorner
+
+  var id: Self { self }
+
+  var name: String {
+    switch self {
+    case .strategyWall: "Strategy Wall"
+    case .customerMap: "Customer Map"
+    case .evidenceShelf: "Evidence Shelf"
+    case .operationsRack: "Operations Rack"
+    case .recoveryCorner: "Recovery Corner"
+    }
+  }
+
+  var symbol: String {
+    switch self {
+    case .strategyWall: "rectangle.and.pencil.and.ellipsis"
+    case .customerMap: "map.fill"
+    case .evidenceShelf: "checkmark.seal.fill"
+    case .operationsRack: "server.rack"
+    case .recoveryCorner: "cup.and.saucer.fill"
+    }
+  }
+}
+
 struct EvidenceEntry: Codable, Identifiable {
   var id = UUID()
   var venture: Int
@@ -230,26 +556,12 @@ struct EvidenceEntry: Codable, Identifiable {
   var correlatedFailureIdentifier: String?
 
   var reviewAttempted: Bool { reviewed }
-
   var actualQualityRevealed: Bool { actualQuality != nil }
 
   private enum CodingKeys: String, CodingKey {
-    case id
-    case venture
-    case sprint
-    case taskInstanceID
-    case task
-    case agent
-    case reviewed
-    case evidenceVerified
-    case verdict
-    case note
-    case reportedQuality
-    case actualQuality
-    case verificationState
-    case overclaimAmount
-    case evidenceCompleteness
-    case correlatedFailureIdentifier
+    case id, venture, sprint, taskInstanceID, task, agent, reviewed, evidenceVerified
+    case verdict, note, reportedQuality, actualQuality, verificationState
+    case overclaimAmount, evidenceCompleteness, correlatedFailureIdentifier
   }
 
   init(
@@ -327,6 +639,47 @@ struct SprintReport: Identifiable {
   var reviewed: Int
   var strongOutcomes: Int
   var riskyOutcomes: Int
+  var chapterName: String
+  var objectiveTitle: String?
+  var objectiveCompleted: Bool
+  var dilemmaSummary: String?
+  var skippedTasks: Int
+
+  init(
+    id: UUID = UUID(),
+    sprint: Int,
+    headline: String,
+    revenueDelta: Int,
+    momentumDelta: Int,
+    trustDelta: Int,
+    energyDelta: Int,
+    runwayDelta: Int,
+    reviewed: Int,
+    strongOutcomes: Int,
+    riskyOutcomes: Int,
+    chapterName: String = "",
+    objectiveTitle: String? = nil,
+    objectiveCompleted: Bool = false,
+    dilemmaSummary: String? = nil,
+    skippedTasks: Int = 0
+  ) {
+    self.id = id
+    self.sprint = sprint
+    self.headline = headline
+    self.revenueDelta = revenueDelta
+    self.momentumDelta = momentumDelta
+    self.trustDelta = trustDelta
+    self.energyDelta = energyDelta
+    self.runwayDelta = runwayDelta
+    self.reviewed = reviewed
+    self.strongOutcomes = strongOutcomes
+    self.riskyOutcomes = riskyOutcomes
+    self.chapterName = chapterName
+    self.objectiveTitle = objectiveTitle
+    self.objectiveCompleted = objectiveCompleted
+    self.dilemmaSummary = dilemmaSummary
+    self.skippedTasks = skippedTasks
+  }
 }
 
 enum CareerOutcomeKind: String, Codable {
@@ -352,6 +705,32 @@ struct CareerOutcome: Codable {
   var score: Int
 }
 
+/// A non-terminal "venture complete" moment in continuous mode. Bounded mode
+/// never produces one of these — it goes straight to `CareerOutcome` at
+/// venture 2. This exists specifically so completing a venture in continuous
+/// mode still feels like a real beat with a real payoff, not a silent
+/// rollover into the next set of 12 sprints. The player explicitly chooses
+/// `.continue` or `.retire`; retiring converts this into a genuine `.victory`
+/// `CareerOutcome`, so a continuous career still gets to end on the player's
+/// own terms rather than never ending at all.
+struct VentureCheckpoint: Codable, Hashable {
+  var venture: Int
+  var trackRecordEarned: Int
+  var revenue: Int
+  var trust: Int
+  var momentum: Int
+  var precedentsBanked: Int
+
+  var headline: String {
+    "Venture \(venture) complete"
+  }
+}
+
+enum VentureCheckpointDecision {
+  case `continue`
+  case retire
+}
+
 struct CareerSave: Codable {
   var founderName: String
   var doctrine: FounderDoctrine
@@ -361,6 +740,11 @@ struct CareerSave: Codable {
   var stats: FounderStats
   var agents: [SoloAgent]
   var tasks: [SoloTask]
+  var taskBacklog: [SoloTask]
+  var founderAttentionSpent: Int
+  var activeDilemma: FounderDilemma?
+  var selectedDilemmaChoiceID: String?
+  var currentObjective: SprintObjective?
   var evidence: [EvidenceEntry]
   var outcome: CareerOutcome?
   var randomNumberGenerator: SeededRandomNumberGenerator
@@ -369,24 +753,15 @@ struct CareerSave: Codable {
   var reportCache: [CachedTaskReport]
   var precedents: [Precedent]
   var awaitingFounderPass: Bool
+  var careerMode: CareerMode
+  var pendingVentureCheckpoint: VentureCheckpoint?
 
   private enum CodingKeys: String, CodingKey {
-    case founderName
-    case doctrine
-    case sprint
-    case venture
-    case intent
-    case stats
-    case agents
-    case tasks
-    case evidence
-    case outcome
-    case randomNumberGenerator
-    case correlatedFailureEvent
-    case pendingEffects
-    case reportCache
-    case precedents
-    case awaitingFounderPass
+    case founderName, doctrine, sprint, venture, intent, stats, agents, tasks
+    case taskBacklog, founderAttentionSpent, activeDilemma, selectedDilemmaChoiceID, currentObjective
+    case evidence, outcome, randomNumberGenerator, correlatedFailureEvent
+    case pendingEffects, reportCache, precedents, awaitingFounderPass
+    case careerMode, pendingVentureCheckpoint
   }
 
   init(
@@ -398,6 +773,11 @@ struct CareerSave: Codable {
     stats: FounderStats,
     agents: [SoloAgent],
     tasks: [SoloTask],
+    taskBacklog: [SoloTask] = [],
+    founderAttentionSpent: Int = 0,
+    activeDilemma: FounderDilemma? = nil,
+    selectedDilemmaChoiceID: String? = nil,
+    currentObjective: SprintObjective? = nil,
     evidence: [EvidenceEntry],
     outcome: CareerOutcome?,
     randomNumberGenerator: SeededRandomNumberGenerator,
@@ -405,7 +785,9 @@ struct CareerSave: Codable {
     pendingEffects: [ScheduledEffect],
     reportCache: [CachedTaskReport] = [],
     precedents: [Precedent] = [],
-    awaitingFounderPass: Bool = false
+    awaitingFounderPass: Bool = false,
+    careerMode: CareerMode = .bounded,
+    pendingVentureCheckpoint: VentureCheckpoint? = nil
   ) {
     self.founderName = founderName
     self.doctrine = doctrine
@@ -415,6 +797,11 @@ struct CareerSave: Codable {
     self.stats = stats
     self.agents = agents
     self.tasks = tasks
+    self.taskBacklog = taskBacklog
+    self.founderAttentionSpent = founderAttentionSpent
+    self.activeDilemma = activeDilemma
+    self.selectedDilemmaChoiceID = selectedDilemmaChoiceID
+    self.currentObjective = currentObjective
     self.evidence = evidence
     self.outcome = outcome
     self.randomNumberGenerator = randomNumberGenerator
@@ -423,6 +810,8 @@ struct CareerSave: Codable {
     self.reportCache = reportCache
     self.precedents = precedents
     self.awaitingFounderPass = awaitingFounderPass
+    self.careerMode = careerMode
+    self.pendingVentureCheckpoint = pendingVentureCheckpoint
   }
 
   init(from decoder: Decoder) throws {
@@ -435,6 +824,12 @@ struct CareerSave: Codable {
     stats = try container.decode(FounderStats.self, forKey: .stats)
     agents = try container.decode([SoloAgent].self, forKey: .agents)
     tasks = try container.decode([SoloTask].self, forKey: .tasks)
+    taskBacklog = try container.decodeIfPresent([SoloTask].self, forKey: .taskBacklog) ?? []
+    founderAttentionSpent = try container.decodeIfPresent(Int.self, forKey: .founderAttentionSpent)
+      ?? tasks.filter(\.isReviewed).count
+    activeDilemma = try container.decodeIfPresent(FounderDilemma.self, forKey: .activeDilemma)
+    selectedDilemmaChoiceID = try container.decodeIfPresent(String.self, forKey: .selectedDilemmaChoiceID)
+    currentObjective = try container.decodeIfPresent(SprintObjective.self, forKey: .currentObjective)
     evidence = try container.decode([EvidenceEntry].self, forKey: .evidence)
     outcome = try container.decodeIfPresent(CareerOutcome.self, forKey: .outcome)
     randomNumberGenerator = try container.decodeIfPresent(
@@ -445,15 +840,34 @@ struct CareerSave: Codable {
       CorrelatedFailureEvent.self,
       forKey: .correlatedFailureEvent
     )
-    // Build 3 fields decode optionally so every v1-v4 save still loads.
     precedents = try container.decodeIfPresent([Precedent].self, forKey: .precedents) ?? []
     awaitingFounderPass = try container.decodeIfPresent(Bool.self, forKey: .awaitingFounderPass) ?? false
     pendingEffects = try container.decodeIfPresent([ScheduledEffect].self, forKey: .pendingEffects) ?? []
     reportCache = try container.decodeIfPresent([CachedTaskReport].self, forKey: .reportCache) ?? []
+    // Every pre-Build-5 save predates career mode entirely. Defaulting to
+    // .bounded means an existing career keeps behaving exactly as it did --
+    // continuous mode is opt-in for new careers, never applied retroactively.
+    careerMode = try container.decodeIfPresent(CareerMode.self, forKey: .careerMode) ?? .bounded
+    pendingVentureCheckpoint = try container.decodeIfPresent(
+      VentureCheckpoint.self, forKey: .pendingVentureCheckpoint
+    )
   }
 }
 
 struct SaveEnvelope: Codable {
   var version: Int
   var career: CareerSave
+}
+
+extension SimulationEffects {
+  var conciseLossLabel: String {
+    let parts = [
+      revenue == 0 ? nil : "\(revenue > 0 ? "+" : "")$\(revenue)",
+      momentum == 0 ? nil : "\(momentum > 0 ? "+" : "")\(momentum) Momentum",
+      trust == 0 ? nil : "\(trust > 0 ? "+" : "")\(trust) Trust",
+      energy == 0 ? nil : "\(energy > 0 ? "+" : "")\(energy) Energy",
+      runway == 0 ? nil : "\(runway > 0 ? "+" : "")\(runway) Runway"
+    ].compactMap { $0 }
+    return parts.isEmpty ? "No immediate penalty" : parts.joined(separator: " • ")
+  }
 }

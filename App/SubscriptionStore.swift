@@ -36,13 +36,12 @@ final class SubscriptionStore: NSObject, PurchasesDelegate, EntitlementProviding
 
   /// Structured diagnosis so a misconfiguration is legible instead of silent.
   var configurationStatus: PurchaseConfigurationStatus {
-    switch RevenueCatConfiguration.runtimeKeyValidation {
-    case .valid: break
-    case .missing: return .missingAPIKey
-    case .secret: return .secretKeyOnDevice
-    case .testKeyInRelease: return .testKeyInReleaseBuild
-    case .invalidApplePublicKey: return .invalidApplePublicKey
-    }
+    let key = RevenueCatConfiguration.apiKey
+    if RevenueCatConfiguration.isSecretKey(key) { return .secretKeyOnDevice }
+    if key.isEmpty { return .missingAPIKey }
+    #if !DEBUG
+    if RevenueCatConfiguration.isTestStoreKey(key) { return .testKeyInReleaseBuild }
+    #endif
     guard isConfigured else { return .notConfigured }
     guard let offering = currentOffering else { return .noCurrentOffering }
     guard !offering.availablePackages.isEmpty else { return .offeringHasNoPackages }
@@ -51,11 +50,14 @@ final class SubscriptionStore: NSObject, PurchasesDelegate, EntitlementProviding
 
   func configure() {
     guard !isConfigured else { return }
-    guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
     let apiKey = RevenueCatConfiguration.apiKey
 
-    guard RevenueCatConfiguration.runtimeKeyValidation == .valid else {
-      errorMessage = "Founder Pass purchases are temporarily unavailable. Your career is safe. Try again later."
+    guard !RevenueCatConfiguration.isSecretKey(apiKey) else {
+      errorMessage = "A RevenueCat secret key was found in the app bundle. Remove and rotate it."
+      return
+    }
+    guard !apiKey.isEmpty else {
+      errorMessage = "Add the production RevenueCat public SDK key before making a Release build."
       return
     }
 
@@ -80,11 +82,10 @@ final class SubscriptionStore: NSObject, PurchasesDelegate, EntitlementProviding
       async let offerings = Purchases.shared.offerings()
       apply(try await info)
       let resolved = try await offerings
-      let selectedIdentifier = RevenueCatConfiguration.preferredOfferingIdentifier(
-        currentIdentifier: resolved.current?.identifier,
-        availableIdentifiers: Set(resolved.all.keys)
-      )
-      currentOffering = selectedIdentifier.flatMap { resolved.offering(identifier: $0) }
+      // Fall back to a named offering if none is marked Current — a very common
+      // dashboard omission that otherwise presents as an empty paywall.
+      currentOffering = resolved.current
+        ?? resolved.offering(identifier: RevenueCatConfiguration.defaultOfferingIdentifier)
       lastRefreshFailed = false
       errorMessage = nil
     } catch {
@@ -100,7 +101,7 @@ final class SubscriptionStore: NSObject, PurchasesDelegate, EntitlementProviding
     do {
       let result = try await Purchases.shared.purchase(package: package)
       apply(result.customerInfo)
-      errorMessage = nil
+      if !result.userCancelled { errorMessage = nil }
     } catch {
       errorMessage = "Purchase failed: \(error.localizedDescription)"
     }

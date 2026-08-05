@@ -70,6 +70,16 @@ struct SimulationEffects: Codable, Hashable {
       runway: min(365, max(-365, runway))
     )
   }
+
+  func scaled(by multiplier: Double) -> Self {
+    Self(
+      revenue: Int((Double(revenue) * multiplier).rounded()),
+      momentum: Int((Double(momentum) * multiplier).rounded()),
+      trust: Int((Double(trust) * multiplier).rounded()),
+      energy: Int((Double(energy) * multiplier).rounded()),
+      runway: Int((Double(runway) * multiplier).rounded())
+    ).normalized
+  }
 }
 
 struct TaskResult: Codable, Hashable {
@@ -175,6 +185,38 @@ struct TaskResult: Codable, Hashable {
     if verificationState == .reported {
       verificationState = .unverified
     }
+  }
+
+  /// Improves the current deliverable after the founder spends time and runway.
+  /// The boost is deterministic so rework cannot reroll a bad report.
+  mutating func applyFounderRework() {
+    hiddenActualQuality = Self.clamp(hiddenActualQuality + 12)
+    evidenceCompleteness = Self.clamp(evidenceCompleteness + 18)
+    immediateEffects = immediateEffects.scaled(by: 1.12)
+    delayedEffects.trust = min(0, delayedEffects.trust + 3)
+    delayedEffects.momentum = min(0, delayedEffects.momentum + 2)
+    overclaimAmount = max(0, reportedQuality - hiddenActualQuality)
+    _ = verify()
+  }
+
+  /// Adds a second model-family check. It improves evidence and removes a
+  /// correlated-failure marker without turning the task into a free reroll.
+  mutating func applyCrossCheck() {
+    hiddenActualQuality = Self.clamp(hiddenActualQuality + 5)
+    evidenceCompleteness = Self.clamp(evidenceCompleteness + 30)
+    correlatedFailureIdentifier = nil
+    delayedEffects.trust = min(0, delayedEffects.trust + 4)
+    delayedEffects.momentum = min(0, delayedEffects.momentum + 3)
+    overclaimAmount = max(0, reportedQuality - hiddenActualQuality)
+    _ = verify()
+  }
+
+  /// Converts certainty into speed. The current payoff rises, while delayed
+  /// trust and momentum exposure become more severe.
+  mutating func applyShipAnyway() {
+    immediateEffects = immediateEffects.scaled(by: 1.20)
+    delayedEffects.trust -= 4
+    delayedEffects.momentum -= 2
   }
 
   private static func clamp(_ value: Int) -> Int {

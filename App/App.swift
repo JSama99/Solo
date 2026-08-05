@@ -1,4 +1,3 @@
-import AppIntents
 import SwiftUI
 
 @main

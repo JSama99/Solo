@@ -73,9 +73,7 @@ struct VentureUnlockScreen: View {
         .soloCard()
 
         if subscriptions.configurationStatus.isBlocking {
-          PurchaseDiagnosticsCard(status: subscriptions.configurationStatus) {
-            Task { await subscriptions.refresh() }
-          }
+          PurchaseDiagnosticsCard(status: subscriptions.configurationStatus)
         }
 
         VStack(spacing: 10) {
@@ -88,7 +86,6 @@ struct VentureUnlockScreen: View {
           .buttonStyle(.borderedProminent)
           .tint(SoloTheme.cyan)
           .controlSize(.large)
-          .disabled(subscriptions.currentOffering == nil)
 
           Button("Restore Purchase") {
             Task { await subscriptions.restorePurchases() }
@@ -113,9 +110,7 @@ struct VentureUnlockScreen: View {
     }
     .background(SoloTheme.background)
     .sheet(isPresented: $showsPaywall) {
-      if let offering = subscriptions.currentOffering {
-        PaywallView(offering: offering, displayCloseButton: true)
-      }
+      PaywallView(displayCloseButton: true)
     }
     .task { await subscriptions.refresh() }
     .onChange(of: subscriptions.isPro) { _, isPro in
@@ -140,12 +135,6 @@ struct VentureUnlockScreen: View {
 /// Surfaces a misconfigured purchase stack instead of failing silently.
 struct PurchaseDiagnosticsCard: View {
   var status: PurchaseConfigurationStatus
-  var retry: (() -> Void)?
-
-  init(status: PurchaseConfigurationStatus, retry: (() -> Void)? = nil) {
-    self.status = status
-    self.retry = retry
-  }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 6) {
@@ -155,11 +144,6 @@ struct PurchaseDiagnosticsCard: View {
       Text(status.remedy)
         .font(.caption)
         .foregroundStyle(.secondary)
-      if let retry {
-        Button("Try Again", systemImage: "arrow.clockwise", action: retry)
-          .buttonStyle(.bordered)
-          .padding(.top, 4)
-      }
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .soloCard()

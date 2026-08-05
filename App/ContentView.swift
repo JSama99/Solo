@@ -20,6 +20,9 @@ struct ContentView: View {
       case .ventureUnlock:
         VentureUnlockScreen(store: store)
           .transition(.move(edge: .bottom).combined(with: .opacity))
+      case .ventureCheckpoint:
+        VentureCheckpointScreen(store: store)
+          .transition(.move(edge: .bottom).combined(with: .opacity))
       case .outcome:
         CareerOutcomeScreen(store: store)
           .transition(.opacity.combined(with: .scale(scale: 0.97)))
@@ -99,7 +102,7 @@ private struct TitleScreen: View {
           }
         }
         .padding(.horizontal, 24)
-        Text("Native iOS edition • offline career save")
+        Text("Native iOS edition • offline save • RevenueCat Test Store")
           .font(.caption)
           .foregroundStyle(.tertiary)
         Spacer(minLength: 32)
@@ -124,7 +127,8 @@ private struct FounderSetupScreen: View {
               .foregroundStyle(SoloTheme.cyan)
             Text("Create your founder")
               .font(.largeTitle.bold())
-            Text("Your doctrine changes how the same decisions behave. None is universally correct.")
+            Text("Choose how long the story runs, then the doctrine that shapes it. "
+                 + "None is universally correct.")
               .foregroundStyle(.secondary)
           }
 
@@ -133,6 +137,24 @@ private struct FounderSetupScreen: View {
             .padding(16)
             .background(SoloTheme.card, in: .rect(cornerRadius: 16))
             .accessibilityLabel("Founder name")
+
+          VStack(alignment: .leading, spacing: 8) {
+            Text("CAREER LENGTH")
+              .font(.caption.weight(.black))
+              .tracking(2)
+              .foregroundStyle(SoloTheme.cyan)
+            HStack(spacing: 12) {
+              ForEach(CareerMode.allCases) { mode in
+                Button {
+                  withAnimation(.snappy) { store.selectedCareerMode = mode }
+                } label: {
+                  CareerModeCard(mode: mode, isSelected: store.selectedCareerMode == mode)
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(store.selectedCareerMode == mode ? .isSelected : [])
+              }
+            }
+          }
 
           VStack(spacing: 12) {
             ForEach(FounderDoctrine.allCases) { doctrine in
@@ -201,6 +223,36 @@ private struct DoctrineCard: View {
         .stroke(isSelected ? SoloTheme.cyan : .white.opacity(0.08), lineWidth: isSelected ? 2 : 1)
     }
     .clipShape(.rect(cornerRadius: 18))
+  }
+}
+
+/// Deliberately lighter than DoctrineCard -- CareerMode is a binary choice
+/// with no perk/risk tradeoff to weigh, just a length of story to commit to.
+private struct CareerModeCard: View {
+  var mode: CareerMode
+  var isSelected: Bool
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 6) {
+      HStack {
+        Text(mode.name).font(.subheadline.bold())
+        Spacer()
+        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+          .foregroundStyle(isSelected ? SoloTheme.cyan : .secondary)
+      }
+      Text(mode.summary)
+        .font(.caption)
+        .foregroundStyle(.secondary)
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(14)
+    .background(isSelected ? SoloTheme.purple.opacity(0.18) : SoloTheme.card)
+    .overlay {
+      RoundedRectangle(cornerRadius: 16)
+        .stroke(isSelected ? SoloTheme.cyan : .white.opacity(0.08), lineWidth: isSelected ? 2 : 1)
+    }
+    .clipShape(.rect(cornerRadius: 16))
+    .accessibilityElement(children: .combine)
   }
 }
 
@@ -309,14 +361,17 @@ private struct AgentRow: View {
           Text(agent.name).font(.headline)
           Text(agent.role.rawValue).font(.caption).foregroundStyle(.secondary)
         }
-        Text(agent.assignment == nil ? "Ready" : "Working • \(agent.modelFamily)")
+        Text(agent.assignment == nil ? "Ready • \(agent.archetype)" : "Working • \(agent.modelFamily)")
           .font(.caption)
           .foregroundStyle(agent.assignment == nil ? .secondary : SoloTheme.cyan)
+        Text(agent.traitSummary)
+          .font(.caption2)
+          .foregroundStyle(.secondary)
       }
       Spacer()
       VStack(alignment: .trailing, spacing: 3) {
-        Text(agent.trustLabel).font(.caption.weight(.bold))
-        Text("Drift \(Int(agent.drift))").font(.caption2).foregroundStyle(.secondary)
+        Text(agent.relationshipLabel).font(.caption.weight(.bold))
+        Text("Bond \(agent.relationship) • Drift \(Int(agent.drift))").font(.caption2).foregroundStyle(.secondary)
       }
     }
     .padding(14)
@@ -335,12 +390,26 @@ private struct CommandScreen: View {
       ScrollView {
         VStack(alignment: .leading, spacing: 18) {
           VStack(alignment: .leading, spacing: 6) {
-            Text("SPRINT COMMAND")
+            Text("VENTURE \(store.venture) • CHAPTER \(store.chapter.rawValue)")
               .font(.caption.weight(.black))
               .tracking(2)
               .foregroundStyle(SoloTheme.cyan)
-            Text("Choose what matters, direct the workforce, then commit the day.")
+            Text(store.chapter.name)
+              .font(.largeTitle.bold())
+            Text(store.chapter.subtitle)
               .foregroundStyle(.secondary)
+          }
+
+          if let dilemma = store.activeDilemma {
+            FounderDilemmaCard(
+              dilemma: dilemma,
+              selectedChoiceID: store.selectedDilemmaChoiceID,
+              onSelect: store.selectDilemmaChoice
+            )
+          }
+
+          if let objective = store.currentObjective {
+            SprintObjectiveCard(objective: objective)
           }
 
           Picker("Sprint intent", selection: Binding(
@@ -352,7 +421,7 @@ private struct CommandScreen: View {
             }
           }
           .pickerStyle(.segmented)
-          .disabled(store.awaitingFounderPass || store.tasks.contains { $0.assignedAgentID != nil })
+          .disabled(store.tasks.contains { $0.assignedAgentID != nil })
 
           if store.tasks.contains(where: { $0.assignedAgentID != nil }) {
             Text("Clear all assignments to change sprint intent.")
@@ -368,6 +437,15 @@ private struct CommandScreen: View {
               .foregroundStyle(SoloTheme.amber)
           }
 
+          if !store.taskBacklog.isEmpty {
+            TaskDraftBacklogCard(
+              activeTasks: store.tasks,
+              backlog: store.taskBacklog,
+              canEdit: store.tasks.allSatisfy { $0.assignedAgentID == nil },
+              onSwap: store.swapDraftTask
+            )
+          }
+
           ForEach(store.tasks) { task in
             TaskCommandCard(
               task: task,
@@ -376,15 +454,15 @@ private struct CommandScreen: View {
               presentation.assign(agentID: agentID, to: task.id, in: store)
             } onReview: {
               presentation.review(taskID: task.id, in: store)
+            } onResolution: { choice in
+              store.resolveReviewedTask(taskID: task.id, choice: choice)
             }
-            .disabled(store.awaitingFounderPass)
           }
 
           Button("Commit Sprint", systemImage: "bolt.fill") {
             presentation.commit(in: store, progression: progression)
           }
           .buttonStyle(SoloPrimaryButtonStyle())
-          .disabled(store.awaitingFounderPass)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -394,11 +472,131 @@ private struct CommandScreen: View {
   }
 }
 
+private struct FounderDilemmaCard: View {
+  var dilemma: FounderDilemma
+  var selectedChoiceID: String?
+  var onSelect: (String) -> Void
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Label("FOUNDER DILEMMA", systemImage: "arrow.triangle.branch")
+        .font(.caption.weight(.black))
+        .tracking(1.2)
+        .foregroundStyle(SoloTheme.amber)
+      Text(dilemma.title).font(.title3.bold())
+      Text(dilemma.setup).font(.subheadline).foregroundStyle(.secondary)
+      ForEach(dilemma.choices) { choice in
+        Button {
+          onSelect(choice.id)
+        } label: {
+          HStack(alignment: .top, spacing: 12) {
+            Image(systemName: selectedChoiceID == choice.id ? "checkmark.circle.fill" : "circle")
+              .foregroundStyle(selectedChoiceID == choice.id ? SoloTheme.cyan : .secondary)
+            VStack(alignment: .leading, spacing: 3) {
+              Text(choice.title).font(.subheadline.weight(.bold))
+              Text(choice.detail).font(.caption).foregroundStyle(.secondary)
+              Text(choice.consequencePreview)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(SoloTheme.amber)
+            }
+            Spacer()
+          }
+          .padding(12)
+          .background(selectedChoiceID == choice.id ? SoloTheme.purple.opacity(0.16) : .white.opacity(0.035), in: .rect(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+      }
+    }
+    .soloCard()
+  }
+}
+
+private struct SprintObjectiveCard: View {
+  var objective: SprintObjective
+
+  var body: some View {
+    HStack(alignment: .top, spacing: 12) {
+      Image(systemName: "target")
+        .font(.title2)
+        .foregroundStyle(SoloTheme.mint)
+      VStack(alignment: .leading, spacing: 4) {
+        Text("OPTIONAL SPRINT OBJECTIVE")
+          .font(.caption2.weight(.black))
+          .foregroundStyle(SoloTheme.mint)
+        Text(objective.title).font(.headline)
+        Text(objective.detail).font(.caption).foregroundStyle(.secondary)
+        Text("Reward: \(objective.rewardLabel)")
+          .font(.caption.weight(.semibold))
+          .foregroundStyle(SoloTheme.mint)
+      }
+      Spacer()
+    }
+    .soloCard()
+  }
+}
+
+private struct TaskDraftBacklogCard: View {
+  var activeTasks: [SoloTask]
+  var backlog: [SoloTask]
+  var canEdit: Bool
+  var onSwap: (UUID, UUID) -> Bool
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      HStack {
+        Label("SPRINT DRAFT", systemImage: "square.stack.3d.up.fill")
+          .font(.caption.weight(.black))
+          .foregroundStyle(SoloTheme.cyan)
+        Spacer()
+        Text("Choose 3 of 5")
+          .font(.caption2.weight(.bold))
+          .foregroundStyle(.secondary)
+      }
+      Text("The two opportunities left here will create the listed consequences when the sprint commits.")
+        .font(.caption)
+        .foregroundStyle(.secondary)
+
+      ForEach(backlog) { candidate in
+        HStack(alignment: .top, spacing: 10) {
+          Image(systemName: candidate.category.symbol)
+            .foregroundStyle(candidate.urgency == .critical ? SoloTheme.amber : SoloTheme.cyan)
+            .frame(width: 24)
+          VStack(alignment: .leading, spacing: 3) {
+            Text(candidate.title).font(.subheadline.weight(.bold))
+            Text(candidate.detail).font(.caption).foregroundStyle(.secondary)
+            Text("If ignored: \(candidate.consequenceLabel)")
+              .font(.caption2.weight(.semibold))
+              .foregroundStyle(SoloTheme.amber)
+          }
+          Spacer()
+          Menu("Swap In", systemImage: "arrow.left.arrow.right") {
+            ForEach(activeTasks) { active in
+              Button("Replace \(active.title)") {
+                _ = onSwap(active.id, candidate.id)
+              }
+            }
+          }
+          .disabled(!canEdit)
+        }
+        .padding(12)
+        .background(.white.opacity(0.035), in: .rect(cornerRadius: 12))
+      }
+      if !canEdit {
+        Text("Draft locked because work has started.")
+          .font(.caption2)
+          .foregroundStyle(.secondary)
+      }
+    }
+    .soloCard()
+  }
+}
+
 private struct TaskCommandCard: View {
   var task: SoloTask
   var agents: [SoloAgent]
   var onAssign: (String?) -> Void
   var onReview: () -> Void
+  var onResolution: (TaskResolutionChoice) -> Void
 
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
@@ -409,6 +607,13 @@ private struct TaskCommandCard: View {
         VStack(alignment: .leading, spacing: 3) {
           Text(task.title).font(.headline)
           Text(task.detail).font(.caption).foregroundStyle(.secondary)
+          HStack(spacing: 6) {
+            Label(task.category.rawValue, systemImage: task.category.symbol)
+            Text("•")
+            Text(task.urgency.label)
+          }
+          .font(.caption2.weight(.semibold))
+          .foregroundStyle(task.urgency == .critical ? SoloTheme.amber : .secondary)
         }
         Spacer()
       }
@@ -462,9 +667,16 @@ private struct TaskCommandCard: View {
       }
 
       HStack {
-        Text("Base \(task.reward)")
-          .font(.caption.weight(.semibold))
-          .foregroundStyle(SoloTheme.mint)
+        VStack(alignment: .leading, spacing: 2) {
+          Text("Base \(task.reward)")
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(SoloTheme.mint)
+          if task.skipEffects != SimulationEffects() {
+            Text("Ignored: \(task.consequenceLabel)")
+              .font(.caption2)
+              .foregroundStyle(SoloTheme.amber)
+          }
+        }
         Spacer()
         Button(task.isReviewed ? "Reviewed" : "Founder Review", systemImage: task.isReviewed ? "checkmark.seal.fill" : "eye.fill") {
           onReview()
@@ -472,6 +684,35 @@ private struct TaskCommandCard: View {
         .buttonStyle(.bordered)
         .tint(SoloTheme.purple)
         .disabled(task.result == nil || task.isReviewed)
+      }
+
+      if task.isReviewed {
+        Divider()
+        HStack {
+          VStack(alignment: .leading, spacing: 2) {
+            Text("Founder decision")
+              .font(.caption2)
+              .foregroundStyle(.secondary)
+            Text(task.resolution?.title ?? "Approve")
+              .font(.caption.weight(.bold))
+          }
+          Spacer()
+          Menu {
+            ForEach(TaskResolutionChoice.allCases) { choice in
+              Button(choice.title, systemImage: choice.symbol) {
+                onResolution(choice)
+              }
+            }
+          } label: {
+            Label(task.resolutionLocked ? "Locked" : "Choose", systemImage: task.resolution?.symbol ?? "checkmark.circle")
+          }
+          .buttonStyle(.borderedProminent)
+          .tint(task.resolutionLocked ? .gray : SoloTheme.purple)
+          .disabled(task.resolutionLocked)
+        }
+        Text(task.resolution?.summary ?? TaskResolutionChoice.approve.summary)
+          .font(.caption)
+          .foregroundStyle(.secondary)
       }
     }
     .padding(16)
@@ -495,6 +736,31 @@ private struct VentureScreen: View {
             VentureMetric(title: "Venture", value: "V\(store.venture)", color: SoloTheme.purple)
           }
 
+          VStack(alignment: .leading, spacing: 8) {
+            Text("CHAPTER \(store.chapter.rawValue)")
+              .font(.caption.weight(.black))
+              .foregroundStyle(SoloTheme.amber)
+            Text(store.chapter.name).font(.title2.bold())
+            Text(store.chapter.subtitle).foregroundStyle(.secondary)
+          }
+          .soloCard()
+
+          VStack(alignment: .leading, spacing: 10) {
+            Text("Garage upgrades").font(.headline)
+            if store.unlockedGarageUpgrades.isEmpty {
+              Text("Complete sprints, earn revenue, and record evidence to evolve the garage.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            } else {
+              ForEach(store.unlockedGarageUpgrades) { upgrade in
+                Label(upgrade.name, systemImage: upgrade.symbol)
+                  .font(.subheadline.weight(.semibold))
+                  .foregroundStyle(SoloTheme.cyan)
+              }
+            }
+          }
+          .soloCard()
+
           VStack(alignment: .leading, spacing: 12) {
             Text("Founder doctrine").font(.caption).foregroundStyle(.secondary)
             Text(store.doctrine.name).font(.title2.bold())
@@ -507,7 +773,7 @@ private struct VentureScreen: View {
 
           VStack(alignment: .leading, spacing: 12) {
             Text("Career objective").font(.headline)
-            Text("Complete two ventures and 24 sprints without exhausting runway, trust, or founder energy. Reviews reduce uncertainty, but consume the energy needed to finish the run.")
+            Text("Complete two ventures and 24 sprints while choosing which work to ignore, handling founder dilemmas, and protecting runway, trust, and energy. Reviews reveal the truth; your follow-up decision changes the outcome.")
               .foregroundStyle(.secondary)
           }
           .soloCard()
@@ -572,7 +838,7 @@ private struct RecordsScreen: View {
           NavigationLink {
             SubscriptionScreen()
           } label: {
-            RecordLink(title: "Founder Pass", subtitle: "Venture 2, Hindsight, and the career finale", symbol: "sparkles", count: 3)
+            RecordLink(title: "Solo Pro", subtitle: "Plans, purchases, and subscription management", symbol: "sparkles", count: 3)
           }
           .buttonStyle(.plain)
 
@@ -674,9 +940,17 @@ private struct AgentOperationsScreen: View {
           VStack(alignment: .leading, spacing: 12) {
             AgentRow(agent: agent)
             Divider()
+            LabeledContent("Archetype", value: agent.archetype)
+            LabeledContent("Relationship", value: "\(agent.relationshipLabel) • \(agent.relationship)")
             LabeledContent("Reliability", value: "\(agent.reliability)%")
             LabeledContent("Report integrity", value: "\(Int(agent.calibration * 100))%")
             LabeledContent("Model family", value: agent.modelFamily)
+            VStack(alignment: .leading, spacing: 4) {
+              Text("Ambition").font(.caption).foregroundStyle(.secondary)
+              Text(agent.ambition).font(.subheadline)
+              Text("Stress trigger").font(.caption).foregroundStyle(.secondary).padding(.top, 4)
+              Text(agent.stressTrigger).font(.subheadline)
+            }
           }
           .soloCard()
         }
@@ -723,7 +997,18 @@ private struct SprintReportSheet: View {
           if revealedStep >= 4 {
             ResultRow(label: "Known risk flags", value: "\(visibleReport?.visibleRiskFlags ?? 0)")
             ResultRow(label: "Evidence recorded", value: "\(visibleReport?.evidenceRecorded ?? 0)")
+            ResultRow(label: "Ignored opportunities", value: "\(report.skippedTasks)")
+            if let objectiveTitle = report.objectiveTitle {
+              ResultRow(label: objectiveTitle, value: report.objectiveCompleted ? "Completed" : "Missed")
+            }
           }
+        }
+        if let dilemmaSummary = report.dilemmaSummary {
+          VStack(alignment: .leading, spacing: 4) {
+            Text("FOUNDER DECISION").font(.caption2.weight(.black)).foregroundStyle(SoloTheme.amber)
+            Text(dilemmaSummary).font(.subheadline)
+          }
+          .soloCard()
         }
         Button("Continue", systemImage: "arrow.right") { onContinue() }
           .buttonStyle(SoloPrimaryButtonStyle())
