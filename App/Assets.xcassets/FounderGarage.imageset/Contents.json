@@ -1,15 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "founder-garage-reference.jpg",
+      "filename" : "founder-garage-1x.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
+      "filename" : "founder-garage-2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "filename" : "founder-garage-3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
