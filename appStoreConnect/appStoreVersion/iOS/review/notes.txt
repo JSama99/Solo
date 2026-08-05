@@ -5,7 +5,7 @@ Tap "New Career," enter any founder name, choose a doctrine and a career mode, t
 
 IN-APP PURCHASE (important for review)
 The app is free. Venture 1 (12 sprints) is fully playable at no cost and demonstrates every core mechanic. There is one non-consumable in-app purchase:
-- Product ID: com.talonsight.solounicornrun.founderpass
+- Product ID: com.talonsight.solounicornrun.founderpass.lifetime
 - Display name: Founder Pass, $4.99, one-time (not a subscription)
 - Unlocks: Venture 2, Continuous mode, and Hindsight recall
 - RevenueCat entitlement identifier: solo_unicorn_run_pro

@@ -25,7 +25,7 @@ enum RevenueCatConfiguration {
   /// Informational only: used for setup diagnostics and support copy. Nothing
   /// in the purchase path depends on it, so a mismatch here can never again
   /// produce an unbuyable paywall.
-  static let expectedStoreProductIdentifier = "com.talonsight.solounicornrun.founderpass"
+  static let expectedStoreProductIdentifier = "com.talonsight.solounicornrun.founderpass.lifetime"
 
   /// Offering identifier RevenueCat serves when none is explicitly requested.
   static let defaultOfferingIdentifier = "default"
