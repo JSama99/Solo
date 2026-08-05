@@ -7,6 +7,10 @@ import UIKit
 @available(iOS 18.0, *)
 struct FounderGarage3DPrototype: View {
   var store: GameStore
+  var selectedTaskID: UUID?
+  var onSelectAgent: (String) -> Void
+  var onReview: (UUID) -> Void
+  var onResolution: (UUID, TaskResolutionChoice) -> Void
 
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var scene = FounderGarageScene()
@@ -28,7 +32,11 @@ struct FounderGarage3DPrototype: View {
         TapGesture()
           .targetedToAnyEntity()
           .onEnded { value in
-            selectedAgentID = scene.agentID(for: value.entity)
+            guard let agentID = scene.agentID(for: value.entity) else { return }
+            selectedAgentID = agentID
+            if selectedTaskID != nil {
+              onSelectAgent(agentID)
+            }
           }
       )
     }
@@ -50,12 +58,14 @@ struct FounderGarage3DPrototype: View {
         GarageAgentDetailCard(
           agent: selectedAgent,
           task: task(for: selectedAgent),
-          state: state(for: selectedAgent)
+          state: state(for: selectedAgent),
+          onReview: onReview,
+          onResolution: onResolution
         )
         .padding(12)
         .transition(.move(edge: .bottom).combined(with: .opacity))
       } else {
-        Text("Tap an android or workstation to inspect its live assignment")
+        Text(selectedTaskID == nil ? "Tap an android or workstation to inspect its live assignment" : "Task selected — tap an android or workstation to assign it")
           .font(.caption.weight(.semibold))
           .foregroundStyle(.white.opacity(0.84))
           .padding(.horizontal, 12)
@@ -72,7 +82,7 @@ struct FounderGarage3DPrototype: View {
     .animation(.snappy, value: selectedAgentID)
     .accessibilityElement(children: .contain)
     .accessibilityLabel("Interactive Founder Garage")
-    .accessibilityHint("Tap an android or workstation to reveal its current assignment and status.")
+    .accessibilityHint(selectedTaskID == nil ? "Tap an android or workstation to reveal its current assignment and status." : "A task is selected. Tap an android or workstation to assign that task.")
   }
 
   private var selectedAgent: SoloAgent? {
@@ -97,6 +107,8 @@ private struct GarageAgentDetailCard: View {
   var agent: SoloAgent
   var task: SoloTask?
   var state: AgentVisualState
+  var onReview: (UUID) -> Void
+  var onResolution: (UUID, TaskResolutionChoice) -> Void
 
   var body: some View {
     VStack(alignment: .leading, spacing: 6) {
@@ -120,6 +132,35 @@ private struct GarageAgentDetailCard: View {
         .font(.caption)
         .foregroundStyle(.secondary)
         .lineLimit(2)
+      if let task {
+        HStack {
+          if !task.isReviewed {
+            Button("Founder Review", systemImage: "eye.fill") {
+              onReview(task.id)
+            }
+            .buttonStyle(.bordered)
+            .tint(SoloTheme.purple)
+            .disabled(task.result == nil)
+          } else {
+            Menu("Founder decision", systemImage: task.resolution?.symbol ?? "checkmark.circle") {
+              ForEach(TaskResolutionChoice.allCases) { choice in
+                Button(choice.title, systemImage: choice.symbol) {
+                  onResolution(task.id, choice)
+                }
+              }
+            }
+            .buttonStyle(.bordered)
+            .tint(SoloTheme.purple)
+            .disabled(task.resolutionLocked)
+          }
+          Spacer()
+          if let result = task.result {
+            Text("Report \(result.reportedQuality)")
+              .font(.caption.weight(.bold))
+              .foregroundStyle(SoloTheme.cyan)
+          }
+        }
+      }
     }
     .padding(12)
     .frame(maxWidth: .infinity, alignment: .leading)
