@@ -12,13 +12,17 @@ struct FounderGarage3DPrototype: View {
   @State private var scene = FounderGarageScene()
 
   var body: some View {
-    RealityView { content in
-      if let root = scene.rootForInstallation() {
-        content.add(root)
+    TimelineView(.animation) { timeline in
+      RealityView { content in
+        if let root = scene.rootForInstallation() {
+          content.add(root)
+        }
+        scene.apply(states: agentStates, reduceMotion: reduceMotion)
+        scene.animate(at: timeline.date, reduceMotion: reduceMotion)
+      } update: { _ in
+        scene.apply(states: agentStates, reduceMotion: reduceMotion)
+        scene.animate(at: timeline.date, reduceMotion: reduceMotion)
       }
-      scene.apply(states: agentStates, reduceMotion: reduceMotion)
-    } update: { _ in
-      scene.apply(states: agentStates, reduceMotion: reduceMotion)
     }
     .frame(height: 250)
     .clipShape(.rect(cornerRadius: 22))
@@ -62,6 +66,13 @@ private final class FounderGarageScene {
       let state = entry.1
       let target = targetPosition(for: index, state: state)
       robot.update(state: state, target: target, reduceMotion: reduceMotion, relativeTo: root)
+    }
+  }
+
+  func animate(at date: Date, reduceMotion: Bool) {
+    let time = Float(date.timeIntervalSinceReferenceDate)
+    for robot in robots.values {
+      robot.animate(at: time, reduceMotion: reduceMotion)
     }
   }
 
@@ -112,8 +123,8 @@ private final class FounderGarageScene {
     camera.look(at: [0, 0.9, -0.8], from: camera.position, relativeTo: root)
     root.addChild(camera)
 
-    for id in ["aurora", "stacks", "brio"] {
-      let robot = GarageRobot()
+    for (index, id) in ["aurora", "stacks", "brio"].enumerated() {
+      let robot = GarageRobot(phase: Float(index) * 2.1)
       root.addChild(robot.entity)
       robots[id] = robot
     }
@@ -134,25 +145,37 @@ private final class FounderGarageScene {
 @available(iOS 18.0, *)
 private final class GarageRobot {
   let entity = Entity()
+  private let visualRoot = Entity()
   private let statusLight: ModelEntity
+  private let leftArm = Entity()
+  private let rightArm = Entity()
+  private let phase: Float
   private var lastTarget: SIMD3<Float>?
   private var lastColor: UIColor?
+  private var isWorking = false
 
-  init() {
+  init(phase: Float) {
+    self.phase = phase
+    entity.addChild(visualRoot)
+
     let body = ModelEntity(mesh: .generateCylinder(height: 1.15, radius: 0.32), materials: [SimpleMaterial(color: UIColor(red: 0.68, green: 0.73, blue: 0.82, alpha: 1), isMetallic: true)])
     body.position = [0, 0.65, 0]
-    entity.addChild(body)
+    visualRoot.addChild(body)
 
     let head = ModelEntity(mesh: .generateSphere(radius: 0.34), materials: [SimpleMaterial(color: UIColor(white: 0.9, alpha: 1), isMetallic: true)])
     head.position = [0, 1.36, 0]
-    entity.addChild(head)
+    visualRoot.addChild(head)
 
     statusLight = ModelEntity(mesh: .generateSphere(radius: 0.14), materials: [SimpleMaterial(color: .gray, isMetallic: false)])
     statusLight.position = [0, 0.88, 0.32]
-    entity.addChild(statusLight)
+    visualRoot.addChild(statusLight)
+
+    addArm(leftArm, x: -0.38)
+    addArm(rightArm, x: 0.38)
   }
 
   func update(state: AgentVisualState, target: SIMD3<Float>, reduceMotion: Bool, relativeTo root: Entity) {
+    isWorking = state.activity != .idle
     let color = statusColor(for: state)
     if lastColor != color {
       statusLight.model?.materials = [SimpleMaterial(color: color, isMetallic: false)]
@@ -172,6 +195,41 @@ private final class GarageRobot {
     } else {
       entity.move(to: transform, relativeTo: root, duration: 0.45, timingFunction: .easeInOut)
     }
+  }
+
+  func animate(at time: Float, reduceMotion: Bool) {
+    guard !reduceMotion else {
+      visualRoot.position = .zero
+      visualRoot.orientation = simd_quatf()
+      leftArm.orientation = simd_quatf()
+      rightArm.orientation = simd_quatf()
+      statusLight.scale = .one
+      return
+    }
+
+    let rate: Float = isWorking ? 5 : 1.7
+    let bobAmount: Float = isWorking ? 0.14 : 0.075
+    let wave = sin(time * rate + phase)
+    visualRoot.position = [0, wave * bobAmount, 0]
+    visualRoot.orientation = simd_quatf(angle: wave * (isWorking ? 0.2 : 0.075), axis: [0, 1, 0])
+
+    let armAngle = wave * (isWorking ? 0.7 : 0.16)
+    leftArm.orientation = simd_quatf(angle: armAngle, axis: [0, 0, 1])
+    rightArm.orientation = simd_quatf(angle: -armAngle, axis: [0, 0, 1])
+
+    let pulse = 1 + ((wave + 1) * (isWorking ? 0.2 : 0.1))
+    statusLight.scale = [pulse, pulse, pulse]
+  }
+
+  private func addArm(_ arm: Entity, x: Float) {
+    arm.position = [x, 0.95, 0]
+    let limb = ModelEntity(
+      mesh: .generateBox(size: [0.14, 0.58, 0.14]),
+      materials: [SimpleMaterial(color: UIColor(red: 0.52, green: 0.61, blue: 0.73, alpha: 1), isMetallic: true)]
+    )
+    limb.position = [0, -0.28, 0]
+    arm.addChild(limb)
+    visualRoot.addChild(arm)
   }
 
   private func statusColor(for state: AgentVisualState) -> UIColor {
