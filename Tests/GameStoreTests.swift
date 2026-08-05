@@ -609,7 +609,7 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(RevenueCatConfiguration.entitlementDisplayName, "Founder Pass")
     XCTAssertEqual(
       RevenueCatConfiguration.expectedStoreProductIdentifier,
-      "com.talonsight.solounicornrun.founderpass"
+      "com.talonsight.solounicornrun.founderpass.lifetime"
     )
   }
 
