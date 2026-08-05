@@ -1,0 +1,25 @@
+{
+  "offerCodes": [
+    {
+      "customCodes": [
+
+      ],
+      "customerEligibilities": [
+        "EXISTING",
+        "EXPIRED",
+        "NEW"
+      ],
+      "duration": "ONE_YEAR",
+      "name": "Shipaton Judges 20 Percent",
+      "numberOfPeriods": 1,
+      "offerEligibility": "REPLACE_INTRO_OFFERS",
+      "offerMode": "PAY_UP_FRONT",
+      "prices": [
+        {
+          "customerPrice": "63.99",
+          "territory": "USA"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "offers": [
+    {
+      "duration": "ONE_WEEK",
+      "numberOfPeriods": 1,
+      "offerMode": "FREE_TRIAL",
+      "territory": "USA"
+    }
+  ]
+}
