@@ -84,6 +84,11 @@ private struct TitleScreen: View {
           .foregroundStyle(.white.opacity(0.85))
           .padding(.horizontal, 24)
         VStack(spacing: 12) {
+          Button("Daily Challenge", systemImage: "calendar.badge.clock") {
+            store.startDailyChallenge()
+          }
+          .buttonStyle(SoloPrimaryButtonStyle())
+
           Button("Start New Career", systemImage: "play.fill") {
             store.beginSetup()
           }
@@ -143,7 +148,7 @@ private struct FounderSetupScreen: View {
               .font(.caption.weight(.black))
               .tracking(2)
               .foregroundStyle(SoloTheme.cyan)
-            HStack(spacing: 12) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
               ForEach(CareerMode.allCases) { mode in
                 Button {
                   withAnimation(.snappy) { store.selectedCareerMode = mode }

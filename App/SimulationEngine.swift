@@ -24,8 +24,8 @@ enum SimulationEngine {
     agents: [SoloAgent],
     rng: inout SeededRandomNumberGenerator
   ) -> CorrelatedFailureEvent? {
-    let escalation = min(0.18, Double(max(0, venture - 1)) * 0.025)
-    guard rng.probability() < 0.24 + escalation else { return nil }
+    let era = VentureEra.era(for: venture)
+    guard rng.probability() < era.correlatedFailureBaseProbability else { return nil }
     let families = Array(Set(agents.map(\.modelFamily))).sorted()
     guard !families.isEmpty else { return nil }
     let family = families[rng.integer(in: 0 ... families.count - 1)]
@@ -33,7 +33,7 @@ enum SimulationEngine {
     return CorrelatedFailureEvent(
       id: "V\(venture)-S\(sprint)-\(eventCode)",
       modelFamily: family,
-      qualityPenalty: rng.integer(in: 16 ... 24) + min(10, max(0, venture - 1) * 2)
+      qualityPenalty: rng.integer(in: 16 ... 24) + era.correlatedFailureExtraPenalty
     )
   }
 

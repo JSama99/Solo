@@ -5,6 +5,7 @@ import Foundation
 /// alongside it. Existing saves default to `.bounded` on migration, so a
 /// career already in progress keeps behaving exactly as it did in Build 4.
 enum CareerMode: String, Codable, CaseIterable, Identifiable {
+  case daily
   /// The original arc: 2 ventures, 12 sprints each, a defined ending.
   case bounded
   /// Unlimited sequential ventures. Each venture keeps its normal 12-sprint
@@ -20,15 +21,17 @@ enum CareerMode: String, Codable, CaseIterable, Identifiable {
 
   var name: String {
     switch self {
+    case .daily: "Daily Challenge"
     case .bounded: "Career"
-    case .continuous: "Continuous"
+    case .continuous: "Empire"
     }
   }
 
   var summary: String {
     switch self {
+    case .daily: "One shared seed. A few sprints. Beat your best."
     case .bounded: "Two ventures, twenty-four sprints, one complete story."
-    case .continuous: "Keep building. Retire whenever you choose to stop."
+    case .continuous: "Sixty ventures across six eras. Build a dynasty."
     }
   }
 }
@@ -619,6 +622,51 @@ struct FounderDilemma: Codable, Identifiable, Hashable {
   var chapter: VentureChapter
   var featuredAgentID: String?
   var choices: [DilemmaChoice]
+  var requiredFlags: Set<CompanyFlag> = []
+  var excludedFlags: Set<CompanyFlag> = []
+  var minimumEra: VentureEra?
+
+  private enum CodingKeys: String, CodingKey {
+    case id, title, setup, chapter, featuredAgentID, choices, requiredFlags, excludedFlags, minimumEra
+  }
+
+  init(id: String, title: String, setup: String, chapter: VentureChapter, featuredAgentID: String?, choices: [DilemmaChoice], requiredFlags: Set<CompanyFlag> = [], excludedFlags: Set<CompanyFlag> = [], minimumEra: VentureEra? = nil) {
+    self.id = id
+    self.title = title
+    self.setup = setup
+    self.chapter = chapter
+    self.featuredAgentID = featuredAgentID
+    self.choices = choices
+    self.requiredFlags = requiredFlags
+    self.excludedFlags = excludedFlags
+    self.minimumEra = minimumEra
+  }
+
+  init(from decoder: Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    id = try values.decode(String.self, forKey: .id)
+    title = try values.decode(String.self, forKey: .title)
+    setup = try values.decode(String.self, forKey: .setup)
+    chapter = try values.decode(VentureChapter.self, forKey: .chapter)
+    featuredAgentID = try values.decodeIfPresent(String.self, forKey: .featuredAgentID)
+    choices = try values.decode([DilemmaChoice].self, forKey: .choices)
+    requiredFlags = try values.decodeIfPresent(Set<CompanyFlag>.self, forKey: .requiredFlags) ?? []
+    excludedFlags = try values.decodeIfPresent(Set<CompanyFlag>.self, forKey: .excludedFlags) ?? []
+    minimumEra = try values.decodeIfPresent(VentureEra.self, forKey: .minimumEra)
+  }
+
+  func encode(to encoder: Encoder) throws {
+    var values = encoder.container(keyedBy: CodingKeys.self)
+    try values.encode(id, forKey: .id)
+    try values.encode(title, forKey: .title)
+    try values.encode(setup, forKey: .setup)
+    try values.encode(chapter, forKey: .chapter)
+    try values.encodeIfPresent(featuredAgentID, forKey: .featuredAgentID)
+    try values.encode(choices, forKey: .choices)
+    try values.encode(requiredFlags, forKey: .requiredFlags)
+    try values.encode(excludedFlags, forKey: .excludedFlags)
+    try values.encodeIfPresent(minimumEra, forKey: .minimumEra)
+  }
 }
 
 struct SprintObjective: Codable, Identifiable, Hashable {

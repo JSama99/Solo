@@ -40,6 +40,7 @@ final class GameStore {
   var correlatedFailureEvent: CorrelatedFailureEvent?
   var pendingEffects: [ScheduledEffect] = []
   var reportCache: [CachedTaskReport] = []
+  var dailyChallengeStore = DailyChallengeStore()
 
   // ── Build 3: career layer ─────────────────────────────────────────
   /// Precedents banked across the career. Recorded in every venture,
@@ -120,9 +121,11 @@ final class GameStore {
   }
 
   var venturePressureSummary: String {
-    let runwayCost = 3 + min(4, max(0, venture - 1) / 2)
-    let energyCost = 2 + min(2, max(0, venture - 1) / 3)
-    return "Operating pressure: -\(runwayCost) Runway and -\(energyCost) Energy per sprint"
+    let era = VentureEra.era(for: venture)
+    if careerMode == .continuous {
+      return "\(era.name) era • \(era.newForce) • -\(era.runwayBurnPerSprint) Runway, -\(era.energyCostPerSprint) Energy"
+    }
+    return "Operating pressure: -\(era.runwayBurnPerSprint) Runway and -\(era.energyCostPerSprint) Energy per sprint"
   }
 
   var objectiveProgressText: String {
@@ -224,7 +227,18 @@ final class GameStore {
     prepareSprint()
     stage = .game
     sanitizeState()
-    save()
+    if careerMode != .daily { save() }
+  }
+
+  func startDailyChallenge() {
+    guard !dailyChallengeStore.isCompletedToday else {
+      alertMessage = "Today's challenge is complete. Come back tomorrow for a new shared seed."
+      return
+    }
+    selectedCareerMode = .daily
+    selectedDoctrine = .guided
+    founderName = "Daily Founder"
+    startCareer(seed: DailyChallenge.seed())
   }
 
   func continueCareer() {
@@ -548,8 +562,9 @@ final class GameStore {
         }
       }
     }
-    effects.runway -= 3 + min(4, max(0, venture - 1) / 2)
-    effects.energy -= 2 + min(2, max(0, venture - 1) / 3)
+    let era = VentureEra.era(for: venture)
+    effects.runway -= era.runwayBurnPerSprint
+    effects.energy -= era.energyCostPerSprint
     switch intent {
     case .build:
       effects.momentum += 3
@@ -636,8 +651,15 @@ final class GameStore {
     )
 
     careerOutcome = acquisitionAccepted ? acquisitionOutcome() : resolvedOutcome()
-    if careerOutcome == nil && sprint == Self.sprintsPerVenture {
+    if careerMode == .daily, careerOutcome != nil {
+      dailyChallengeStore.record(score: careerScore)
+    }
+    let runLength = careerMode == .daily ? DailyChallenge.sprintsPerRun : Self.sprintsPerVenture
+    if careerOutcome == nil && sprint == runLength {
       switch careerMode {
+      case .daily:
+        careerOutcome = dailyVictoryOutcome()
+        dailyChallengeStore.record(score: careerScore)
       case .bounded:
         if venture >= Self.freeVentureCount && !hasFounderPass {
           awaitingFounderPass = true
@@ -1330,7 +1352,13 @@ final class GameStore {
   }
 
   private func makeDilemma() -> FounderDilemma? {
-    let candidates = ContentLibrary.dilemmaPool.filter { $0.chapter == chapter }
+    let currentEra = VentureEra.era(for: venture)
+    let candidates = ContentLibrary.dilemmaPool.filter {
+      $0.chapter == chapter
+        && $0.requiredFlags.isSubset(of: companyFlags)
+        && $0.excludedFlags.isDisjoint(with: companyFlags)
+        && ($0.minimumEra.map { currentEra.rawValue >= $0.rawValue } ?? true)
+    }
     guard !candidates.isEmpty else { return nil }
     if dilemmaDeckChapter != chapter || dilemmaDeckTemplateIDs.isEmpty {
       dilemmaDeckChapter = chapter
@@ -1411,7 +1439,7 @@ final class GameStore {
   }
 
   private func save() {
-    guard stage == .game else { return }
+    guard stage == .game, careerMode != .daily else { return }
     saveCareer()
   }
 
@@ -1421,7 +1449,8 @@ final class GameStore {
     // the checkpoint would vanish on reload. Found by tracing the actual
     // save path after adding the new stage, not assumed.
     guard
-      stage == .game || stage == .outcome || stage == .ventureUnlock || stage == .ventureCheckpoint
+      (stage == .game || stage == .outcome || stage == .ventureUnlock || stage == .ventureCheckpoint)
+        && careerMode != .daily
     else { return }
     let payload = CareerSave(
       founderName: founderName,
@@ -1528,6 +1557,9 @@ final class GameStore {
     if careerMode == .bounded && venture == Self.maximumVentures && sprint == Self.sprintsPerVenture {
       return victoryOutcome()
     }
+    if careerMode == .continuous && venture >= VentureEra.empireVentureCap && sprint == Self.sprintsPerVenture {
+      return empireVictoryOutcome()
+    }
     return nil
   }
 
@@ -1554,6 +1586,24 @@ final class GameStore {
       kind: .victory,
       title: title,
       summary: summary,
+      score: careerScore
+    )
+  }
+
+  private func empireVictoryOutcome() -> CareerOutcome {
+    CareerOutcome(
+      kind: .victory,
+      title: "A dynasty, built deliberately",
+      summary: "You reached Venture \(VentureEra.empireVentureCap) and built an empire that survived its own scale.",
+      score: careerScore
+    )
+  }
+
+  private func dailyVictoryOutcome() -> CareerOutcome {
+    CareerOutcome(
+      kind: .victory,
+      title: "Daily Challenge complete",
+      summary: "Shared seed \(DailyChallenge.dayKey()). Your score is ready to compare.",
       score: careerScore
     )
   }
