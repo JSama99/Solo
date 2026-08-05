@@ -38,3 +38,8 @@ Configuration/ReleaseSecrets.xcconfig
 # Build
 build/
 build-*/
+*.ipa
+*.xcarchive
+*.dSYM
+*.zip
+DerivedData/
