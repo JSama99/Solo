@@ -100,7 +100,7 @@ enum ContentLibrary {
       SoloTask(title: "Reconcile Customer Promises", detail: "Align sales language, product behavior, and the evidence ledger.", role: .general, category: .trust, urgency: .important, impact: .trust(9), skipEffects: SimulationEffects(trust: -5))
     ]
 
-    static var allTaskPool: [SoloTask] { taskPool + build6TaskExpansion }
+    static var allTaskPool: [SoloTask] { taskPool + build6TaskExpansion + empireTaskExpansion }
 
     static let objectivePool: [SprintObjective] = [
       SprintObjective(id: "evidence", kind: .evidenceFirst, title: "Evidence First", detail: "Review at least two committed tasks.", reward: SimulationEffects(trust: 4), rewardLabel: "+4 Trust"),
