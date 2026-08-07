@@ -3,6 +3,8 @@ import SwiftUI
 struct ContentView: View {
   @State private var store = GameStore()
   @Environment(SubscriptionStore.self) private var subscriptions
+  @Environment(AchievementStore.self) private var achievements
+  @State private var achievementToast: Achievement?
 
   var body: some View {
     ZStack {
@@ -27,17 +29,37 @@ struct ContentView: View {
         CareerOutcomeScreen(store: store)
           .transition(.opacity.combined(with: .scale(scale: 0.97)))
       }
+      if let achievementToast {
+        VStack {
+          AchievementToast(achievement: achievementToast)
+          Spacer()
+        }
+        .padding(.top, 12)
+        .padding(.horizontal, 20)
+        .transition(.move(edge: .top).combined(with: .opacity))
+        .allowsHitTesting(false)
+      }
     }
     .animation(.smooth, value: store.stage)
     .onAppear {
       // Bind the real entitlement source once the environment is available.
       store.entitlements = subscriptions
+      store.achievementStore = achievements
       store.resumeAfterFounderPassUnlock()
     }
     .onChange(of: subscriptions.isPro) { _, isPro in
       // A purchase or restore completed anywhere in the app resumes a held career.
       if isPro { store.resumeAfterFounderPassUnlock() }
     }
+    .onChange(of: achievements.latestUnlock?.id) { _, _ in
+      guard let achievement = achievements.latestUnlock else { return }
+      withAnimation(.snappy) { achievementToast = achievement }
+      DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        guard achievementToast?.id == achievement.id else { return }
+        withAnimation(.smooth) { achievementToast = nil }
+      }
+    }
+    .sensoryFeedback(.success, trigger: achievementToast?.id)
     .alert("Garage Console", isPresented: Binding(
       get: { store.alertMessage != nil },
       set: { if !$0 { store.alertMessage = nil } }
@@ -52,6 +74,7 @@ struct ContentView: View {
 private struct TitleScreen: View {
   var store: GameStore
   @Environment(FounderProgressionStore.self) private var progression
+  @Environment(AchievementStore.self) private var achievements
 
   var body: some View {
     ScrollView {
@@ -83,6 +106,12 @@ private struct TitleScreen: View {
           .multilineTextAlignment(.center)
           .foregroundStyle(.white.opacity(0.85))
           .padding(.horizontal, 24)
+        Label("Founder Level \(achievements.level) · \(achievements.totalXP) XP", systemImage: "medal.star.fill")
+          .font(.subheadline.weight(.bold))
+          .foregroundStyle(SoloTheme.cyan)
+          .padding(.horizontal, 14)
+          .padding(.vertical, 9)
+          .background(SoloTheme.card, in: .capsule)
         VStack(spacing: 12) {
           Button("Daily Challenge", systemImage: "calendar.badge.clock") {
             store.startDailyChallenge()
@@ -114,6 +143,38 @@ private struct TitleScreen: View {
       }
       .frame(maxWidth: .infinity)
     }
+  }
+}
+
+private struct AchievementToast: View {
+  var achievement: Achievement
+
+  var body: some View {
+    HStack(spacing: 12) {
+      Image(systemName: "medal.star.fill")
+        .font(.title2)
+        .foregroundStyle(SoloTheme.amber)
+      VStack(alignment: .leading, spacing: 2) {
+        Text("Achievement Unlocked")
+          .font(.caption.weight(.black))
+          .tracking(1)
+          .foregroundStyle(SoloTheme.cyan)
+        Text(achievement.title)
+          .font(.headline)
+        Text("+\(achievement.xp) XP")
+          .font(.caption.weight(.semibold))
+          .foregroundStyle(.secondary)
+      }
+      Spacer(minLength: 0)
+    }
+    .padding(14)
+    .background(SoloTheme.card, in: .rect(cornerRadius: 18))
+    .overlay {
+      RoundedRectangle(cornerRadius: 18)
+        .stroke(SoloTheme.cyan.opacity(0.35), lineWidth: 1)
+    }
+    .accessibilityElement(children: .combine)
+    .accessibilityLabel("Achievement unlocked: \(achievement.title), \(achievement.xp) experience points")
   }
 }
 

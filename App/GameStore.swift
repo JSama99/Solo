@@ -41,6 +41,7 @@ final class GameStore {
   var pendingEffects: [ScheduledEffect] = []
   var reportCache: [CachedTaskReport] = []
   var dailyChallengeStore = DailyChallengeStore()
+  var achievementStore: AchievementStore?
 
   // ── Build 3: career layer ─────────────────────────────────────────
   /// Precedents banked across the career. Recorded in every venture,
@@ -283,6 +284,7 @@ final class GameStore {
       return
     }
     apply(loadedSave)
+    achievementStore?.evaluateRetroactive(save: loadedSave)
     saveCareer()
   }
 
@@ -453,6 +455,7 @@ final class GameStore {
       break
     }
     recordEvidence(task: tasks[taskIndex], agent: agents[agentIndex], result: result)
+    achievementStore?.recordReveal(context: achievementContext)
     sanitizeState()
     save()
   }
@@ -656,6 +659,7 @@ final class GameStore {
     }
     let runLength = careerMode == .daily ? DailyChallenge.sprintsPerRun : Self.sprintsPerVenture
     if careerOutcome == nil && sprint == runLength {
+      achievementStore?.recordVentureCommit(context: achievementContext)
       switch careerMode {
       case .daily:
         careerOutcome = dailyVictoryOutcome()
@@ -677,6 +681,9 @@ final class GameStore {
     } else if careerOutcome == nil {
       sprint += 1
       prepareSprint()
+    }
+    if careerOutcome != nil {
+      achievementStore?.closeRun(context: achievementContext)
     }
     saveCareer()
   }
@@ -750,6 +757,7 @@ final class GameStore {
     guard careerMode == .continuous, pendingVentureCheckpoint != nil else { return }
     pendingVentureCheckpoint = nil
     careerOutcome = victoryOutcome()
+    achievementStore?.closeRun(context: achievementContext)
     stage = .outcome
     saveCareer()
   }
@@ -762,6 +770,29 @@ final class GameStore {
       driftBand: .drift(averageDrift),
       runwayBand: .runway(stats.runway),
       unverifiedBand: .unverified(tasks.filter { $0.assignedAgentID != nil && !$0.isReviewed }.count)
+    )
+  }
+
+  private var achievementContext: AchievementContext {
+    let ventureEvidence = evidence.filter { $0.venture == venture }
+    let reviewRate = { (entries: [EvidenceEntry]) -> Double in
+      guard !entries.isEmpty else { return 0 }
+      return Double(entries.filter(\.reviewed).count) / Double(entries.count)
+    }
+    return AchievementContext(
+      venture: venture,
+      careerMode: careerMode,
+      doctrine: doctrine,
+      outcomeKind: careerOutcome?.kind,
+      careerScore: careerOutcome?.score ?? careerScore,
+      completedObjectives: completedObjectives,
+      allAgentsZeroDrift: !agents.isEmpty && agents.allSatisfy { $0.drift == 0 },
+      ventureReviewRate: reviewRate(ventureEvidence),
+      runReviewRate: reviewRate(evidence),
+      overclaimsCaughtThisRun: evidence.filter { $0.verificationState == .overclaimed }.count,
+      correlatedContainedThisVenture: ventureEvidence.filter { $0.verificationState == .driftDetected }.count,
+      companyFlags: companyFlags,
+      ventureHasUnaddressedOverclaim: ventureEvidence.contains { $0.verificationState == .overclaimed }
     )
   }
 
