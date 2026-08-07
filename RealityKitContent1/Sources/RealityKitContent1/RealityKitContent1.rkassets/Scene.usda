@@ -1,0 +1,293 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "Reality Composer Pro Version 2.0 (494.100.6)"
+    }
+    defaultPrim = "FoundersGarage"
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+
+def Xform "FoundersGarage"
+{
+    reorder nameChildren = ["Floor", "Backwall", "Leftwall", "Rightwall", "Ceiling", "FloorConcrete", "GarageWall", "_WarmKeyLight", "CyanWorkLight", "AmberWorkLight", "AuroraBay", "StacksBay", "BrioBay", "FoundersDesk"]
+    float3 xformOp:translate = (-0.00041929213, -0.008414341, 0)
+    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+    def Cube "Floor" (
+        active = true
+        prepend apiSchemas = ["MaterialBindingAPI"]
+        customData = {
+            float3 rotationEulerHint = (-1.0191213e-9, 2.1781294e-12, 0)
+        }
+    )
+    {
+        rel material:binding = </FoundersGarage/FloorConcrete> (
+            bindMaterialAs = "weakerThanDescendants"
+        )
+        double size = 0.2
+        quatf xformOp:orient = (1, -5.0956067e-10, 1.0890647e-12, 5.5494454e-22)
+        float3 xformOp:scale = (60, 0.5, 40)
+        float3 xformOp:translate = (0, -0.05, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+    }
+
+    def Cube "Backwall" (
+        active = true
+        prepend apiSchemas = ["MaterialBindingAPI"]
+        customData = {
+            float3 rotationEulerHint = (-1.0191213e-9, 2.1781294e-12, 0)
+        }
+    )
+    {
+        rel material:binding = </FoundersGarage/GarageWall> (
+            bindMaterialAs = "weakerThanDescendants"
+        )
+        double size = 0.2
+        float2 ui:nodegraph:node:pos = (215.75, 104.5)
+        int ui:nodegraph:node:stackingOrder = 1
+        quatf xformOp:orient = (1, 0, 0, 0)
+        float3 xformOp:scale = (60, 20, 0.5)
+        float3 xformOp:translate = (0, 2, -4)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+        def Material "DefaultMaterial"
+        {
+            token outputs:surface.connect = </FoundersGarage/Backwall/DefaultMaterial/DefaultSurfaceShader.outputs:surface>
+
+            def Shader "DefaultSurfaceShader"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (1, 1, 1)
+                float inputs:roughness = 0.75
+                token outputs:surface
+            }
+        }
+    }
+
+    def Cube "Leftwall" (
+        active = true
+        prepend apiSchemas = ["MaterialBindingAPI"]
+        customData = {
+            float3 rotationEulerHint = (-1.0191213e-9, 2.1781294e-12, 0)
+        }
+    )
+    {
+        rel material:binding = </FoundersGarage/GarageWall> (
+            bindMaterialAs = "weakerThanDescendants"
+        )
+        double size = 0.2
+        float2 ui:nodegraph:node:pos = (235.75, 124.5)
+        int ui:nodegraph:node:stackingOrder = 2
+        quatf xformOp:orient = (1, 0, 0, 0)
+        float3 xformOp:scale = (0.5, 20, 40)
+        float3 xformOp:translate = (-6, 2, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+        def Material "DefaultMaterial"
+        {
+            token outputs:surface.connect = </FoundersGarage/Leftwall/DefaultMaterial/DefaultSurfaceShader.outputs:surface>
+
+            def Shader "DefaultSurfaceShader"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (1, 1, 1)
+                float inputs:roughness = 0.75
+                token outputs:surface
+            }
+        }
+    }
+
+    def Cube "Rightwall" (
+        active = true
+        prepend apiSchemas = ["MaterialBindingAPI"]
+        customData = {
+            float3 rotationEulerHint = (-1.0191213e-9, 2.1781294e-12, 0)
+        }
+    )
+    {
+        rel material:binding = </FoundersGarage/GarageWall> (
+            bindMaterialAs = "weakerThanDescendants"
+        )
+        double size = 0.2
+        float2 ui:nodegraph:node:pos = (255.75, 144.5)
+        int ui:nodegraph:node:stackingOrder = 3
+        quatf xformOp:orient = (1, 0, 0, 0)
+        float3 xformOp:scale = (0.5, 20, 40)
+        float3 xformOp:translate = (6, 2, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+        def Material "DefaultMaterial"
+        {
+            token outputs:surface.connect = </FoundersGarage/Rightwall/DefaultMaterial/DefaultSurfaceShader.outputs:surface>
+
+            def Shader "DefaultSurfaceShader"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (1, 1, 1)
+                float inputs:roughness = 0.75
+                token outputs:surface
+            }
+        }
+    }
+
+    def Cube "Ceiling" (
+        active = true
+        prepend apiSchemas = ["MaterialBindingAPI"]
+        customData = {
+            float3 rotationEulerHint = (-1.0191213e-9, 2.1781294e-12, 0)
+        }
+    )
+    {
+        rel material:binding = </FoundersGarage/GarageWall> (
+            bindMaterialAs = "weakerThanDescendants"
+        )
+        double size = 0.2
+        float2 ui:nodegraph:node:pos = (275.75, 164.5)
+        int ui:nodegraph:node:stackingOrder = 4
+        quatf xformOp:orient = (1, 0, 0, 0)
+        float3 xformOp:scale = (60, 0.5, 40)
+        float3 xformOp:translate = (0, 4.05, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+        def Material "DefaultMaterial"
+        {
+            token outputs:surface.connect = </FoundersGarage/Ceiling/DefaultMaterial/DefaultSurfaceShader.outputs:surface>
+
+            def Shader "DefaultSurfaceShader"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (1, 1, 1)
+                float inputs:roughness = 0.75
+                token outputs:surface
+            }
+        }
+    }
+
+    def Material "FloorConcrete"
+    {
+        token outputs:mtlx:surface
+        token outputs:realitykit:vertex
+        token outputs:surface.connect = </FoundersGarage/FloorConcrete/UsdPreviewSurface.outputs:surface>
+
+        def Shader "UsdPreviewSurface"
+        {
+            uniform token info:id = "UsdPreviewSurface"
+            color3f inputs:diffuseColor = (0.1882353, 0.21176471, 0.23921569) (
+                colorSpace = "srgb_displayp3"
+            )
+            float inputs:metallic = 0.05
+            float inputs:roughness = 0.85
+            token outputs:surface
+        }
+    }
+
+    def Material "GarageWall"
+    {
+        token outputs:mtlx:surface
+        token outputs:realitykit:vertex
+        token outputs:surface.connect = </FoundersGarage/GarageWall/UsdPreviewSurface.outputs:surface>
+
+        def Shader "UsdPreviewSurface"
+        {
+            uniform token info:id = "UsdPreviewSurface"
+            color3f inputs:diffuseColor = (0.07141763, 0.08570029, 0.102745175) (
+                colorSpace = "lin_srgb"
+            )
+            float inputs:metallic = 0.1
+            float inputs:roughness = 0.8
+            token outputs:surface
+        }
+    }
+
+    def Xform "_WarmKeyLight"
+    {
+        float3 xformOp:translate = (0, 3.5, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+        def RealityKitComponent "PointLight"
+        {
+            float attenuationRadius = 8
+            float3 color = (1, 0.74509805, 0.49019608)
+            token info:id = "RealityKit.PointLight"
+            float intensity = 20000
+        }
+    }
+
+    def Xform "CyanWorkLight"
+    {
+        float2 ui:nodegraph:node:pos = (215.75, 104.5)
+        int ui:nodegraph:node:stackingOrder = 1
+        quatf xformOp:orient = (1, 0, 0, 0)
+        float3 xformOp:scale = (1, 1, 1)
+        float3 xformOp:translate = (-3.5, 2.2, 1)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+        def RealityKitComponent "PointLight"
+        {
+            float attenuationRadius = 4
+            float3 color = (0.3529412, 0.8627451, 1)
+            token info:id = "RealityKit.PointLight"
+            float intensity = 8000
+        }
+    }
+
+    def Xform "AmberWorkLight"
+    {
+        float2 ui:nodegraph:node:pos = (235.75, 124.5)
+        int ui:nodegraph:node:stackingOrder = 2
+        quatf xformOp:orient = (1, 0, 0, 0)
+        float3 xformOp:scale = (1, 1, 1)
+        float3 xformOp:translate = (3.5, 2.2, -1)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+        def RealityKitComponent "PointLight"
+        {
+            float attenuationRadius = 4
+            float3 color = (0.88235295, 0.6666667, 0.21568628)
+            token info:id = "RealityKit.PointLight"
+            float intensity = 6500
+        }
+    }
+
+    def Xform "AuroraBay" (
+        active = true
+    )
+    {
+        float3 xformOp:translate = (-3.5, 0, -1.75)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+    }
+
+    def Xform "StacksBay" (
+        active = true
+    )
+    {
+        float2 ui:nodegraph:node:pos = (215.75, 104.5)
+        int ui:nodegraph:node:stackingOrder = 1
+        quatf xformOp:orient = (1, 0, 0, 0)
+        float3 xformOp:scale = (1, 1, 1)
+        float3 xformOp:translate = (0, 0, -3)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+    }
+
+    def Xform "BrioBay" (
+        active = true
+    )
+    {
+        float2 ui:nodegraph:node:pos = (235.75, 124.5)
+        int ui:nodegraph:node:stackingOrder = 2
+        quatf xformOp:orient = (1, 0, 0, 0)
+        float3 xformOp:scale = (1, 1, 1)
+        float3 xformOp:translate = (3.5, 0, -1.75)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+    }
+
+    def Xform "FoundersDesk" (
+        active = true
+    )
+    {
+        float3 xformOp:translate = (0, 0, 1.5)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+    }
+}
+

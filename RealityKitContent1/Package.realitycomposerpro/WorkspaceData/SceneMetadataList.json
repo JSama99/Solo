@@ -1,0 +1,43 @@
+{
+  "F2FA94FC-6C0D-4626-ABFF-0EC95A387787" : {
+    "objectMetadataList" : [
+      [
+        "F2FA94FC-6C0D-4626-ABFF-0EC95A387787",
+        "FoundersGarage",
+        "Floor"
+      ],
+      {
+        "isExpanded" : true,
+        "isLocked" : false
+      },
+      [
+        "F2FA94FC-6C0D-4626-ABFF-0EC95A387787",
+        "Root"
+      ],
+      {
+        "disallowsFraming" : false,
+        "isExpanded" : false,
+        "isLocked" : false
+      },
+      [
+        "F2FA94FC-6C0D-4626-ABFF-0EC95A387787",
+        "Root",
+        "SkyDome"
+      ],
+      {
+        "disallowsFraming" : true,
+        "isExpanded" : false,
+        "isLocked" : false
+      },
+      [
+        "F2FA94FC-6C0D-4626-ABFF-0EC95A387787",
+        "FoundersGarage"
+      ],
+      {
+        "disallowsFraming" : false,
+        "isExpanded" : true,
+        "isLocked" : false
+      }
+    ]
+  }
+}

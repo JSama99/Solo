@@ -15,7 +15,7 @@ struct FounderEnvironmentScreen: View {
           environmentHeader
           StatsStripBridge(stats: store.stats)
           if #available(iOS 18.0, *) {
-            FounderGarage3DPrototype(store: store)
+            FounderGarageExperience(store: store)
           } else {
             FounderGarageEnvironment(
               store: store,

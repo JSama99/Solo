@@ -1,0 +1,15 @@
+{
+  "pathsToIds" : {
+    "\/RealityKitContent1\/Sources\/RealityKitContent1\/RealityKitContent1.rkassets\/Scene.usda" : "F2FA94FC-6C0D-4626-ABFF-0EC95A387787",
+    "\/RealityKitContent1\/Sources\/RealityKitContent1\/RealityKitContent1.rkassets\/Untitled%20Scene.usda" : "617DB0D3-602D-43E4-917A-A3ED291A9D69",
+    "\/RealityKitContent1\/Sources\/RealityKitContent1\/RealityKitContent1.rkassets\/collections\/Untitled%20Scene%201.usda" : "BFDD139D-2A97-4303-B8E2-056B5C75E811",
+    "\/RealityKitContent1\/Sources\/RealityKitContent1\/RealityKitContent1.rkassets\/collections\/Untitled%20Scene.usda" : "59C04B37-BE85-4194-B0C9-1F4591CF7AEC"
+  },
+  "projectID" : 8825801748573163469,
+  "uuidToIntID" : {
+    "59C04B37-BE85-4194-B0C9-1F4591CF7AEC" : 6536572220288304528,
+    "617DB0D3-602D-43E4-917A-A3ED291A9D69" : 6579510890251254368,
+    "BFDD139D-2A97-4303-B8E2-056B5C75E811" : 7985455204054452778,
+    "F2FA94FC-6C0D-4626-ABFF-0EC95A387787" : 204747363006410487
+  }
+}
