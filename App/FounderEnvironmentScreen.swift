@@ -7,6 +7,7 @@ struct FounderEnvironmentScreen: View {
   @Environment(FounderProgressionStore.self) private var progression
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.scenePhase) private var scenePhase
+  @State private var selectedTaskID: UUID?
 
   var body: some View {
     NavigationStack {
@@ -15,7 +16,13 @@ struct FounderEnvironmentScreen: View {
           environmentHeader
           StatsStripBridge(stats: store.stats)
           if #available(iOS 18.0, *) {
-            FounderGarage3DPrototype(store: store)
+            FounderGarage3DPrototype(
+              store: store,
+              selectedTaskID: selectedTaskID,
+              onSelectAgent: assignSelectedTask(to:),
+              onReview: { presentation.review(taskID: $0, in: store) },
+              onResolution: { store.resolveReviewedTask(taskID: $0, choice: $1) }
+            )
           } else {
             FounderGarageEnvironment(
               store: store,
@@ -24,6 +31,12 @@ struct FounderEnvironmentScreen: View {
             )
           }
           operationsSummary
+          GarageCommandCenter(
+            store: store,
+            presentation: presentation,
+            onSelectTask: { selectedTaskID = $0 },
+            selectedTaskID: selectedTaskID
+          )
           agentStatusList
           NavigationLink {
             HeadquartersProgressScreen(availableCapital: store.stats.capital)
@@ -83,6 +96,14 @@ struct FounderEnvironmentScreen: View {
       Label(store.garageCondition, systemImage: "waveform.path.ecg")
         .font(.caption.weight(.bold))
         .foregroundStyle(store.garageCondition == "Steady" ? SoloTheme.mint : SoloTheme.amber)
+    }
+  }
+
+  private func assignSelectedTask(to agentID: String) {
+    guard let selectedTaskID else { return }
+    presentation.assign(agentID: agentID, to: selectedTaskID, in: store)
+    withAnimation(.snappy) {
+      self.selectedTaskID = nil
     }
   }
 
