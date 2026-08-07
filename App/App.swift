@@ -4,6 +4,7 @@ import SwiftUI
 struct SoloUnicornRunApp: App {
   @State private var subscriptions = SubscriptionStore.shared
   @State private var progression = FounderProgressionStore()
+  @State private var achievements = AchievementStore()
 
   init() {
     SubscriptionStore.shared.configure()
@@ -14,6 +15,7 @@ struct SoloUnicornRunApp: App {
       ContentView()
         .environment(subscriptions)
         .environment(progression)
+        .environment(achievements)
         .preferredColorScheme(.dark)
     }
   }
