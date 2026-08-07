@@ -344,9 +344,6 @@ private struct GameDashboard: View {
       Tab("Garage", systemImage: "house.fill") {
         FounderEnvironmentScreen(store: store, presentation: presentation)
       }
-      Tab("Assign", systemImage: "slider.horizontal.3") {
-        CommandScreen(store: store, presentation: presentation)
-      }
       Tab("Venture", systemImage: "chart.line.uptrend.xyaxis") {
         VentureScreen(store: store)
       }
