@@ -935,6 +935,7 @@ private struct VentureMetric: View {
 private struct RecordsScreen: View {
   var store: GameStore
   @Environment(FounderProgressionStore.self) private var progression
+  @Environment(AchievementStore.self) private var achievements
 
   var body: some View {
     NavigationStack {
@@ -962,6 +963,18 @@ private struct RecordsScreen: View {
               subtitle: "Recorded contexts and observed outcomes",
               symbol: "brain.head.profile",
               count: store.precedents.count
+            )
+          }
+          .buttonStyle(.plain)
+
+          NavigationLink {
+            AchievementsScreen(store: store)
+          } label: {
+            RecordLink(
+              title: "Achievements",
+              subtitle: "Founder milestones across four families",
+              symbol: "medal.star.fill",
+              count: achievements.unlockedCount
             )
           }
           .buttonStyle(.plain)
