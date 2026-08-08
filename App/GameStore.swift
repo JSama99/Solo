@@ -67,6 +67,8 @@ final class GameStore {
   private(set) var activeObligations: [CompanyObligation] = []
   private(set) var decisionHistory: [CareerDecisionRecord] = []
   private(set) var completedObjectives = 0
+  private(set) var commandDeckPhase: SprintPhase = .situation
+  private(set) var maxPhaseReached = SprintPhase.situation.rawValue
 
   /// Supplies entitlement state. Replaceable so the simulation stays testable
   /// without RevenueCat, StoreKit, or a network.
@@ -109,11 +111,42 @@ final class GameStore {
 
 
   var sprintPhase: SprintPhase {
-    if activeDilemma != nil && selectedDilemmaChoice == nil { return .founderEvent }
-    if tasks.allSatisfy({ $0.assignedAgentID == nil }) { return .chooseCommitments }
-    if tasks.filter({ $0.assignedAgentID != nil }).count < tasks.count { return .assignTeam }
-    if tasks.contains(where: { $0.isReviewed && !$0.resolutionLocked }) { return .reviewAndResolve }
-    return .readyToCommit
+    commandDeckPhase
+  }
+
+  var draftTaskIDs: [UUID] { tasks.map(\.id) }
+  var assignments: [String: UUID] {
+    Dictionary(uniqueKeysWithValues: tasks.compactMap { task in
+      task.assignedAgentID.map { ($0, task.id) }
+    })
+  }
+  var reviewedTaskIDs: Set<UUID> { Set(tasks.filter(\.isReviewed).map(\.id)) }
+
+  @discardableResult
+  func advanceCommandDeck() -> Bool {
+    switch commandDeckPhase {
+    case .situation:
+      guard activeDilemma == nil || selectedDilemmaChoice != nil else {
+        alertMessage = "Choose a response to the founder dilemma before continuing."
+        return false
+      }
+    case .intent: break
+    case .assign:
+      guard tasks.contains(where: { $0.assignedAgentID != nil }) else {
+        alertMessage = "Assign at least one agent before continuing."
+        return false
+      }
+    case .commit: return false
+    }
+    guard let next = SprintPhase(rawValue: commandDeckPhase.rawValue + 1) else { return false }
+    commandDeckPhase = next
+    maxPhaseReached = max(maxPhaseReached, next.rawValue)
+    return true
+  }
+
+  func returnToCommandDeckPhase(_ phase: SprintPhase) {
+    guard phase.rawValue <= maxPhaseReached else { return }
+    commandDeckPhase = phase
   }
 
   var averageRelationship: Int {
@@ -919,6 +952,8 @@ final class GameStore {
     activeDilemma = makeDilemma()
     selectedDilemmaChoiceID = nil
     currentObjective = makeObjective()
+    commandDeckPhase = .situation
+    maxPhaseReached = SprintPhase.situation.rawValue
     syncAssignments()
   }
 

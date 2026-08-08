@@ -238,31 +238,28 @@ enum SprintObjectiveKind: String, Codable {
 
 
 enum SprintPhase: Int, Codable, CaseIterable, Identifiable {
-  case founderEvent = 1
-  case chooseCommitments = 2
-  case assignTeam = 3
-  case reviewAndResolve = 4
-  case readyToCommit = 5
+  case situation
+  case intent
+  case assign
+  case commit
 
   var id: Self { self }
 
   var title: String {
     switch self {
-    case .founderEvent: "Founder Event"
-    case .chooseCommitments: "Choose Commitments"
-    case .assignTeam: "Assign Team"
-    case .reviewAndResolve: "Review and Resolve"
-    case .readyToCommit: "Commit Sprint"
+    case .situation: "Situation"
+    case .intent: "Intent"
+    case .assign: "Assign"
+    case .commit: "Commit"
     }
   }
 
   var symbol: String {
     switch self {
-    case .founderEvent: "bubble.left.and.exclamationmark.bubble.right.fill"
-    case .chooseCommitments: "square.stack.3d.up.fill"
-    case .assignTeam: "person.3.fill"
-    case .reviewAndResolve: "checkmark.shield.fill"
-    case .readyToCommit: "bolt.fill"
+    case .situation: "bubble.left.and.exclamationmark.bubble.right.fill"
+    case .intent: "scope"
+    case .assign: "person.3.fill"
+    case .commit: "checkmark.shield.fill"
     }
   }
 }

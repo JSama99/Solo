@@ -11,47 +11,7 @@ struct FounderEnvironmentScreen: View {
 
   var body: some View {
     NavigationStack {
-      ScrollView {
-        VStack(spacing: 16) {
-          environmentHeader
-          StatsStripBridge(stats: store.stats)
-          if #available(iOS 18.0, *) {
-            FounderGarage3DPrototype(
-              store: store,
-              selectedTaskID: selectedTaskID,
-              onSelectAgent: assignSelectedTask(to:),
-              onReview: { presentation.review(taskID: $0, in: store) },
-              onResolution: { store.resolveReviewedTask(taskID: $0, choice: $1) }
-            )
-          } else {
-            FounderGarageEnvironment(
-              store: store,
-              presentation: presentation,
-              policy: presentationPolicy
-            )
-          }
-          operationsSummary
-          GarageCommandCenter(
-            store: store,
-            presentation: presentation,
-            onSelectTask: { selectedTaskID = $0 },
-            selectedTaskID: selectedTaskID
-          )
-          agentStatusList
-          NavigationLink {
-            HeadquartersProgressScreen(availableCapital: store.stats.capital)
-          } label: {
-            headquartersProgressLink
-          }
-          .buttonStyle(.plain)
-          Button("Commit Sprint", systemImage: "bolt.fill") {
-            presentation.commit(in: store, progression: progression)
-          }
-          .buttonStyle(SoloPrimaryButtonStyle())
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity)
-      }
+      CommandDeck(store: store, presentation: presentation, progression: progression)
       .navigationTitle("SOLO")
       .toolbar {
         ToolbarItem(placement: .topBarTrailing) {

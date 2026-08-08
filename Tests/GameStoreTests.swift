@@ -238,6 +238,32 @@ final class GameStoreTests: XCTestCase {
     XCTAssertTrue(store.taskBacklog.allSatisfy { $0.role == .marketing || $0.category == .sales })
   }
 
+  func testCommandDeckGatesAndAllowsCompletedBackNavigation() throws {
+    let store = makeStore(seed: 80)
+    XCTAssertEqual(store.commandDeckPhase, .situation)
+    store.returnToCommandDeckPhase(.assign)
+    XCTAssertEqual(store.commandDeckPhase, .situation)
+    if let dilemma = store.activeDilemma {
+      store.selectDilemmaChoice(try XCTUnwrap(dilemma.choices.first).id)
+    }
+    XCTAssertTrue(store.advanceCommandDeck())
+    XCTAssertEqual(store.commandDeckPhase, .intent)
+    store.returnToCommandDeckPhase(.situation)
+    XCTAssertEqual(store.commandDeckPhase, .situation)
+  }
+
+  func testAssignmentDisplacesAgentFromPreviousTask() throws {
+    let store = makeStore(seed: 81)
+    let first = try XCTUnwrap(store.tasks.first)
+    let second = try XCTUnwrap(store.tasks.dropFirst().first)
+    let agent = try XCTUnwrap(store.agents.first)
+    store.assign(agentID: agent.id, to: first.id)
+    store.assign(agentID: agent.id, to: second.id)
+    XCTAssertNil(store.tasks.first(where: { $0.id == first.id })?.assignedAgentID)
+    XCTAssertEqual(store.tasks.first(where: { $0.id == second.id })?.assignedAgentID, agent.id)
+    XCTAssertEqual(store.assignments.count, 1)
+  }
+
   func testCorrelatedFamilyFailureAffectsEveryLinkedAgent() throws {
     let store = makeStore(seed: 12)
     store.correlatedFailureEvent = CorrelatedFailureEvent(
