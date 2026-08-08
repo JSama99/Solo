@@ -34,7 +34,7 @@ struct GarageVisualization: View {
       stageTransitions(newStates)
     }
     .sheet(item: $selectedStation) { station in
-      AgentDetailSheet(station: station)
+      AgentDetailPresentation(agent: AgentDetailViewModel(station: station))
     }
   }
 
@@ -347,55 +347,5 @@ struct AgentStation: View {
   private func transitionProgress(at date: Date) -> Double {
     guard motion == .active, let transitionStart else { return 1 }
     return min(max(date.timeIntervalSince(transitionStart) / 0.55, 0), 1)
-  }
-}
-
-private struct AgentDetailSheet: View {
-  var station: AgentStationViewModel
-
-  @AccessibilityFocusState private var headingFocused: Bool
-
-  var body: some View {
-    NavigationStack {
-      ScrollView {
-        VStack(alignment: .leading, spacing: 18) {
-          Text(station.name)
-            .font(.title.bold())
-            .accessibilityFocused($headingFocused)
-          Label(station.role.rawValue, systemImage: station.role.symbol)
-            .font(.headline)
-            .foregroundStyle(.secondary)
-          detailRow("Trust", value: "\(Int(station.trust.rounded())) • \(station.trustBand.label)")
-          detailRow("Status", value: station.semanticState.label, glyph: station.semanticState.glyph)
-          detailRow("Mood", value: station.mood)
-          detailRow("Current task", value: station.taskTitle ?? "No task assigned")
-          Label("To reassign work, use Command Deck.", systemImage: "slider.horizontal.3")
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-            .padding(.top, 4)
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-      }
-      .navigationTitle("Agent Detail")
-      .navigationBarTitleDisplayMode(.inline)
-      .onAppear { headingFocused = true }
-    }
-    .presentationDetents([.medium])
-    .presentationDragIndicator(.visible)
-  }
-
-  private func detailRow(_ title: String, value: String, glyph: String? = nil) -> some View {
-    VStack(alignment: .leading, spacing: 4) {
-      Text(title)
-        .font(.caption.weight(.bold))
-        .foregroundStyle(.secondary)
-      if let glyph {
-        Label(value, systemImage: glyph)
-          .font(.body.weight(.semibold))
-      } else {
-        Text(value).font(.body.weight(.semibold))
-      }
-    }
   }
 }

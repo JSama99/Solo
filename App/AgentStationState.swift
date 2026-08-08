@@ -61,6 +61,7 @@ struct AgentStationViewModel: Identifiable, Equatable {
   var name: String
   var initials: String
   var role: AgentRole
+  var modelFamily: String
   var trust: Double
   var taskTitle: String?
   var semanticState: SemanticState
@@ -95,6 +96,7 @@ struct AgentStationViewModel: Identifiable, Equatable {
       name: agent.name,
       initials: agent.initials,
       role: agent.role,
+      modelFamily: agent.modelFamily,
       trust: agent.trust,
       taskTitle: task?.title,
       semanticState: semanticState,
