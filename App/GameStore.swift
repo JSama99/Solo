@@ -296,6 +296,12 @@ final class GameStore {
       return false
     }
     intent = newIntent
+    taskDeckTitles = []
+    reportCache = []
+    let draft = makeTaskDraft()
+    tasks = draft.active
+    taskBacklog = draft.backlog
+    syncAssignments()
     save()
     return true
   }
@@ -1350,9 +1356,27 @@ final class GameStore {
 
   private func refillTaskDeck() {
     let excluded = Set(taskDeckTitles + recentTaskTitles.suffix(5))
-    var titles = ContentLibrary.allTaskPool.map(\.title).filter { !excluded.contains($0) }
-    if titles.count < 5 { titles = ContentLibrary.allTaskPool.map(\.title) }
-    taskDeckTitles.append(contentsOf: deterministicallyShuffled(titles))
+    let preferred = ContentLibrary.allTaskPool.filter(isPreferredTask)
+    let fallback = ContentLibrary.allTaskPool.filter { !isPreferredTask($0) }
+    var preferredTitles = preferred.map(\.title).filter { !excluded.contains($0) }
+    var fallbackTitles = fallback.map(\.title).filter { !excluded.contains($0) }
+    if preferredTitles.count + fallbackTitles.count < 5 {
+      preferredTitles = preferred.map(\.title)
+      fallbackTitles = fallback.map(\.title)
+    }
+    taskDeckTitles.append(contentsOf: deterministicallyShuffled(preferredTitles))
+    taskDeckTitles.append(contentsOf: deterministicallyShuffled(fallbackTitles))
+  }
+
+  private func isPreferredTask(_ task: SoloTask) -> Bool {
+    switch intent {
+    case .build:
+      task.role == .engineering || task.category == .product
+    case .learn:
+      task.role == .research || task.category == .research || task.category == .trust
+    case .sell:
+      task.role == .marketing || task.category == .sales
+    }
   }
 
   private func deterministicallyShuffled<T>(_ values: [T]) -> [T] {

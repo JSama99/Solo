@@ -20,7 +20,9 @@ struct GarageCommandCenter: View {
 
       Picker("Sprint intent", selection: Binding(
         get: { store.intent },
-        set: { store.setIntent($0) }
+        set: {
+          if store.setIntent($0) { onSelectTask(nil) }
+        }
       )) {
         ForEach(SprintIntent.allCases) { intent in
           Label(intent.name, systemImage: intent.symbol).tag(intent)
@@ -28,6 +30,13 @@ struct GarageCommandCenter: View {
       }
       .pickerStyle(.segmented)
       .disabled(store.tasks.contains { $0.assignedAgentID != nil })
+
+      Label("\(store.intent.summary) Your available work has been refreshed.", systemImage: store.intent.symbol)
+        .font(.caption.weight(.semibold))
+        .foregroundStyle(SoloTheme.cyan)
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(SoloTheme.cyan.opacity(0.12), in: .rect(cornerRadius: 12))
 
       if let dilemma = store.activeDilemma {
         DisclosureGroup("Founder dilemma: \(dilemma.title)") {

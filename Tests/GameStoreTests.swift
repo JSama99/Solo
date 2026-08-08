@@ -230,6 +230,14 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(store.intent, .learn)
   }
 
+  func testIntentRefreshesDraftWithRelevantWork() {
+    let store = makeStore(seed: 79)
+
+    XCTAssertTrue(store.setIntent(.sell))
+    XCTAssertTrue(store.tasks.allSatisfy { $0.role == .marketing || $0.category == .sales })
+    XCTAssertTrue(store.taskBacklog.allSatisfy { $0.role == .marketing || $0.category == .sales })
+  }
+
   func testCorrelatedFamilyFailureAffectsEveryLinkedAgent() throws {
     let store = makeStore(seed: 12)
     store.correlatedFailureEvent = CorrelatedFailureEvent(
