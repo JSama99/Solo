@@ -29,9 +29,17 @@ enum CareerMode: String, Codable, CaseIterable, Identifiable {
 
   var summary: String {
     switch self {
-    case .daily: "One shared seed. A few sprints. Beat your best."
+    case .daily: "~5 min • today’s seed • the same run for everyone."
     case .bounded: "Two ventures, twenty-four sprints, one complete story."
-    case .continuous: "Sixty ventures across six eras. Build a dynasty."
+    case .continuous: "60 ventures • 6 eras • no ceiling."
+    }
+  }
+
+  var symbol: String {
+    switch self {
+    case .daily: "calendar.badge.clock"
+    case .bounded: "book.closed.fill"
+    case .continuous: "building.2.fill"
     }
   }
 }
