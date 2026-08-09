@@ -15,7 +15,9 @@ struct FounderEnvironmentScreen: View {
         VStack(spacing: 16) {
           environmentHeader
           StatsStripBridge(stats: store.stats)
-          if #available(iOS 18.0, *) {
+          if progression.currentFacility == .founderLoft, #available(iOS 18.0, *) {
+            FounderLoftEnvironment()
+          } else if #available(iOS 18.0, *) {
             FounderGarage3DPrototype(
               store: store,
               selectedTaskID: selectedTaskID,
@@ -39,7 +41,7 @@ struct FounderEnvironmentScreen: View {
           )
           agentStatusList
           NavigationLink {
-            HeadquartersProgressScreen(availableCapital: store.stats.capital)
+            HeadquartersProgressScreen(store: store)
           } label: {
             headquartersProgressLink
           }

@@ -34,8 +34,10 @@ struct DailyChallengeSave: Codable, Equatable {
 final class DailyChallengeStore {
   private static let key = "solo-daily-v1"
   private(set) var save: DailyChallengeSave
+  private let defaults: UserDefaults
 
   init(defaults: UserDefaults = .standard) {
+    self.defaults = defaults
     if let data = defaults.data(forKey: Self.key),
        let decoded = try? JSONDecoder().decode(DailyChallengeSave.self, from: data) {
       save = decoded
@@ -49,7 +51,8 @@ final class DailyChallengeStore {
   func record(score: Int, date: Date = Date()) {
     let today = DailyChallenge.dayKey(for: date)
     guard save.dayKey != today || save.score == nil else { return }
-    let yesterday = today - 1
+    let calendar = Calendar(identifier: .gregorian)
+    let yesterday = calendar.date(byAdding: .day, value: -1, to: date).map(DailyChallenge.dayKey(for:))
     save.dayKey = today
     save.score = score
     save.bestScore = max(save.bestScore, score)
@@ -61,7 +64,7 @@ final class DailyChallengeStore {
 
   private func persist() {
     if let data = try? JSONEncoder().encode(save) {
-      UserDefaults.standard.set(data, forKey: Self.key)
+      defaults.set(data, forKey: Self.key)
     }
   }
 }

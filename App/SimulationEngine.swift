@@ -48,6 +48,7 @@ enum SimulationEngine {
     correlatedFailureEvent: CorrelatedFailureEvent?,
     allTasks: [SoloTask],
     allAgents: [SoloAgent],
+    facilityBonuses: FacilityBonuses = .none,
     rng: inout SeededRandomNumberGenerator
   ) -> TaskResult {
     let exactFit = agent.role == task.role
@@ -76,12 +77,14 @@ enum SimulationEngine {
     default:
       personalityAdjustment = 0
     }
+    let facilityQualityBonus = agent.id == "stacks" && task.role == .engineering
+      ? facilityBonuses.engineeringQualityBonus : 0
     let rawActual = Double(agent.reliability) * 0.55
       + agent.calibration * 18
       + agent.trust * 0.18
       - agent.drift * 0.35
       + Double(roleAdjustment + intentAdjustment + relationshipAdjustment + personalityAdjustment
-        + DoctrineProfile.profile(for: doctrine).actualQualityBonus + actualNoise)
+        + DoctrineProfile.profile(for: doctrine).actualQualityBonus + facilityQualityBonus + actualNoise)
       - Double(correlation?.qualityPenalty ?? 0)
     let actualQuality = clampedPercent(Int(rawActual.rounded()))
 
@@ -92,9 +95,11 @@ enum SimulationEngine {
     var evidenceAdjustment = agent.relationship >= 75 ? 6 : (agent.relationship < 35 ? -8 : 0)
     if agent.id == "aurora" && (task.role == .research || task.category == .trust) { evidenceAdjustment += 5 }
     if agent.id == "brio" && task.urgency == .critical && intent == .sell { evidenceAdjustment -= 5 }
+    let facilityEvidenceBonus = agent.id == "aurora" && (task.role == .research || task.category == .trust)
+      ? facilityBonuses.auroraEvidenceBonus : 0
     let evidenceCompleteness = clampedPercent(
       Int((agent.calibration * 70 + Double(agent.reliability) * 0.25 - agent.drift * 0.25).rounded())
-        + evidenceAdjustment
+        + evidenceAdjustment + facilityEvidenceBonus
         + rng.integer(in: -10 ... 10)
     )
     let confidenceWidth = max(
