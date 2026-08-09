@@ -12,7 +12,6 @@ struct FounderEnvironmentScreen: View {
       ScrollView {
         VStack(spacing: 16) {
           environmentHeader
-          StatsStripBridge(stats: store.stats)
           if progression.currentFacility == .founderLoft, #available(iOS 18.0, *) {
             FounderLoftEnvironment()
           } else {
