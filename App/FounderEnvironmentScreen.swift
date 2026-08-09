@@ -12,11 +12,15 @@ struct FounderEnvironmentScreen: View {
       ScrollView {
         VStack(spacing: 16) {
           environmentHeader
-          GarageVisualization(
-            stations: stationModels,
-            policy: presentationPolicy,
-            facility: progression.currentFacility
-          )
+          if progression.currentFacility == .founderLoft, #available(iOS 18.0, *) {
+            FounderLoftEnvironment()
+          } else {
+            GarageVisualization(
+              stations: stationModels,
+              policy: presentationPolicy,
+              facility: progression.currentFacility
+            )
+          }
           operationsSummary
           agentStatusList
           NavigationLink {
@@ -122,7 +126,6 @@ struct FounderEnvironmentScreen: View {
     .soloCard()
   }
 }
-
 
 private struct EnvironmentAgentRow: View {
   var agent: SoloAgent

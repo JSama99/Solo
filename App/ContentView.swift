@@ -152,41 +152,27 @@ private struct ModeSelectScreen: View {
   var body: some View {
     NavigationStack {
       ScrollView {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 16) {
           VStack(alignment: .leading, spacing: 6) {
-            Text("PLAY MODE")
+            Text("CHOOSE YOUR RUN")
               .font(.caption.weight(.black))
               .tracking(2)
               .foregroundStyle(SoloTheme.cyan)
-            Text("Choose your run")
+            Text("How far do you want to build?")
               .font(.largeTitle.bold())
-            Text("Start a founder career or take on today’s shared challenge.")
+            Text("Each mode uses the same simulation, with a different commitment.")
               .foregroundStyle(.secondary)
           }
 
-          Button {
-            store.beginSetup()
-          } label: {
-            ModeChoiceCard(
-              title: "Founder Career",
-              detail: "Build a company across a full, persistent story.",
-              symbol: "flag.checkered",
-              color: SoloTheme.cyan
-            )
+          ForEach(CareerMode.allCases) { mode in
+            Button {
+              store.startMode(mode)
+            } label: {
+              CareerModeCard(mode: mode, isSelected: false)
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint(mode == .daily ? "Starts today’s shared Daily Challenge" : "Continues to founder setup")
           }
-          .buttonStyle(.plain)
-
-          Button {
-            store.startDailyChallenge()
-          } label: {
-            ModeChoiceCard(
-              title: "Daily Challenge",
-              detail: "One shared seed. A short run. Beat your best.",
-              symbol: "calendar.badge.clock",
-              color: SoloTheme.amber
-            )
-          }
-          .buttonStyle(.plain)
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -200,31 +186,6 @@ private struct ModeSelectScreen: View {
         }
       }
     }
-  }
-}
-
-private struct ModeChoiceCard: View {
-  var title: String
-  var detail: String
-  var symbol: String
-  var color: Color
-
-  var body: some View {
-    HStack(spacing: 14) {
-      Image(systemName: symbol)
-        .font(.title2)
-        .foregroundStyle(color)
-        .frame(width: 44, height: 44)
-        .background(color.opacity(0.14), in: .rect(cornerRadius: 12))
-      VStack(alignment: .leading, spacing: 3) {
-        Text(title).font(.headline)
-        Text(detail).font(.caption).foregroundStyle(.secondary)
-      }
-      Spacer()
-      Image(systemName: "chevron.right").foregroundStyle(.tertiary)
-    }
-    .soloCard()
-    .accessibilityElement(children: .combine)
   }
 }
 
@@ -376,7 +337,7 @@ private struct DoctrineCard: View {
 
 /// Deliberately lighter than DoctrineCard -- CareerMode is a binary choice
 /// with no perk/risk tradeoff to weigh, just a length of story to commit to.
-private struct CareerModeCard: View {
+struct CareerModeCard: View {
   var mode: CareerMode
   var isSelected: Bool
 
