@@ -294,7 +294,7 @@ private struct DoctrineCard: View {
 
 /// Deliberately lighter than DoctrineCard -- CareerMode is a binary choice
 /// with no perk/risk tradeoff to weigh, just a length of story to commit to.
-private struct CareerModeCard: View {
+struct CareerModeCard: View {
   var mode: CareerMode
   var isSelected: Bool
 

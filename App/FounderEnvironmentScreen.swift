@@ -16,7 +16,11 @@ struct FounderEnvironmentScreen: View {
           if progression.currentFacility == .founderLoft, #available(iOS 18.0, *) {
             FounderLoftEnvironment()
           } else {
-            GarageVisualization(stations: stationModels, policy: presentationPolicy)
+            GarageVisualization(
+              stations: stationModels,
+              policy: presentationPolicy,
+              facility: progression.currentFacility
+            )
           }
           operationsSummary
           agentStatusList
@@ -121,6 +125,42 @@ struct FounderEnvironmentScreen: View {
       Image(systemName: "chevron.right").foregroundStyle(.tertiary)
     }
     .soloCard()
+  }
+}
+
+private struct StatsStripBridge: View {
+  var stats: FounderStats
+
+  var body: some View {
+    ScrollView(.horizontal) {
+      HStack(spacing: 8) {
+        metric("Runway", value: "\(stats.runway)d", symbol: "calendar")
+        metric("Revenue", value: "$\(stats.revenue.formatted())", symbol: "dollarsign")
+        metric("Momentum", value: "\(stats.momentum)", symbol: "bolt.fill")
+        metric("Trust", value: "\(stats.trust)", symbol: "checkmark.shield.fill")
+        metric("Energy", value: "\(stats.energy)", symbol: "battery.75percent")
+      }
+      .padding(.horizontal, 1)
+    }
+    .scrollIndicators(.hidden)
+    .accessibilityElement(children: .contain)
+  }
+
+  private func metric(_ label: String, value: String, symbol: String) -> some View {
+    metricContent(label: label, value: value, symbol: symbol)
+  }
+
+  private func metricContent(label: String, value: String, symbol: String) -> some View {
+    VStack(alignment: .leading, spacing: 3) {
+      Label(label, systemImage: symbol)
+        .font(.caption2.weight(.semibold))
+        .foregroundStyle(.secondary)
+      Text(value)
+        .font(.headline.monospacedDigit())
+    }
+    .padding(.horizontal, 12)
+    .padding(.vertical, 9)
+    .background(SoloTheme.card, in: .rect(cornerRadius: 12))
   }
 }
 
