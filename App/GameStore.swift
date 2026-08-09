@@ -271,14 +271,14 @@ final class GameStore {
   }
 
   func startMode(_ mode: CareerMode) {
-    selectedCareerMode = mode
-    switch mode {
-    case .daily:
+    if mode == .daily {
       startDailyChallenge()
-    case .bounded, .continuous:
-      beginSetup()
-      selectedCareerMode = mode
+      return
     }
+    founderName = ""
+    selectedDoctrine = .guided
+    selectedCareerMode = mode
+    stage = .setup
   }
 
   func startCareer(seed: UInt64? = nil) {

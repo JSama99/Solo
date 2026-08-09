@@ -12,11 +12,12 @@ struct FounderEnvironmentScreen: View {
       ScrollView {
         VStack(spacing: 16) {
           environmentHeader
-          GarageVisualization(
-            stations: stationModels,
-            policy: presentationPolicy,
-            facility: progression.currentFacility
-          )
+          StatsStripBridge(stats: store.stats)
+          if progression.currentFacility == .founderLoft, #available(iOS 18.0, *) {
+            FounderLoftEnvironment()
+          } else {
+            GarageVisualization(stations: stationModels, policy: presentationPolicy)
+          }
           operationsSummary
           agentStatusList
           NavigationLink {
