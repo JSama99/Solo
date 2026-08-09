@@ -42,6 +42,14 @@ enum CareerMode: String, Codable, CaseIterable, Identifiable {
     case .continuous: "building.2.fill"
     }
   }
+
+  var symbol: String {
+    switch self {
+    case .daily: "calendar.badge.clock"
+    case .bounded: "flag.checkered"
+    case .continuous: "building.2.fill"
+    }
+  }
 }
 
 enum FounderDoctrine: String, Codable, CaseIterable, Identifiable {

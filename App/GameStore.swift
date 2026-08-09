@@ -191,17 +191,6 @@ final class GameStore {
     stage = .modeSelect
   }
 
-  /// Routes the mode picker through the existing setup and daily-start paths.
-  func startMode(_ mode: CareerMode) {
-    switch mode {
-    case .daily:
-      startDailyChallenge()
-    case .bounded, .continuous:
-      beginSetup()
-      selectedCareerMode = mode
-    }
-  }
-
   func startCareer(seed: UInt64? = nil) {
     doctrine = selectedDoctrine
     careerMode = selectedCareerMode
