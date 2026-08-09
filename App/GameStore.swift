@@ -155,6 +155,24 @@ final class GameStore {
     return .readyToCommit
   }
 
+  var canCommitSprint: Bool {
+    commitBlockerMessage == nil
+  }
+
+  var commitBlockerMessage: String? {
+    let hasAssignment = tasks.contains { $0.assignedAgentID != nil }
+    guard hasAssignment else {
+      return "Assign at least one agent before committing the sprint."
+    }
+    guard activeDilemma == nil || selectedDilemmaChoice != nil else {
+      return "Choose a response to the founder dilemma before committing."
+    }
+    if let unresolved = tasks.first(where: { $0.isReviewed && !$0.resolutionLocked }) {
+      return "Choose how to resolve \(unresolved.title) before committing."
+    }
+    return nil
+  }
+
   var averageRelationship: Int {
     guard !agents.isEmpty else { return 0 }
     return agents.map(\.relationship).reduce(0, +) / agents.count
@@ -588,16 +606,8 @@ final class GameStore {
   func commitSprint() {
     sanitizeState()
     let assignedIndices = tasks.indices.filter { tasks[$0].assignedAgentID != nil }
-    guard !assignedIndices.isEmpty else {
-      alertMessage = "Assign at least one agent before committing the sprint."
-      return
-    }
-    guard activeDilemma == nil || selectedDilemmaChoice != nil else {
-      alertMessage = "Choose a response to the founder dilemma before committing."
-      return
-    }
-    if let unresolved = tasks.first(where: { $0.isReviewed && !$0.resolutionLocked }) {
-      alertMessage = "Choose how to resolve \(unresolved.title) before committing."
+    if let blocker = commitBlockerMessage {
+      alertMessage = blocker
       return
     }
 

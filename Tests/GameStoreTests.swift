@@ -20,6 +20,36 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(store.alertMessage, "Assign at least one agent before committing the sprint.")
   }
 
+  func testCanCommitSprintMirrorsCommitGuardsAndAllowsSkippingTasks() throws {
+    let store = makeStore(seed: 7_001)
+    XCTAssertFalse(store.canCommitSprint)
+    XCTAssertEqual(store.commitBlockerMessage, "Assign at least one agent before committing the sprint.")
+
+    let task = try XCTUnwrap(store.tasks.first)
+    let agent = store.agents.first(where: { $0.role == task.role }) ?? store.agents[0]
+    store.assign(agentID: agent.id, to: task.id)
+    XCTAssertFalse(store.canCommitSprint)
+    XCTAssertEqual(store.commitBlockerMessage, "Choose a response to the founder dilemma before committing.")
+
+    if let choice = store.activeDilemma?.choices.first {
+      store.selectDilemmaChoice(choice.id)
+    }
+    XCTAssertTrue(store.canCommitSprint)
+
+    store.review(taskID: task.id)
+    XCTAssertFalse(store.canCommitSprint)
+    XCTAssertTrue(store.commitBlockerMessage?.contains("Choose how to resolve") == true)
+  }
+
+  func testCommandDeckPresentationOnlyShowsFullDilemmaDuringFounderEvent() {
+    XCTAssertTrue(CommandDeckPresentation.showsFullDilemma(for: .founderEvent))
+    XCTAssertFalse(CommandDeckPresentation.showsFullDilemma(for: .chooseCommitments))
+    XCTAssertFalse(CommandDeckPresentation.showsFullDilemma(for: .readyToCommit))
+    XCTAssertFalse(CommandDeckPresentation.showsSprintControls(for: .founderEvent))
+    XCTAssertTrue(CommandDeckPresentation.showsSprintControls(for: .chooseCommitments))
+    XCTAssertTrue(CommandDeckPresentation.showsSprintControls(for: .readyToCommit))
+  }
+
   func testReviewImprovesSpecialistForecast() throws {
     let store = makeStore()
     let taskIndex = try XCTUnwrap(

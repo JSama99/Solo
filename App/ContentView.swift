@@ -565,74 +565,97 @@ private struct CommandScreen: View {
           SprintPhaseTracker(current: store.sprintPhase)
 
           if let dilemma = store.activeDilemma {
-            FounderDilemmaCard(
-              dilemma: dilemma,
-              selectedChoiceID: store.selectedDilemmaChoiceID,
-              onSelect: store.selectDilemmaChoice
-            )
-          }
-
-          if let objective = store.currentObjective {
-            SprintObjectiveCard(objective: objective, progress: store.objectiveProgressText)
-          }
-
-          Picker("Sprint intent", selection: Binding(
-            get: { store.intent },
-            set: { store.setIntent($0) }
-          )) {
-            ForEach(SprintIntent.allCases) { intent in
-              Label(intent.name, systemImage: intent.symbol).tag(intent)
-            }
-          }
-          .pickerStyle(.segmented)
-          .disabled(store.tasks.contains { $0.assignedAgentID != nil })
-
-          if store.tasks.contains(where: { $0.assignedAgentID != nil }) {
-            Text("Clear all assignments to change sprint intent.")
-              .font(.caption)
-              .foregroundStyle(.secondary)
-          }
-
-          HStack {
-            Text(store.intent.summary).font(.caption).foregroundStyle(.secondary)
-            Spacer()
-            Label("\(store.attentionRemaining)/\(store.attentionMaximum)", systemImage: "eye.fill")
-              .font(.caption.weight(.bold))
-              .foregroundStyle(SoloTheme.amber)
-          }
-
-          if !store.taskBacklog.isEmpty {
-            TaskDraftBacklogCard(
-              activeTasks: store.tasks,
-              backlog: store.taskBacklog,
-              canEdit: store.tasks.allSatisfy { $0.assignedAgentID == nil },
-              onSwap: store.swapDraftTask
-            )
-          }
-
-          ForEach(store.tasks) { task in
-            TaskCommandCard(
-              task: task,
-              agents: store.agents
-            ) { agentID in
-              presentation.assign(agentID: agentID, to: task.id, in: store)
-            } onReview: {
-              presentation.review(taskID: task.id, in: store)
-            } onResolution: { choice in
-              store.resolveReviewedTask(taskID: task.id, choice: choice)
+            if CommandDeckPresentation.showsFullDilemma(for: store.sprintPhase) {
+              FounderDilemmaCard(
+                dilemma: dilemma,
+                selectedChoiceID: store.selectedDilemmaChoiceID,
+                onSelect: store.selectDilemmaChoice
+              )
+            } else if let choice = store.selectedDilemmaChoice {
+              ResolvedDilemmaSummary(dilemma: dilemma, choice: choice)
             }
           }
 
-          Button("Commit Sprint", systemImage: "bolt.fill") {
-            presentation.commit(in: store, progression: progression)
+          if CommandDeckPresentation.showsSprintControls(for: store.sprintPhase) {
+            if let objective = store.currentObjective {
+              SprintObjectiveCard(objective: objective, progress: store.objectiveProgressText)
+            }
+
+            Picker("Sprint intent", selection: Binding(
+              get: { store.intent },
+              set: { store.setIntent($0) }
+            )) {
+              ForEach(SprintIntent.allCases) { intent in
+                Label(intent.name, systemImage: intent.symbol).tag(intent)
+              }
+            }
+            .pickerStyle(.segmented)
+            .disabled(store.tasks.contains { $0.assignedAgentID != nil })
+
+            if store.tasks.contains(where: { $0.assignedAgentID != nil }) {
+              Text("Clear all assignments to change sprint intent.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+
+            HStack {
+              Text(store.intent.summary).font(.caption).foregroundStyle(.secondary)
+              Spacer()
+              Label("\(store.attentionRemaining)/\(store.attentionMaximum)", systemImage: "eye.fill")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(SoloTheme.amber)
+            }
+
+            if !store.taskBacklog.isEmpty {
+              TaskDraftBacklogCard(
+                activeTasks: store.tasks,
+                backlog: store.taskBacklog,
+                canEdit: store.tasks.allSatisfy { $0.assignedAgentID == nil },
+                onSwap: store.swapDraftTask
+              )
+            }
+
+            ForEach(store.tasks) { task in
+              TaskCommandCard(
+                task: task,
+                agents: store.agents,
+                founderStats: store.stats
+              ) { agentID in
+                presentation.assign(agentID: agentID, to: task.id, in: store)
+              } onReview: {
+                presentation.review(taskID: task.id, in: store)
+              } onResolution: { choice in
+                store.resolveReviewedTask(taskID: task.id, choice: choice)
+              }
+            }
+
+            Button("Commit Sprint", systemImage: "bolt.fill") {
+              presentation.commit(in: store, progression: progression)
+            }
+            .buttonStyle(SoloPrimaryButtonStyle())
+            .disabled(!store.canCommitSprint)
+            if let blocker = store.commitBlockerMessage {
+              Text(blocker)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
           }
-          .buttonStyle(SoloPrimaryButtonStyle())
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
       }
       .navigationTitle("Assign")
     }
+  }
+}
+
+enum CommandDeckPresentation {
+  static func showsFullDilemma(for phase: SprintPhase) -> Bool {
+    phase == .founderEvent
+  }
+
+  static func showsSprintControls(for phase: SprintPhase) -> Bool {
+    phase.rawValue >= SprintPhase.chooseCommitments.rawValue
   }
 }
 
@@ -699,6 +722,18 @@ private struct FounderDilemmaCard: View {
       }
     }
     .soloCard()
+  }
+}
+
+private struct ResolvedDilemmaSummary: View {
+  var dilemma: FounderDilemma
+  var choice: DilemmaChoice
+
+  var body: some View {
+    Label("\(dilemma.title): \(choice.title)", systemImage: "checkmark.seal.fill")
+      .font(.caption.weight(.semibold))
+      .foregroundStyle(SoloTheme.mint)
+      .soloCard()
   }
 }
 
@@ -789,9 +824,12 @@ private struct TaskDraftBacklogCard: View {
 private struct TaskCommandCard: View {
   var task: SoloTask
   var agents: [SoloAgent]
+  var founderStats: FounderStats
   var onAssign: (String?) -> Void
   var onReview: () -> Void
   var onResolution: (TaskResolutionChoice) -> Void
+
+  @State private var inspectedAgent: AgentDetailViewModel?
 
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
@@ -824,6 +862,17 @@ private struct TaskCommandCard: View {
       }
       .pickerStyle(.menu)
       .buttonStyle(.bordered)
+
+      if let assignedAgent {
+        Button("Inspect \(assignedAgent.name)", systemImage: "person.text.rectangle") {
+          inspectedAgent = AgentDetailViewModel.derive(
+            agent: assignedAgent,
+            task: task,
+            founderStats: founderStats
+          )
+        }
+        .buttonStyle(.bordered)
+      }
 
       if let result = task.result {
         VStack(alignment: .leading, spacing: 7) {
@@ -912,6 +961,14 @@ private struct TaskCommandCard: View {
     }
     .padding(16)
     .background(SoloTheme.card, in: .rect(cornerRadius: 18))
+    .sheet(item: $inspectedAgent) { agent in
+      AgentDetailPresentation(agent: agent)
+    }
+  }
+
+  private var assignedAgent: SoloAgent? {
+    guard let assignedAgentID = task.assignedAgentID else { return nil }
+    return agents.first(where: { $0.id == assignedAgentID })
   }
 }
 
