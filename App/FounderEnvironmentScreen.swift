@@ -13,11 +13,27 @@ struct FounderEnvironmentScreen: View {
         VStack(spacing: 16) {
           environmentHeader
           StatsStripBridge(stats: store.stats)
-          GarageVisualization(stations: stationModels, policy: presentationPolicy)
+          if progression.currentFacility == .founderLoft, #available(iOS 18.0, *) {
+            FounderLoftEnvironment()
+          } else if #available(iOS 18.0, *) {
+            FounderGarage3DPrototype(
+              store: store,
+              selectedTaskID: selectedTaskID,
+              onSelectAgent: assignSelectedTask(to:),
+              onReview: { presentation.review(taskID: $0, in: store) },
+              onResolution: { store.resolveReviewedTask(taskID: $0, choice: $1) }
+            )
+          } else {
+            FounderGarageEnvironment(
+              store: store,
+              presentation: presentation,
+              policy: presentationPolicy
+            )
+          }
           operationsSummary
           agentStatusList
           NavigationLink {
-            HeadquartersProgressScreen(availableCapital: store.stats.capital)
+            HeadquartersProgressScreen(store: store)
           } label: {
             headquartersProgressLink
           }

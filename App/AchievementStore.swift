@@ -66,6 +66,10 @@ enum AchievementCatalog {
     Achievement(id: "independent", title: "Still Ours", detail: "Reach the summit having never taken investment.", family: .story, rarity: .gold),
     Achievement(id: "survivor", title: "Hard Lessons", detail: "Reach any failure ending — and learn from it.", family: .story, rarity: .bronze),
     Achievement(id: "people-first", title: "People First", detail: "Win a run that hired human customer success.", family: .story, rarity: .silver)
+    ,Achievement(id: "out-of-garage", title: "Out of the Garage", detail: "Purchase the Founder Loft.", family: .progression, rarity: .silver)
+    ,Achievement(id: "built-different", title: "Built Different", detail: "Purchase three facility upgrades.", family: .mastery, rarity: .bronze)
+    ,Achievement(id: "fully-loaded-garage", title: "Fully Loaded Garage", detail: "Purchase every Garage upgrade.", family: .mastery, rarity: .gold)
+    ,Achievement(id: "cash-discipline", title: "Cash Discipline", detail: "Move into the Loft with $1,500 Capital remaining.", family: .mastery, rarity: .silver)
   ]
 
   static func by(_ id: String) -> Achievement? { all.first { $0.id == id } }
@@ -198,6 +202,22 @@ final class AchievementStore {
     case "truth-seeker": return progress(context.reviewRate * 100, 70, label: "Review rate")
     default: return nil
     }
+  }
+
+  func recordFacilityProgress(purchasedUpgradeCount: Int, ownsLoft: Bool, capital: Int) {
+    var unlocked: [Achievement] = []
+    func award(_ id: String, when condition: Bool) {
+      guard condition, save.unlocked[id] == nil, let achievement = AchievementCatalog.by(id) else { return }
+      save.unlocked[id] = Date()
+      save.totalXP += achievement.xp
+      unlocked.append(achievement)
+    }
+    award("out-of-garage", when: ownsLoft)
+    award("built-different", when: purchasedUpgradeCount >= 3)
+    award("fully-loaded-garage", when: purchasedUpgradeCount == FacilityUpgradeID.allCases.count)
+    award("cash-discipline", when: ownsLoft && capital >= 1_500)
+    if let first = unlocked.first { latestUnlock = first }
+    if !unlocked.isEmpty { persist() }
   }
 
   @discardableResult

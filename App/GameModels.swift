@@ -535,13 +535,14 @@ struct SoloTask: Codable, Identifiable, Hashable {
   var result: TaskResult?
   var resolution: TaskResolutionChoice?
   var resolutionLocked = false
+  var minimumEra: VentureEra?
 
   var reward: String { impact.label }
   var consequenceLabel: String { skipEffects.conciseLossLabel }
 
   private enum CodingKeys: String, CodingKey {
     case id, title, detail, role, category, urgency, impact, skipEffects
-    case assignedAgentID, isReviewed, result, resolution, resolutionLocked
+    case assignedAgentID, isReviewed, result, resolution, resolutionLocked, minimumEra
   }
 
   init(
@@ -557,7 +558,8 @@ struct SoloTask: Codable, Identifiable, Hashable {
     isReviewed: Bool = false,
     result: TaskResult? = nil,
     resolution: TaskResolutionChoice? = nil,
-    resolutionLocked: Bool = false
+    resolutionLocked: Bool = false,
+    minimumEra: VentureEra? = nil
   ) {
     self.id = id
     self.title = title
@@ -572,6 +574,7 @@ struct SoloTask: Codable, Identifiable, Hashable {
     self.result = result
     self.resolution = resolution
     self.resolutionLocked = resolutionLocked
+    self.minimumEra = minimumEra
   }
 
   init(from decoder: Decoder) throws {
@@ -590,6 +593,25 @@ struct SoloTask: Codable, Identifiable, Hashable {
     result = try container.decodeIfPresent(TaskResult.self, forKey: .result)
     resolution = try container.decodeIfPresent(TaskResolutionChoice.self, forKey: .resolution)
     resolutionLocked = try container.decodeIfPresent(Bool.self, forKey: .resolutionLocked) ?? false
+    minimumEra = try container.decodeIfPresent(VentureEra.self, forKey: .minimumEra)
+  }
+
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(id, forKey: .id)
+    try container.encode(title, forKey: .title)
+    try container.encode(detail, forKey: .detail)
+    try container.encode(role, forKey: .role)
+    try container.encode(category, forKey: .category)
+    try container.encode(urgency, forKey: .urgency)
+    try container.encode(impact, forKey: .impact)
+    try container.encode(skipEffects, forKey: .skipEffects)
+    try container.encodeIfPresent(assignedAgentID, forKey: .assignedAgentID)
+    try container.encode(isReviewed, forKey: .isReviewed)
+    try container.encodeIfPresent(result, forKey: .result)
+    try container.encodeIfPresent(resolution, forKey: .resolution)
+    try container.encode(resolutionLocked, forKey: .resolutionLocked)
+    try container.encodeIfPresent(minimumEra, forKey: .minimumEra)
   }
 
   private static func legacyCategory(for role: AgentRole) -> TaskCategory {

@@ -4,6 +4,7 @@ struct ContentView: View {
   @State private var store = GameStore()
   @Environment(SubscriptionStore.self) private var subscriptions
   @Environment(AchievementStore.self) private var achievements
+  @Environment(FounderProgressionStore.self) private var progression
   @State private var achievementToast: Achievement?
 
   var body: some View {
@@ -48,6 +49,7 @@ struct ContentView: View {
       // Bind the real entitlement source once the environment is available.
       store.entitlements = subscriptions
       store.achievementStore = achievements
+      store.progressionStore = progression
       store.resumeAfterFounderPassUnlock()
     }
     .onChange(of: subscriptions.isPro) { _, isPro in
@@ -1055,31 +1057,7 @@ private struct RecordsScreen: View {
           .buttonStyle(.plain)
 
           NavigationLink {
-            HindsightRecordsScreen(precedents: store.precedents)
-          } label: {
-            RecordLink(
-              title: "Hindsight",
-              subtitle: "Recorded contexts and observed outcomes",
-              symbol: "brain.head.profile",
-              count: store.precedents.count
-            )
-          }
-          .buttonStyle(.plain)
-
-          NavigationLink {
-            AchievementsScreen(store: store)
-          } label: {
-            RecordLink(
-              title: "Achievements",
-              subtitle: "Founder milestones across four families",
-              symbol: "medal.star.fill",
-              count: achievements.unlockedCount
-            )
-          }
-          .buttonStyle(.plain)
-
-          NavigationLink {
-            HeadquartersProgressScreen(availableCapital: store.stats.capital)
+            HeadquartersProgressScreen(store: store)
           } label: {
             RecordLink(
               title: "Headquarters Progress",

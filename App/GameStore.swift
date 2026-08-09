@@ -43,6 +43,9 @@ final class GameStore {
   var reportCache: [CachedTaskReport] = []
   var dailyChallengeStore = DailyChallengeStore()
   var achievementStore: AchievementStore?
+  /// Persistent headquarters progression is intentionally separate from the
+  /// deterministic career save. It never consumes the simulation RNG.
+  var progressionStore: FounderProgressionStore?
 
   // ── Build 3: career layer ─────────────────────────────────────────
   /// Precedents banked across the career. Recorded in every venture,
@@ -95,6 +98,41 @@ final class GameStore {
 
   var attentionMaximum: Int {
     DoctrineProfile.profile(for: doctrine).attentionMaximum
+      + (sprint.isMultiple(of: 3) ? (progressionStore?.bonuses.periodicAttentionBonus ?? 0) : 0)
+  }
+
+  var facilityBonuses: FacilityBonuses { progressionStore?.bonuses ?? .none }
+
+  @discardableResult
+  func purchaseFacility(_ tier: FacilityTier) -> FounderProgressionStore.PurchaseResult {
+    guard let progressionStore else { return .futureEnvironment }
+    let result = progressionStore.purchase(tier, availableCapital: stats.capital)
+    if case .purchased(let cost) = result {
+      stats.capital = max(0, stats.capital - cost)
+      achievementStore?.recordFacilityProgress(
+        purchasedUpgradeCount: progressionStore.purchasedUpgrades.count,
+        ownsLoft: progressionStore.ownedFacilities.contains(.founderLoft),
+        capital: stats.capital
+      )
+      save()
+    }
+    return result
+  }
+
+  @discardableResult
+  func purchaseFacilityUpgrade(_ id: FacilityUpgradeID) -> FounderProgressionStore.PurchaseResult {
+    guard let progressionStore else { return .futureEnvironment }
+    let result = progressionStore.purchaseUpgrade(id, availableCapital: stats.capital)
+    if case .purchased(let cost) = result {
+      stats.capital = max(0, stats.capital - cost)
+      achievementStore?.recordFacilityProgress(
+        purchasedUpgradeCount: progressionStore.purchasedUpgrades.count,
+        ownsLoft: progressionStore.ownedFacilities.contains(.founderLoft),
+        capital: stats.capital
+      )
+      save()
+    }
+    return result
   }
 
   var attentionRemaining: Int {
@@ -390,6 +428,7 @@ final class GameStore {
           let result = SimulationEngine.makeResult(
             for: tasks[taskIndex], agent: agent, intent: intent, doctrine: doctrine,
             correlatedFailureEvent: correlatedFailureEvent, allTasks: tasks, allAgents: agents,
+            facilityBonuses: facilityBonuses,
             rng: &randomNumberGenerator
           )
           tasks[taskIndex].result = result
@@ -594,6 +633,12 @@ final class GameStore {
       else { continue }
 
       effects = effects + result.immediateEffects
+      if facilityBonuses.marketingRevenueMultiplier > 1,
+         tasks[index].category == .sales,
+         result.immediateEffects.revenue > 0 {
+        effects.revenue += Int((Double(result.immediateEffects.revenue)
+          * (facilityBonuses.marketingRevenueMultiplier - 1)).rounded())
+      }
       if result.delayedEffects != SimulationEffects() {
         pendingEffects.append(
           ScheduledEffect(
@@ -631,6 +676,9 @@ final class GameStore {
     }
 
     apply(effects)
+    if facilityBonuses.sprintEnergyRecovery > 0 {
+      stats.energy = min(100, stats.energy + facilityBonuses.sprintEnergyRecovery)
+    }
     sanitizeState()
     report = SprintReport(
       sprint: sprint,
@@ -716,6 +764,7 @@ final class GameStore {
     let earnedEnergyRecovery = max(6, min(14, averageRelationship / 8))
     stats.runway = min(365, stats.runway + earnedRunwayRecovery)
     stats.energy = min(100, stats.energy + earnedEnergyRecovery)
+    stats.energy = min(100, stats.energy + facilityBonuses.ventureEnergyBonus)
     recentTaskTitles = []
     taskDeckTitles = []
     dilemmaDeckTemplateIDs = []
@@ -1330,7 +1379,7 @@ final class GameStore {
   private func makeTaskDraft() -> (active: [SoloTask], backlog: [SoloTask]) {
     if taskDeckTitles.count < 5 { refillTaskDeck() }
     var draft: [SoloTask] = []
-    let templates = Dictionary(uniqueKeysWithValues: ContentLibrary.allTaskPool.map { ($0.title, $0) })
+    let templates = Dictionary(uniqueKeysWithValues: ContentLibrary.taskPool(for: VentureEra.era(for: venture)).map { ($0.title, $0) })
     while draft.count < 5, !taskDeckTitles.isEmpty {
       let title = taskDeckTitles.removeFirst()
       guard var task = templates[title] else { continue }
@@ -1355,8 +1404,10 @@ final class GameStore {
 
   private func refillTaskDeck() {
     let excluded = Set(taskDeckTitles + recentTaskTitles.suffix(5))
-    var titles = ContentLibrary.allTaskPool.map(\.title).filter { !excluded.contains($0) }
-    if titles.count < 5 { titles = ContentLibrary.allTaskPool.map(\.title) }
+    let era = VentureEra.era(for: venture)
+    let eligible = ContentLibrary.taskPool(for: era).filter { ($0.minimumEra?.rawValue ?? 0) <= era.rawValue }
+    var titles = eligible.map(\.title).filter { !excluded.contains($0) }
+    if titles.count < 5 { titles = eligible.map(\.title) }
     taskDeckTitles.append(contentsOf: deterministicallyShuffled(titles))
   }
 

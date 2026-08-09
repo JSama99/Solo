@@ -12,6 +12,7 @@ final class FounderProgressionStore {
     case completedCareersRequired(Int)
     case insufficientCapital(Int)
     case futureEnvironment
+    case facilityRequired(FacilityTier)
   }
 
   private(set) var save: FounderProgressionSave
@@ -23,14 +24,14 @@ final class FounderProgressionStore {
   init(
     defaults: UserDefaults = .standard,
     saveKey: String = "solo-unicorn-run-founder-progression-v1",
-    configuration: FacilityProgressionConfiguration = .build2
+    configuration: FacilityProgressionConfiguration = .build10
   ) {
     self.defaults = defaults
     self.saveKey = saveKey
     self.configuration = configuration
     if let data = defaults.data(forKey: saveKey),
        let decoded = try? JSONDecoder().decode(FounderProgressionSave.self, from: data),
-       decoded.version == FounderProgressionSave.currentVersion {
+       decoded.version <= FounderProgressionSave.currentVersion {
       save = decoded
     } else {
       save = .initial
@@ -42,6 +43,21 @@ final class FounderProgressionStore {
   var ownedFacilities: Set<FacilityTier> { save.ownedFacilities }
   var highestTrackRecord: Int { save.highestTrackRecord }
   var completedCareerCount: Int { save.completedCareerCount }
+  var purchasedUpgrades: Set<FacilityUpgradeID> { save.purchasedUpgrades }
+
+  var bonuses: FacilityBonuses {
+    var bonuses = FacilityBonuses.none
+    let activeUpgrades = save.purchasedUpgrades.filter {
+      FacilityUpgradeDefinition.definition(for: $0).requiredFacility == save.currentFacility
+    }
+    if activeUpgrades.contains(.developmentRig) { bonuses.engineeringQualityBonus = 4 }
+    if activeUpgrades.contains(.verificationArray) { bonuses.auroraEvidenceBonus = 8 }
+    if activeUpgrades.contains(.campaignStudio) { bonuses.marketingRevenueMultiplier = 1.1 }
+    if activeUpgrades.contains(.recoveryCorner) { bonuses.sprintEnergyRecovery = 3 }
+    if activeUpgrades.contains(.founderCommandDesk) { bonuses.periodicAttentionBonus = 1 }
+    if save.currentFacility == .founderLoft { bonuses.ventureEnergyBonus = 5 }
+    return bonuses
+  }
 
   func beginCareer() {
     save.activeCareerID = UUID()
@@ -102,6 +118,33 @@ final class FounderProgressionStore {
     return result
   }
 
+  @discardableResult
+  func activate(_ tier: FacilityTier) -> Bool {
+    guard save.ownedFacilities.contains(tier) else { return false }
+    save.currentFacility = tier
+    persist()
+    return true
+  }
+
+  func upgradePurchaseResult(for id: FacilityUpgradeID, availableCapital: Int) -> PurchaseResult {
+    let definition = FacilityUpgradeDefinition.definition(for: id)
+    if save.purchasedUpgrades.contains(id) { return .alreadyOwned }
+    guard save.ownedFacilities.contains(definition.requiredFacility) else {
+      return .facilityRequired(definition.requiredFacility)
+    }
+    guard availableCapital >= definition.cost else { return .insufficientCapital(definition.cost) }
+    return .purchased(cost: definition.cost)
+  }
+
+  @discardableResult
+  func purchaseUpgrade(_ id: FacilityUpgradeID, availableCapital: Int) -> PurchaseResult {
+    let result = upgradePurchaseResult(for: id, availableCapital: availableCapital)
+    guard case .purchased = result else { return result }
+    save.purchasedUpgrades.insert(id)
+    persist()
+    return result
+  }
+
   private func sanitize() {
     save.version = FounderProgressionSave.currentVersion
     save.ownedFacilities.insert(.founderGarage)
@@ -110,6 +153,7 @@ final class FounderProgressionStore {
     }
     save.highestTrackRecord = max(0, save.highestTrackRecord)
     save.completedCareerCount = max(save.recordedCareerIDs.count, save.completedCareerCount)
+    save.version = FounderProgressionSave.currentVersion
   }
 
   private func persist() {
