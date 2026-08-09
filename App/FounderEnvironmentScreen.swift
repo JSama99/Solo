@@ -12,7 +12,11 @@ struct FounderEnvironmentScreen: View {
       ScrollView {
         VStack(spacing: 16) {
           environmentHeader
-          GarageVisualization(stations: stationModels, policy: presentationPolicy)
+          GarageVisualization(
+            stations: stationModels,
+            policy: presentationPolicy,
+            facility: progression.currentFacility
+          )
           operationsSummary
           agentStatusList
           NavigationLink {
@@ -26,16 +30,6 @@ struct FounderEnvironmentScreen: View {
         .frame(maxWidth: .infinity)
       }
       .navigationTitle("SOLO")
-      .toolbar {
-        ToolbarItem(placement: .topBarTrailing) {
-          Text(store.stats.capital, format: .currency(code: "USD").precision(.fractionLength(0)))
-            .font(.caption.weight(.bold).monospacedDigit())
-            .foregroundStyle(SoloTheme.mint)
-            .contentTransition(.numericText())
-            .animation(.snappy, value: store.stats.capital)
-            .accessibilityLabel("Capital")
-        }
-      }
       .onChange(of: store.stats.trackRecord, initial: true) { _, value in
         progression.observe(trackRecord: value)
       }
