@@ -2,43 +2,18 @@ import SwiftUI
 
 struct FounderEnvironmentScreen: View {
   var store: GameStore
-  var presentation: PresentationCoordinator
 
   @Environment(FounderProgressionStore.self) private var progression
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.scenePhase) private var scenePhase
-  @State private var selectedTaskID: UUID?
 
   var body: some View {
     NavigationStack {
       ScrollView {
         VStack(spacing: 16) {
           environmentHeader
-          StatsStripBridge(stats: store.stats)
-          if progression.currentFacility == .founderLoft, #available(iOS 18.0, *) {
-            FounderLoftEnvironment()
-          } else if #available(iOS 18.0, *) {
-            FounderGarage3DPrototype(
-              store: store,
-              selectedTaskID: selectedTaskID,
-              onSelectAgent: assignSelectedTask(to:),
-              onReview: { presentation.review(taskID: $0, in: store) },
-              onResolution: { store.resolveReviewedTask(taskID: $0, choice: $1) }
-            )
-          } else {
-            FounderGarageEnvironment(
-              store: store,
-              presentation: presentation,
-              policy: presentationPolicy
-            )
-          }
+          GarageVisualization(stations: stationModels, policy: presentationPolicy)
           operationsSummary
-          GarageCommandCenter(
-            store: store,
-            presentation: presentation,
-            onSelectTask: { selectedTaskID = $0 },
-            selectedTaskID: selectedTaskID
-          )
           agentStatusList
           NavigationLink {
             HeadquartersProgressScreen(store: store)
@@ -46,10 +21,6 @@ struct FounderEnvironmentScreen: View {
             headquartersProgressLink
           }
           .buttonStyle(.plain)
-          Button("Commit Sprint", systemImage: "bolt.fill") {
-            presentation.commit(in: store, progression: progression)
-          }
-          .buttonStyle(SoloPrimaryButtonStyle())
         }
         .padding(16)
         .frame(maxWidth: .infinity)
@@ -101,11 +72,13 @@ struct FounderEnvironmentScreen: View {
     }
   }
 
-  private func assignSelectedTask(to agentID: String) {
-    guard let selectedTaskID else { return }
-    presentation.assign(agentID: agentID, to: selectedTaskID, in: store)
-    withAnimation(.snappy) {
-      self.selectedTaskID = nil
+  private var stationModels: [AgentStationViewModel] {
+    store.agents.map { agent in
+      AgentStationViewModel.derive(
+        agent: agent,
+        task: store.tasks.first(where: { $0.assignedAgentID == agent.id }),
+        founderStats: store.stats
+      )
     }
   }
 
@@ -145,7 +118,7 @@ struct FounderEnvironmentScreen: View {
         .background(SoloTheme.cyan.opacity(0.12), in: .rect(cornerRadius: 12))
       VStack(alignment: .leading, spacing: 3) {
         Text("Headquarters Progress").font(.headline)
-        Text("\(store.unlockedGarageUpgrades.count) garage upgrades active • Future facilities remain progression rewards")
+        Text("\(progression.purchasedUpgrades.count) infrastructure upgrades owned • \(progression.currentFacility.name) active")
           .font(.caption)
           .foregroundStyle(.secondary)
       }
@@ -156,48 +129,6 @@ struct FounderEnvironmentScreen: View {
   }
 }
 
-private struct StatsStripBridge: View {
-  var stats: FounderStats
-
-  var body: some View {
-    ScrollView(.horizontal) {
-      HStack(spacing: 8) {
-        EnvironmentMetricChip(label: "Runway", value: stats.runway, suffix: "d", symbol: "calendar")
-        EnvironmentMetricChip(label: "Revenue", value: stats.revenue, prefix: "$", symbol: "dollarsign")
-        EnvironmentMetricChip(label: "Momentum", value: stats.momentum, symbol: "bolt.fill")
-        EnvironmentMetricChip(label: "Trust", value: stats.trust, symbol: "checkmark.shield.fill")
-        EnvironmentMetricChip(label: "Energy", value: stats.energy, symbol: "battery.75percent")
-        EnvironmentMetricChip(label: "Track", value: stats.trackRecord, symbol: "chart.line.uptrend.xyaxis")
-      }
-    }
-    .scrollIndicators(.hidden)
-  }
-}
-
-private struct EnvironmentMetricChip: View {
-  var label: String
-  var value: Int
-  var prefix = ""
-  var suffix = ""
-  var symbol: String
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 3) {
-      Label(label, systemImage: symbol)
-        .font(.caption2.weight(.semibold))
-        .foregroundStyle(.secondary)
-      Text("\(prefix)\(value.formatted())\(suffix)")
-        .font(.headline.monospacedDigit())
-        .contentTransition(.numericText(value: Double(value)))
-    }
-    .padding(.horizontal, 12)
-    .padding(.vertical, 9)
-    .background(SoloTheme.card, in: .rect(cornerRadius: 12))
-    .animation(.snappy, value: value)
-    .accessibilityElement(children: .combine)
-    .accessibilityValue("\(prefix)\(value.formatted())\(suffix)")
-  }
-}
 
 private struct EnvironmentAgentRow: View {
   var agent: SoloAgent
@@ -253,5 +184,66 @@ private struct EnvironmentAgentRow: View {
     case .evidenceIncomplete: "doc.badge.ellipsis"
     case .none: state.activity == .idle ? "pause.fill" : "gearshape.2.fill"
     }
+  }
+}
+
+private struct AgentStationViewModel: Identifiable {
+  var agent: SoloAgent
+  var task: SoloTask?
+  var state: AgentVisualState
+
+  var id: String { agent.id }
+
+  static func derive(agent: SoloAgent, task: SoloTask?, founderStats: FounderStats) -> Self {
+    Self(agent: agent, task: task, state: AgentVisualState.derive(agent: agent, task: task, founderStats: founderStats))
+  }
+}
+
+/// A lightweight, motion-aware headquarters overview. The Command Deck retains
+/// the interactive task and review controls, so this visual is never the only
+/// way to operate the company.
+private struct GarageVisualization: View {
+  var stations: [AgentStationViewModel]
+  var policy: PresentationPolicy
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      HStack {
+        Label("LIVE WORKSTATIONS", systemImage: "rectangle.3.group.fill")
+          .font(.caption.weight(.black))
+          .foregroundStyle(SoloTheme.cyan)
+        Spacer()
+        Text(policy.applicationActivity == .active ? "Operating" : "Paused")
+          .font(.caption.weight(.semibold))
+          .foregroundStyle(.secondary)
+      }
+      HStack(spacing: 10) {
+        ForEach(stations) { station in
+          VStack(alignment: .leading, spacing: 6) {
+            Image(systemName: station.agent.role.symbol)
+              .font(.title2)
+              .foregroundStyle(color(for: station))
+            Text(station.agent.name).font(.caption.weight(.bold))
+            Text(station.task?.title ?? "Ready")
+              .font(.caption2)
+              .foregroundStyle(.secondary)
+              .lineLimit(2)
+          }
+          .frame(maxWidth: .infinity, minHeight: 112, alignment: .leading)
+          .padding(12)
+          .background(SoloTheme.background.opacity(0.65), in: .rect(cornerRadius: 14))
+          .overlay { RoundedRectangle(cornerRadius: 14).stroke(color(for: station).opacity(0.35)) }
+          .accessibilityElement(children: .combine)
+          .accessibilityLabel("\(station.agent.name) workstation")
+          .accessibilityValue(station.state.accessibilityValue)
+        }
+      }
+    }
+    .soloCard()
+  }
+
+  private func color(for station: AgentStationViewModel) -> Color {
+    if station.state.warnings.contains(.overloaded) { return SoloTheme.amber }
+    return station.state.activity == .idle ? .secondary : SoloTheme.cyan
   }
 }

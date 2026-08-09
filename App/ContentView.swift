@@ -432,7 +432,7 @@ private struct GameDashboard: View {
   private var dashboardTabs: some View {
     TabView {
       Tab("Garage", systemImage: "house.fill") {
-        FounderEnvironmentScreen(store: store, presentation: presentation)
+        FounderEnvironmentScreen(store: store)
       }
       Tab("Command Deck", systemImage: "slider.horizontal.3") {
         CommandScreen(store: store, presentation: presentation)
