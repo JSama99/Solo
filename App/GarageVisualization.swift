@@ -3,6 +3,7 @@ import SwiftUI
 struct GarageVisualization: View {
   var stations: [AgentStationViewModel]
   var policy: PresentationPolicy
+  var facility: FacilityTier
 
   @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
   @State private var isVisible = false
@@ -54,7 +55,7 @@ struct GarageVisualization: View {
   private func content(at date: Date) -> some View {
     VStack(alignment: .leading, spacing: 12) {
       HStack {
-        Label("LIVING GARAGE", systemImage: "building.2.fill")
+        Label("\(facility.name.uppercased()) LIVE VIEW", systemImage: "building.2.fill")
           .font(.caption.weight(.black))
           .foregroundStyle(SoloTheme.cyan)
         Spacer()
@@ -63,7 +64,27 @@ struct GarageVisualization: View {
           .foregroundStyle(.secondary)
       }
 
-      HStack(alignment: .top, spacing: 10) {
+      if Self.presentation(for: facility) == .loft {
+        FounderLoftEnvironment()
+      }
+
+      stationPresentation(at: date)
+
+      Label("Inspect agents here. Reassign work in Command Deck.", systemImage: "slider.horizontal.3")
+        .font(.caption)
+        .foregroundStyle(.secondary)
+    }
+    .padding(14)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(garageBackground(at: date), in: .rect(cornerRadius: 22))
+    .overlay {
+      RoundedRectangle(cornerRadius: 22)
+        .stroke(SoloTheme.cyan.opacity(0.28), lineWidth: 1)
+    }
+  }
+
+  private func stationPresentation(at date: Date) -> some View {
+    HStack(alignment: .top, spacing: 10) {
         ForEach(Array(stations.enumerated()), id: \.element.id) { index, station in
           Button {
             select(station)
@@ -85,19 +106,13 @@ struct GarageVisualization: View {
         }
       }
       .frame(maxWidth: .infinity, alignment: .center)
-
-      Label("Reassign work in Command Deck.", systemImage: "slider.horizontal.3")
-        .font(.caption)
-        .foregroundStyle(.secondary)
-    }
-    .padding(14)
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .background(garageBackground(at: date), in: .rect(cornerRadius: 22))
-    .overlay {
-      RoundedRectangle(cornerRadius: 22)
-        .stroke(SoloTheme.cyan.opacity(0.28), lineWidth: 1)
-    }
   }
+
+  static func presentation(for facility: FacilityTier) -> GarageVisualPresentation {
+    facility == .founderLoft ? .loft : .stations
+  }
+
+  static let supportsTaskAssignment = false
 
   private func garageBackground(at date: Date) -> some ShapeStyle {
     let phase = shouldAnimate ? (sin(date.timeIntervalSinceReferenceDate * 0.22) + 1) / 2 : 0.35
@@ -131,6 +146,11 @@ struct GarageVisualization: View {
       transitionStarts[id] = Date()
     }
   }
+}
+
+enum GarageVisualPresentation: Equatable {
+  case stations
+  case loft
 }
 
 private struct StationStateSignature: Equatable {

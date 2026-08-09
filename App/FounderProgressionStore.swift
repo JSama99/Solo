@@ -48,7 +48,7 @@ final class FounderProgressionStore {
   var bonuses: FacilityBonuses {
     var bonuses = FacilityBonuses.none
     let activeUpgrades = save.purchasedUpgrades.filter {
-      FacilityUpgradeDefinition.definition(for: $0).requiredFacility == save.currentFacility
+      FacilityUpgradeDefinition.definition(for: $0)?.requiredFacility == save.currentFacility
     }
     if activeUpgrades.contains(.developmentRig) { bonuses.engineeringQualityBonus = 4 }
     if activeUpgrades.contains(.verificationArray) { bonuses.auroraEvidenceBonus = 8 }
@@ -56,6 +56,11 @@ final class FounderProgressionStore {
     if activeUpgrades.contains(.recoveryCorner) { bonuses.sprintEnergyRecovery = 3 }
     if activeUpgrades.contains(.founderCommandDesk) { bonuses.periodicAttentionBonus = 1 }
     if save.currentFacility == .founderLoft { bonuses.ventureEnergyBonus = 5 }
+    if save.currentFacility == .founderGarage,
+       activeUpgrades.contains(.developmentRig) || activeUpgrades.contains(.verificationArray) || activeUpgrades.contains(.campaignStudio) {
+      bonuses.agentXPBonusMultiplier = 1.1
+    }
+    if save.currentFacility == .founderLoft { bonuses.stressAccumulationMultiplier = 0.9 }
     return bonuses
   }
 
@@ -127,7 +132,7 @@ final class FounderProgressionStore {
   }
 
   func upgradePurchaseResult(for id: FacilityUpgradeID, availableCapital: Int) -> PurchaseResult {
-    let definition = FacilityUpgradeDefinition.definition(for: id)
+    guard let definition = FacilityUpgradeDefinition.definition(for: id) else { return .futureEnvironment }
     if save.purchasedUpgrades.contains(id) { return .alreadyOwned }
     guard save.ownedFacilities.contains(definition.requiredFacility) else {
       return .facilityRequired(definition.requiredFacility)

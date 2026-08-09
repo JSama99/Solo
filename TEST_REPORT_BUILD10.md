@@ -11,8 +11,14 @@
 ## Results
 
 - Build: passed.
-- XCTest: 144 executed, 144 passed, 0 failures, 0 unexpected failures, 0 skipped.
-- App launch: passed. The resulting debug build was installed and launched on the iPhone 17 Pro Simulator.
+- XCTest: 167 executed, 167 passed, 0 failures, 0 unexpected failures, 0 skipped.
+- App launch: not exercised in this validation pass.
+
+## Post-merge validation
+
+- Baseline after the Build 9/Build 10 restoration: 163 test functions.
+- Post-merge fixes add four tests for facility rendering and command-deck commit behavior.
+- The full XCTest suite was run after each of the five focused changes; the final run completed with 167 passing tests.
 
 ## Project membership correction
 

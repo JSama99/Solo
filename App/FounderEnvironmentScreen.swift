@@ -12,24 +12,11 @@ struct FounderEnvironmentScreen: View {
       ScrollView {
         VStack(spacing: 16) {
           environmentHeader
-          StatsStripBridge(stats: store.stats)
-          if progression.currentFacility == .founderLoft, #available(iOS 18.0, *) {
-            FounderLoftEnvironment()
-          } else if #available(iOS 18.0, *) {
-            FounderGarage3DPrototype(
-              store: store,
-              selectedTaskID: selectedTaskID,
-              onSelectAgent: assignSelectedTask(to:),
-              onReview: { presentation.review(taskID: $0, in: store) },
-              onResolution: { store.resolveReviewedTask(taskID: $0, choice: $1) }
-            )
-          } else {
-            FounderGarageEnvironment(
-              store: store,
-              presentation: presentation,
-              policy: presentationPolicy
-            )
-          }
+          GarageVisualization(
+            stations: stationModels,
+            policy: presentationPolicy,
+            facility: progression.currentFacility
+          )
           operationsSummary
           agentStatusList
           NavigationLink {
@@ -43,16 +30,6 @@ struct FounderEnvironmentScreen: View {
         .frame(maxWidth: .infinity)
       }
       .navigationTitle("SOLO")
-      .toolbar {
-        ToolbarItem(placement: .topBarTrailing) {
-          Text(store.stats.capital, format: .currency(code: "USD").precision(.fractionLength(0)))
-            .font(.caption.weight(.bold).monospacedDigit())
-            .foregroundStyle(SoloTheme.mint)
-            .contentTransition(.numericText())
-            .animation(.snappy, value: store.stats.capital)
-            .accessibilityLabel("Capital")
-        }
-      }
       .onChange(of: store.stats.trackRecord, initial: true) { _, value in
         progression.observe(trackRecord: value)
       }
@@ -135,7 +112,7 @@ struct FounderEnvironmentScreen: View {
         .background(SoloTheme.cyan.opacity(0.12), in: .rect(cornerRadius: 12))
       VStack(alignment: .leading, spacing: 3) {
         Text("Headquarters Progress").font(.headline)
-        Text("\(store.unlockedGarageUpgrades.count) garage upgrades active • Future facilities remain progression rewards")
+        Text("\(progression.purchasedUpgrades.count) infrastructure upgrades owned • \(progression.currentFacility.name) active")
           .font(.caption)
           .foregroundStyle(.secondary)
       }
@@ -146,48 +123,6 @@ struct FounderEnvironmentScreen: View {
   }
 }
 
-private struct StatsStripBridge: View {
-  var stats: FounderStats
-
-  var body: some View {
-    ScrollView(.horizontal) {
-      HStack(spacing: 8) {
-        EnvironmentMetricChip(label: "Runway", value: stats.runway, suffix: "d", symbol: "calendar")
-        EnvironmentMetricChip(label: "Revenue", value: stats.revenue, prefix: "$", symbol: "dollarsign")
-        EnvironmentMetricChip(label: "Momentum", value: stats.momentum, symbol: "bolt.fill")
-        EnvironmentMetricChip(label: "Trust", value: stats.trust, symbol: "checkmark.shield.fill")
-        EnvironmentMetricChip(label: "Energy", value: stats.energy, symbol: "battery.75percent")
-        EnvironmentMetricChip(label: "Track", value: stats.trackRecord, symbol: "chart.line.uptrend.xyaxis")
-      }
-    }
-    .scrollIndicators(.hidden)
-  }
-}
-
-private struct EnvironmentMetricChip: View {
-  var label: String
-  var value: Int
-  var prefix = ""
-  var suffix = ""
-  var symbol: String
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 3) {
-      Label(label, systemImage: symbol)
-        .font(.caption2.weight(.semibold))
-        .foregroundStyle(.secondary)
-      Text("\(prefix)\(value.formatted())\(suffix)")
-        .font(.headline.monospacedDigit())
-        .contentTransition(.numericText(value: Double(value)))
-    }
-    .padding(.horizontal, 12)
-    .padding(.vertical, 9)
-    .background(SoloTheme.card, in: .rect(cornerRadius: 12))
-    .animation(.snappy, value: value)
-    .accessibilityElement(children: .combine)
-    .accessibilityValue("\(prefix)\(value.formatted())\(suffix)")
-  }
-}
 
 private struct EnvironmentAgentRow: View {
   var agent: SoloAgent

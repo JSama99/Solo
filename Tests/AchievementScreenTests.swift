@@ -48,6 +48,12 @@ final class AchievementScreenTests: XCTestCase {
     XCTAssertFalse(relaunched.isRetroactivelyNew(unlocked.id))
   }
 
+  func testBuild10AchievementSaveMigratesWithoutRetroactiveField() throws {
+    let legacy = "{\"version\":1,\"unlocked\":{},\"totalXP\":0,\"doctrinesWon\":[],\"lifetimeOverclaimsCaught\":0,\"didEvaluateRetroactively\":false}"
+    let save = try JSONDecoder().decode(AchievementSave.self, from: try XCTUnwrap(legacy.data(using: .utf8)))
+    XCTAssertTrue(save.unseenRetroactiveUnlockIDs.isEmpty)
+  }
+
   private func retroactiveCareerSave() -> CareerSave {
     CareerSave(
       founderName: "Founder",
