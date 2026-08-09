@@ -1041,6 +1041,7 @@ private struct VentureMetric: View {
 private struct RecordsScreen: View {
   var store: GameStore
   @Environment(FounderProgressionStore.self) private var progression
+  @Environment(AchievementStore.self) private var achievements
 
   var body: some View {
     NavigationStack {
@@ -1054,9 +1055,23 @@ private struct RecordsScreen: View {
           .buttonStyle(.plain)
 
           NavigationLink {
-            AgentOperationsScreen(agents: store.agents)
+            AgentOperationsScreen(agents: store.agents, tasks: store.tasks, founderStats: store.stats)
           } label: {
             RecordLink(title: "Agent Operations", subtitle: "Trust, reliability, and model-family exposure", symbol: "cpu.fill", count: store.agents.count)
+          }
+          .buttonStyle(.plain)
+
+          NavigationLink {
+            HindsightRecordsScreen(precedents: store.precedents)
+          } label: {
+            RecordLink(title: "Hindsight", subtitle: "Recorded contexts and observed outcomes", symbol: "brain.head.profile", count: store.precedents.count)
+          }
+          .buttonStyle(.plain)
+
+          NavigationLink {
+            AchievementsScreen(store: store)
+          } label: {
+            RecordLink(title: "Achievements", subtitle: "Founder milestones across four families", symbol: "medal.star.fill", count: achievements.unlockedCount)
           }
           .buttonStyle(.plain)
 
@@ -1252,33 +1267,24 @@ private struct EvidenceScreen: View {
 
 private struct AgentOperationsScreen: View {
   var agents: [SoloAgent]
+  var tasks: [SoloTask]
+  var founderStats: FounderStats
+  @State private var selectedAgent: AgentDetailViewModel?
 
   var body: some View {
     ScrollView {
       VStack(spacing: 12) {
         ForEach(agents) { agent in
-          VStack(alignment: .leading, spacing: 12) {
-            AgentRow(agent: agent)
-            Divider()
-            LabeledContent("Archetype", value: agent.archetype)
-            LabeledContent("Relationship", value: "\(agent.relationshipLabel) • \(agent.relationship)")
-            LabeledContent("Reliability", value: "\(agent.reliability)%")
-            LabeledContent("Report integrity", value: "\(Int(agent.calibration * 100))%")
-            LabeledContent("Model family", value: agent.modelFamily)
-            VStack(alignment: .leading, spacing: 4) {
-              Text("Ambition").font(.caption).foregroundStyle(.secondary)
-              Text(agent.ambition).font(.subheadline)
-              Text("Stress trigger").font(.caption).foregroundStyle(.secondary).padding(.top, 4)
-              Text(agent.stressTrigger).font(.subheadline)
-            }
-          }
-          .soloCard()
+          let model = AgentDetailViewModel.derive(agent: agent, task: tasks.first(where: { $0.assignedAgentID == agent.id }), founderStats: founderStats)
+          Button { selectedAgent = model } label: { AgentRosterCard(agent: model) }
+            .buttonStyle(.plain)
         }
       }
       .padding(16)
       .frame(maxWidth: .infinity)
     }
     .navigationTitle("Agent Operations")
+    .sheet(item: $selectedAgent) { AgentDetailPresentation(agent: $0) }
   }
 }
 

@@ -26,9 +26,11 @@ struct FacilityUpgradeDefinition: Identifiable, Equatable {
     Self(id: .founderCommandDesk, title: "Founder Command Desk", detail: "+1 temporary Founder Attention every third sprint.", cost: 1_800, requiredFacility: .founderGarage, symbol: "rectangle.3.group.fill")
   ]
 
-  static func definition(for id: FacilityUpgradeID) -> Self {
-    all.first(where: { $0.id == id })!
+  static func definition(for id: FacilityUpgradeID) -> Self? {
+    definitions[id]
   }
+
+  static let definitions = Dictionary(uniqueKeysWithValues: all.map { ($0.id, $0) })
 }
 
 struct FacilityBonuses: Equatable {

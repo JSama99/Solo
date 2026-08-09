@@ -229,6 +229,17 @@ final class GameStore {
     stage = .modeSelect
   }
 
+  func startMode(_ mode: CareerMode) {
+    selectedCareerMode = mode
+    switch mode {
+    case .daily:
+      startDailyChallenge()
+    case .bounded, .continuous:
+      beginSetup()
+      selectedCareerMode = mode
+    }
+  }
+
   func startCareer(seed: UInt64? = nil) {
     doctrine = selectedDoctrine
     careerMode = selectedCareerMode

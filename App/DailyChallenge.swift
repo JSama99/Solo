@@ -51,7 +51,8 @@ final class DailyChallengeStore {
   func record(score: Int, date: Date = Date()) {
     let today = DailyChallenge.dayKey(for: date)
     guard save.dayKey != today || save.score == nil else { return }
-    let calendar = Calendar(identifier: .gregorian)
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "UTC")!
     let yesterday = calendar.date(byAdding: .day, value: -1, to: date).map(DailyChallenge.dayKey(for:))
     save.dayKey = today
     save.score = score

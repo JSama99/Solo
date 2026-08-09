@@ -17,6 +17,18 @@ final class Build10HeadquartersTests: XCTestCase {
     XCTAssertEqual(DailyChallengeStore(defaults: defaults).save.bestScore, 42)
   }
 
+  func testDailyStreakUsesUTCAcrossDSTBoundary() {
+    let store = DailyChallengeStore(defaults: isolatedDefaults())
+    store.record(score: 10, date: Date(timeIntervalSince1970: 1_773_085_200))
+    store.record(score: 12, date: Date(timeIntervalSince1970: 1_773_171_600))
+    XCTAssertEqual(store.save.currentStreak, 2)
+  }
+
+  func testEveryFacilityUpgradeHasADefinition() {
+    XCTAssertEqual(FacilityUpgradeDefinition.all.count, FacilityUpgradeID.allCases.count)
+    XCTAssertEqual(FacilityUpgradeDefinition.definitions.count, FacilityUpgradeID.allCases.count)
+  }
+
   func testFacilityPurchaseDeductsCapitalAndPersists() {
     let defaults = isolatedDefaults()
     let progression = FounderProgressionStore(defaults: defaults, saveKey: "progress")
