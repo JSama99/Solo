@@ -955,6 +955,18 @@ private struct RecordsScreen: View {
           .buttonStyle(.plain)
 
           NavigationLink {
+            HindsightRecordsScreen(precedents: store.precedents)
+          } label: {
+            RecordLink(
+              title: "Hindsight",
+              subtitle: "Recorded contexts and observed outcomes",
+              symbol: "brain.head.profile",
+              count: store.precedents.count
+            )
+          }
+          .buttonStyle(.plain)
+
+          NavigationLink {
             HeadquartersProgressScreen(availableCapital: store.stats.capital)
           } label: {
             RecordLink(

@@ -47,6 +47,9 @@
 		C20000000000000000000017 /* AgentDetailPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000017 /* AgentDetailPresentation.swift */; };
 		C20000000000000000000018 /* AgentRosterCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000018 /* AgentRosterCard.swift */; };
 		C20000000000000000000019 /* AgentDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000019 /* AgentDetailTests.swift */; };
+		C20000000000000000000020 /* PrecedentRecordsSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000020 /* PrecedentRecordsSupport.swift */; };
+		C20000000000000000000021 /* HindsightRecordsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000021 /* HindsightRecordsScreen.swift */; };
+		C20000000000000000000022 /* PrecedentRecordsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000022 /* PrecedentRecordsTests.swift */; };
 		28C211C9462EF7C2C17DC4C2 /* SimulationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CB9F64447826C8051328902 /* SimulationModels.swift */; };
 		73B35D04E243BD45B291E271 /* GameModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E7E924208E29B28AFAA264 /* GameModels.swift */; };
 		A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2513145C1504A166E8177382 /* GameStoreTests.swift */; };
@@ -113,6 +116,9 @@
 		C10000000000000000000017 /* AgentDetailPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentDetailPresentation.swift; sourceTree = "<group>"; };
 		C10000000000000000000018 /* AgentRosterCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentRosterCard.swift; sourceTree = "<group>"; };
 		C10000000000000000000019 /* AgentDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentDetailTests.swift; sourceTree = "<group>"; };
+		C10000000000000000000020 /* PrecedentRecordsSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecedentRecordsSupport.swift; sourceTree = "<group>"; };
+		C10000000000000000000021 /* HindsightRecordsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HindsightRecordsScreen.swift; sourceTree = "<group>"; };
+		C10000000000000000000022 /* PrecedentRecordsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecedentRecordsTests.swift; sourceTree = "<group>"; };
 		17558F294800127BE04C0EBD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2513145C1504A166E8177382 /* GameStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStoreTests.swift; sourceTree = "<group>"; };
 		4FB3F3A34C09C15574734B61 /* Solo Unicorn Run Tests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = "Solo Unicorn Run Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -161,6 +167,7 @@
 				C1000000000000000000000F /* PresentationMappingTests.swift */,
 				C10000000000000000000013 /* GarageVisualizationTests.swift */,
 				C10000000000000000000019 /* AgentDetailTests.swift */,
+				C10000000000000000000022 /* PrecedentRecordsTests.swift */,
 				E10000000000000000000001 /* ContinuousModeTests.swift */,
 				E10000000000000000000002 /* SimulationEngineTests.swift */,
 				F10000000000000000000003 /* Build9ModeTests.swift */,
@@ -201,6 +208,8 @@
 				B10000000000000000000001 /* RevenueCatConfiguration.swift */,
 				B10000000000000000000010 /* EntitlementProviding.swift */,
 				B10000000000000000000011 /* Hindsight.swift */,
+				C10000000000000000000021 /* HindsightRecordsScreen.swift */,
+				C10000000000000000000020 /* PrecedentRecordsSupport.swift */,
 				B10000000000000000000012 /* VentureUnlockScreen.swift */,
 				D10000000000000000000001 /* DoctrineProfile.swift */,
 				D10000000000000000000002 /* ContentLibrary.swift */,
@@ -335,6 +344,7 @@
 				F20000000000000000000003 /* Build9ModeTests.swift in Sources */,
 				C20000000000000000000013 /* GarageVisualizationTests.swift in Sources */,
 				C20000000000000000000019 /* AgentDetailTests.swift in Sources */,
+				C20000000000000000000022 /* PrecedentRecordsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -363,6 +373,8 @@
 				AD24D57DE55399F057B4B47A /* GameStore.swift in Sources */,
 				B20000000000000000000010 /* EntitlementProviding.swift in Sources */,
 				B20000000000000000000011 /* Hindsight.swift in Sources */,
+				C20000000000000000000021 /* HindsightRecordsScreen.swift in Sources */,
+				C20000000000000000000020 /* PrecedentRecordsSupport.swift in Sources */,
 				B20000000000000000000012 /* VentureUnlockScreen.swift in Sources */,
 				D20000000000000000000001 /* DoctrineProfile.swift in Sources */,
 				D20000000000000000000002 /* ContentLibrary.swift in Sources */,
