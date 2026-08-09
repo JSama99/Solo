@@ -22,6 +22,9 @@ struct AgentRosterCard: View {
           .foregroundStyle(statusColor)
           .contentTransition(.opacity)
           .animation(.smooth(duration: 0.2), value: agent.status)
+        Text("Lv \(agent.level) • \(agent.stressBand.label)")
+          .font(.caption.weight(.semibold))
+          .foregroundStyle(agent.stressBand == .critical || agent.stressBand == .overloaded ? SoloTheme.amber : .secondary)
       }
       Spacer()
       VStack(alignment: .trailing, spacing: 4) {
@@ -48,7 +51,7 @@ struct AgentRosterCard: View {
     .background(SoloTheme.card, in: .rect(cornerRadius: 16))
     .accessibilityElement(children: .combine)
     .accessibilityLabel("\(agent.name), \(agent.role.rawValue) agent")
-    .accessibilityValue("\(agent.status). Trust \(Int(agent.trust.rounded())). \(agent.taskTitle ?? "No task assigned")")
+    .accessibilityValue("Level \(agent.level). Stress \(agent.stressBand.label). \(agent.status). Trust \(Int(agent.trust.rounded())). \(agent.taskTitle ?? "No task assigned")")
   }
 
   private var trustColor: Color {

@@ -79,12 +79,30 @@ enum SimulationEngine {
     }
     let facilityQualityBonus = agent.id == "stacks" && task.role == .engineering
       ? facilityBonuses.engineeringQualityBonus : 0
+    let stressAdjustment: Int
+    switch agent.progression.stressBand {
+    case .focused: stressAdjustment = 2
+    case .stable: stressAdjustment = 0
+    case .pressured: stressAdjustment = -3
+    case .overloaded: stressAdjustment = -7
+    case .critical: stressAdjustment = -12
+    }
+    let perkQualityBonus: Int
+    if agent.progression.selectedPerks.contains(.signalDetection), task.role == .research {
+      perkQualityBonus = 4
+    } else if agent.progression.selectedPerks.contains(.flowState), task.role == .engineering {
+      perkQualityBonus = 3
+    } else if agent.progression.selectedPerks.contains(.shippingMachine), task.role == .engineering {
+      perkQualityBonus = 5
+    } else {
+      perkQualityBonus = 0
+    }
     let rawActual = Double(agent.reliability) * 0.55
       + agent.calibration * 18
       + agent.trust * 0.18
       - agent.drift * 0.35
       + Double(roleAdjustment + intentAdjustment + relationshipAdjustment + personalityAdjustment
-        + DoctrineProfile.profile(for: doctrine).actualQualityBonus + facilityQualityBonus + actualNoise)
+        + DoctrineProfile.profile(for: doctrine).actualQualityBonus + facilityQualityBonus + stressAdjustment + perkQualityBonus + actualNoise)
       - Double(correlation?.qualityPenalty ?? 0)
     let actualQuality = clampedPercent(Int(rawActual.rounded()))
 
@@ -97,9 +115,11 @@ enum SimulationEngine {
     if agent.id == "brio" && task.urgency == .critical && intent == .sell { evidenceAdjustment -= 5 }
     let facilityEvidenceBonus = agent.id == "aurora" && (task.role == .research || task.category == .trust)
       ? facilityBonuses.auroraEvidenceBonus : 0
+    let perkEvidenceBonus = agent.progression.selectedPerks.contains(.sourceTriangulation)
+      && (task.role == .research || task.category == .trust) ? 5 : 0
     let evidenceCompleteness = clampedPercent(
       Int((agent.calibration * 70 + Double(agent.reliability) * 0.25 - agent.drift * 0.25).rounded())
-        + evidenceAdjustment + facilityEvidenceBonus
+        + evidenceAdjustment + facilityEvidenceBonus + perkEvidenceBonus
         + rng.integer(in: -10 ... 10)
     )
     let confidenceWidth = max(

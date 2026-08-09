@@ -377,6 +377,84 @@ struct FounderStats: Codable, Hashable {
   var trackRecord = 0
 }
 
+enum AgentStressBand: String, Codable, CaseIterable {
+  case focused, stable, pressured, overloaded, critical
+
+  var label: String { rawValue.capitalized }
+
+  static func band(for stress: Int) -> Self {
+    switch stress {
+    case ..<25: .focused
+    case ..<50: .stable
+    case ..<75: .pressured
+    case ..<90: .overloaded
+    default: .critical
+    }
+  }
+}
+
+enum AgentPerkID: String, Codable, CaseIterable, Hashable, Identifiable {
+  case sourceTriangulation, contradictionScan, truthEngine
+  case signalDetection, marketMemory, strategicAdvisor
+  case flowState, rapidDelivery, shippingMachine
+  case defensiveBuild, recoveryProtocol, resilientSystems
+  case conversionInstinct, dealCloser, revenueEngine
+  case claimDiscipline, trustedVoice, sustainableGrowth
+
+  var id: Self { self }
+
+  var branch: String {
+    switch self {
+    case .sourceTriangulation, .contradictionScan, .truthEngine: "Evidence Architect"
+    case .signalDetection, .marketMemory, .strategicAdvisor: "Market Oracle"
+    case .flowState, .rapidDelivery, .shippingMachine: "Rapid Builder"
+    case .defensiveBuild, .recoveryProtocol, .resilientSystems: "Reliability Engineer"
+    case .conversionInstinct, .dealCloser, .revenueEngine: "Revenue Operator"
+    case .claimDiscipline, .trustedVoice, .sustainableGrowth: "Ethical Growth"
+    }
+  }
+}
+
+enum AgentLevel {
+  static let thresholds = [0, 100, 250, 450, 700, 1_000, 1_350, 1_750, 2_200, 2_700, 3_250, 3_850, 4_500, 5_200, 6_000]
+
+  static func level(forXP xp: Int) -> Int {
+    thresholds.lastIndex(where: { xp >= $0 }).map { $0 + 1 } ?? 1
+  }
+
+  static func threshold(forLevel level: Int) -> Int {
+    thresholds[min(max(level - 1, 0), thresholds.count - 1)]
+  }
+
+  static func nextThreshold(forXP xp: Int) -> Int? {
+    thresholds.first(where: { $0 > xp })
+  }
+}
+
+struct AgentProgressionState: Codable, Equatable, Hashable {
+  var xp: Int = 0
+  var selectedPerks: Set<AgentPerkID> = []
+  var stressLevel: Int = 0
+  var roleMatchedTasks = 0
+  var verifiedTasks = 0
+  var recoveredFailures = 0
+  var commercialRevenue = 0
+  var ambitionCompleted = false
+  var seenConversationIDs: Set<String> = []
+
+  var level: Int { AgentLevel.level(forXP: xp) }
+  var stressBand: AgentStressBand { .band(for: stressLevel) }
+  var specialization: String? { selectedPerks.first?.branch }
+
+  mutating func addXP(_ amount: Int) {
+    xp = max(0, xp + amount)
+  }
+
+  mutating func adjustStress(_ amount: Int) {
+    stressLevel = min(100, max(0, stressLevel + amount))
+  }
+}
+
 struct SoloAgent: Codable, Identifiable, Hashable {
   var id: String
   var name: String
@@ -393,6 +471,7 @@ struct SoloAgent: Codable, Identifiable, Hashable {
   var ambition: String
   var stressTrigger: String
   var relationship: Int
+  var progression: AgentProgressionState
 
   var status: String { assignment == nil ? "Ready" : "Assigned" }
 
@@ -418,7 +497,7 @@ struct SoloAgent: Codable, Identifiable, Hashable {
 
   private enum CodingKeys: String, CodingKey {
     case id, name, initials, role, modelFamily, reliability, calibration, drift, trust, assignment
-    case archetype, traits, ambition, stressTrigger, relationship
+    case archetype, traits, ambition, stressTrigger, relationship, progression
   }
 
   init(
@@ -436,7 +515,8 @@ struct SoloAgent: Codable, Identifiable, Hashable {
     traits: [String] = [],
     ambition: String = "Help the company succeed.",
     stressTrigger: String = "Unclear priorities.",
-    relationship: Int = 55
+    relationship: Int = 55,
+    progression: AgentProgressionState = .init()
   ) {
     self.id = id
     self.name = name
@@ -454,6 +534,7 @@ struct SoloAgent: Codable, Identifiable, Hashable {
     self.ambition = ambition == "Help the company succeed." ? defaults.ambition : ambition
     self.stressTrigger = stressTrigger == "Unclear priorities." ? defaults.stressTrigger : stressTrigger
     self.relationship = relationship
+    self.progression = progression
   }
 
   init(from decoder: Decoder) throws {
@@ -474,6 +555,7 @@ struct SoloAgent: Codable, Identifiable, Hashable {
     ambition = try container.decodeIfPresent(String.self, forKey: .ambition) ?? defaults.ambition
     stressTrigger = try container.decodeIfPresent(String.self, forKey: .stressTrigger) ?? defaults.stressTrigger
     relationship = try container.decodeIfPresent(Int.self, forKey: .relationship) ?? 55
+    progression = try container.decodeIfPresent(AgentProgressionState.self, forKey: .progression) ?? .init()
   }
 
   private static func personalityDefaults(for id: String) -> (

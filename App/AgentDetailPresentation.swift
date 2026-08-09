@@ -2,6 +2,8 @@ import SwiftUI
 
 struct AgentDetailPresentation: View {
   var agent: AgentDetailViewModel
+  var availablePerks: [AgentPerkID] = []
+  var onSelectPerk: ((AgentPerkID) -> Void)?
 
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @AccessibilityFocusState private var headingFocused: Bool
@@ -16,6 +18,27 @@ struct AgentDetailPresentation: View {
           Label(agent.role.rawValue, systemImage: agent.role.symbol)
             .font(.headline)
             .foregroundStyle(.secondary)
+          detailRow("Level", value: "\(agent.level) • \(agent.xp) XP\(agent.nextLevelXP.map { " / \($0)" } ?? "")")
+          detailRow("Stress", value: "\(agent.stress) — \(agent.stressBand.label)")
+          detailRow("Specialization", value: agent.specialization ?? "Choose a branch at Level 2")
+          detailRow("Ambition", value: agent.ambitionCompleted ? "\(agent.ambition) Complete" : agent.ambition)
+          if !agent.perks.isEmpty {
+            detailRow("Perks", value: agent.perks.map(\.branch).sorted().joined(separator: " • "))
+          }
+          if let onSelectPerk, agent.level >= 2 {
+            VStack(alignment: .leading, spacing: 8) {
+              Text("Specialize")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(.secondary)
+              ForEach(availablePerks) { perk in
+                Button(perk.branch, systemImage: agent.perks.contains(perk) ? "checkmark.circle.fill" : "plus.circle") {
+                  onSelectPerk(perk)
+                }
+                .buttonStyle(.bordered)
+                .disabled(agent.perks.contains(perk) || (agent.specialization != nil && agent.specialization != perk.branch))
+              }
+            }
+          }
           detailRow("Model family", value: agent.modelFamily)
           detailRow("Trust", value: "\(Int(agent.trust.rounded())) • \(agent.trustBand.label)")
           detailRow("Status", value: agent.status, glyph: agent.statusGlyph)

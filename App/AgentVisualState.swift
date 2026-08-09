@@ -52,7 +52,8 @@ struct AgentVisualState: Equatable {
     let companyStrained = founderStats.energy <= 38
       || founderStats.trust <= 24
       || founderStats.runway <= 8
-    if agent.drift >= 35 && (roleMismatch || companyStrained) {
+    if agent.progression.stressBand == .overloaded || agent.progression.stressBand == .critical
+      || (agent.drift >= 35 && (roleMismatch || companyStrained)) {
       warnings.insert(.overloaded)
     }
     return Self(activity: activity, verification: verification, warnings: warnings)

@@ -17,9 +17,28 @@ struct AgentDetailViewModel: Identifiable, Equatable {
   /// The simulation does not persist per-agent trust deltas, so this remains
   /// empty until such history exists rather than inventing a visual record.
   var recentTrustDeltas: [Int]
+  var level: Int
+  var xp: Int
+  var nextLevelXP: Int?
+  var stress: Int
+  var stressBand: AgentStressBand
+  var specialization: String?
+  var perks: Set<AgentPerkID>
+  var ambition: String
+  var ambitionCompleted: Bool
 
   static func derive(agent: SoloAgent, task: SoloTask?, founderStats: FounderStats) -> Self {
-    Self(station: .derive(agent: agent, task: task, founderStats: founderStats))
+    var detail = Self(station: .derive(agent: agent, task: task, founderStats: founderStats))
+    detail.level = agent.progression.level
+    detail.xp = agent.progression.xp
+    detail.nextLevelXP = AgentLevel.nextThreshold(forXP: agent.progression.xp)
+    detail.stress = agent.progression.stressLevel
+    detail.stressBand = agent.progression.stressBand
+    detail.specialization = agent.progression.specialization
+    detail.perks = agent.progression.selectedPerks
+    detail.ambition = agent.ambition
+    detail.ambitionCompleted = agent.progression.ambitionCompleted
+    return detail
   }
 
   static func commandDeck(agent: SoloAgent, task: SoloTask, founderStats: FounderStats) -> Self {
@@ -39,5 +58,14 @@ struct AgentDetailViewModel: Identifiable, Equatable {
     mood = station.mood
     taskTitle = station.taskTitle
     recentTrustDeltas = []
+    level = station.progression.level
+    xp = station.progression.xp
+    nextLevelXP = AgentLevel.nextThreshold(forXP: xp)
+    stress = station.progression.stressLevel
+    stressBand = station.progression.stressBand
+    specialization = station.progression.specialization
+    perks = station.progression.selectedPerks
+    ambition = station.ambition
+    ambitionCompleted = station.progression.ambitionCompleted
   }
 }

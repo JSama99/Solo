@@ -40,6 +40,8 @@ struct FacilityBonuses: Equatable {
   var sprintEnergyRecovery = 0
   var periodicAttentionBonus = 0
   var ventureEnergyBonus = 0
+  var agentXPBonusMultiplier = 1.0
+  var stressAccumulationMultiplier = 1.0
 
   static let none = Self()
 }

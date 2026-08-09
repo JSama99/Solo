@@ -66,6 +66,65 @@ final class Build10HeadquartersTests: XCTestCase {
     XCTAssertTrue(ContentLibrary.taskPool(for: .scale).contains(where: { $0.title == "Shard the Data Layer" && $0.minimumEra == .scale }))
   }
 
+  func testAgentLevelCurveAndStressBandsAreCentralized() {
+    XCTAssertEqual(AgentLevel.level(forXP: 0), 1)
+    XCTAssertEqual(AgentLevel.level(forXP: 100), 2)
+    XCTAssertEqual(AgentLevel.level(forXP: 700), 5)
+    XCTAssertEqual(AgentStressBand.band(for: 24), .focused)
+    XCTAssertEqual(AgentStressBand.band(for: 25), .stable)
+    XCTAssertEqual(AgentStressBand.band(for: 75), .overloaded)
+    XCTAssertEqual(AgentStressBand.band(for: 90), .critical)
+  }
+
+  func testAgentProgressionMigratesFromPreBuild11AgentData() throws {
+    let json = """
+    {"id":"aurora","name":"Aurora","initials":"AU","role":"Research","modelFamily":"Nova-1","reliability":78,"calibration":0.72,"drift":0,"trust":62}
+    """
+    let agent = try JSONDecoder().decode(SoloAgent.self, from: Data(json.utf8))
+    XCTAssertEqual(agent.progression.xp, 0)
+    XCTAssertEqual(agent.progression.stressLevel, 0)
+    XCTAssertFalse(agent.progression.ambitionCompleted)
+  }
+
+  func testGarageAndLoftWorkforceModifiersAreActiveOnlyAtCurrentFacility() {
+    let progression = FounderProgressionStore(defaults: isolatedDefaults(), saveKey: "workforce")
+    _ = progression.purchaseUpgrade(.developmentRig, availableCapital: 800)
+    XCTAssertEqual(progression.bonuses.agentXPBonusMultiplier, 1.1)
+    XCTAssertEqual(progression.bonuses.stressAccumulationMultiplier, 1)
+    progression.observe(trackRecord: 8)
+    _ = progression.purchase(.founderLoft, availableCapital: 4_000)
+    XCTAssertEqual(progression.bonuses.agentXPBonusMultiplier, 1)
+    XCTAssertEqual(progression.bonuses.stressAccumulationMultiplier, 0.9)
+  }
+
+  func testAgentProgressionEarnsXPAndStressFromCommittedWork() {
+    let store = GameStore()
+    store.startCareer(seed: 99)
+    let task = store.tasks[0]
+    let agent = store.agents.first(where: { $0.role == task.role }) ?? store.agents[0]
+    store.assign(agentID: agent.id, to: task.id)
+    if let choice = store.activeDilemma?.choices.first { store.selectDilemmaChoice(choice.id) }
+    let before = store.agents.first(where: { $0.id == agent.id })!.progression
+    store.commitSprint()
+    let after = store.agents.first(where: { $0.id == agent.id })!.progression
+    XCTAssertGreaterThan(after.xp, before.xp)
+    XCTAssertGreaterThanOrEqual(after.stressLevel, 0)
+    XCTAssertLessThanOrEqual(after.stressLevel, 100)
+  }
+
+  func testSpecializationRequiresLevelAndLocksToOneBranch() {
+    let store = GameStore()
+    store.startCareer(seed: 101)
+    guard let index = store.agents.firstIndex(where: { $0.id == "aurora" }) else { return XCTFail("Missing Aurora") }
+    store.selectAgentPerk(.sourceTriangulation, for: "aurora")
+    XCTAssertTrue(store.agents[index].progression.selectedPerks.isEmpty)
+    store.agents[index].progression.xp = 100
+    store.selectAgentPerk(.sourceTriangulation, for: "aurora")
+    store.selectAgentPerk(.signalDetection, for: "aurora")
+    XCTAssertTrue(store.agents[index].progression.selectedPerks.contains(.sourceTriangulation))
+    XCTAssertFalse(store.agents[index].progression.selectedPerks.contains(.signalDetection))
+  }
+
   private func isolatedDefaults() -> UserDefaults {
     let suite = "Build10Tests-\(UUID().uuidString)"
     let defaults = UserDefaults(suiteName: suite)!

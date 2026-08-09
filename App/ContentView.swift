@@ -1112,7 +1112,7 @@ private struct RecordsScreen: View {
           .buttonStyle(.plain)
 
           NavigationLink {
-            AgentOperationsScreen(agents: store.agents, tasks: store.tasks, founderStats: store.stats)
+            AgentOperationsScreen(store: store)
           } label: {
             RecordLink(title: "Agent Operations", subtitle: "Trust, reliability, and model-family exposure", symbol: "cpu.fill", count: store.agents.count)
           }
@@ -1323,16 +1323,14 @@ private struct EvidenceScreen: View {
 }
 
 private struct AgentOperationsScreen: View {
-  var agents: [SoloAgent]
-  var tasks: [SoloTask]
-  var founderStats: FounderStats
+  @Bindable var store: GameStore
   @State private var selectedAgent: AgentDetailViewModel?
 
   var body: some View {
     ScrollView {
       VStack(spacing: 12) {
-        ForEach(agents) { agent in
-          let model = AgentDetailViewModel.derive(agent: agent, task: tasks.first(where: { $0.assignedAgentID == agent.id }), founderStats: founderStats)
+        ForEach(store.agents) { agent in
+          let model = AgentDetailViewModel.derive(agent: agent, task: store.tasks.first(where: { $0.assignedAgentID == agent.id }), founderStats: store.stats)
           Button { selectedAgent = model } label: { AgentRosterCard(agent: model) }
             .buttonStyle(.plain)
         }
@@ -1341,7 +1339,13 @@ private struct AgentOperationsScreen: View {
       .frame(maxWidth: .infinity)
     }
     .navigationTitle("Agent Operations")
-    .sheet(item: $selectedAgent) { AgentDetailPresentation(agent: $0) }
+    .sheet(item: $selectedAgent) { agent in
+      AgentDetailPresentation(
+        agent: agent,
+        availablePerks: store.availablePerks(for: agent.agentID),
+        onSelectPerk: { store.selectAgentPerk($0, for: agent.agentID) }
+      )
+    }
   }
 }
 

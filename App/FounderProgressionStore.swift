@@ -56,6 +56,11 @@ final class FounderProgressionStore {
     if activeUpgrades.contains(.recoveryCorner) { bonuses.sprintEnergyRecovery = 3 }
     if activeUpgrades.contains(.founderCommandDesk) { bonuses.periodicAttentionBonus = 1 }
     if save.currentFacility == .founderLoft { bonuses.ventureEnergyBonus = 5 }
+    if save.currentFacility == .founderGarage,
+       activeUpgrades.contains(.developmentRig) || activeUpgrades.contains(.verificationArray) || activeUpgrades.contains(.campaignStudio) {
+      bonuses.agentXPBonusMultiplier = 1.1
+    }
+    if save.currentFacility == .founderLoft { bonuses.stressAccumulationMultiplier = 0.9 }
     return bonuses
   }
 

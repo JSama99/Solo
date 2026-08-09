@@ -70,6 +70,13 @@ enum AchievementCatalog {
     ,Achievement(id: "built-different", title: "Built Different", detail: "Purchase three facility upgrades.", family: .mastery, rarity: .bronze)
     ,Achievement(id: "fully-loaded-garage", title: "Fully Loaded Garage", detail: "Purchase every Garage upgrade.", family: .mastery, rarity: .gold)
     ,Achievement(id: "cash-discipline", title: "Cash Discipline", detail: "Move into the Loft with $1,500 Capital remaining.", family: .mastery, rarity: .silver)
+    ,Achievement(id: "first-promotion", title: "First Promotion", detail: "Reach Level 5 with an AI agent.", family: .progression, rarity: .bronze)
+    ,Achievement(id: "specialist", title: "Specialist", detail: "Choose an agent specialization perk.", family: .mastery, rarity: .bronze)
+    ,Achievement(id: "full-team-development", title: "Full Team Development", detail: "Reach Level 5 with Aurora, Stacks, and Brio.", family: .mastery, rarity: .silver)
+    ,Achievement(id: "trusted-advisor", title: "Trusted Advisor", detail: "Complete Aurora's ambition.", family: .story, rarity: .silver)
+    ,Achievement(id: "systems-architect", title: "Systems Architect", detail: "Complete Stacks's ambition.", family: .story, rarity: .silver)
+    ,Achievement(id: "category-creator", title: "Category Creator", detail: "Complete Brio's ambition.", family: .story, rarity: .silver)
+    ,Achievement(id: "calm-under-pressure", title: "Calm Under Pressure", detail: "Recover an agent from Critical Stress.", family: .mastery, rarity: .bronze)
   ]
 
   static func by(_ id: String) -> Achievement? { all.first { $0.id == id } }
@@ -215,6 +222,29 @@ final class AchievementStore {
     award("built-different", when: purchasedUpgradeCount >= 3)
     award("fully-loaded-garage", when: purchasedUpgradeCount == FacilityUpgradeID.allCases.count)
     award("cash-discipline", when: ownsLoft && capital >= 1_500)
+    if let first = unlocked.first { latestUnlock = first }
+    if !unlocked.isEmpty { persist() }
+  }
+
+  func recordWorkforce(_ agents: [SoloAgent]) {
+    let completed = Set(agents.filter(\.progression.ambitionCompleted).map(\.id))
+    let levels = agents.map(\.progression.level)
+    let hasPerk = agents.contains { !$0.progression.selectedPerks.isEmpty }
+    let recoveredCritical = agents.contains { $0.progression.stressLevel < 75 && $0.progression.recoveredFailures > 0 }
+    var unlocked: [Achievement] = []
+    func award(_ id: String, _ condition: Bool) {
+      guard condition, save.unlocked[id] == nil, let achievement = AchievementCatalog.by(id) else { return }
+      save.unlocked[id] = Date()
+      save.totalXP += achievement.xp
+      unlocked.append(achievement)
+    }
+    award("first-promotion", levels.contains(where: { $0 >= 5 }))
+    award("specialist", hasPerk)
+    award("full-team-development", agents.count >= 3 && levels.allSatisfy { $0 >= 5 })
+    award("trusted-advisor", completed.contains("aurora"))
+    award("systems-architect", completed.contains("stacks"))
+    award("category-creator", completed.contains("brio"))
+    award("calm-under-pressure", recoveredCritical)
     if let first = unlocked.first { latestUnlock = first }
     if !unlocked.isEmpty { persist() }
   }
