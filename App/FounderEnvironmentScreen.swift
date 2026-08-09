@@ -2,12 +2,10 @@ import SwiftUI
 
 struct FounderEnvironmentScreen: View {
   var store: GameStore
-  var presentation: PresentationCoordinator
 
   @Environment(FounderProgressionStore.self) private var progression
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.scenePhase) private var scenePhase
-  @State private var selectedTaskID: UUID?
 
   var body: some View {
     NavigationStack {
@@ -33,12 +31,6 @@ struct FounderEnvironmentScreen: View {
             )
           }
           operationsSummary
-          GarageCommandCenter(
-            store: store,
-            presentation: presentation,
-            onSelectTask: { selectedTaskID = $0 },
-            selectedTaskID: selectedTaskID
-          )
           agentStatusList
           NavigationLink {
             HeadquartersProgressScreen(store: store)
@@ -46,10 +38,6 @@ struct FounderEnvironmentScreen: View {
             headquartersProgressLink
           }
           .buttonStyle(.plain)
-          Button("Commit Sprint", systemImage: "bolt.fill") {
-            presentation.commit(in: store, progression: progression)
-          }
-          .buttonStyle(SoloPrimaryButtonStyle())
         }
         .padding(16)
         .frame(maxWidth: .infinity)
@@ -101,11 +89,13 @@ struct FounderEnvironmentScreen: View {
     }
   }
 
-  private func assignSelectedTask(to agentID: String) {
-    guard let selectedTaskID else { return }
-    presentation.assign(agentID: agentID, to: selectedTaskID, in: store)
-    withAnimation(.snappy) {
-      self.selectedTaskID = nil
+  private var stationModels: [AgentStationViewModel] {
+    store.agents.map { agent in
+      AgentStationViewModel.derive(
+        agent: agent,
+        task: store.tasks.first(where: { $0.assignedAgentID == agent.id }),
+        founderStats: store.stats
+      )
     }
   }
 
