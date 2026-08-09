@@ -13,6 +13,9 @@ struct ContentView: View {
       case .title:
         TitleScreen(store: store)
           .transition(.opacity.combined(with: .scale(scale: 0.97)))
+      case .modeSelect:
+        ModeSelectScreen(store: store)
+          .transition(.move(edge: .trailing).combined(with: .opacity))
       case .setup:
         FounderSetupScreen(store: store)
           .transition(.move(edge: .trailing).combined(with: .opacity))
@@ -113,13 +116,8 @@ private struct TitleScreen: View {
           .padding(.vertical, 9)
           .background(SoloTheme.card, in: .capsule)
         VStack(spacing: 12) {
-          Button("Daily Challenge", systemImage: "calendar.badge.clock") {
-            store.startDailyChallenge()
-          }
-          .buttonStyle(SoloPrimaryButtonStyle())
-
-          Button("Start New Career", systemImage: "play.fill") {
-            store.beginSetup()
+          Button("Choose Mode", systemImage: "play.fill") {
+            store.beginModeSelection()
           }
           .buttonStyle(SoloPrimaryButtonStyle())
 
@@ -294,13 +292,15 @@ private struct DoctrineCard: View {
 
 /// Deliberately lighter than DoctrineCard -- CareerMode is a binary choice
 /// with no perk/risk tradeoff to weigh, just a length of story to commit to.
-private struct CareerModeCard: View {
+struct CareerModeCard: View {
   var mode: CareerMode
   var isSelected: Bool
 
   var body: some View {
     VStack(alignment: .leading, spacing: 6) {
       HStack {
+        Image(systemName: mode.symbol)
+          .foregroundStyle(isSelected ? SoloTheme.cyan : .secondary)
         Text(mode.name).font(.subheadline.bold())
         Spacer()
         Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")

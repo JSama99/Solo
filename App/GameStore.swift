@@ -6,6 +6,7 @@ import Observation
 final class GameStore {
   enum Stage: Equatable {
     case title
+    case modeSelect
     case setup
     case game
     case ventureUnlock
@@ -184,6 +185,21 @@ final class GameStore {
     selectedDoctrine = .guided
     selectedCareerMode = .bounded
     stage = .setup
+  }
+
+  func beginModeSelection() {
+    stage = .modeSelect
+  }
+
+  /// Routes the mode picker through the existing setup and daily-start paths.
+  func startMode(_ mode: CareerMode) {
+    switch mode {
+    case .daily:
+      startDailyChallenge()
+    case .bounded, .continuous:
+      beginSetup()
+      selectedCareerMode = mode
+    }
   }
 
   func startCareer(seed: UInt64? = nil) {
