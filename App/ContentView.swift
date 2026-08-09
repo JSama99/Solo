@@ -865,7 +865,7 @@ private struct TaskCommandCard: View {
 
       if let assignedAgent {
         Button("Inspect \(assignedAgent.name)", systemImage: "person.text.rectangle") {
-          inspectedAgent = AgentDetailViewModel.derive(
+          inspectedAgent = AgentDetailViewModel.commandDeck(
             agent: assignedAgent,
             task: task,
             founderStats: founderStats

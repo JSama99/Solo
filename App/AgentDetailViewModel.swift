@@ -22,6 +22,10 @@ struct AgentDetailViewModel: Identifiable, Equatable {
     Self(station: .derive(agent: agent, task: task, founderStats: founderStats))
   }
 
+  static func commandDeck(agent: SoloAgent, task: SoloTask, founderStats: FounderStats) -> Self {
+    derive(agent: agent, task: task, founderStats: founderStats)
+  }
+
   init(station: AgentStationViewModel) {
     agentID = station.agentID
     name = station.name

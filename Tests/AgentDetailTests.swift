@@ -27,7 +27,7 @@ final class AgentDetailTests: XCTestCase {
     let garage = AgentDetailViewModel(
       station: AgentStationViewModel.derive(agent: agent, task: task, founderStats: stats)
     )
-    let commandDeck = AgentDetailViewModel.derive(agent: agent, task: task, founderStats: stats)
+    let commandDeck = AgentDetailViewModel.commandDeck(agent: agent, task: task, founderStats: stats)
 
     XCTAssertEqual(roster, garage)
     XCTAssertEqual(garage, commandDeck)
