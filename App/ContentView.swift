@@ -13,6 +13,9 @@ struct ContentView: View {
       case .title:
         TitleScreen(store: store)
           .transition(.opacity.combined(with: .scale(scale: 0.97)))
+      case .modeSelect:
+        ModeSelectScreen(store: store)
+          .transition(.move(edge: .trailing).combined(with: .opacity))
       case .setup:
         FounderSetupScreen(store: store)
           .transition(.move(edge: .trailing).combined(with: .opacity))
@@ -113,13 +116,8 @@ private struct TitleScreen: View {
           .padding(.vertical, 9)
           .background(SoloTheme.card, in: .capsule)
         VStack(spacing: 12) {
-          Button("Daily Challenge", systemImage: "calendar.badge.clock") {
-            store.startDailyChallenge()
-          }
-          .buttonStyle(SoloPrimaryButtonStyle())
-
-          Button("Start New Career", systemImage: "play.fill") {
-            store.beginSetup()
+          Button("Choose Mode", systemImage: "play.fill") {
+            store.beginModeSelection()
           }
           .buttonStyle(SoloPrimaryButtonStyle())
 
@@ -143,6 +141,88 @@ private struct TitleScreen: View {
       }
       .frame(maxWidth: .infinity)
     }
+  }
+}
+
+private struct ModeSelectScreen: View {
+  var store: GameStore
+
+  var body: some View {
+    NavigationStack {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 18) {
+          VStack(alignment: .leading, spacing: 6) {
+            Text("PLAY MODE")
+              .font(.caption.weight(.black))
+              .tracking(2)
+              .foregroundStyle(SoloTheme.cyan)
+            Text("Choose your run")
+              .font(.largeTitle.bold())
+            Text("Start a founder career or take on today’s shared challenge.")
+              .foregroundStyle(.secondary)
+          }
+
+          Button {
+            store.beginSetup()
+          } label: {
+            ModeChoiceCard(
+              title: "Founder Career",
+              detail: "Build a company across a full, persistent story.",
+              symbol: "flag.checkered",
+              color: SoloTheme.cyan
+            )
+          }
+          .buttonStyle(.plain)
+
+          Button {
+            store.startDailyChallenge()
+          } label: {
+            ModeChoiceCard(
+              title: "Daily Challenge",
+              detail: "One shared seed. A short run. Beat your best.",
+              symbol: "calendar.badge.clock",
+              color: SoloTheme.amber
+            )
+          }
+          .buttonStyle(.plain)
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+      }
+      .toolbar {
+        ToolbarItem(placement: .topBarLeading) {
+          Button("Back", systemImage: "chevron.left") {
+            store.stage = .title
+          }
+          .labelStyle(.iconOnly)
+        }
+      }
+    }
+  }
+}
+
+private struct ModeChoiceCard: View {
+  var title: String
+  var detail: String
+  var symbol: String
+  var color: Color
+
+  var body: some View {
+    HStack(spacing: 14) {
+      Image(systemName: symbol)
+        .font(.title2)
+        .foregroundStyle(color)
+        .frame(width: 44, height: 44)
+        .background(color.opacity(0.14), in: .rect(cornerRadius: 12))
+      VStack(alignment: .leading, spacing: 3) {
+        Text(title).font(.headline)
+        Text(detail).font(.caption).foregroundStyle(.secondary)
+      }
+      Spacer()
+      Image(systemName: "chevron.right").foregroundStyle(.tertiary)
+    }
+    .soloCard()
+    .accessibilityElement(children: .combine)
   }
 }
 
@@ -329,6 +409,14 @@ private struct GameDashboard: View {
 
   var body: some View {
     VStack(spacing: 0) {
+      StatsStrip(
+        stats: store.stats,
+        attentionRemaining: store.attentionRemaining,
+        attentionMaximum: store.attentionMaximum
+      )
+      .padding(.horizontal, 16)
+      .padding(.top, 8)
+      .padding(.bottom, 4)
       if store.isVentureLocked {
         VentureLockBanner(store: store)
       }
@@ -343,6 +431,9 @@ private struct GameDashboard: View {
     TabView {
       Tab("Garage", systemImage: "house.fill") {
         FounderEnvironmentScreen(store: store, presentation: presentation)
+      }
+      Tab("Command Deck", systemImage: "slider.horizontal.3") {
+        CommandScreen(store: store, presentation: presentation)
       }
       Tab("Venture", systemImage: "chart.line.uptrend.xyaxis") {
         VentureScreen(store: store)
@@ -375,18 +466,24 @@ private struct GameDashboard: View {
 
 private struct StatsStrip: View {
   var stats: FounderStats
+  var attentionRemaining: Int
+  var attentionMaximum: Int
 
   var body: some View {
     ScrollView(.horizontal) {
       HStack(spacing: 8) {
+        StatChip(label: "Capital", value: stats.capital.formatted(.currency(code: "USD").precision(.fractionLength(0))), symbol: "dollarsign.circle.fill")
         StatChip(label: "Runway", value: "\(stats.runway)d", symbol: "calendar")
-        StatChip(label: "Revenue", value: stats.revenue.formatted(.currency(code: "USD").precision(.fractionLength(0))), symbol: "dollarsign")
+        StatChip(label: "Attention", value: "\(attentionRemaining)/\(attentionMaximum)", symbol: "eye.fill")
+        StatChip(label: "Revenue", value: stats.revenue.formatted(.currency(code: "USD").precision(.fractionLength(0))), symbol: "chart.line.uptrend.xyaxis")
         StatChip(label: "Momentum", value: "\(stats.momentum)", symbol: "bolt.fill")
         StatChip(label: "Trust", value: "\(stats.trust)", symbol: "checkmark.shield.fill")
         StatChip(label: "Energy", value: "\(stats.energy)", symbol: "battery.75percent")
+        StatChip(label: "Track", value: "\(stats.trackRecord)", symbol: "chart.bar.fill")
       }
+      .padding(.horizontal, 1)
     }
-    .scrollIndicators(.hidden)
+    .scrollIndicators(.visible)
   }
 }
 
