@@ -66,6 +66,8 @@ struct AgentStationViewModel: Identifiable, Equatable {
   var taskTitle: String?
   var semanticState: SemanticState
   var mood: String
+  var progression: AgentProgressionState = .init()
+  var ambition = "Help the company succeed."
 
   var trustBand: TrustBand { TrustBand(trust: trust) }
 
@@ -100,7 +102,9 @@ struct AgentStationViewModel: Identifiable, Equatable {
       trust: agent.trust,
       taskTitle: task?.title,
       semanticState: semanticState,
-      mood: mood(for: visualState, fallback: agent.trustLabel)
+      mood: mood(for: visualState, fallback: agent.trustLabel),
+      progression: agent.progression,
+      ambition: agent.ambition
     )
   }
 

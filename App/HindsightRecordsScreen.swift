@@ -134,9 +134,6 @@ private struct PrecedentRecordRow: View {
             detail("Decision", value: precedent.decisionSummary)
             detail("Recorded context", value: precedent.context.summary)
             detail("Observed outcome", value: precedent.outcome.summary)
-            Text("No counterfactual outcome was recorded for this precedent.")
-              .font(.caption2)
-              .foregroundStyle(.secondary)
           }
           .transition(.opacity)
         }

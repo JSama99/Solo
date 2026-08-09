@@ -46,6 +46,7 @@ final class GameStore {
   /// Persistent headquarters progression is intentionally separate from the
   /// deterministic career save. It never consumes the simulation RNG.
   var progressionStore: FounderProgressionStore?
+  private(set) var workforceNotifications: [String] = []
 
   // ── Build 3: career layer ─────────────────────────────────────────
   /// Precedents banked across the career. Recorded in every venture,
@@ -87,6 +88,7 @@ final class GameStore {
 
   var hasSave: Bool {
     UserDefaults.standard.data(forKey: Self.saveKey) != nil
+      || UserDefaults.standard.data(forKey: Self.v8SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v7SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v6SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v5SaveKey) != nil
@@ -102,6 +104,27 @@ final class GameStore {
   }
 
   var facilityBonuses: FacilityBonuses { progressionStore?.bonuses ?? .none }
+
+  func availablePerks(for agentID: String) -> [AgentPerkID] {
+    switch agentID {
+    case "aurora": [.sourceTriangulation, .contradictionScan, .truthEngine, .signalDetection, .marketMemory, .strategicAdvisor]
+    case "stacks": [.flowState, .rapidDelivery, .shippingMachine, .defensiveBuild, .recoveryProtocol, .resilientSystems]
+    case "brio": [.conversionInstinct, .dealCloser, .revenueEngine, .claimDiscipline, .trustedVoice, .sustainableGrowth]
+    default: []
+    }
+  }
+
+  func selectAgentPerk(_ perk: AgentPerkID, for agentID: String) {
+    guard let index = agents.firstIndex(where: { $0.id == agentID }), availablePerks(for: agentID).contains(perk) else { return }
+    let requiredLevel = perkRequiredLevel(perk)
+    guard agents[index].progression.level >= requiredLevel else { return }
+    if let branch = agents[index].progression.specialization, branch != perk.branch { return }
+    guard !agents[index].progression.selectedPerks.contains(perk) else { return }
+    agents[index].progression.selectedPerks.insert(perk)
+    workforceNotifications.append("\(agents[index].name) specialized in \(perk.branch).")
+    achievementStore?.recordWorkforce(agents)
+    save()
+  }
 
   @discardableResult
   func purchaseFacility(_ tier: FacilityTier) -> FounderProgressionStore.PurchaseResult {
@@ -153,6 +176,24 @@ final class GameStore {
     if tasks.filter({ $0.assignedAgentID != nil }).count < tasks.count { return .assignTeam }
     if tasks.contains(where: { $0.isReviewed && !$0.resolutionLocked }) { return .reviewAndResolve }
     return .readyToCommit
+  }
+
+  var canCommitSprint: Bool {
+    commitBlockerMessage == nil
+  }
+
+  var commitBlockerMessage: String? {
+    let hasAssignment = tasks.contains { $0.assignedAgentID != nil }
+    guard hasAssignment else {
+      return "Assign at least one agent before committing the sprint."
+    }
+    guard activeDilemma == nil || selectedDilemmaChoice != nil else {
+      return "Choose a response to the founder dilemma before committing."
+    }
+    if let unresolved = tasks.first(where: { $0.isReviewed && !$0.resolutionLocked }) {
+      return "Choose how to resolve \(unresolved.title) before committing."
+    }
+    return nil
   }
 
   var averageRelationship: Int {
@@ -229,6 +270,17 @@ final class GameStore {
     stage = .modeSelect
   }
 
+  func startMode(_ mode: CareerMode) {
+    selectedCareerMode = mode
+    switch mode {
+    case .daily:
+      startDailyChallenge()
+    case .bounded, .continuous:
+      beginSetup()
+      selectedCareerMode = mode
+    }
+  }
+
   func startCareer(seed: UInt64? = nil) {
     doctrine = selectedDoctrine
     careerMode = selectedCareerMode
@@ -293,6 +345,10 @@ final class GameStore {
        let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
        envelope.version == Self.saveVersion {
       loadedSave = envelope.career
+    } else if let data = UserDefaults.standard.data(forKey: Self.v8SaveKey),
+              let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
+              envelope.version == 8 {
+      loadedSave = migrateV8(envelope.career)
     } else if let data = UserDefaults.standard.data(forKey: Self.v7SaveKey),
               let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
               envelope.version == 7 {
@@ -394,6 +450,18 @@ final class GameStore {
     }
     if agent.drift >= 50 {
       return "My outputs are getting noisy. I need a narrower brief or a review."
+    }
+    if agent.progression.stressBand == .critical {
+      return "I can still help, but this pace is no longer sustainable. Give me one recovery sprint."
+    }
+    if agent.progression.stressBand == .overloaded {
+      return "The workload is compressing my margin for error. Narrow the brief or rotate me out."
+    }
+    if let specialization = agent.progression.specialization {
+      return "My \(specialization) practice is ready for a problem that fits it."
+    }
+    if agent.progression.level >= 2 {
+      return "I have learned enough to choose the kind of partner this company needs me to become."
     }
     if agent.relationship >= 75 {
       return "We are aligned. Give me the next hard problem."
@@ -577,16 +645,8 @@ final class GameStore {
   func commitSprint() {
     sanitizeState()
     let assignedIndices = tasks.indices.filter { tasks[$0].assignedAgentID != nil }
-    guard !assignedIndices.isEmpty else {
-      alertMessage = "Assign at least one agent before committing the sprint."
-      return
-    }
-    guard activeDilemma == nil || selectedDilemmaChoice != nil else {
-      alertMessage = "Choose a response to the founder dilemma before committing."
-      return
-    }
-    if let unresolved = tasks.first(where: { $0.isReviewed && !$0.resolutionLocked }) {
-      alertMessage = "Choose how to resolve \(unresolved.title) before committing."
+    if let blocker = commitBlockerMessage {
+      alertMessage = blocker
       return
     }
 
@@ -666,7 +726,11 @@ final class GameStore {
         agents[agentIndex].trust = max(0, agents[agentIndex].trust - (result.isRiskyForSimulation ? 5 : 2))
         recordEvidence(task: tasks[index], agent: agents[agentIndex], result: result)
       }
+      recordAgentProgress(for: agentIndex, task: tasks[index], result: result)
     }
+
+    recoverUnassignedAgents(assignedIDs: Set(assignedIndices.compactMap { tasks[$0].assignedAgentID }))
+    achievementStore?.recordWorkforce(agents)
 
     let reviewed = assignedIndices.filter { tasks[$0].isReviewed }.count
     let objectiveCompleted = evaluateCurrentObjective(assignedIndices: assignedIndices, riskyOutcomes: riskyOutcomes)
@@ -921,6 +985,7 @@ final class GameStore {
 
   func resetCareer() {
     UserDefaults.standard.removeObject(forKey: Self.saveKey)
+    UserDefaults.standard.removeObject(forKey: Self.v8SaveKey)
     UserDefaults.standard.removeObject(forKey: Self.v7SaveKey)
     UserDefaults.standard.removeObject(forKey: Self.v6SaveKey)
     UserDefaults.standard.removeObject(forKey: Self.v5SaveKey)
@@ -1168,6 +1233,76 @@ final class GameStore {
     return false
   }
 
+  private func perkRequiredLevel(_ perk: AgentPerkID) -> Int {
+    switch perk {
+    case .sourceTriangulation, .signalDetection, .flowState, .defensiveBuild, .conversionInstinct, .claimDiscipline:
+      2
+    case .contradictionScan, .marketMemory, .rapidDelivery, .recoveryProtocol, .dealCloser, .trustedVoice:
+      6
+    case .truthEngine, .strategicAdvisor, .shippingMachine, .resilientSystems, .revenueEngine, .sustainableGrowth:
+      10
+    }
+  }
+
+  private func recordAgentProgress(for agentIndex: Int, task: SoloTask, result: TaskResult) {
+    let oldLevel = agents[agentIndex].progression.level
+    let roleMatched = agents[agentIndex].role == task.role || task.role == .general
+    var xp = 10 + (roleMatched ? 3 : 0)
+    if result.isStrongForSimulation { xp += 5 }
+    if task.isReviewed && result.verificationState.evidenceVerified { xp += 4 }
+    if result.isRiskyForSimulation { xp = max(xp, 2) }
+    if facilityBonuses.agentXPBonusMultiplier > 1, roleMatched {
+      xp = Int((Double(xp) * facilityBonuses.agentXPBonusMultiplier).rounded())
+    }
+    agents[agentIndex].progression.addXP(xp)
+    if roleMatched { agents[agentIndex].progression.roleMatchedTasks += 1 }
+    if task.isReviewed && result.verificationState.evidenceVerified { agents[agentIndex].progression.verifiedTasks += 1 }
+    if result.isRiskyForSimulation { agents[agentIndex].progression.recoveredFailures += 1 }
+    if task.category == .sales { agents[agentIndex].progression.commercialRevenue += max(0, result.immediateEffects.revenue) }
+
+    var stress = roleMatched ? 8 : 16
+    if task.urgency == .critical { stress += 8 }
+    if result.isRiskyForSimulation { stress += 10 }
+    if task.isReviewed && task.resolution == .rework { stress += 6 }
+    if roleMatched && result.isStrongForSimulation { stress -= 4 }
+    stress = Int((Double(stress) * facilityBonuses.stressAccumulationMultiplier).rounded())
+    let previousBand = agents[agentIndex].progression.stressBand
+    agents[agentIndex].progression.adjustStress(stress)
+    if previousBand != .critical && agents[agentIndex].progression.stressBand == .critical {
+      workforceNotifications.append("\(agents[agentIndex].name) is at critical stress. Reduce their load.")
+    }
+    completeAmbitionIfEligible(agentIndex)
+    if agents[agentIndex].progression.level > oldLevel {
+      workforceNotifications.append("\(agents[agentIndex].name) reached level \(agents[agentIndex].progression.level).")
+    }
+  }
+
+  private func recoverUnassignedAgents(assignedIDs: Set<String>) {
+    for index in agents.indices where !assignedIDs.contains(agents[index].id) {
+      let recovery = agents[index].relationship >= 75 ? 8 : 6
+      agents[index].progression.adjustStress(-recovery)
+    }
+  }
+
+  private func completeAmbitionIfEligible(_ index: Int) {
+    guard !agents[index].progression.ambitionCompleted else { return }
+    let progress = agents[index].progression
+    let qualifies: Bool
+    switch agents[index].id {
+    case "aurora":
+      qualifies = progress.roleMatchedTasks >= 10 && progress.verifiedTasks >= 5 && agents[index].calibration >= 0.85 && agents[index].relationship >= 80
+    case "stacks":
+      qualifies = progress.roleMatchedTasks >= 12 && progress.recoveredFailures >= 3 && agents[index].reliability >= 80 && progress.stressLevel < 75
+    case "brio":
+      qualifies = progress.roleMatchedTasks >= 10 && progress.commercialRevenue >= 3_000 && progress.verifiedTasks >= 3 && agents[index].relationship >= 75
+    default:
+      qualifies = false
+    }
+    guard qualifies else { return }
+    agents[index].progression.ambitionCompleted = true
+    workforceNotifications.append("\(agents[index].name) completed their ambition.")
+  }
+
   private func apply(_ effects: SimulationEffects) {
     stats.revenue = max(0, stats.revenue + effects.revenue)
     stats.momentum = clamped(stats.momentum + effects.momentum)
@@ -1278,6 +1413,10 @@ final class GameStore {
   /// under the rules that existed when it started. Continuous mode is opt-in
   /// for new careers only, never retrofitted onto one already in progress.
   private func migrateV7(_ legacy: CareerSave) -> CareerSave {
+    legacy
+  }
+
+  private func migrateV8(_ legacy: CareerSave) -> CareerSave {
     legacy
   }
 
@@ -1576,6 +1715,7 @@ final class GameStore {
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
       UserDefaults.standard.set(data, forKey: Self.saveKey)
+      UserDefaults.standard.removeObject(forKey: Self.v8SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v7SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v6SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v5SaveKey)
@@ -1714,8 +1854,9 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  private static let saveVersion = 8
-  private static let saveKey = "solo-unicorn-run-native-save-v8"
+  private static let saveVersion = 9
+  private static let saveKey = "solo-unicorn-run-native-save-v9"
+  private static let v8SaveKey = "solo-unicorn-run-native-save-v8"
   private static let v7SaveKey = "solo-unicorn-run-native-save-v7"
   private static let v6SaveKey = "solo-unicorn-run-native-save-v6"
   private static let v5SaveKey = "solo-unicorn-run-native-save-v5"

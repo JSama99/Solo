@@ -376,15 +376,13 @@ private struct DoctrineCard: View {
 
 /// Deliberately lighter than DoctrineCard -- CareerMode is a binary choice
 /// with no perk/risk tradeoff to weigh, just a length of story to commit to.
-struct CareerModeCard: View {
+private struct CareerModeCard: View {
   var mode: CareerMode
   var isSelected: Bool
 
   var body: some View {
     VStack(alignment: .leading, spacing: 6) {
       HStack {
-        Image(systemName: mode.symbol)
-          .foregroundStyle(isSelected ? SoloTheme.cyan : .secondary)
         Text(mode.name).font(.subheadline.bold())
         Spacer()
         Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
@@ -435,9 +433,6 @@ private struct GameDashboard: View {
     TabView {
       Tab("Garage", systemImage: "house.fill") {
         FounderEnvironmentScreen(store: store)
-      }
-      Tab("Command Deck", systemImage: "slider.horizontal.3") {
-        CommandScreen(store: store, presentation: presentation)
       }
       Tab("Command Deck", systemImage: "slider.horizontal.3") {
         CommandScreen(store: store, presentation: presentation)
@@ -514,6 +509,39 @@ private struct StatChip: View {
   }
 }
 
+private struct AgentRow: View {
+  var agent: SoloAgent
+
+  var body: some View {
+    HStack(spacing: 12) {
+      Text(agent.initials)
+        .font(.caption.weight(.black))
+        .frame(width: 44, height: 44)
+        .background(SoloTheme.purple.gradient, in: .circle)
+      VStack(alignment: .leading, spacing: 3) {
+        HStack {
+          Text(agent.name).font(.headline)
+          Text(agent.role.rawValue).font(.caption).foregroundStyle(.secondary)
+        }
+        Text(agent.assignment == nil ? "Ready • \(agent.archetype)" : "Working • \(agent.modelFamily)")
+          .font(.caption)
+          .foregroundStyle(agent.assignment == nil ? .secondary : SoloTheme.cyan)
+        Text(agent.traitSummary)
+          .font(.caption2)
+          .foregroundStyle(.secondary)
+      }
+      Spacer()
+      VStack(alignment: .trailing, spacing: 3) {
+        Text(agent.relationshipLabel).font(.caption.weight(.bold))
+        Text("Bond \(agent.relationship) • Drift \(Int(agent.drift))").font(.caption2).foregroundStyle(.secondary)
+      }
+    }
+    .padding(14)
+    .background(SoloTheme.card, in: .rect(cornerRadius: 16))
+    .accessibilityElement(children: .combine)
+  }
+}
+
 private struct CommandScreen: View {
   @Bindable var store: GameStore
   var presentation: PresentationCoordinator
@@ -537,75 +565,97 @@ private struct CommandScreen: View {
           SprintPhaseTracker(current: store.sprintPhase)
 
           if let dilemma = store.activeDilemma {
-            FounderDilemmaCard(
-              dilemma: dilemma,
-              selectedChoiceID: store.selectedDilemmaChoiceID,
-              onSelect: store.selectDilemmaChoice
-            )
-          }
-
-          if let objective = store.currentObjective {
-            SprintObjectiveCard(objective: objective, progress: store.objectiveProgressText)
-          }
-
-          Picker("Sprint intent", selection: Binding(
-            get: { store.intent },
-            set: { store.setIntent($0) }
-          )) {
-            ForEach(SprintIntent.allCases) { intent in
-              Label(intent.name, systemImage: intent.symbol).tag(intent)
-            }
-          }
-          .pickerStyle(.segmented)
-          .disabled(store.tasks.contains { $0.assignedAgentID != nil })
-
-          if store.tasks.contains(where: { $0.assignedAgentID != nil }) {
-            Text("Clear all assignments to change sprint intent.")
-              .font(.caption)
-              .foregroundStyle(.secondary)
-          }
-
-          HStack {
-            Text(store.intent.summary).font(.caption).foregroundStyle(.secondary)
-            Spacer()
-            Label("\(store.attentionRemaining)/\(store.attentionMaximum)", systemImage: "eye.fill")
-              .font(.caption.weight(.bold))
-              .foregroundStyle(SoloTheme.amber)
-          }
-
-          if !store.taskBacklog.isEmpty {
-            TaskDraftBacklogCard(
-              activeTasks: store.tasks,
-              backlog: store.taskBacklog,
-              canEdit: store.tasks.allSatisfy { $0.assignedAgentID == nil },
-              onSwap: store.swapDraftTask
-            )
-          }
-
-          ForEach(store.tasks) { task in
-            TaskCommandCard(
-              task: task,
-              agents: store.agents,
-              founderStats: store.stats
-            ) { agentID in
-              presentation.assign(agentID: agentID, to: task.id, in: store)
-            } onReview: {
-              presentation.review(taskID: task.id, in: store)
-            } onResolution: { choice in
-              store.resolveReviewedTask(taskID: task.id, choice: choice)
+            if CommandDeckPresentation.showsFullDilemma(for: store.sprintPhase) {
+              FounderDilemmaCard(
+                dilemma: dilemma,
+                selectedChoiceID: store.selectedDilemmaChoiceID,
+                onSelect: store.selectDilemmaChoice
+              )
+            } else if let choice = store.selectedDilemmaChoice {
+              ResolvedDilemmaSummary(dilemma: dilemma, choice: choice)
             }
           }
 
-          Button("Commit Sprint", systemImage: "bolt.fill") {
-            presentation.commit(in: store, progression: progression)
+          if CommandDeckPresentation.showsSprintControls(for: store.sprintPhase) {
+            if let objective = store.currentObjective {
+              SprintObjectiveCard(objective: objective, progress: store.objectiveProgressText)
+            }
+
+            Picker("Sprint intent", selection: Binding(
+              get: { store.intent },
+              set: { store.setIntent($0) }
+            )) {
+              ForEach(SprintIntent.allCases) { intent in
+                Label(intent.name, systemImage: intent.symbol).tag(intent)
+              }
+            }
+            .pickerStyle(.segmented)
+            .disabled(store.tasks.contains { $0.assignedAgentID != nil })
+
+            if store.tasks.contains(where: { $0.assignedAgentID != nil }) {
+              Text("Clear all assignments to change sprint intent.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+
+            HStack {
+              Text(store.intent.summary).font(.caption).foregroundStyle(.secondary)
+              Spacer()
+              Label("\(store.attentionRemaining)/\(store.attentionMaximum)", systemImage: "eye.fill")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(SoloTheme.amber)
+            }
+
+            if !store.taskBacklog.isEmpty {
+              TaskDraftBacklogCard(
+                activeTasks: store.tasks,
+                backlog: store.taskBacklog,
+                canEdit: store.tasks.allSatisfy { $0.assignedAgentID == nil },
+                onSwap: store.swapDraftTask
+              )
+            }
+
+            ForEach(store.tasks) { task in
+              TaskCommandCard(
+                task: task,
+                agents: store.agents,
+                founderStats: store.stats
+              ) { agentID in
+                presentation.assign(agentID: agentID, to: task.id, in: store)
+              } onReview: {
+                presentation.review(taskID: task.id, in: store)
+              } onResolution: { choice in
+                store.resolveReviewedTask(taskID: task.id, choice: choice)
+              }
+            }
+
+            Button("Commit Sprint", systemImage: "bolt.fill") {
+              presentation.commit(in: store, progression: progression)
+            }
+            .buttonStyle(SoloPrimaryButtonStyle())
+            .disabled(!store.canCommitSprint)
+            if let blocker = store.commitBlockerMessage {
+              Text(blocker)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
           }
-          .buttonStyle(SoloPrimaryButtonStyle())
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
       }
       .navigationTitle("Assign")
     }
+  }
+}
+
+enum CommandDeckPresentation {
+  static func showsFullDilemma(for phase: SprintPhase) -> Bool {
+    phase == .founderEvent
+  }
+
+  static func showsSprintControls(for phase: SprintPhase) -> Bool {
+    phase.rawValue >= SprintPhase.chooseCommitments.rawValue
   }
 }
 
@@ -672,6 +722,18 @@ private struct FounderDilemmaCard: View {
       }
     }
     .soloCard()
+  }
+}
+
+private struct ResolvedDilemmaSummary: View {
+  var dilemma: FounderDilemma
+  var choice: DilemmaChoice
+
+  var body: some View {
+    Label("\(dilemma.title): \(choice.title)", systemImage: "checkmark.seal.fill")
+      .font(.caption.weight(.semibold))
+      .foregroundStyle(SoloTheme.mint)
+      .soloCard()
   }
 }
 
@@ -803,7 +865,7 @@ private struct TaskCommandCard: View {
 
       if let assignedAgent {
         Button("Inspect \(assignedAgent.name)", systemImage: "person.text.rectangle") {
-          inspectedAgent = AgentDetailViewModel.derive(
+          inspectedAgent = AgentDetailViewModel.commandDeck(
             agent: assignedAgent,
             task: task,
             founderStats: founderStats
@@ -1050,9 +1112,23 @@ private struct RecordsScreen: View {
           .buttonStyle(.plain)
 
           NavigationLink {
-            AgentOperationsScreen(agents: store.agents, tasks: store.tasks, founderStats: store.stats)
+            AgentOperationsScreen(store: store)
           } label: {
             RecordLink(title: "Agent Operations", subtitle: "Trust, reliability, and model-family exposure", symbol: "cpu.fill", count: store.agents.count)
+          }
+          .buttonStyle(.plain)
+
+          NavigationLink {
+            HindsightRecordsScreen(precedents: store.precedents)
+          } label: {
+            RecordLink(title: "Hindsight", subtitle: "Recorded contexts and observed outcomes", symbol: "brain.head.profile", count: store.precedents.count)
+          }
+          .buttonStyle(.plain)
+
+          NavigationLink {
+            AchievementsScreen(store: store)
+          } label: {
+            RecordLink(title: "Achievements", subtitle: "Founder milestones across four families", symbol: "medal.star.fill", count: achievements.unlockedCount)
           }
           .buttonStyle(.plain)
 
@@ -1247,48 +1323,27 @@ private struct EvidenceScreen: View {
 }
 
 private struct AgentOperationsScreen: View {
-  var agents: [SoloAgent]
-  var tasks: [SoloTask]
-  var founderStats: FounderStats
-
-  @Environment(\.accessibilityReduceMotion) private var reduceMotion
-  @State private var hasPresented = false
+  @Bindable var store: GameStore
   @State private var selectedAgent: AgentDetailViewModel?
 
   var body: some View {
     ScrollView {
       VStack(spacing: 12) {
-        ForEach(Array(agentModels.enumerated()), id: \.element.id) { index, agent in
-          Button {
-            selectedAgent = agent
-          } label: {
-            AgentRosterCard(agent: agent)
-          }
-          .buttonStyle(.plain)
-          .opacity(hasPresented ? 1 : 0)
-          .offset(y: hasPresented ? 0 : 8)
-          .animation(
-            reduceMotion ? nil : .smooth(duration: 0.28).delay(Double(index) * 0.05),
-            value: hasPresented
-          )
+        ForEach(store.agents) { agent in
+          let model = AgentDetailViewModel.derive(agent: agent, task: store.tasks.first(where: { $0.assignedAgentID == agent.id }), founderStats: store.stats)
+          Button { selectedAgent = model } label: { AgentRosterCard(agent: model) }
+            .buttonStyle(.plain)
         }
       }
       .padding(16)
       .frame(maxWidth: .infinity)
     }
-    .navigationTitle("Roster")
-    .onAppear { hasPresented = true }
+    .navigationTitle("Agent Operations")
     .sheet(item: $selectedAgent) { agent in
-      AgentDetailPresentation(agent: agent)
-    }
-  }
-
-  private var agentModels: [AgentDetailViewModel] {
-    agents.map { agent in
-      AgentDetailViewModel.derive(
+      AgentDetailPresentation(
         agent: agent,
-        task: tasks.first(where: { $0.assignedAgentID == agent.id }),
-        founderStats: founderStats
+        availablePerks: store.availablePerks(for: agent.agentID),
+        onSelectPerk: { store.selectAgentPerk($0, for: agent.agentID) }
       )
     }
   }

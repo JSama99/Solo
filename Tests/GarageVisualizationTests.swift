@@ -83,4 +83,14 @@ final class GarageVisualizationTests: XCTestCase {
     XCTAssertFalse(PresentationPolicy(reduceMotion: false, applicationActivity: .background).allowsAmbientMotion)
     XCTAssertFalse(PresentationPolicy(reduceMotion: true, applicationActivity: .active).allowsAmbientMotion)
   }
+
+  func testFacilityPresentationUsesLoftOnlyForFounderLoft() {
+    XCTAssertEqual(GarageVisualization.presentation(for: .founderGarage), .stations)
+    XCTAssertEqual(GarageVisualization.presentation(for: .founderLoft), .loft)
+    XCTAssertEqual(GarageVisualization.presentation(for: .smallOffice), .stations)
+  }
+
+  func testGaragePresentationDoesNotExposeAssignmentMutation() {
+    XCTAssertFalse(GarageVisualization.supportsTaskAssignment)
+  }
 }

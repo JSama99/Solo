@@ -3,11 +3,14 @@ import Observation
 
 enum DailyChallenge {
   static let sprintsPerRun = 5
+  fileprivate static let utcCalendar: Calendar = {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = .gmt
+    return calendar
+  }()
 
   static func dayKey(for date: Date = Date()) -> Int {
-    var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = TimeZone(identifier: "UTC")!
-    let components = calendar.dateComponents([.year, .month, .day], from: date)
+    let components = utcCalendar.dateComponents([.year, .month, .day], from: date)
     return (components.year ?? 2026) * 10_000 + (components.month ?? 1) * 100 + (components.day ?? 1)
   }
 
@@ -51,8 +54,9 @@ final class DailyChallengeStore {
   func record(score: Int, date: Date = Date()) {
     let today = DailyChallenge.dayKey(for: date)
     guard save.dayKey != today || save.score == nil else { return }
-    let calendar = Calendar(identifier: .gregorian)
-    let yesterday = calendar.date(byAdding: .day, value: -1, to: date).map(DailyChallenge.dayKey(for:))
+    let yesterday = DailyChallenge.utcCalendar
+      .date(byAdding: .day, value: -1, to: date)
+      .map(DailyChallenge.dayKey(for:))
     save.dayKey = today
     save.score = score
     save.bestScore = max(save.bestScore, score)
