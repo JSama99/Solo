@@ -342,7 +342,10 @@ private struct GameDashboard: View {
   private var dashboardTabs: some View {
     TabView {
       Tab("Garage", systemImage: "house.fill") {
-        FounderEnvironmentScreen(store: store, presentation: presentation)
+        FounderEnvironmentScreen(store: store)
+      }
+      Tab("Command Deck", systemImage: "slider.horizontal.3") {
+        CommandScreen(store: store, presentation: presentation)
       }
       Tab("Venture", systemImage: "chart.line.uptrend.xyaxis") {
         VentureScreen(store: store)
@@ -407,39 +410,6 @@ private struct StatChip: View {
     .padding(.horizontal, 12)
     .padding(.vertical, 9)
     .background(SoloTheme.card, in: .rect(cornerRadius: 12))
-  }
-}
-
-private struct AgentRow: View {
-  var agent: SoloAgent
-
-  var body: some View {
-    HStack(spacing: 12) {
-      Text(agent.initials)
-        .font(.caption.weight(.black))
-        .frame(width: 44, height: 44)
-        .background(SoloTheme.purple.gradient, in: .circle)
-      VStack(alignment: .leading, spacing: 3) {
-        HStack {
-          Text(agent.name).font(.headline)
-          Text(agent.role.rawValue).font(.caption).foregroundStyle(.secondary)
-        }
-        Text(agent.assignment == nil ? "Ready • \(agent.archetype)" : "Working • \(agent.modelFamily)")
-          .font(.caption)
-          .foregroundStyle(agent.assignment == nil ? .secondary : SoloTheme.cyan)
-        Text(agent.traitSummary)
-          .font(.caption2)
-          .foregroundStyle(.secondary)
-      }
-      Spacer()
-      VStack(alignment: .trailing, spacing: 3) {
-        Text(agent.relationshipLabel).font(.caption.weight(.bold))
-        Text("Bond \(agent.relationship) • Drift \(Int(agent.drift))").font(.caption2).foregroundStyle(.secondary)
-      }
-    }
-    .padding(14)
-    .background(SoloTheme.card, in: .rect(cornerRadius: 16))
-    .accessibilityElement(children: .combine)
   }
 }
 
@@ -514,7 +484,8 @@ private struct CommandScreen: View {
           ForEach(store.tasks) { task in
             TaskCommandCard(
               task: task,
-              agents: store.agents
+              agents: store.agents,
+              founderStats: store.stats
             ) { agentID in
               presentation.assign(agentID: agentID, to: task.id, in: store)
             } onReview: {
@@ -690,9 +661,12 @@ private struct TaskDraftBacklogCard: View {
 private struct TaskCommandCard: View {
   var task: SoloTask
   var agents: [SoloAgent]
+  var founderStats: FounderStats
   var onAssign: (String?) -> Void
   var onReview: () -> Void
   var onResolution: (TaskResolutionChoice) -> Void
+
+  @State private var inspectedAgent: AgentDetailViewModel?
 
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
@@ -725,6 +699,17 @@ private struct TaskCommandCard: View {
       }
       .pickerStyle(.menu)
       .buttonStyle(.bordered)
+
+      if let assignedAgent {
+        Button("Inspect \(assignedAgent.name)", systemImage: "person.text.rectangle") {
+          inspectedAgent = AgentDetailViewModel.derive(
+            agent: assignedAgent,
+            task: task,
+            founderStats: founderStats
+          )
+        }
+        .buttonStyle(.bordered)
+      }
 
       if let result = task.result {
         VStack(alignment: .leading, spacing: 7) {
@@ -813,6 +798,14 @@ private struct TaskCommandCard: View {
     }
     .padding(16)
     .background(SoloTheme.card, in: .rect(cornerRadius: 18))
+    .sheet(item: $inspectedAgent) { agent in
+      AgentDetailPresentation(agent: agent)
+    }
+  }
+
+  private var assignedAgent: SoloAgent? {
+    guard let assignedAgentID = task.assignedAgentID else { return nil }
+    return agents.first(where: { $0.id == assignedAgentID })
   }
 }
 
@@ -955,7 +948,7 @@ private struct RecordsScreen: View {
           .buttonStyle(.plain)
 
           NavigationLink {
-            AgentOperationsScreen(agents: store.agents)
+            AgentOperationsScreen(agents: store.agents, tasks: store.tasks, founderStats: store.stats)
           } label: {
             RecordLink(title: "Agent Operations", subtitle: "Trust, reliability, and model-family exposure", symbol: "cpu.fill", count: store.agents.count)
           }
@@ -1153,33 +1146,49 @@ private struct EvidenceScreen: View {
 
 private struct AgentOperationsScreen: View {
   var agents: [SoloAgent]
+  var tasks: [SoloTask]
+  var founderStats: FounderStats
+
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @State private var hasPresented = false
+  @State private var selectedAgent: AgentDetailViewModel?
 
   var body: some View {
     ScrollView {
       VStack(spacing: 12) {
-        ForEach(agents) { agent in
-          VStack(alignment: .leading, spacing: 12) {
-            AgentRow(agent: agent)
-            Divider()
-            LabeledContent("Archetype", value: agent.archetype)
-            LabeledContent("Relationship", value: "\(agent.relationshipLabel) • \(agent.relationship)")
-            LabeledContent("Reliability", value: "\(agent.reliability)%")
-            LabeledContent("Report integrity", value: "\(Int(agent.calibration * 100))%")
-            LabeledContent("Model family", value: agent.modelFamily)
-            VStack(alignment: .leading, spacing: 4) {
-              Text("Ambition").font(.caption).foregroundStyle(.secondary)
-              Text(agent.ambition).font(.subheadline)
-              Text("Stress trigger").font(.caption).foregroundStyle(.secondary).padding(.top, 4)
-              Text(agent.stressTrigger).font(.subheadline)
-            }
+        ForEach(Array(agentModels.enumerated()), id: \.element.id) { index, agent in
+          Button {
+            selectedAgent = agent
+          } label: {
+            AgentRosterCard(agent: agent)
           }
-          .soloCard()
+          .buttonStyle(.plain)
+          .opacity(hasPresented ? 1 : 0)
+          .offset(y: hasPresented ? 0 : 8)
+          .animation(
+            reduceMotion ? nil : .smooth(duration: 0.28).delay(Double(index) * 0.05),
+            value: hasPresented
+          )
         }
       }
       .padding(16)
       .frame(maxWidth: .infinity)
     }
-    .navigationTitle("Agent Operations")
+    .navigationTitle("Roster")
+    .onAppear { hasPresented = true }
+    .sheet(item: $selectedAgent) { agent in
+      AgentDetailPresentation(agent: agent)
+    }
+  }
+
+  private var agentModels: [AgentDetailViewModel] {
+    agents.map { agent in
+      AgentDetailViewModel.derive(
+        agent: agent,
+        task: tasks.first(where: { $0.assignedAgentID == agent.id }),
+        founderStats: founderStats
+      )
+    }
   }
 }
 
