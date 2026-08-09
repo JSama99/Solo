@@ -49,9 +49,9 @@ final class Build10HeadquartersTests: XCTestCase {
   }
 
   func testLateTasksAreGatedFromGarageEra() {
-    let garageTasks = ContentLibrary.allTaskPool.filter { ($0.minimumEra?.rawValue ?? 0) <= VentureEra.garage.rawValue }
+    let garageTasks = ContentLibrary.taskPool(for: .garage).filter { ($0.minimumEra?.rawValue ?? 0) <= VentureEra.garage.rawValue }
     XCTAssertFalse(garageTasks.contains(where: { $0.title == "Shard the Data Layer" }))
-    XCTAssertTrue(ContentLibrary.allTaskPool.contains(where: { $0.title == "Shard the Data Layer" && $0.minimumEra == .scale }))
+    XCTAssertTrue(ContentLibrary.taskPool(for: .scale).contains(where: { $0.title == "Shard the Data Layer" && $0.minimumEra == .scale }))
   }
 
   private func isolatedDefaults() -> UserDefaults {

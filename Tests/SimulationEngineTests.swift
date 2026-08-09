@@ -215,8 +215,8 @@ final class SimulationEngineTests: XCTestCase {
 
   // ── ContentLibrary: the extraction must not have lost or duplicated content ──
 
-  func testBuild6ContentLibraryContainsSixtyUniqueTasks() {
-    XCTAssertEqual(ContentLibrary.allTaskPool.count, 60)
+  func testContentLibraryContainsAllHundredAuthoredTasks() {
+    XCTAssertEqual(ContentLibrary.taskPool(for: .scale).count, 100)
   }
 
   func testContentLibraryDilemmaCountUnchangedFromBuild4() {

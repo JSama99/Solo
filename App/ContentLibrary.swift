@@ -108,6 +108,10 @@ enum ContentLibrary {
       }
     }
 
+    static func taskPool(for era: VentureEra) -> [SoloTask] {
+      allTaskPool.filter { ($0.minimumEra?.rawValue ?? 0) <= era.rawValue }
+    }
+
     static let objectivePool: [SprintObjective] = [
       SprintObjective(id: "evidence", kind: .evidenceFirst, title: "Evidence First", detail: "Review at least two committed tasks.", reward: SimulationEffects(trust: 4), rewardLabel: "+4 Trust"),
       SprintObjective(id: "diversify", kind: .diversifiedModels, title: "Avoid the Single Point", detail: "Use at least two model families this sprint.", reward: SimulationEffects(momentum: 3, trust: 2), rewardLabel: "+3 Momentum • +2 Trust"),

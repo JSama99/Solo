@@ -1,6 +1,19 @@
 # Build 10 Test Report
 
-- Toolchain: Bitrig iOS build service, iOS 26.5 SDK.
-- Build: passed after Build 10 integration.
-- XCTest: Build 10 regression tests were added; full XCTest execution was not available through the current build service, so no pass/fail total is claimed.
-- Simulator interaction: the build service launched the app; manual purchase/relaunch validation remains available in the Bitrig simulator.
+## Xcode validation
+
+- Toolchain: Xcode with iOS 26.5 Simulator SDK.
+- Project: `SoloUnicornRun.xcodeproj`.
+- Scheme: `Solo Unicorn Run`.
+- Destination: iPhone 17 Pro Simulator (`BB7F5B18-B85E-4DA2-BBE2-999B432E9916`).
+- Command: `xcodebuild test -project SoloUnicornRun.xcodeproj -scheme 'Solo Unicorn Run' -destination 'platform=iOS Simulator,id=BB7F5B18-B85E-4DA2-BBE2-999B432E9916'`.
+
+## Results
+
+- Build: passed.
+- XCTest: 144 executed, 144 passed, 0 failures, 0 unexpected failures, 0 skipped.
+- App launch: passed. The resulting debug build was installed and launched on the iPhone 17 Pro Simulator.
+
+## Project membership correction
+
+The Xcode project had stale source membership for Build 10 files and several already-present sources. The project was updated so Xcode compiles the same app and test sources as the Bitrig project build.

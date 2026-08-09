@@ -1379,7 +1379,7 @@ final class GameStore {
   private func makeTaskDraft() -> (active: [SoloTask], backlog: [SoloTask]) {
     if taskDeckTitles.count < 5 { refillTaskDeck() }
     var draft: [SoloTask] = []
-    let templates = Dictionary(uniqueKeysWithValues: ContentLibrary.allTaskPool.map { ($0.title, $0) })
+    let templates = Dictionary(uniqueKeysWithValues: ContentLibrary.taskPool(for: VentureEra.era(for: venture)).map { ($0.title, $0) })
     while draft.count < 5, !taskDeckTitles.isEmpty {
       let title = taskDeckTitles.removeFirst()
       guard var task = templates[title] else { continue }
@@ -1405,7 +1405,7 @@ final class GameStore {
   private func refillTaskDeck() {
     let excluded = Set(taskDeckTitles + recentTaskTitles.suffix(5))
     let era = VentureEra.era(for: venture)
-    let eligible = ContentLibrary.allTaskPool.filter { ($0.minimumEra?.rawValue ?? 0) <= era.rawValue }
+    let eligible = ContentLibrary.taskPool(for: era).filter { ($0.minimumEra?.rawValue ?? 0) <= era.rawValue }
     var titles = eligible.map(\.title).filter { !excluded.contains($0) }
     if titles.count < 5 { titles = eligible.map(\.title) }
     taskDeckTitles.append(contentsOf: deterministicallyShuffled(titles))

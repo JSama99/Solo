@@ -37,6 +37,13 @@
 		C2000000000000000000000D /* VisibleSimulationProjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000D /* VisibleSimulationProjection.swift */; };
 		C2000000000000000000000E /* FacilityProgressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000E /* FacilityProgressionTests.swift */; };
 		C2000000000000000000000F /* PresentationMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000F /* PresentationMappingTests.swift */; };
+		C20000000000000000000010 /* FacilityUpgrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000010 /* FacilityUpgrade.swift */; };
+		C20000000000000000000011 /* FounderLoftEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000011 /* FounderLoftEnvironment.swift */; };
+		C20000000000000000000012 /* GarageCommandCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000012 /* GarageCommandCenter.swift */; };
+		C20000000000000000000013 /* Build10HeadquartersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000013 /* Build10HeadquartersTests.swift */; };
+		C20000000000000000000014 /* AchievementStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000014 /* AchievementStore.swift */; };
+		C20000000000000000000015 /* EmpireTaskExpansion.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000015 /* EmpireTaskExpansion.swift */; };
+		C20000000000000000000016 /* ContentLibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000016 /* ContentLibraryTests.swift */; };
 		28C211C9462EF7C2C17DC4C2 /* SimulationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CB9F64447826C8051328902 /* SimulationModels.swift */; };
 		73B35D04E243BD45B291E271 /* GameModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E7E924208E29B28AFAA264 /* GameModels.swift */; };
 		A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2513145C1504A166E8177382 /* GameStoreTests.swift */; };
@@ -93,6 +100,13 @@
 		C1000000000000000000000D /* VisibleSimulationProjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisibleSimulationProjection.swift; sourceTree = "<group>"; };
 		C1000000000000000000000E /* FacilityProgressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacilityProgressionTests.swift; sourceTree = "<group>"; };
 		C1000000000000000000000F /* PresentationMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationMappingTests.swift; sourceTree = "<group>"; };
+		C10000000000000000000010 /* FacilityUpgrade.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacilityUpgrade.swift; sourceTree = "<group>"; };
+		C10000000000000000000011 /* FounderLoftEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderLoftEnvironment.swift; sourceTree = "<group>"; };
+		C10000000000000000000012 /* GarageCommandCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarageCommandCenter.swift; sourceTree = "<group>"; };
+		C10000000000000000000013 /* Build10HeadquartersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build10HeadquartersTests.swift; sourceTree = "<group>"; };
+		C10000000000000000000014 /* AchievementStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementStore.swift; sourceTree = "<group>"; };
+		C10000000000000000000015 /* EmpireTaskExpansion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmpireTaskExpansion.swift; sourceTree = "<group>"; };
+		C10000000000000000000016 /* ContentLibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentLibraryTests.swift; sourceTree = "<group>"; };
 		17558F294800127BE04C0EBD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2513145C1504A166E8177382 /* GameStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStoreTests.swift; sourceTree = "<group>"; };
 		4FB3F3A34C09C15574734B61 /* Solo Unicorn Run Tests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = "Solo Unicorn Run Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -142,6 +156,8 @@
 				E10000000000000000000001 /* ContinuousModeTests.swift */,
 				E10000000000000000000002 /* SimulationEngineTests.swift */,
 				F10000000000000000000003 /* Build9ModeTests.swift */,
+				C10000000000000000000013 /* Build10HeadquartersTests.swift */,
+				C10000000000000000000016 /* ContentLibraryTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -151,15 +167,19 @@
 			children = (
 				C10000000000000000000001 /* AgentVisualState.swift */,
 				F1999948F297FBA3D5958727 /* App.swift */,
+				C10000000000000000000014 /* AchievementStore.swift */,
 				17558F294800127BE04C0EBD /* Assets.xcassets */,
 				C10000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift */,
 				D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */,
 				C10000000000000000000003 /* EnvironmentPresentation.swift */,
 				C10000000000000000000004 /* FacilityProgressionConfiguration.swift */,
 				C10000000000000000000005 /* FacilityTier.swift */,
+				C10000000000000000000010 /* FacilityUpgrade.swift */,
 				C10000000000000000000006 /* FounderEnvironmentScreen.swift */,
 				C10000000000000000000007 /* FounderGarageEnvironment.swift */,
 				F10000000000000000000004 /* FounderGarage3DPrototype.swift */,
+				C10000000000000000000011 /* FounderLoftEnvironment.swift */,
+				C10000000000000000000012 /* GarageCommandCenter.swift */,
 				C10000000000000000000008 /* FounderProgressionSave.swift */,
 				C10000000000000000000009 /* FounderProgressionStore.swift */,
 				D3E7E924208E29B28AFAA264 /* GameModels.swift */,
@@ -174,6 +194,7 @@
 				B10000000000000000000012 /* VentureUnlockScreen.swift */,
 				D10000000000000000000001 /* DoctrineProfile.swift */,
 				D10000000000000000000002 /* ContentLibrary.swift */,
+				C10000000000000000000015 /* EmpireTaskExpansion.swift */,
 				D10000000000000000000003 /* SimulationEngine.swift */,
 				D10000000000000000000004 /* VentureCheckpointScreen.swift */,
 				F10000000000000000000001 /* DailyChallenge.swift */,
@@ -303,6 +324,8 @@
 				E20000000000000000000001 /* ContinuousModeTests.swift in Sources */,
 				E20000000000000000000002 /* SimulationEngineTests.swift in Sources */,
 				F20000000000000000000003 /* Build9ModeTests.swift in Sources */,
+				C20000000000000000000013 /* Build10HeadquartersTests.swift in Sources */,
+				C20000000000000000000016 /* ContentLibraryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -311,12 +334,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				C20000000000000000000001 /* AgentVisualState.swift in Sources */,
+				C20000000000000000000014 /* AchievementStore.swift in Sources */,
 				B2BFB1EE90AB231E41812DEF /* App.swift in Sources */,
 				C20000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift in Sources */,
 				FB6CDD52B76B96B369913C6B /* ContentView.swift in Sources */,
 				C20000000000000000000003 /* EnvironmentPresentation.swift in Sources */,
 				C20000000000000000000004 /* FacilityProgressionConfiguration.swift in Sources */,
 				C20000000000000000000005 /* FacilityTier.swift in Sources */,
+				C20000000000000000000010 /* FacilityUpgrade.swift in Sources */,
 				C20000000000000000000006 /* FounderEnvironmentScreen.swift in Sources */,
 				C20000000000000000000007 /* FounderGarageEnvironment.swift in Sources */,
 				C20000000000000000000008 /* FounderProgressionSave.swift in Sources */,
@@ -328,11 +353,14 @@
 				B20000000000000000000012 /* VentureUnlockScreen.swift in Sources */,
 				D20000000000000000000001 /* DoctrineProfile.swift in Sources */,
 				D20000000000000000000002 /* ContentLibrary.swift in Sources */,
+				C20000000000000000000015 /* EmpireTaskExpansion.swift in Sources */,
 				D20000000000000000000003 /* SimulationEngine.swift in Sources */,
 				D20000000000000000000004 /* VentureCheckpointScreen.swift in Sources */,
 				F20000000000000000000001 /* DailyChallenge.swift in Sources */,
 				F20000000000000000000002 /* VentureEra.swift in Sources */,
 				F20000000000000000000004 /* FounderGarage3DPrototype.swift in Sources */,
+				C20000000000000000000011 /* FounderLoftEnvironment.swift in Sources */,
+				C20000000000000000000012 /* GarageCommandCenter.swift in Sources */,
 				C2000000000000000000000A /* HeadquartersProgressScreen.swift in Sources */,
 				C2000000000000000000000B /* PresentationCoordinator.swift in Sources */,
 				C2000000000000000000000C /* PresentationPolicy.swift in Sources */,
