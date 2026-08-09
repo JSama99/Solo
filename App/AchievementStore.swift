@@ -102,7 +102,7 @@ struct AchievementContext {
 }
 
 struct AchievementSave: Codable {
-  static let currentVersion = 1
+  static let currentVersion = 2
 
   var version = currentVersion
   var unlocked: [String: Date] = [:]
@@ -110,6 +110,41 @@ struct AchievementSave: Codable {
   var doctrinesWon: Set<String> = []
   var lifetimeOverclaimsCaught = 0
   var didEvaluateRetroactively = false
+  var unseenRetroactiveUnlockIDs: Set<String> = []
+
+  private enum CodingKeys: String, CodingKey {
+    case version, unlocked, totalXP, doctrinesWon, lifetimeOverclaimsCaught
+    case didEvaluateRetroactively, unseenRetroactiveUnlockIDs
+  }
+
+  init() {}
+
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    version = try container.decodeIfPresent(Int.self, forKey: .version) ?? 1
+    unlocked = try container.decodeIfPresent([String: Date].self, forKey: .unlocked) ?? [:]
+    totalXP = try container.decodeIfPresent(Int.self, forKey: .totalXP) ?? 0
+    doctrinesWon = try container.decodeIfPresent(Set<String>.self, forKey: .doctrinesWon) ?? []
+    lifetimeOverclaimsCaught = try container.decodeIfPresent(Int.self, forKey: .lifetimeOverclaimsCaught) ?? 0
+    didEvaluateRetroactively = try container.decodeIfPresent(Bool.self, forKey: .didEvaluateRetroactively) ?? false
+    unseenRetroactiveUnlockIDs = try container.decodeIfPresent(Set<String>.self, forKey: .unseenRetroactiveUnlockIDs) ?? []
+  }
+}
+
+struct AchievementProgress: Equatable {
+  var current: Double
+  var target: Double
+  var label: String
+
+  var fraction: Double { min(max(current / max(target, 1), 0), 1) }
+}
+
+struct AchievementDisplayContext {
+  var venture: Int
+  var careerScore: Int
+  var completedObjectives: Int
+  var currentRunOverclaims: Int
+  var reviewRate: Double
 }
 
 @MainActor
@@ -137,6 +172,33 @@ final class AchievementStore {
 
   func isUnlocked(_ id: String) -> Bool { save.unlocked[id] != nil }
   func unlockDate(_ id: String) -> Date? { save.unlocked[id] }
+  func isRetroactivelyNew(_ id: String) -> Bool { save.unseenRetroactiveUnlockIDs.contains(id) }
+
+  func markRetroactiveUnlocksSeen() {
+    guard !save.unseenRetroactiveUnlockIDs.isEmpty else { return }
+    save.unseenRetroactiveUnlockIDs.removeAll()
+    persist()
+  }
+
+  func progress(for achievement: Achievement, context: AchievementDisplayContext) -> AchievementProgress? {
+    guard !isUnlocked(achievement.id) else { return nil }
+    switch achievement.id {
+    case "first-venture": return progress(context.venture, 2, label: "Venture progress")
+    case "reach-traction": return progress(context.venture, 11, label: "Ventures reached")
+    case "reach-scale": return progress(context.venture, 21, label: "Ventures reached")
+    case "reach-leader": return progress(context.venture, 31, label: "Ventures reached")
+    case "reach-empire": return progress(context.venture, 41, label: "Ventures reached")
+    case "reach-dynasty", "independent": return progress(context.venture, 60, label: "Ventures reached")
+    case "score-10k": return progress(context.careerScore, 10_000, label: "Career score")
+    case "triple-crown": return progress(save.doctrinesWon.count, 3, label: "Doctrines won")
+    case "objective-10": return progress(context.completedObjectives, 10, label: "Objectives completed")
+    case "objective-30": return progress(context.completedObjectives, 30, label: "Objectives completed")
+    case "first-catch": return progress(max(save.lifetimeOverclaimsCaught, context.currentRunOverclaims), 1, label: "Overclaims caught")
+    case "auditor": return progress(max(save.lifetimeOverclaimsCaught, context.currentRunOverclaims), 10, label: "Overclaims caught")
+    case "truth-seeker": return progress(context.reviewRate * 100, 70, label: "Review rate")
+    default: return nil
+    }
+  }
 
   @discardableResult
   func recordReveal(context: AchievementContext) -> [Achievement] { evaluate(context) }
@@ -171,13 +233,14 @@ final class AchievementStore {
     context.runReviewRate = reviewRate(in: careerSave.evidence)
     context.overclaimsCaughtThisRun = careerSave.evidence.filter { $0.verificationState == .overclaimed }.count
     if context.outcomeKind == .victory { self.save.doctrinesWon.insert(context.doctrine.rawValue) }
-    let unlocked = evaluate(context)
+    let unlocked = evaluate(context, announces: false)
+    self.save.unseenRetroactiveUnlockIDs.formUnion(unlocked.map(\.id))
     persist()
     return unlocked
   }
 
   @discardableResult
-  private func evaluate(_ context: AchievementContext) -> [Achievement] {
+  private func evaluate(_ context: AchievementContext, announces: Bool = true) -> [Achievement] {
     var unlocked: [Achievement] = []
     func award(_ id: String, when condition: Bool) {
       guard condition, save.unlocked[id] == nil, let achievement = AchievementCatalog.by(id) else { return }
@@ -216,7 +279,7 @@ final class AchievementStore {
     award("survivor", when: failed)
     award("people-first", when: won && context.companyFlags.contains(.humanCustomerSuccess))
 
-    if let first = unlocked.first { latestUnlock = first }
+    if announces, let first = unlocked.first { latestUnlock = first }
     if !unlocked.isEmpty { persist() }
     return unlocked
   }
@@ -224,6 +287,16 @@ final class AchievementStore {
   private func reviewRate(in evidence: [EvidenceEntry]) -> Double {
     guard !evidence.isEmpty else { return 0 }
     return Double(evidence.filter(\.reviewed).count) / Double(evidence.count)
+  }
+
+  private func progress(_ current: Int, _ target: Int, label: String) -> AchievementProgress? {
+    guard current > 0 else { return nil }
+    return AchievementProgress(current: Double(current), target: Double(target), label: label)
+  }
+
+  private func progress(_ current: Double, _ target: Double, label: String) -> AchievementProgress? {
+    guard current > 0 else { return nil }
+    return AchievementProgress(current: current, target: target, label: label)
   }
 
   private func persist() {

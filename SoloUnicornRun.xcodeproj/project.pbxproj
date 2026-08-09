@@ -37,6 +37,23 @@
 		C2000000000000000000000D /* VisibleSimulationProjection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000D /* VisibleSimulationProjection.swift */; };
 		C2000000000000000000000E /* FacilityProgressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000E /* FacilityProgressionTests.swift */; };
 		C2000000000000000000000F /* PresentationMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000F /* PresentationMappingTests.swift */; };
+		C20000000000000000000010 /* AgentStationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000010 /* AgentStationState.swift */; };
+		C20000000000000000000011 /* GarageAnimationProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000011 /* GarageAnimationProfile.swift */; };
+		C20000000000000000000012 /* GarageVisualization.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000012 /* GarageVisualization.swift */; };
+		C20000000000000000000013 /* GarageVisualizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000013 /* GarageVisualizationTests.swift */; };
+		C20000000000000000000014 /* AchievementStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000014 /* AchievementStore.swift */; };
+		C20000000000000000000015 /* EmpireTaskExpansion.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000015 /* EmpireTaskExpansion.swift */; };
+		C20000000000000000000016 /* AgentDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000016 /* AgentDetailViewModel.swift */; };
+		C20000000000000000000017 /* AgentDetailPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000017 /* AgentDetailPresentation.swift */; };
+		C20000000000000000000018 /* AgentRosterCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000018 /* AgentRosterCard.swift */; };
+		C20000000000000000000019 /* AgentDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000019 /* AgentDetailTests.swift */; };
+		C20000000000000000000020 /* PrecedentRecordsSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000020 /* PrecedentRecordsSupport.swift */; };
+		C20000000000000000000021 /* HindsightRecordsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000021 /* HindsightRecordsScreen.swift */; };
+		C20000000000000000000022 /* PrecedentRecordsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000022 /* PrecedentRecordsTests.swift */; };
+		C20000000000000000000023 /* AchievementsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000023 /* AchievementsScreen.swift */; };
+		C20000000000000000000024 /* AchievementScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000024 /* AchievementScreenTests.swift */; };
+		C20000000000000000000025 /* ModeSelectScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000025 /* ModeSelectScreen.swift */; };
+		C20000000000000000000026 /* ModeSelectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000026 /* ModeSelectTests.swift */; };
 		28C211C9462EF7C2C17DC4C2 /* SimulationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CB9F64447826C8051328902 /* SimulationModels.swift */; };
 		73B35D04E243BD45B291E271 /* GameModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E7E924208E29B28AFAA264 /* GameModels.swift */; };
 		A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2513145C1504A166E8177382 /* GameStoreTests.swift */; };
@@ -93,6 +110,23 @@
 		C1000000000000000000000D /* VisibleSimulationProjection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisibleSimulationProjection.swift; sourceTree = "<group>"; };
 		C1000000000000000000000E /* FacilityProgressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacilityProgressionTests.swift; sourceTree = "<group>"; };
 		C1000000000000000000000F /* PresentationMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationMappingTests.swift; sourceTree = "<group>"; };
+		C10000000000000000000010 /* AgentStationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentStationState.swift; sourceTree = "<group>"; };
+		C10000000000000000000011 /* GarageAnimationProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarageAnimationProfile.swift; sourceTree = "<group>"; };
+		C10000000000000000000012 /* GarageVisualization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarageVisualization.swift; sourceTree = "<group>"; };
+		C10000000000000000000013 /* GarageVisualizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarageVisualizationTests.swift; sourceTree = "<group>"; };
+		C10000000000000000000014 /* AchievementStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementStore.swift; sourceTree = "<group>"; };
+		C10000000000000000000015 /* EmpireTaskExpansion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmpireTaskExpansion.swift; sourceTree = "<group>"; };
+		C10000000000000000000016 /* AgentDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentDetailViewModel.swift; sourceTree = "<group>"; };
+		C10000000000000000000017 /* AgentDetailPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentDetailPresentation.swift; sourceTree = "<group>"; };
+		C10000000000000000000018 /* AgentRosterCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentRosterCard.swift; sourceTree = "<group>"; };
+		C10000000000000000000019 /* AgentDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentDetailTests.swift; sourceTree = "<group>"; };
+		C10000000000000000000020 /* PrecedentRecordsSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecedentRecordsSupport.swift; sourceTree = "<group>"; };
+		C10000000000000000000021 /* HindsightRecordsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HindsightRecordsScreen.swift; sourceTree = "<group>"; };
+		C10000000000000000000022 /* PrecedentRecordsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecedentRecordsTests.swift; sourceTree = "<group>"; };
+		C10000000000000000000023 /* AchievementsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsScreen.swift; sourceTree = "<group>"; };
+		C10000000000000000000024 /* AchievementScreenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementScreenTests.swift; sourceTree = "<group>"; };
+		C10000000000000000000025 /* ModeSelectScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModeSelectScreen.swift; sourceTree = "<group>"; };
+		C10000000000000000000026 /* ModeSelectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModeSelectTests.swift; sourceTree = "<group>"; };
 		17558F294800127BE04C0EBD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2513145C1504A166E8177382 /* GameStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStoreTests.swift; sourceTree = "<group>"; };
 		4FB3F3A34C09C15574734B61 /* Solo Unicorn Run Tests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = "Solo Unicorn Run Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -139,6 +173,11 @@
 				B10000000000000000000021 /* HindsightTests.swift */,
 				C1000000000000000000000E /* FacilityProgressionTests.swift */,
 				C1000000000000000000000F /* PresentationMappingTests.swift */,
+				C10000000000000000000013 /* GarageVisualizationTests.swift */,
+				C10000000000000000000019 /* AgentDetailTests.swift */,
+				C10000000000000000000022 /* PrecedentRecordsTests.swift */,
+				C10000000000000000000024 /* AchievementScreenTests.swift */,
+				C10000000000000000000026 /* ModeSelectTests.swift */,
 				E10000000000000000000001 /* ContinuousModeTests.swift */,
 				E10000000000000000000002 /* SimulationEngineTests.swift */,
 				F10000000000000000000003 /* Build9ModeTests.swift */,
@@ -149,28 +188,40 @@
 		7775A9C13FE1CF8E12C7214B /* App */ = {
 			isa = PBXGroup;
 			children = (
+				C10000000000000000000014 /* AchievementStore.swift */,
+				C10000000000000000000023 /* AchievementsScreen.swift */,
+				C10000000000000000000016 /* AgentDetailViewModel.swift */,
+				C10000000000000000000017 /* AgentDetailPresentation.swift */,
 				C10000000000000000000001 /* AgentVisualState.swift */,
+				C10000000000000000000018 /* AgentRosterCard.swift */,
+				C10000000000000000000010 /* AgentStationState.swift */,
 				F1999948F297FBA3D5958727 /* App.swift */,
 				17558F294800127BE04C0EBD /* Assets.xcassets */,
 				C10000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift */,
 				D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */,
+				C10000000000000000000015 /* EmpireTaskExpansion.swift */,
 				C10000000000000000000003 /* EnvironmentPresentation.swift */,
 				C10000000000000000000004 /* FacilityProgressionConfiguration.swift */,
 				C10000000000000000000005 /* FacilityTier.swift */,
 				C10000000000000000000006 /* FounderEnvironmentScreen.swift */,
 				C10000000000000000000007 /* FounderGarageEnvironment.swift */,
 				F10000000000000000000004 /* FounderGarage3DPrototype.swift */,
+				C10000000000000000000011 /* GarageAnimationProfile.swift */,
+				C10000000000000000000012 /* GarageVisualization.swift */,
 				C10000000000000000000008 /* FounderProgressionSave.swift */,
 				C10000000000000000000009 /* FounderProgressionStore.swift */,
 				D3E7E924208E29B28AFAA264 /* GameModels.swift */,
 				94AA2809B6198CB8955EEFAC /* GameStore.swift */,
 				C1000000000000000000000A /* HeadquartersProgressScreen.swift */,
+				C10000000000000000000025 /* ModeSelectScreen.swift */,
 				FB05034A23E5A13D7BBCBDF0 /* Info.plist */,
 				C1000000000000000000000B /* PresentationCoordinator.swift */,
 				C1000000000000000000000C /* PresentationPolicy.swift */,
 				B10000000000000000000001 /* RevenueCatConfiguration.swift */,
 				B10000000000000000000010 /* EntitlementProviding.swift */,
 				B10000000000000000000011 /* Hindsight.swift */,
+				C10000000000000000000021 /* HindsightRecordsScreen.swift */,
+				C10000000000000000000020 /* PrecedentRecordsSupport.swift */,
 				B10000000000000000000012 /* VentureUnlockScreen.swift */,
 				D10000000000000000000001 /* DoctrineProfile.swift */,
 				D10000000000000000000002 /* ContentLibrary.swift */,
@@ -303,6 +354,11 @@
 				E20000000000000000000001 /* ContinuousModeTests.swift in Sources */,
 				E20000000000000000000002 /* SimulationEngineTests.swift in Sources */,
 				F20000000000000000000003 /* Build9ModeTests.swift in Sources */,
+				C20000000000000000000013 /* GarageVisualizationTests.swift in Sources */,
+				C20000000000000000000019 /* AgentDetailTests.swift in Sources */,
+				C20000000000000000000022 /* PrecedentRecordsTests.swift in Sources */,
+				C20000000000000000000024 /* AchievementScreenTests.swift in Sources */,
+				C20000000000000000000026 /* ModeSelectTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -311,9 +367,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				C20000000000000000000001 /* AgentVisualState.swift in Sources */,
+				C20000000000000000000016 /* AgentDetailViewModel.swift in Sources */,
+				C20000000000000000000017 /* AgentDetailPresentation.swift in Sources */,
+				C20000000000000000000018 /* AgentRosterCard.swift in Sources */,
+				C20000000000000000000014 /* AchievementStore.swift in Sources */,
+				C20000000000000000000023 /* AchievementsScreen.swift in Sources */,
+				C20000000000000000000010 /* AgentStationState.swift in Sources */,
 				B2BFB1EE90AB231E41812DEF /* App.swift in Sources */,
 				C20000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift in Sources */,
 				FB6CDD52B76B96B369913C6B /* ContentView.swift in Sources */,
+				C20000000000000000000015 /* EmpireTaskExpansion.swift in Sources */,
 				C20000000000000000000003 /* EnvironmentPresentation.swift in Sources */,
 				C20000000000000000000004 /* FacilityProgressionConfiguration.swift in Sources */,
 				C20000000000000000000005 /* FacilityTier.swift in Sources */,
@@ -325,6 +388,8 @@
 				AD24D57DE55399F057B4B47A /* GameStore.swift in Sources */,
 				B20000000000000000000010 /* EntitlementProviding.swift in Sources */,
 				B20000000000000000000011 /* Hindsight.swift in Sources */,
+				C20000000000000000000021 /* HindsightRecordsScreen.swift in Sources */,
+				C20000000000000000000020 /* PrecedentRecordsSupport.swift in Sources */,
 				B20000000000000000000012 /* VentureUnlockScreen.swift in Sources */,
 				D20000000000000000000001 /* DoctrineProfile.swift in Sources */,
 				D20000000000000000000002 /* ContentLibrary.swift in Sources */,
@@ -333,7 +398,10 @@
 				F20000000000000000000001 /* DailyChallenge.swift in Sources */,
 				F20000000000000000000002 /* VentureEra.swift in Sources */,
 				F20000000000000000000004 /* FounderGarage3DPrototype.swift in Sources */,
+				C20000000000000000000011 /* GarageAnimationProfile.swift in Sources */,
+				C20000000000000000000012 /* GarageVisualization.swift in Sources */,
 				C2000000000000000000000A /* HeadquartersProgressScreen.swift in Sources */,
+				C20000000000000000000025 /* ModeSelectScreen.swift in Sources */,
 				C2000000000000000000000B /* PresentationCoordinator.swift in Sources */,
 				C2000000000000000000000C /* PresentationPolicy.swift in Sources */,
 				B7879B5278335CFBFDA7FCD0 /* SeededRandomNumberGenerator.swift in Sources */,
