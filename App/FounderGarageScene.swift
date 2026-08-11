@@ -4,6 +4,9 @@ import SwiftUI
 struct FounderGarageScene: View {
   var stations: [AgentStationViewModel]
   var facility: FacilityTier
+  var stats: FounderStats
+  var attentionRemaining: Int
+  var attentionMaximum: Int
   var motion: GarageMotionPolicy
   var date: Date
   @Binding var selectedStation: AgentStationViewModel?
@@ -23,6 +26,7 @@ struct FounderGarageScene: View {
           .foregroundStyle(.secondary)
       }
       operationalBrief
+      founderMetrics
     }
     .padding(14)
     .frame(maxWidth: .infinity, alignment: .leading)
@@ -173,6 +177,36 @@ struct FounderGarageScene: View {
       GarageBriefCard(title: "Workforce", value: "\(stations.count) active", color: SoloTheme.mint)
       GarageBriefCard(title: "Facility effect", value: "Workstation XP", color: SoloTheme.cyan)
     }
+  }
+
+  private var founderMetrics: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      Text("FOUNDER METRICS")
+        .font(.caption2.weight(.bold))
+        .foregroundStyle(.secondary)
+        .padding(.bottom, 7)
+      ForEach(Array(metrics.enumerated()), id: \.element.label) { index, metric in
+        GarageMetricRow(metric: metric)
+        if index < metrics.count - 1 {
+          Divider().overlay(Color.white.opacity(0.08))
+        }
+      }
+    }
+    .padding(12)
+    .background(Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 12))
+  }
+
+  private var metrics: [GarageMetric] {
+    [
+      GarageMetric(label: "Capital", value: stats.capital.formatted(.currency(code: "USD").precision(.fractionLength(0))), symbol: "dollarsign.circle.fill", color: SoloTheme.mint),
+      GarageMetric(label: "Runway", value: "\(stats.runway)d", symbol: "calendar", color: .primary),
+      GarageMetric(label: "Attention", value: "\(attentionRemaining)/\(attentionMaximum)", symbol: "eye.fill", color: SoloTheme.amber),
+      GarageMetric(label: "Revenue", value: stats.revenue.formatted(.currency(code: "USD").precision(.fractionLength(0))), symbol: "chart.line.uptrend.xyaxis", color: SoloTheme.cyan),
+      GarageMetric(label: "Momentum", value: "\(stats.momentum)", symbol: "bolt.fill", color: SoloTheme.amber),
+      GarageMetric(label: "Trust", value: "\(stats.trust)", symbol: "checkmark.shield.fill", color: SoloTheme.mint),
+      GarageMetric(label: "Energy", value: "\(stats.energy)", symbol: "battery.75percent", color: SoloTheme.cyan),
+      GarageMetric(label: "Track", value: "\(stats.trackRecord)", symbol: "chart.bar.fill", color: .primary)
+    ]
   }
 
   private func accent(for station: AgentStationViewModel, index: Int) -> Color {
@@ -327,6 +361,37 @@ private struct GarageBriefCard: View {
     .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
     .padding(10)
     .background(Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 12))
+  }
+}
+
+private struct GarageMetric: Identifiable {
+  var label: String
+  var value: String
+  var symbol: String
+  var color: Color
+
+  var id: String { label }
+}
+
+private struct GarageMetricRow: View {
+  var metric: GarageMetric
+
+  var body: some View {
+    HStack(spacing: 10) {
+      Image(systemName: metric.symbol)
+        .frame(width: 18)
+        .foregroundStyle(metric.color)
+      Text(metric.label)
+        .font(.subheadline)
+        .foregroundStyle(.secondary)
+      Spacer()
+      Text(metric.value)
+        .font(.subheadline.weight(.bold).monospacedDigit())
+        .foregroundStyle(metric.color)
+        .contentTransition(.numericText())
+    }
+    .padding(.vertical, 8)
+    .accessibilityElement(children: .combine)
   }
 }
 

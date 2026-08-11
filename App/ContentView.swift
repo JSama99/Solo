@@ -372,14 +372,6 @@ private struct GameDashboard: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      StatsStrip(
-        stats: store.stats,
-        attentionRemaining: store.attentionRemaining,
-        attentionMaximum: store.attentionMaximum
-      )
-      .padding(.horizontal, 16)
-      .padding(.top, 8)
-      .padding(.bottom, 4)
       if store.isVentureLocked {
         VentureLockBanner(store: store)
       }
@@ -424,49 +416,6 @@ private struct GameDashboard: View {
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
     }
-  }
-}
-
-private struct StatsStrip: View {
-  var stats: FounderStats
-  var attentionRemaining: Int
-  var attentionMaximum: Int
-
-  var body: some View {
-    ScrollView(.horizontal) {
-      HStack(spacing: 8) {
-        StatChip(label: "Capital", value: stats.capital.formatted(.currency(code: "USD").precision(.fractionLength(0))), symbol: "dollarsign.circle.fill")
-        StatChip(label: "Runway", value: "\(stats.runway)d", symbol: "calendar")
-        StatChip(label: "Attention", value: "\(attentionRemaining)/\(attentionMaximum)", symbol: "eye.fill")
-        StatChip(label: "Revenue", value: stats.revenue.formatted(.currency(code: "USD").precision(.fractionLength(0))), symbol: "chart.line.uptrend.xyaxis")
-        StatChip(label: "Momentum", value: "\(stats.momentum)", symbol: "bolt.fill")
-        StatChip(label: "Trust", value: "\(stats.trust)", symbol: "checkmark.shield.fill")
-        StatChip(label: "Energy", value: "\(stats.energy)", symbol: "battery.75percent")
-        StatChip(label: "Track", value: "\(stats.trackRecord)", symbol: "chart.bar.fill")
-      }
-      .padding(.horizontal, 1)
-    }
-    .scrollIndicators(.visible)
-  }
-}
-
-private struct StatChip: View {
-  var label: String
-  var value: String
-  var symbol: String
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 3) {
-      Label(label, systemImage: symbol)
-        .font(.caption2.weight(.semibold))
-        .foregroundStyle(.secondary)
-      Text(value).font(.headline.monospacedDigit())
-        .contentTransition(.numericText())
-        .animation(.snappy, value: value)
-    }
-    .padding(.horizontal, 12)
-    .padding(.vertical, 9)
-    .background(SoloTheme.card, in: .rect(cornerRadius: 12))
   }
 }
 

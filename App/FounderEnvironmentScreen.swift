@@ -18,7 +18,10 @@ struct FounderEnvironmentScreen: View {
             GarageVisualization(
               stations: stationModels,
               policy: presentationPolicy,
-              facility: progression.currentFacility
+              facility: progression.currentFacility,
+              stats: store.stats,
+              attentionRemaining: store.attentionRemaining,
+              attentionMaximum: store.attentionMaximum
             )
           }
         }

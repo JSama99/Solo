@@ -4,6 +4,9 @@ struct GarageVisualization: View {
   var stations: [AgentStationViewModel]
   var policy: PresentationPolicy
   var facility: FacilityTier
+  var stats: FounderStats = .init()
+  var attentionRemaining = 0
+  var attentionMaximum = 0
 
   @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
   @State private var isVisible = false
@@ -56,6 +59,9 @@ struct GarageVisualization: View {
     FounderGarageScene(
       stations: stations,
       facility: facility,
+      stats: stats,
+      attentionRemaining: attentionRemaining,
+      attentionMaximum: attentionMaximum,
       motion: motionPolicy,
       date: date,
       selectedStation: $selectedStation
