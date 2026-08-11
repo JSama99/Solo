@@ -36,14 +36,11 @@ enum RevenueCatConfiguration {
        !override.isEmpty {
       return override
     }
-    return testStoreAPIKey
+    return ""
     #else
     return Bundle.main.object(forInfoDictionaryKey: "RevenueCatAPIKey") as? String ?? ""
     #endif
   }
-
-  /// RevenueCat Test Store key. Debug builds only; never shipped in Release.
-  static let testStoreAPIKey = "test_soQsjOHWBteHDHRiLxIhVvRDZuu"
 
   static func isTestStoreKey(_ key: String) -> Bool { key.hasPrefix("test_") }
 
