@@ -25,7 +25,6 @@ struct FounderGarageScene: View {
           .font(.caption)
           .foregroundStyle(.secondary)
       }
-      operationalBrief
       founderMetrics
     }
     .padding(14)
@@ -169,14 +168,6 @@ struct FounderGarageScene: View {
         .shadow(color: .black.opacity(0.45), radius: 10, y: 8)
     }
     .padding(.bottom, 18)
-  }
-
-  private var operationalBrief: some View {
-    HStack(spacing: 8) {
-      GarageBriefCard(title: "Headquarters", value: facility.name, color: Color.primary)
-      GarageBriefCard(title: "Workforce", value: "\(stations.count) active", color: SoloTheme.mint)
-      GarageBriefCard(title: "Facility effect", value: "Workstation XP", color: SoloTheme.cyan)
-    }
   }
 
   private var founderMetrics: some View {
@@ -345,22 +336,6 @@ private struct GarageStationTag: View {
     case .pressured: "exclamationmark.circle"
     case .overloaded, .critical: "exclamationmark.triangle"
     }
-  }
-}
-
-private struct GarageBriefCard: View {
-  var title: String
-  var value: String
-  var color: Color
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 4) {
-      Text(title.uppercased()).font(.caption2.weight(.bold)).foregroundStyle(.secondary)
-      Text(value).font(.caption.weight(.semibold)).foregroundStyle(color).lineLimit(2)
-    }
-    .frame(maxWidth: .infinity, minHeight: 54, alignment: .leading)
-    .padding(10)
-    .background(Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 12))
   }
 }
 
