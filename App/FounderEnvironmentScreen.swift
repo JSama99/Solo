@@ -22,7 +22,6 @@ struct FounderEnvironmentScreen: View {
             )
           }
           operationsSummary
-          agentStatusList
           NavigationLink {
             HeadquartersProgressScreen(store: store)
           } label: {
@@ -92,22 +91,6 @@ struct FounderEnvironmentScreen: View {
     .padding(.horizontal, 4)
   }
 
-  private var agentStatusList: some View {
-    VStack(spacing: 10) {
-      ForEach(store.agents) { agent in
-        EnvironmentAgentRow(
-          agent: agent,
-          dialogue: store.agentDialogue(for: agent.id),
-          state: AgentVisualState.derive(
-            agent: agent,
-            task: store.tasks.first(where: { $0.assignedAgentID == agent.id }),
-            founderStats: store.stats
-          )
-        )
-      }
-    }
-  }
-
   private var headquartersProgressLink: some View {
     HStack(spacing: 12) {
       Image(systemName: "building.2.fill")
@@ -124,62 +107,5 @@ struct FounderEnvironmentScreen: View {
       Image(systemName: "chevron.right").foregroundStyle(.tertiary)
     }
     .soloCard()
-  }
-}
-
-private struct EnvironmentAgentRow: View {
-  var agent: SoloAgent
-  var dialogue: String
-  var state: AgentVisualState
-
-  var body: some View {
-    HStack(spacing: 12) {
-      Text(agent.initials)
-        .font(.caption.weight(.black))
-        .frame(width: 44, height: 44)
-        .background(markerColor.gradient, in: .circle)
-      VStack(alignment: .leading, spacing: 3) {
-        HStack {
-          Text(agent.name).font(.headline)
-          Text(agent.role.rawValue).font(.caption).foregroundStyle(.secondary)
-        }
-        Text(state.accessibilityValue)
-          .font(.caption)
-          .foregroundStyle(markerColor)
-          .lineLimit(1)
-        Text("“\(dialogue)”")
-          .font(.caption2)
-          .foregroundStyle(.secondary)
-          .lineLimit(2)
-      }
-      Spacer()
-      Image(systemName: statusSymbol)
-        .foregroundStyle(markerColor)
-        .accessibilityHidden(true)
-    }
-    .padding(14)
-    .background(SoloTheme.card, in: .rect(cornerRadius: 16))
-    .accessibilityElement(children: .combine)
-    .accessibilityLabel("\(agent.name), \(agent.role.rawValue) agent")
-    .accessibilityValue("\(state.accessibilityValue). \(dialogue)")
-  }
-
-  private var markerColor: Color {
-    if state.warnings.contains(.overloaded) { return SoloTheme.amber }
-    switch state.verification {
-    case .verified, .confirmed: return SoloTheme.mint
-    case .overclaiming, .driftDetected, .evidenceIncomplete: return SoloTheme.amber
-    case .none: return state.activity == .idle ? .secondary : SoloTheme.cyan
-    }
-  }
-
-  private var statusSymbol: String {
-    switch state.verification {
-    case .verified, .confirmed: "checkmark.seal.fill"
-    case .overclaiming: "exclamationmark.triangle.fill"
-    case .driftDetected: "waveform.badge.exclamationmark"
-    case .evidenceIncomplete: "doc.badge.ellipsis"
-    case .none: state.activity == .idle ? "pause.fill" : "gearshape.2.fill"
-    }
   }
 }
