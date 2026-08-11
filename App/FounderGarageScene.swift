@@ -53,51 +53,56 @@ struct FounderGarageScene: View {
   }
 
   private var garageCanvas: some View {
-    GeometryReader { proxy in
-      let size = proxy.size
-      ZStack {
-        garageShell
-        ceilingBeams
-        warmLighting
-        founderDesk
+    ScrollView(.horizontal) {
+      GeometryReader { proxy in
+        let size = proxy.size
+        ZStack {
+          garageShell
+          ceilingBeams
+          warmLighting
+          founderDesk
 
-        ForEach(Array(stations.enumerated()), id: \.element.id) { index, station in
-          GarageBayStation(
-            station: station,
-            accent: accent(for: station, index: index),
-            icon: bayIcon(for: station, index: index),
-            date: date,
-            motion: motion,
-            isDimmed: focusedAgentID != nil && focusedAgentID != station.id,
-            differentiateWithoutColor: differentiateWithoutColor
-          ) {
-            focusedAgentID = station.id
-            selectedStation = station
+          ForEach(Array(stations.enumerated()), id: \.element.id) { index, station in
+            GarageBayStation(
+              station: station,
+              accent: accent(for: station, index: index),
+              icon: bayIcon(for: station, index: index),
+              date: date,
+              motion: motion,
+              isDimmed: focusedAgentID != nil && focusedAgentID != station.id,
+              differentiateWithoutColor: differentiateWithoutColor
+            ) {
+              focusedAgentID = station.id
+              selectedStation = station
+            }
+            .frame(width: size.width * bayWidth(for: index), height: size.height * 0.52)
+            .position(x: size.width * bayX(for: index), y: size.height * bayY(for: index))
           }
-          .frame(width: size.width * bayWidth(for: index), height: size.height * 0.52)
-          .position(x: size.width * bayX(for: index), y: size.height * bayY(for: index))
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .overlay(alignment: .bottomLeading) {
+          Label("Swipe to explore · Tap a station to inspect", systemImage: "hand.draw.fill")
+            .font(.caption2.weight(.medium))
+            .foregroundStyle(.white.opacity(0.72))
+            .padding(9)
+            .background(.black.opacity(0.28), in: Capsule())
+            .padding(12)
+        }
+        .overlay {
+          RoundedRectangle(cornerRadius: 18)
+            .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        }
+        .onChange(of: selectedStation) { _, next in
+          if next == nil { focusedAgentID = nil }
         }
       }
-      .clipShape(RoundedRectangle(cornerRadius: 18))
-      .overlay(alignment: .bottomLeading) {
-        Label("Tap a station to inspect an agent", systemImage: "hand.tap.fill")
-          .font(.caption2.weight(.medium))
-          .foregroundStyle(.white.opacity(0.72))
-          .padding(9)
-          .background(.black.opacity(0.28), in: Capsule())
-          .padding(12)
-      }
-      .overlay {
-        RoundedRectangle(cornerRadius: 18)
-          .stroke(Color.white.opacity(0.08), lineWidth: 1)
-      }
-      .onChange(of: selectedStation) { _, next in
-        if next == nil { focusedAgentID = nil }
-      }
+      .frame(width: 980, height: 650)
     }
+    .scrollIndicators(.visible)
     .frame(height: 650)
     .accessibilityElement(children: .contain)
     .accessibilityLabel("Founder Garage live workforce map")
+    .accessibilityHint("Swipe horizontally to explore the full garage")
   }
 
   private var garageShell: some View {
