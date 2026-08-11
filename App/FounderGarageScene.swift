@@ -93,7 +93,7 @@ struct FounderGarageScene: View {
         if next == nil { focusedAgentID = nil }
       }
     }
-    .frame(height: 350)
+    .frame(height: 500)
     .accessibilityElement(children: .contain)
     .accessibilityLabel("Founder Garage live workforce map")
   }
