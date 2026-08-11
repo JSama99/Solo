@@ -21,13 +21,6 @@ struct FounderEnvironmentScreen: View {
               facility: progression.currentFacility
             )
           }
-          operationsSummary
-          NavigationLink {
-            HeadquartersProgressScreen(store: store)
-          } label: {
-            headquartersProgressLink
-          }
-          .buttonStyle(.plain)
         }
         .padding(16)
         .frame(maxWidth: .infinity)
@@ -79,33 +72,4 @@ struct FounderEnvironmentScreen: View {
     }
   }
 
-  private var operationsSummary: some View {
-    HStack {
-      Label("\(store.intent.name) intent", systemImage: store.intent.symbol)
-        .font(.subheadline.weight(.bold))
-      Spacer()
-      Text("Mean drift \(store.averageDrift)")
-        .font(.caption)
-        .foregroundStyle(.secondary)
-    }
-    .padding(.horizontal, 4)
-  }
-
-  private var headquartersProgressLink: some View {
-    HStack(spacing: 12) {
-      Image(systemName: "building.2.fill")
-        .foregroundStyle(SoloTheme.cyan)
-        .frame(width: 42, height: 42)
-        .background(SoloTheme.cyan.opacity(0.12), in: .rect(cornerRadius: 12))
-      VStack(alignment: .leading, spacing: 3) {
-        Text("Headquarters Progress").font(.headline)
-        Text("\(progression.purchasedUpgrades.count) infrastructure upgrades owned • \(progression.currentFacility.name) active")
-          .font(.caption)
-          .foregroundStyle(.secondary)
-      }
-      Spacer()
-      Image(systemName: "chevron.right").foregroundStyle(.tertiary)
-    }
-    .soloCard()
-  }
 }

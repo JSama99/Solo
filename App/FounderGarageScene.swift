@@ -15,7 +15,6 @@ struct FounderGarageScene: View {
     VStack(alignment: .leading, spacing: 14) {
       header
       garageCanvas
-      cameraControls
       VStack(alignment: .leading, spacing: 5) {
         Text("The Founder's Garage")
           .font(.title3.weight(.bold))
@@ -93,7 +92,7 @@ struct FounderGarageScene: View {
         if next == nil { focusedAgentID = nil }
       }
     }
-    .frame(height: 500)
+    .frame(height: 650)
     .accessibilityElement(children: .contain)
     .accessibilityLabel("Founder Garage live workforce map")
   }
@@ -166,28 +165,6 @@ struct FounderGarageScene: View {
         .shadow(color: .black.opacity(0.45), radius: 10, y: 8)
     }
     .padding(.bottom, 18)
-  }
-
-  private var cameraControls: some View {
-    ScrollView(.horizontal, showsIndicators: false) {
-      HStack(spacing: 8) {
-        ForEach(Array(stations.enumerated()), id: \.element.id) { index, station in
-          Button {
-            focusedAgentID = station.id
-            selectedStation = station
-          } label: {
-            Label(station.name, systemImage: bayIcon(for: station, index: index))
-              .font(.caption.weight(.semibold))
-              .padding(.horizontal, 11)
-              .padding(.vertical, 8)
-              .background(accent(for: station, index: index).opacity(0.14), in: Capsule())
-          }
-          .tint(accent(for: station, index: index))
-          .buttonStyle(.plain)
-          .accessibilityHint("Opens \(station.name)'s agent details")
-        }
-      }
-    }
   }
 
   private var operationalBrief: some View {
