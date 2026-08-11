@@ -48,7 +48,9 @@
           "RevenueCatAPIKey": "$(REVENUECAT_API_KEY)",
           "UILaunchScreen": {},
           "UISupportedInterfaceOrientations": [
-            "UIInterfaceOrientationPortrait"
+            "UIInterfaceOrientationPortrait",
+            "UIInterfaceOrientationLandscapeLeft",
+            "UIInterfaceOrientationLandscapeRight"
           ]
         }
       },
