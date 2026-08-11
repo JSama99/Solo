@@ -53,34 +53,13 @@ struct GarageVisualization: View {
 
   @ViewBuilder
   private func content(at date: Date) -> some View {
-    VStack(alignment: .leading, spacing: 12) {
-      HStack {
-        Label("\(facility.name.uppercased()) LIVE VIEW", systemImage: "building.2.fill")
-          .font(.caption.weight(.black))
-          .foregroundStyle(SoloTheme.cyan)
-        Spacer()
-        Text("Read-only live view")
-          .font(.caption2.weight(.semibold))
-          .foregroundStyle(.secondary)
-      }
-
-      if Self.presentation(for: facility) == .loft {
-        FounderLoftEnvironment()
-      }
-
-      stationPresentation(at: date)
-
-      Label("Inspect agents here. Reassign work in Command Deck.", systemImage: "slider.horizontal.3")
-        .font(.caption)
-        .foregroundStyle(.secondary)
-    }
-    .padding(14)
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .background(garageBackground(at: date), in: .rect(cornerRadius: 22))
-    .overlay {
-      RoundedRectangle(cornerRadius: 22)
-        .stroke(SoloTheme.cyan.opacity(0.28), lineWidth: 1)
-    }
+    FounderGarageScene(
+      stations: stations,
+      facility: facility,
+      motion: motionPolicy,
+      date: date,
+      selectedStation: $selectedStation
+    )
   }
 
   private func stationPresentation(at date: Date) -> some View {
