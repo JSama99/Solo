@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// A read-only, live visual map of the founder's garage.
+/// A live, interactive visual map of the founder's garage.
 struct FounderGarageScene: View {
   var stations: [AgentStationViewModel]
   var facility: FacilityTier
@@ -29,7 +29,7 @@ struct FounderGarageScene: View {
       VStack(alignment: .leading, spacing: 5) {
         Text("The Founder's Garage")
           .font(.title3.weight(.bold))
-        Text("Three agent bays and one founder's desk. Inspect work, assign agents, and review reports here.")
+        Text("\(stations.count) agent bays and one founder's desk. Assign agents and review reports here.")
           .font(.caption)
           .foregroundStyle(.secondary)
       }
@@ -53,13 +53,6 @@ struct FounderGarageScene: View {
       Label("FOUNDER GARAGE · LIVE VIEW", systemImage: facility.symbol)
         .font(.caption.weight(.bold))
         .foregroundStyle(SoloTheme.cyan)
-      Spacer()
-      Text("READ ONLY")
-        .font(.caption2.weight(.bold))
-        .foregroundStyle(.secondary)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(Color.white.opacity(0.05), in: Capsule())
     }
     .accessibilityElement(children: .combine)
   }
@@ -68,6 +61,7 @@ struct FounderGarageScene: View {
     ScrollView(.horizontal) {
       GeometryReader { proxy in
         let size = proxy.size
+        let layout = GarageBayLayout(stationCount: stations.count)
         ZStack {
           garageShell
           ceilingBeams
@@ -89,13 +83,13 @@ struct FounderGarageScene: View {
               focusedAgentID = station.id
               stationPresented = station
             }
-            .frame(width: size.width * bayWidth(for: index), height: size.height * 0.52)
-            .position(x: size.width * bayX(for: index), y: size.height * bayY(for: index))
+            .frame(width: layout.bays[index].frame.width, height: layout.bays[index].frame.height)
+            .position(layout.bays[index].center)
           }
         }
         .clipShape(RoundedRectangle(cornerRadius: 18))
         .overlay(alignment: .bottomLeading) {
-          Label("Swipe to explore · Tap a station to inspect", systemImage: "hand.draw.fill")
+          Label("Swipe to explore · Tap a station to assign or review", systemImage: "hand.draw.fill")
             .font(.caption2.weight(.medium))
             .foregroundStyle(.white.opacity(0.72))
             .padding(9)
@@ -110,7 +104,7 @@ struct FounderGarageScene: View {
           if next == nil { focusedAgentID = nil }
         }
       }
-      .frame(width: 980, height: 650)
+      .frame(width: GarageBayLayout(stationCount: stations.count).canvasWidth, height: GarageBayLayout.canvasHeight)
     }
     .scrollIndicators(.visible)
     .frame(height: 650)
@@ -255,7 +249,7 @@ struct FounderGarageScene: View {
     case "aurora": SoloTheme.cyan
     case "stacks": SoloTheme.amber
     case "brio": SoloTheme.coral
-    default: [SoloTheme.cyan, SoloTheme.amber, SoloTheme.coral][index % 3]
+    default: accentColor(for: index)
     }
   }
 
@@ -264,13 +258,19 @@ struct FounderGarageScene: View {
     case "aurora": "waveform.path.ecg"
     case "stacks": "server.rack"
     case "brio": "megaphone.fill"
-    default: ["brain.head.profile", "cpu", "sparkles"][index % 3]
+    default: GarageBayPresentation.icon(for: index)
     }
   }
 
-  private func bayX(for index: Int) -> CGFloat { [0.19, 0.72, 0.88][min(index, 2)] }
-  private func bayY(for index: Int) -> CGFloat { [0.47, 0.39, 0.62][min(index, 2)] }
-  private func bayWidth(for index: Int) -> CGFloat { index == 0 ? 0.44 : 0.34 }
+  private func accentColor(for index: Int) -> Color {
+    switch GarageBayPresentation.accentToken(for: index) {
+    case "amber": SoloTheme.amber
+    case "coral": SoloTheme.coral
+    case "mint": SoloTheme.mint
+    case "purple": SoloTheme.purple
+    default: SoloTheme.cyan
+    }
+  }
 }
 
 private struct GarageBayStation: View {

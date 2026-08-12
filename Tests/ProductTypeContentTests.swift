@@ -14,6 +14,24 @@ final class ProductTypeContentTests: XCTestCase {
     }
   }
 
+  func testConsumerAppContentIsAuthoredAndUnique() {
+    let tasks = ContentLibrary.allTaskPool.filter { $0.productTypes == [.consumerApp] }
+    XCTAssertEqual(tasks.count, 70)
+    XCTAssertEqual(Set(tasks.map(\.detail)).count, tasks.count)
+    XCTAssertTrue(tasks.allSatisfy { task in
+      let pieces = task.title.components(separatedBy: task.title)
+      return pieces.count == 2
+    })
+    let dilemmas = ContentLibrary.dilemmaPool.filter { $0.productTypes == [.consumerApp] }
+    XCTAssertEqual(dilemmas.count, 12)
+    XCTAssertEqual(Set(dilemmas.map(\.setup)).count, dilemmas.count)
+    XCTAssertFalse(dilemmas.contains { consumer in
+      ContentLibrary.dilemmaPool.contains { other in
+        other.productTypes == [.saas] && other.id.hasSuffix(consumer.id.replacingOccurrences(of: "consumerApp-", with: "")) && other.choices == consumer.choices
+      }
+    })
+  }
+
   func testEveryProductHasDilemmasInEachChapter() {
     for type in ProductType.allCases {
       for chapter in VentureChapter.allCases {
