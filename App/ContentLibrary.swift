@@ -22,6 +22,15 @@ enum ContentLibrary {
       RivalCompanyDefinition(id: "lattice", name: "Lattice Labs")
     ]
 
+    static let rivalSimulationCompanies: [RivalCompany] = [
+      RivalCompany(id: "northwind", name: "Northwind Labs", archetype: .incumbent, debutVenture: 1, baseStrength: 1.35),
+      RivalCompany(id: "pallas", name: "Pallas AI", archetype: .upstart, debutVenture: 1, baseStrength: 0.9),
+      RivalCompany(id: "flashpoint", name: "Flashpoint", archetype: .hypeMachine, debutVenture: 1, baseStrength: 1.0),
+      RivalCompany(id: "steadfast", name: "Steadfast Works", archetype: .quietBuilder, debutVenture: 1, baseStrength: 0.85),
+      RivalCompany(id: "mirror", name: "Mirrorline", archetype: .copycat, debutVenture: 3, baseStrength: 0.95),
+      RivalCompany(id: "summit", name: "Summit Systems", archetype: .incumbent, debutVenture: 16, baseStrength: 1.2)
+    ]
+
     static let techComHeadlineTemplates = [
       NewsHeadlineTemplate(id: "trend-evidence", category: .trend, textTemplate: "Industry watch: evidence-led teams set the tone in sprint {sprint}", trigger: { $0.tasks.contains { $0.isReviewed } }),
       NewsHeadlineTemplate(id: "trend-runway", category: .trend, textTemplate: "Industry watch: runway discipline dominates sprint {sprint}", trigger: { $0.stats.runway < 20 }),

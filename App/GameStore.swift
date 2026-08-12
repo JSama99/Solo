@@ -113,6 +113,17 @@ final class GameStore {
 
   var facilityBonuses: FacilityBonuses { progressionStore?.bonuses ?? .none }
 
+  var rivalStandings: [RivalStanding] {
+    RivalEngine.standings(
+      companies: ContentLibrary.rivalSimulationCompanies,
+      venture: venture,
+      sprint: sprint,
+      careerSeed: RivalEngine.careerSeed(founderName: founderName, productType: productType),
+      player: stats,
+      playerFlags: companyFlags
+    )
+  }
+
   var nextTalentSlot: Int? { agents.count < 4 ? 4 : agents.count < 5 ? 5 : nil }
 
   var talentBoardCandidates: [TalentCandidate] {
@@ -801,6 +812,10 @@ final class GameStore {
       completedObjectives += 1
     }
 
+    let share = rivalStandings.first(where: \.isPlayer)?.marketShare ?? 0
+    if effects.revenue > 0 {
+      effects.revenue = Int((Double(effects.revenue) * RivalEngine.revenueMultiplier(marketShare: share, fieldSize: rivalStandings.count - 1)).rounded())
+    }
     apply(effects)
     if facilityBonuses.sprintEnergyRecovery > 0 {
       stats.energy = min(100, stats.energy + facilityBonuses.sprintEnergyRecovery)
