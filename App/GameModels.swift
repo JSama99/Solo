@@ -84,6 +84,44 @@ enum FounderDoctrine: String, Codable, CaseIterable, Identifiable {
   }
 }
 
+/// The business a career is building. This is an identity choice, so it has
+/// no hidden stat tradeoff; it selects the situations the company encounters.
+enum ProductType: String, Codable, CaseIterable, Identifiable, Hashable {
+  case saas
+  case consumerApp
+  case hardware
+  case marketplace
+
+  var id: Self { self }
+
+  var name: String {
+    switch self {
+    case .saas: "B2B SaaS"
+    case .consumerApp: "Consumer App"
+    case .hardware: "Hardware"
+    case .marketplace: "Marketplace"
+    }
+  }
+
+  var summary: String {
+    switch self {
+    case .saas: "B2B software sold on subscription."
+    case .consumerApp: "A direct-to-consumer app built for repeat use."
+    case .hardware: "A manufactured physical product with real-world constraints."
+    case .marketplace: "A two-sided network connecting supply and demand."
+    }
+  }
+
+  var flavorTags: [String] {
+    switch self {
+    case .saas: ["Enterprise sales", "Churn", "API integrations"]
+    case .consumerApp: ["Virality", "Retention loops", "Platform policy"]
+    case .hardware: ["Unit economics", "Supplier lead times", "Inventory risk"]
+    case .marketplace: ["Liquidity", "Trust and safety", "Take rate"]
+    }
+  }
+}
+
 enum SprintIntent: String, Codable, CaseIterable, Identifiable {
   case build
   case learn
@@ -610,13 +648,14 @@ struct SoloTask: Codable, Identifiable, Hashable {
   var resolution: TaskResolutionChoice?
   var resolutionLocked = false
   var minimumEra: VentureEra?
+  var productTypes: Set<ProductType>?
 
   var reward: String { impact.label }
   var consequenceLabel: String { skipEffects.conciseLossLabel }
 
   private enum CodingKeys: String, CodingKey {
     case id, title, detail, role, category, urgency, impact, skipEffects
-    case assignedAgentID, isReviewed, result, resolution, resolutionLocked, minimumEra
+    case assignedAgentID, isReviewed, result, resolution, resolutionLocked, minimumEra, productTypes
   }
 
   init(
@@ -633,7 +672,8 @@ struct SoloTask: Codable, Identifiable, Hashable {
     result: TaskResult? = nil,
     resolution: TaskResolutionChoice? = nil,
     resolutionLocked: Bool = false,
-    minimumEra: VentureEra? = nil
+    minimumEra: VentureEra? = nil,
+    productTypes: Set<ProductType>? = nil
   ) {
     self.id = id
     self.title = title
@@ -649,6 +689,7 @@ struct SoloTask: Codable, Identifiable, Hashable {
     self.resolution = resolution
     self.resolutionLocked = resolutionLocked
     self.minimumEra = minimumEra
+    self.productTypes = productTypes
   }
 
   init(from decoder: Decoder) throws {
@@ -668,6 +709,7 @@ struct SoloTask: Codable, Identifiable, Hashable {
     resolution = try container.decodeIfPresent(TaskResolutionChoice.self, forKey: .resolution)
     resolutionLocked = try container.decodeIfPresent(Bool.self, forKey: .resolutionLocked) ?? false
     minimumEra = try container.decodeIfPresent(VentureEra.self, forKey: .minimumEra)
+    productTypes = try container.decodeIfPresent(Set<ProductType>.self, forKey: .productTypes)
   }
 
   func encode(to encoder: Encoder) throws {
@@ -686,6 +728,7 @@ struct SoloTask: Codable, Identifiable, Hashable {
     try container.encodeIfPresent(resolution, forKey: .resolution)
     try container.encode(resolutionLocked, forKey: .resolutionLocked)
     try container.encodeIfPresent(minimumEra, forKey: .minimumEra)
+    try container.encodeIfPresent(productTypes, forKey: .productTypes)
   }
 
   private static func legacyCategory(for role: AgentRole) -> TaskCategory {
@@ -737,12 +780,13 @@ struct FounderDilemma: Codable, Identifiable, Hashable {
   var requiredFlags: Set<CompanyFlag> = []
   var excludedFlags: Set<CompanyFlag> = []
   var minimumEra: VentureEra?
+  var productTypes: Set<ProductType>?
 
   private enum CodingKeys: String, CodingKey {
-    case id, title, setup, chapter, featuredAgentID, choices, requiredFlags, excludedFlags, minimumEra
+    case id, title, setup, chapter, featuredAgentID, choices, requiredFlags, excludedFlags, minimumEra, productTypes
   }
 
-  init(id: String, title: String, setup: String, chapter: VentureChapter, featuredAgentID: String?, choices: [DilemmaChoice], requiredFlags: Set<CompanyFlag> = [], excludedFlags: Set<CompanyFlag> = [], minimumEra: VentureEra? = nil) {
+  init(id: String, title: String, setup: String, chapter: VentureChapter, featuredAgentID: String?, choices: [DilemmaChoice], requiredFlags: Set<CompanyFlag> = [], excludedFlags: Set<CompanyFlag> = [], minimumEra: VentureEra? = nil, productTypes: Set<ProductType>? = nil) {
     self.id = id
     self.title = title
     self.setup = setup
@@ -752,6 +796,7 @@ struct FounderDilemma: Codable, Identifiable, Hashable {
     self.requiredFlags = requiredFlags
     self.excludedFlags = excludedFlags
     self.minimumEra = minimumEra
+    self.productTypes = productTypes
   }
 
   init(from decoder: Decoder) throws {
@@ -765,6 +810,7 @@ struct FounderDilemma: Codable, Identifiable, Hashable {
     requiredFlags = try values.decodeIfPresent(Set<CompanyFlag>.self, forKey: .requiredFlags) ?? []
     excludedFlags = try values.decodeIfPresent(Set<CompanyFlag>.self, forKey: .excludedFlags) ?? []
     minimumEra = try values.decodeIfPresent(VentureEra.self, forKey: .minimumEra)
+    productTypes = try values.decodeIfPresent(Set<ProductType>.self, forKey: .productTypes)
   }
 
   func encode(to encoder: Encoder) throws {
@@ -778,6 +824,7 @@ struct FounderDilemma: Codable, Identifiable, Hashable {
     try values.encode(requiredFlags, forKey: .requiredFlags)
     try values.encode(excludedFlags, forKey: .excludedFlags)
     try values.encodeIfPresent(minimumEra, forKey: .minimumEra)
+    try values.encodeIfPresent(productTypes, forKey: .productTypes)
   }
 }
 
@@ -1018,6 +1065,7 @@ enum VentureCheckpointDecision {
 struct CareerSave: Codable {
   var founderName: String
   var doctrine: FounderDoctrine
+  var productType: ProductType
   var sprint: Int
   var venture: Int
   var intent: SprintIntent
@@ -1052,7 +1100,7 @@ struct CareerSave: Codable {
   var techComRivals: [TechComRival]
 
   private enum CodingKeys: String, CodingKey {
-    case founderName, doctrine, sprint, venture, intent, stats, agents, tasks
+    case founderName, doctrine, productType, sprint, venture, intent, stats, agents, tasks
     case taskBacklog, founderAttentionSpent, activeDilemma, selectedDilemmaChoiceID, currentObjective
     case evidence, outcome, randomNumberGenerator, correlatedFailureEvent
     case pendingEffects, reportCache, precedents, awaitingFounderPass
@@ -1065,6 +1113,7 @@ struct CareerSave: Codable {
   init(
     founderName: String,
     doctrine: FounderDoctrine,
+    productType: ProductType = .saas,
     sprint: Int,
     venture: Int,
     intent: SprintIntent,
@@ -1100,6 +1149,7 @@ struct CareerSave: Codable {
   ) {
     self.founderName = founderName
     self.doctrine = doctrine
+    self.productType = productType
     self.sprint = sprint
     self.venture = venture
     self.intent = intent
@@ -1138,6 +1188,7 @@ struct CareerSave: Codable {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     founderName = try container.decode(String.self, forKey: .founderName)
     doctrine = try container.decode(FounderDoctrine.self, forKey: .doctrine)
+    productType = try container.decodeIfPresent(ProductType.self, forKey: .productType) ?? .saas
     sprint = try container.decode(Int.self, forKey: .sprint)
     venture = try container.decode(Int.self, forKey: .venture)
     intent = try container.decode(SprintIntent.self, forKey: .intent)

@@ -18,6 +18,8 @@ final class GameStore {
   var founderName = ""
   var selectedDoctrine: FounderDoctrine = .guided
   var doctrine: FounderDoctrine = .guided
+  var selectedProductType: ProductType = .saas
+  var productType: ProductType = .saas
   var selectedCareerMode: CareerMode = .bounded
   var sprint = 1
   var venture = 1
@@ -90,6 +92,7 @@ final class GameStore {
 
   var hasSave: Bool {
     UserDefaults.standard.data(forKey: Self.saveKey) != nil
+      || UserDefaults.standard.data(forKey: Self.v10SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v9SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v8SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v7SaveKey) != nil
@@ -265,6 +268,7 @@ final class GameStore {
   func beginSetup() {
     founderName = ""
     selectedDoctrine = .guided
+    selectedProductType = .saas
     selectedCareerMode = .bounded
     stage = .setup
   }
@@ -286,6 +290,7 @@ final class GameStore {
 
   func startCareer(seed: UInt64? = nil) {
     doctrine = selectedDoctrine
+    productType = selectedProductType
     careerMode = selectedCareerMode
     founderName = founderName.trimmingCharacters(in: .whitespacesAndNewlines)
     if founderName.isEmpty { founderName = "Founder" }
@@ -338,6 +343,7 @@ final class GameStore {
     }
     selectedCareerMode = .daily
     selectedDoctrine = .guided
+    selectedProductType = .saas
     founderName = "Daily Founder"
     startCareer(seed: DailyChallenge.seed())
   }
@@ -350,6 +356,10 @@ final class GameStore {
        let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
        envelope.version == Self.saveVersion {
       loadedSave = envelope.career
+    } else if let data = UserDefaults.standard.data(forKey: Self.v10SaveKey),
+              let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
+              envelope.version == 10 {
+      loadedSave = migrateV10(envelope.career)
     } else if let data = UserDefaults.standard.data(forKey: Self.v9SaveKey),
               let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
               envelope.version == 9 {
@@ -1325,6 +1335,8 @@ final class GameStore {
     founderName = save.founderName
     doctrine = save.doctrine
     selectedDoctrine = save.doctrine
+    productType = save.productType
+    selectedProductType = save.productType
     careerMode = save.careerMode
     selectedCareerMode = save.careerMode
     sprint = min(Self.sprintsPerVenture, max(1, save.sprint))
@@ -1435,6 +1447,12 @@ final class GameStore {
     legacy
   }
 
+  private func migrateV10(_ legacy: CareerSave) -> CareerSave {
+    var migrated = legacy
+    migrated.productType = .saas
+    return migrated
+  }
+
   private func migrateV6(_ legacy: CareerSave) -> CareerSave {
     legacy
   }
@@ -1533,7 +1551,7 @@ final class GameStore {
   private func makeTaskDraft() -> (active: [SoloTask], backlog: [SoloTask]) {
     if taskDeckTitles.count < 5 { refillTaskDeck() }
     var draft: [SoloTask] = []
-    let templates = Dictionary(uniqueKeysWithValues: ContentLibrary.taskPool(for: VentureEra.era(for: venture)).map { ($0.title, $0) })
+    let templates = Dictionary(uniqueKeysWithValues: ContentLibrary.taskPool(for: VentureEra.era(for: venture), productType: productType).map { ($0.title, $0) })
     while draft.count < 5, !taskDeckTitles.isEmpty {
       let title = taskDeckTitles.removeFirst()
       guard var task = templates[title] else { continue }
@@ -1559,7 +1577,7 @@ final class GameStore {
   private func refillTaskDeck() {
     let excluded = Set(taskDeckTitles + recentTaskTitles.suffix(5))
     let era = VentureEra.era(for: venture)
-    let eligible = ContentLibrary.taskPool(for: era).filter { ($0.minimumEra?.rawValue ?? 0) <= era.rawValue }
+    let eligible = ContentLibrary.taskPool(for: era, productType: productType)
     var titles = eligible.map(\.title).filter { !excluded.contains($0) }
     if titles.count < 5 { titles = eligible.map(\.title) }
     taskDeckTitles.append(contentsOf: deterministicallyShuffled(titles))
@@ -1578,7 +1596,7 @@ final class GameStore {
   private func makeLegacyBacklog(excluding activeTasks: [SoloTask]) -> [SoloTask] {
     let activeTitles = Set(activeTasks.map(\.title))
     return ContentLibrary.allTaskPool
-      .filter { !activeTitles.contains($0.title) }
+      .filter { !activeTitles.contains($0.title) && ($0.productTypes?.contains(productType) ?? true) }
       .prefix(2)
       .map { template in
         var task = template
@@ -1599,6 +1617,7 @@ final class GameStore {
         && $0.requiredFlags.isSubset(of: companyFlags)
         && $0.excludedFlags.isDisjoint(with: companyFlags)
         && ($0.minimumEra.map { currentEra.rawValue >= $0.rawValue } ?? true)
+        && ($0.productTypes?.contains(productType) ?? true)
     }
     guard !candidates.isEmpty else { return nil }
     if dilemmaDeckChapter != chapter || dilemmaDeckTemplateIDs.isEmpty {
@@ -1722,6 +1741,7 @@ final class GameStore {
     let payload = CareerSave(
       founderName: founderName,
       doctrine: doctrine,
+      productType: productType,
       sprint: sprint,
       venture: venture,
       intent: intent,
@@ -1758,6 +1778,7 @@ final class GameStore {
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
       UserDefaults.standard.set(data, forKey: Self.saveKey)
+      UserDefaults.standard.removeObject(forKey: Self.v10SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v9SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v8SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v7SaveKey)
@@ -1898,8 +1919,9 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  private static let saveVersion = 10
-  private static let saveKey = "solo-unicorn-run-native-save-v10"
+  private static let saveVersion = 11
+  private static let saveKey = "solo-unicorn-run-native-save-v11"
+  private static let v10SaveKey = "solo-unicorn-run-native-save-v10"
   private static let v9SaveKey = "solo-unicorn-run-native-save-v9"
   private static let v8SaveKey = "solo-unicorn-run-native-save-v8"
   private static let v7SaveKey = "solo-unicorn-run-native-save-v7"
