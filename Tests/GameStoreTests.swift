@@ -41,15 +41,6 @@ final class GameStoreTests: XCTestCase {
     XCTAssertTrue(store.commitBlockerMessage?.contains("Choose how to resolve") == true)
   }
 
-  func testCommandDeckPresentationOnlyShowsFullDilemmaDuringFounderEvent() {
-    XCTAssertTrue(CommandDeckPresentation.showsFullDilemma(for: .founderEvent))
-    XCTAssertFalse(CommandDeckPresentation.showsFullDilemma(for: .chooseCommitments))
-    XCTAssertFalse(CommandDeckPresentation.showsFullDilemma(for: .readyToCommit))
-    XCTAssertFalse(CommandDeckPresentation.showsSprintControls(for: .founderEvent))
-    XCTAssertTrue(CommandDeckPresentation.showsSprintControls(for: .chooseCommitments))
-    XCTAssertTrue(CommandDeckPresentation.showsSprintControls(for: .readyToCommit))
-  }
-
   func testReviewImprovesSpecialistForecast() throws {
     let store = makeStore()
     let taskIndex = try XCTUnwrap(

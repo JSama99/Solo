@@ -23,6 +23,35 @@ final class InteractiveGarageTests: XCTestCase {
     XCTAssertTrue(GarageTurnGate(phase: .assignTeam).stationIsHighlighted(idle))
   }
 
+  func testThreeToFiveBayLayoutsNeverOverlapEachOtherOrDesk() {
+    for count in 3...5 {
+      let layout = GarageBayLayout(stationCount: count)
+      XCTAssertEqual(layout.bays.count, count)
+      for first in layout.bays.indices {
+        XCTAssertFalse(layout.bays[first].frame.intersects(GarageBayLayout.deskFrame))
+        for second in layout.bays.indices where second > first {
+          XCTAssertFalse(layout.bays[first].frame.intersects(layout.bays[second].frame))
+          XCTAssertNotEqual(layout.bays[first].center, layout.bays[second].center)
+        }
+      }
+    }
+  }
+
+  func testFiveBayPresentationTokensAreDistinct() {
+    XCTAssertEqual(Set((0..<5).map(GarageBayPresentation.accentToken)).count, 5)
+    XCTAssertEqual(Set((0..<5).map(GarageBayPresentation.icon)).count, 5)
+  }
+
+  func testFiveAgentStationsRemainAssignableAndReviewable() {
+    let agents = (0..<5).map { index in
+      SoloAgent(id: "agent-\(index)", name: "Agent \(index)", initials: "A\(index)", role: .general, modelFamily: "Model \(index)", reliability: 75, calibration: 0.7, drift: 0, trust: 60)
+    }
+    let stations = agents.map { AgentStationViewModel.derive(agent: $0, task: nil, founderStats: FounderStats()) }
+    XCTAssertEqual(stations.count, agents.count)
+    XCTAssertTrue(stations.allSatisfy { GarageTurnGate(phase: .assignTeam).stationIsActionable($0) })
+    XCTAssertTrue(stations.allSatisfy { GarageTurnGate(phase: .reviewAndResolve).stationIsActionable($0) })
+  }
+
   @MainActor func testFullTurnKeepsStationsReachable() throws {
     let store = GameStore()
     store.selectedCareerMode = .bounded
