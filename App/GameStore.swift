@@ -51,6 +51,7 @@ final class GameStore {
   private(set) var workforceNotifications: [String] = []
   var techComHeadlines: [TechComHeadline] = []
   var techComRivals: [TechComRival] = []
+  private(set) var talentBoardRefreshes = 0
 
   // ── Build 3: career layer ─────────────────────────────────────────
   /// Precedents banked across the career. Recorded in every venture,
@@ -92,6 +93,7 @@ final class GameStore {
 
   var hasSave: Bool {
     UserDefaults.standard.data(forKey: Self.saveKey) != nil
+      || UserDefaults.standard.data(forKey: Self.v11SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v10SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v9SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v8SaveKey) != nil
@@ -110,6 +112,42 @@ final class GameStore {
   }
 
   var facilityBonuses: FacilityBonuses { progressionStore?.bonuses ?? .none }
+
+  var nextTalentSlot: Int? { agents.count < 4 ? 4 : agents.count < 5 ? 5 : nil }
+
+  var talentBoardCandidates: [TalentCandidate] {
+    guard let slot = nextTalentSlot else { return [] }
+    return TalentBoard.candidates(for: slot, excluding: Set(agents.map(\.id)), refresh: talentBoardRefreshes)
+  }
+
+  var talentBoardGateMessage: String? {
+    guard let slot = nextTalentSlot else { return "Your roster is complete." }
+    if slot == 4 {
+      if careerMode == .bounded { return venture >= 2 ? nil : "Unlocks after the Venture 1 checkpoint." }
+      return venture >= 6 ? nil : "Unlocks in Empire at Venture 6." }
+    if careerMode == .bounded { return venture >= 2 ? nil : "Unlocks in Venture 2." }
+    return venture >= 16 ? nil : "Unlocks in Empire at Venture 16." }
+
+  func hire(_ candidate: TalentCandidate) {
+    guard talentBoardGateMessage == nil, let slot = nextTalentSlot,
+          talentBoardCandidates.contains(candidate), stats.capital >= candidate.price else {
+      alertMessage = stats.capital < candidate.price ? "Not enough Capital for this hire." : talentBoardGateMessage
+      return
+    }
+    guard (slot == 4 && TalentBoard.fourthSlotPriceRange.contains(candidate.price)) || (slot == 5 && TalentBoard.fifthSlotPriceRange.contains(candidate.price)) else { return }
+    stats.capital -= candidate.price
+    agents.append(candidate.makeAgent())
+    achievementStore?.recordWorkforce(agents)
+    save()
+  }
+
+  func refreshTalentBoard() {
+    guard agents.count >= 4, nextTalentSlot != nil else { return }
+    guard stats.capital >= TalentBoard.refreshCost else { alertMessage = "Refreshing the talent board costs \(TalentBoard.refreshCost) Capital."; return }
+    stats.capital -= TalentBoard.refreshCost
+    talentBoardRefreshes += 1
+    save()
+  }
 
   func availablePerks(for agentID: String) -> [AgentPerkID] {
     switch agentID {
@@ -325,6 +363,7 @@ final class GameStore {
     reportCache = []
     techComHeadlines = []
     techComRivals = TechComEngine.rivals(seed: seed ?? 0x534F4C4F)
+    talentBoardRefreshes = 0
     randomNumberGenerator = SeededRandomNumberGenerator(seed: seed ?? UInt64.random(in: .min ... .max))
     let startingAdjustment = DoctrineProfile.profile(for: doctrine).startingStatAdjustment
     stats.trust += startingAdjustment.trust
@@ -356,6 +395,10 @@ final class GameStore {
        let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
        envelope.version == Self.saveVersion {
       loadedSave = envelope.career
+    } else if let data = UserDefaults.standard.data(forKey: Self.v11SaveKey),
+              let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
+              envelope.version == 11 {
+      loadedSave = migrateV11(envelope.career)
     } else if let data = UserDefaults.standard.data(forKey: Self.v10SaveKey),
               let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
               envelope.version == 10 {
@@ -1377,6 +1420,7 @@ final class GameStore {
     completedObjectives = save.completedObjectives
     techComHeadlines = save.techComHeadlines
     techComRivals = save.techComRivals.isEmpty ? TechComEngine.rivals(seed: UInt64(save.venture * 100 + save.sprint)) : save.techComRivals
+    talentBoardRefreshes = save.talentBoardRefreshes
     recallsShownThisVenture = 0
     activeRecall = nil
     // This safety net is bounded-mode-only, same reasoning as the clamp above:
@@ -1450,6 +1494,12 @@ final class GameStore {
   private func migrateV10(_ legacy: CareerSave) -> CareerSave {
     var migrated = legacy
     migrated.productType = .saas
+    return migrated
+  }
+
+  private func migrateV11(_ legacy: CareerSave) -> CareerSave {
+    var migrated = legacy
+    migrated.talentBoardRefreshes = 0
     return migrated
   }
 
@@ -1742,6 +1792,7 @@ final class GameStore {
       founderName: founderName,
       doctrine: doctrine,
       productType: productType,
+      talentBoardRefreshes: talentBoardRefreshes,
       sprint: sprint,
       venture: venture,
       intent: intent,
@@ -1778,6 +1829,7 @@ final class GameStore {
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
       UserDefaults.standard.set(data, forKey: Self.saveKey)
+      UserDefaults.standard.removeObject(forKey: Self.v11SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v10SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v9SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v8SaveKey)
@@ -1919,8 +1971,9 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  private static let saveVersion = 11
-  private static let saveKey = "solo-unicorn-run-native-save-v11"
+  private static let saveVersion = 12
+  private static let saveKey = "solo-unicorn-run-native-save-v12"
+  private static let v11SaveKey = "solo-unicorn-run-native-save-v11"
   private static let v10SaveKey = "solo-unicorn-run-native-save-v10"
   private static let v9SaveKey = "solo-unicorn-run-native-save-v9"
   private static let v8SaveKey = "solo-unicorn-run-native-save-v8"

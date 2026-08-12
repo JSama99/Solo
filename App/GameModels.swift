@@ -1066,6 +1066,7 @@ struct CareerSave: Codable {
   var founderName: String
   var doctrine: FounderDoctrine
   var productType: ProductType
+  var talentBoardRefreshes: Int
   var sprint: Int
   var venture: Int
   var intent: SprintIntent
@@ -1100,7 +1101,7 @@ struct CareerSave: Codable {
   var techComRivals: [TechComRival]
 
   private enum CodingKeys: String, CodingKey {
-    case founderName, doctrine, productType, sprint, venture, intent, stats, agents, tasks
+    case founderName, doctrine, productType, talentBoardRefreshes, sprint, venture, intent, stats, agents, tasks
     case taskBacklog, founderAttentionSpent, activeDilemma, selectedDilemmaChoiceID, currentObjective
     case evidence, outcome, randomNumberGenerator, correlatedFailureEvent
     case pendingEffects, reportCache, precedents, awaitingFounderPass
@@ -1114,6 +1115,7 @@ struct CareerSave: Codable {
     founderName: String,
     doctrine: FounderDoctrine,
     productType: ProductType = .saas,
+    talentBoardRefreshes: Int = 0,
     sprint: Int,
     venture: Int,
     intent: SprintIntent,
@@ -1150,6 +1152,7 @@ struct CareerSave: Codable {
     self.founderName = founderName
     self.doctrine = doctrine
     self.productType = productType
+    self.talentBoardRefreshes = talentBoardRefreshes
     self.sprint = sprint
     self.venture = venture
     self.intent = intent
@@ -1189,6 +1192,7 @@ struct CareerSave: Codable {
     founderName = try container.decode(String.self, forKey: .founderName)
     doctrine = try container.decode(FounderDoctrine.self, forKey: .doctrine)
     productType = try container.decodeIfPresent(ProductType.self, forKey: .productType) ?? .saas
+    talentBoardRefreshes = try container.decodeIfPresent(Int.self, forKey: .talentBoardRefreshes) ?? 0
     sprint = try container.decode(Int.self, forKey: .sprint)
     venture = try container.decode(Int.self, forKey: .venture)
     intent = try container.decode(SprintIntent.self, forKey: .intent)
