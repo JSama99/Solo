@@ -1077,6 +1077,11 @@ private struct RecordsScreen: View {
           }
           .buttonStyle(.plain)
 
+          NavigationLink { SettingsScreen() } label: {
+            RecordLink(title: "Settings", subtitle: "Cash feedback and your music", symbol: "gearshape.fill", count: 2)
+          }
+          .buttonStyle(.plain)
+
           Button(role: .destructive) {
             store.resetCareer()
           } label: {
@@ -1267,6 +1272,7 @@ private struct SprintReportSheet: View {
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var revealedStep = 0
   @State private var deliveredRevenueFeedback = false
+  @Environment(AppSettingsStore.self) private var settings
 
   var body: some View {
     NavigationStack {
@@ -1323,7 +1329,7 @@ private struct SprintReportSheet: View {
       .onAppear {
         guard report.revenueDelta > 0, !deliveredRevenueFeedback else { return }
         deliveredRevenueFeedback = true
-        RevenueCelebrationFeedback.play()
+        RevenueCelebrationFeedback.play(isEnabled: settings.soundEffectsEnabled)
       }
       .task {
         if reduceMotion {
