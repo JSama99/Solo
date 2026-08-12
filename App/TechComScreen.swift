@@ -38,6 +38,17 @@ struct TechComScreen: View {
                 .font(.subheadline)
             }
           }
+          section("Market Share", symbol: "chart.pie.fill") {
+            ForEach(store.rivalStandings) { standing in
+              HStack {
+                Text(standing.name).fontWeight(standing.isPlayer ? .bold : .regular)
+                Spacer()
+                Text(standing.archetype?.label ?? "Your company").foregroundStyle(.secondary)
+                Text(standing.marketShare, format: .percent.precision(.fractionLength(0))).foregroundStyle(standing.isPlayer ? SoloTheme.cyan : .primary)
+              }
+              .font(.caption)
+            }
+          }
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)

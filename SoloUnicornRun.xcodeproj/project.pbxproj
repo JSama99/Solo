@@ -81,6 +81,8 @@
 		B16000000000000000000001 /* TalentBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16000000000000000000002 /* TalentBoard.swift */; };
 		B16000000000000000000003 /* TalentBoardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16000000000000000000004 /* TalentBoardTests.swift */; };
 		B16000000000000000000005 /* HowToPlayScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16000000000000000000006 /* HowToPlayScreen.swift */; };
+		B17000000000000000000001 /* RivalEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17000000000000000000002 /* RivalEngine.swift */; };
+		B17000000000000000000003 /* RivalEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17000000000000000000004 /* RivalEngineTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -131,6 +133,8 @@
 		B16000000000000000000002 /* TalentBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TalentBoard.swift; sourceTree = "<group>"; };
 		B16000000000000000000004 /* TalentBoardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TalentBoardTests.swift; sourceTree = "<group>"; };
 		B16000000000000000000006 /* HowToPlayScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HowToPlayScreen.swift; sourceTree = "<group>"; };
+		B17000000000000000000002 /* RivalEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RivalEngine.swift; sourceTree = "<group>"; };
+		B17000000000000000000004 /* RivalEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RivalEngineTests.swift; sourceTree = "<group>"; };
 		C10000000000000000000016 /* ContentLibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentLibraryTests.swift; sourceTree = "<group>"; };
 		D10000000000000000000020 /* GarageVisualization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarageVisualization.swift; sourceTree = "<group>"; };
 		D10000000000000000000030 /* FounderGarageScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageScene.swift; sourceTree = "<group>"; };
@@ -215,6 +219,7 @@
 				C10000000000000000000016 /* ContentLibraryTests.swift */,
 				B14000000000000000000002 /* ProductTypeContentTests.swift */,
 				B16000000000000000000004 /* TalentBoardTests.swift */,
+				B17000000000000000000004 /* RivalEngineTests.swift */,
 				D10000000000000000000029 /* GarageVisualizationTests.swift */, D1000000000000000000002A /* AchievementScreenTests.swift */, D1000000000000000000002B /* AgentDetailTests.swift */, D1000000000000000000002C /* ModeSelectTests.swift */, D1000000000000000000002D /* PrecedentRecordsTests.swift */,
 				D10000000000000000000031 /* InteractiveGarageTests.swift */,
 				E10000000000000000000013 /* TechComEngineTests.swift */,
@@ -280,6 +285,7 @@
 				E10000000000000000000017 /* SettingsScreen.swift */,
 				B16000000000000000000002 /* TalentBoard.swift */,
 				B16000000000000000000006 /* HowToPlayScreen.swift */,
+				B17000000000000000000002 /* RivalEngine.swift */,
 				E10000000000000000000018 /* HowToPlayScreen.swift */,
 			);
 			path = App;
@@ -405,6 +411,7 @@
 				C20000000000000000000016 /* ContentLibraryTests.swift in Sources */,
 				B14000000000000000000001 /* ProductTypeContentTests.swift in Sources */,
 				B16000000000000000000003 /* TalentBoardTests.swift in Sources */,
+				B17000000000000000000003 /* RivalEngineTests.swift in Sources */,
 				D20000000000000000000029 /* GarageVisualizationTests.swift in Sources */, D2000000000000000000002A /* AchievementScreenTests.swift in Sources */, D2000000000000000000002B /* AgentDetailTests.swift in Sources */, D2000000000000000000002C /* ModeSelectTests.swift in Sources */, D2000000000000000000002D /* PrecedentRecordsTests.swift in Sources */,
 				D20000000000000000000031 /* InteractiveGarageTests.swift in Sources */,
 				E30000000000000000000003 /* TechComEngineTests.swift in Sources */,
@@ -462,6 +469,7 @@
 				E30000000000000000000007 /* SettingsScreen.swift in Sources */,
 				B16000000000000000000001 /* TalentBoard.swift in Sources */,
 				B16000000000000000000005 /* HowToPlayScreen.swift in Sources */,
+				B17000000000000000000001 /* RivalEngine.swift in Sources */,
 				E30000000000000000000008 /* HowToPlayScreen.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
