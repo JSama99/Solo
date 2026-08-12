@@ -131,15 +131,32 @@ enum ContentLibrary {
     ]
 
     static var allTaskPool: [SoloTask] {
-      taskPool + build6TaskExpansion + empireTaskExpansion.map { task in
+      let base = taskPool + build6TaskExpansion
+      let empire = empireTaskExpansion.map { task in
         var task = task
         task.minimumEra = .scale
         return task
       }
+      let saasBase = classifiedSaaSTasks(base)
+      let saasEmpire = classifiedSaaSTasks(empire)
+      return saasBase + saasEmpire
+        + productTaskExpansion(from: saasBase, as: .consumerApp)
+        + productTaskExpansion(from: saasEmpire, as: .consumerApp)
+        + productTaskExpansion(from: saasBase, as: .hardware)
+        + productTaskExpansion(from: saasEmpire, as: .hardware)
+        + productTaskExpansion(from: saasBase, as: .marketplace)
+        + productTaskExpansion(from: saasEmpire, as: .marketplace)
+    }
+
+    static func taskPool(for era: VentureEra, productType: ProductType) -> [SoloTask] {
+      allTaskPool.filter {
+        ($0.minimumEra?.rawValue ?? 0) <= era.rawValue
+          && ($0.productTypes?.contains(productType) ?? true)
+      }
     }
 
     static func taskPool(for era: VentureEra) -> [SoloTask] {
-      allTaskPool.filter { ($0.minimumEra?.rawValue ?? 0) <= era.rawValue }
+      taskPool(for: era, productType: .saas)
     }
 
     static let objectivePool: [SprintObjective] = [
@@ -151,7 +168,7 @@ enum ContentLibrary {
       SprintObjective(id: "repair", kind: .repairTrust, title: "Catch and Correct", detail: "Find a report problem, then rework or cross-check it.", reward: SimulationEffects(trust: 6), rewardLabel: "+6 Trust")
     ]
 
-    static let dilemmaPool: [FounderDilemma] = [
+    static let baseDilemmaPool: [FounderDilemma] = [
       FounderDilemma(
         id: "prototype-scope", title: "One More Feature", setup: "Stacks can add a flashy feature, but it pushes the first usable build back.", chapter: .prototype, featuredAgentID: "stacks",
         choices: [
@@ -253,4 +270,108 @@ enum ContentLibrary {
       )
     ]
 
+    /// Build 14 deliberately keeps classification and product re-authoring in
+    /// one place. Existing literals are the SaaS corpus; generic operating
+    /// situations remain universal, while product-specific situations receive
+    /// a full, role/category-identical authored counterpart per business.
+    static var dilemmaPool: [FounderDilemma] {
+      let saas = baseDilemmaPool.map { dilemma in
+        var dilemma = dilemma
+        dilemma.productTypes = [.saas]
+        return dilemma
+      }
+      return saas
+        + productDilemmaExpansion(from: saas, as: .consumerApp)
+        + productDilemmaExpansion(from: saas, as: .hardware)
+        + productDilemmaExpansion(from: saas, as: .marketplace)
+    }
+
+    private static func classifiedSaaSTasks(_ source: [SoloTask]) -> [SoloTask] {
+      let universalTitles: Set<String> = [
+        "Build MVP Slice", "Fix Critical Crash", "Run Customer Interviews",
+        "Study Founder Burnout", "Forecast Runway Scenarios", "Publish Customer Proof",
+        "Recover Failed Launch", "Renegotiate Vendor Costs", "Document Incident Response",
+        "Schedule Founder Day Off", "Restructure the Cap Table", "Build the Ops Playbook",
+        "Set Up the Board Cadence", "Take a Real Vacation", "Codify Company Values",
+        "Run the Incident Drill", "Fix the On-Call Rotation", "Consolidate Vendor Sprawl",
+        "Mentor the Next Owner", "Model Competitor Roadmap", "Quantify Correlated Risk",
+        "Verify Regulatory Exposure", "Audit Agent Calibration", "Map the Acquisition Landscape",
+        "Benchmark Support Quality", "Forecast Talent Fatigue", "Publish the Trust Report",
+        "Run Category Keynote", "Defend Against a Smear", "Win an Industry Award"
+      ]
+      return source.map { task in
+        var task = task
+        task.productTypes = universalTitles.contains(task.title) ? nil : [.saas]
+        return task
+      }
+    }
+
+    private static func productTaskExpansion(from source: [SoloTask], as type: ProductType) -> [SoloTask] {
+      source.compactMap { task in
+        guard task.productTypes == [.saas] else { return nil }
+        var localized = task
+        localized.title = "\(type.name): \(localizedTitle(for: task, type: type)) — \(task.title)"
+        localized.detail = localizedDetail(for: task, type: type)
+        localized.productTypes = [type]
+        return localized
+      }
+    }
+
+    private static func localizedTitle(for task: SoloTask, type: ProductType) -> String {
+      switch type {
+      case .consumerApp:
+        switch task.category { case .product: "Improve the Core Loop"; case .sales: "Win the App Store Moment"; case .crisis: "Protect the User Experience"; default: task.title }
+      case .hardware:
+        switch task.category { case .product: "Validate the Production Build"; case .sales: "Open the Retail Channel"; case .crisis: "Contain the Field Failure"; default: task.title }
+      case .marketplace:
+        switch task.category { case .product: "Strengthen Marketplace Matching"; case .sales: "Activate Both Sides"; case .crisis: "Protect Marketplace Trust"; default: task.title }
+      case .saas: task.title
+      }
+    }
+
+    private static func localizedDetail(for task: SoloTask, type: ProductType) -> String {
+      let situation: String
+      switch type {
+      case .consumerApp: situation = "Improve retention, ranking, and the direct user experience"
+      case .hardware: situation = "Protect unit economics, production quality, and inventory cash flow"
+      case .marketplace: situation = "Build liquidity, safe transactions, and balanced supply and demand"
+      case .saas: situation = "Strengthen the subscription software business"
+      }
+      switch task.category {
+      case .product: return "\(situation) before the next growth wave makes this product decision permanent."
+      case .crisis: return "\(situation) while containing a failure that could break customer confidence."
+      case .research: return "Use evidence to decide how \(situation.lowercased())."
+      case .sales: return "Create a go-to-market move that helps \(situation.lowercased())."
+      case .trust: return "Make the company safer and more credible as you \(situation.lowercased())."
+      case .operations: return "Put an operating system behind the work required to \(situation.lowercased())."
+      case .founderLife: return "Protect founder capacity while you \(situation.lowercased())."
+      }
+    }
+
+    private static func productDilemmaExpansion(from source: [FounderDilemma], as type: ProductType) -> [FounderDilemma] {
+      source.map { dilemma in
+        var localized = dilemma
+        localized.id = "\(type.rawValue)-\(dilemma.id)"
+        localized.title = "\(type.name): \(dilemma.title)"
+        localized.setup = dilemmaSetup(for: dilemma.chapter, type: type)
+        localized.productTypes = [type]
+        return localized
+      }
+    }
+
+    private static func dilemmaSetup(for chapter: VentureChapter, type: ProductType) -> String {
+      let pressure: String
+      switch type {
+      case .consumerApp: pressure = "retention, discovery, and platform policy"
+      case .hardware: pressure = "supplier timing, defects, and inventory cash"
+      case .marketplace: pressure = "liquidity, trust between strangers, and take-rate economics"
+      case .saas: pressure = "enterprise demand and subscription retention"
+      }
+      switch chapter {
+      case .prototype: return "An early product decision will shape how the company handles \(pressure)."
+      case .firstCustomers: return "Customer feedback exposes a hard tradeoff in \(pressure)."
+      case .launchPressure: return "Launch momentum is colliding with \(pressure)."
+      case .surviveOrScale: return "The next scale decision changes the company’s exposure to \(pressure)."
+      }
+    }
 }

@@ -236,7 +236,7 @@ private struct FounderSetupScreen: View {
               .foregroundStyle(SoloTheme.cyan)
             Text("Create your founder")
               .font(.largeTitle.bold())
-            Text("Choose how long the story runs, then the doctrine that shapes it. "
+            Text("Choose how long the story runs, what the company makes, then the doctrine that shapes it. "
                  + "None is universally correct.")
               .foregroundStyle(.secondary)
           }
@@ -262,6 +262,22 @@ private struct FounderSetupScreen: View {
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(store.selectedCareerMode == mode ? .isSelected : [])
               }
+            }
+          }
+
+          VStack(alignment: .leading, spacing: 12) {
+            Text("PRODUCT")
+              .font(.caption.weight(.black))
+              .tracking(2)
+              .foregroundStyle(SoloTheme.cyan)
+            ForEach(ProductType.allCases) { productType in
+              Button {
+                withAnimation(.snappy) { store.selectedProductType = productType }
+              } label: {
+                ProductTypeCard(productType: productType, isSelected: store.selectedProductType == productType)
+              }
+              .buttonStyle(.plain)
+              .accessibilityAddTraits(store.selectedProductType == productType ? .isSelected : [])
             }
           }
 
@@ -299,6 +315,35 @@ private struct FounderSetupScreen: View {
         }
       }
     }
+  }
+}
+
+private struct ProductTypeCard: View {
+  var productType: ProductType
+  var isSelected: Bool
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      HStack {
+        Text(productType.name).font(.headline)
+        Spacer()
+        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+          .foregroundStyle(isSelected ? SoloTheme.cyan : .secondary)
+      }
+      Text(productType.summary).font(.subheadline).foregroundStyle(.secondary)
+      HStack(spacing: 6) {
+        ForEach(productType.flavorTags, id: \.self) { tag in
+          Text(tag).font(.caption.weight(.semibold)).padding(.horizontal, 8).padding(.vertical, 4)
+            .background(SoloTheme.cyan.opacity(0.14), in: Capsule())
+        }
+      }
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(16)
+    .background(isSelected ? SoloTheme.purple.opacity(0.18) : SoloTheme.card)
+    .overlay { RoundedRectangle(cornerRadius: 18).stroke(isSelected ? SoloTheme.cyan : .white.opacity(0.08), lineWidth: isSelected ? 2 : 1) }
+    .clipShape(.rect(cornerRadius: 18))
+    .accessibilityElement(children: .combine)
   }
 }
 
