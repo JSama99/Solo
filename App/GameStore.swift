@@ -51,6 +51,10 @@ final class GameStore {
   private(set) var workforceNotifications: [String] = []
   var techComHeadlines: [TechComHeadline] = []
   var techComRivals: [TechComRival] = []
+  private(set) var statementSpent = 0
+  private(set) var feedPosts: [FeedPost] = []
+  private var pendingFeedEffects = SimulationEffects()
+  private var injectedFeedTaskTitle: String?
   private(set) var talentBoardRefreshes = 0
 
   // ── Build 3: career layer ─────────────────────────────────────────
@@ -112,6 +116,19 @@ final class GameStore {
   }
 
   var facilityBonuses: FacilityBonuses { progressionStore?.bonuses ?? .none }
+  var statementAvailable: Bool { statementSpent < 1 }
+
+  func resolveFeed(postID: String, actionID: String) {
+    guard let index = feedPosts.firstIndex(where: { $0.id == postID }), feedPosts[index].resolvedActionID == nil,
+          let action = feedPosts[index].actions.first(where: { $0.id == actionID }),
+          !action.requiresStatement || statementAvailable else { return }
+    if action.requiresStatement { statementSpent += 1 }
+    feedPosts[index].resolvedActionID = actionID
+    pendingFeedEffects = pendingFeedEffects + action.effects
+    stats.coverage = min(100, max(-100, stats.coverage + action.coverageDelta))
+    injectedFeedTaskTitle = action.grantsTaskTitle
+    save()
+  }
 
   var rivalStandings: [RivalStanding] {
     RivalEngine.standings(
@@ -141,15 +158,19 @@ final class GameStore {
 
   func hire(_ candidate: TalentCandidate) {
     guard talentBoardGateMessage == nil, let slot = nextTalentSlot,
-          talentBoardCandidates.contains(candidate), stats.capital >= candidate.price else {
-      alertMessage = stats.capital < candidate.price ? "Not enough Capital for this hire." : talentBoardGateMessage
+          talentBoardCandidates.contains(candidate), stats.capital >= talentPrice(candidate) else {
+      alertMessage = stats.capital < talentPrice(candidate) ? "Not enough Capital for this hire." : talentBoardGateMessage
       return
     }
     guard (slot == 4 && TalentBoard.fourthSlotPriceRange.contains(candidate.price)) || (slot == 5 && TalentBoard.fifthSlotPriceRange.contains(candidate.price)) else { return }
-    stats.capital -= candidate.price
+    stats.capital -= talentPrice(candidate)
     agents.append(candidate.makeAgent())
     achievementStore?.recordWorkforce(agents)
     save()
+  }
+
+  func talentPrice(_ candidate: TalentCandidate) -> Int {
+    Int((Double(candidate.price) * (1 - Double(stats.coverage) / 500)).rounded())
   }
 
   func refreshTalentBoard() {
@@ -729,7 +750,12 @@ final class GameStore {
 
     let dueEffects = pendingEffects.filter { $0.dueCareerSprint <= careerSprintIndex }
     pendingEffects.removeAll { $0.dueCareerSprint <= careerSprintIndex }
-    var effects = dueEffects.reduce(SimulationEffects()) { $0 + $1.effects }
+    var effects = dueEffects.reduce(SimulationEffects()) { $0 + $1.effects } + pendingFeedEffects
+    pendingFeedEffects = SimulationEffects()
+    for post in feedPosts where post.kind == .pressInquiry && post.resolvedActionID == nil {
+      effects.trust -= 3
+      stats.coverage = max(-100, stats.coverage - 6)
+    }
     applyActiveObligations(to: &effects)
     effects = effects + skippedConsequences
     var acquisitionAccepted = false
@@ -1076,6 +1102,7 @@ final class GameStore {
     reportCache = []
     taskBacklog = []
     founderAttentionSpent = 0
+    statementSpent = 0
     activeDilemma = nil
     selectedDilemmaChoiceID = nil
     currentObjective = nil
@@ -1106,9 +1133,14 @@ final class GameStore {
     let draft = makeTaskDraft()
     tasks = draft.active
     taskBacklog = draft.backlog
+    if let title = injectedFeedTaskTitle {
+      tasks[0] = SoloTask(title: title, detail: "Answer the rival’s move with evidence before it hardens into market share.", role: .marketing, category: .sales, urgency: .important, impact: .momentum(8), skipEffects: SimulationEffects(trust: -2))
+      injectedFeedTaskTitle = nil
+    }
     activeDilemma = makeDilemma()
     selectedDilemmaChoiceID = nil
     currentObjective = makeObjective()
+    feedPosts = TechComFeedEngine.posts(venture: venture, sprint: sprint, stats: stats, standings: rivalStandings)
     syncAssignments()
   }
 
@@ -1866,6 +1898,7 @@ final class GameStore {
     stats.energy = clamped(stats.energy)
     stats.capital = min(1_000_000_000, max(0, stats.capital))
     stats.trackRecord = min(1_000_000, max(0, stats.trackRecord))
+    stats.coverage = min(100, max(-100, stats.coverage))
     for index in agents.indices {
       agents[index].reliability = clamped(agents[index].reliability)
       agents[index].calibration = safeUnitValue(agents[index].calibration)

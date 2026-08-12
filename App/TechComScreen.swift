@@ -17,6 +17,19 @@ struct TechComScreen: View {
           section("Your Company", symbol: "building.2.fill") {
             headlines(category: .ownCompany, empty: "Your company moves will appear here as the sprint unfolds.")
           }
+          section("Decision Feed", symbol: "megaphone.fill") {
+            Text("Statement \(store.statementAvailable ? "available" : "spent") • Coverage \(store.stats.coverage >= 0 ? "+" : "")\(store.stats.coverage)")
+              .font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.cyan)
+            ForEach(store.feedPosts) { post in
+              VStack(alignment: .leading, spacing: 5) {
+                Text(post.headline).font(.subheadline.weight(.bold))
+                Text(post.body).font(.caption).foregroundStyle(.secondary)
+                if let resolved = post.resolvedActionID, let action = post.actions.first(where: { $0.id == resolved }) { Text(action.label).font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.mint) }
+                else { ForEach(post.actions) { action in Button(action.label) { store.resolveFeed(postID: post.id, actionID: action.id) }.buttonStyle(.bordered).disabled(action.requiresStatement && !store.statementAvailable) } }
+              }
+              if post.id != store.feedPosts.last?.id { Divider() }
+            }
+          }
           section("Trends", symbol: "waveform.path.ecg") {
             headlines(category: .trend, empty: "Industry watch is gathering signal.")
           }
@@ -93,12 +106,12 @@ struct TechComScreen: View {
           HStack {
             Label(candidate.name, systemImage: candidate.role.symbol).font(.subheadline.weight(.bold))
             Spacer()
-            Text("$\(candidate.price)").font(.caption.weight(.bold)).foregroundStyle(SoloTheme.cyan)
+            Text("$\(store.talentPrice(candidate))").font(.caption.weight(.bold)).foregroundStyle(SoloTheme.cyan)
           }
           Text("\(candidate.role.rawValue) • \(candidate.modelFamily)").font(.caption).foregroundStyle(.secondary)
           Text(candidate.pitch).font(.caption)
           Button("Hire \(candidate.name)", systemImage: "person.badge.plus") { store.hire(candidate) }
-            .buttonStyle(.borderedProminent).tint(SoloTheme.purple).disabled(store.stats.capital < candidate.price)
+            .buttonStyle(.borderedProminent).tint(SoloTheme.purple).disabled(store.stats.capital < store.talentPrice(candidate))
         }
         .padding(.vertical, 4)
         if candidate.id != store.talentBoardCandidates.last?.id { Divider() }
