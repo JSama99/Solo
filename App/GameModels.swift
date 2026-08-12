@@ -413,6 +413,7 @@ struct FounderStats: Codable, Hashable {
   var energy = 82
   var capital = 2_500
   var trackRecord = 0
+  var coverage = 0
 }
 
 enum AgentStressBand: String, Codable, CaseIterable {
