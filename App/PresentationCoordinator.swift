@@ -18,6 +18,8 @@ final class PresentationCoordinator {
 
   private(set) var latestEvent: Event?
   private(set) var eventHistory: [Event] = []
+  private var bufferedVenture = 0
+  private var bufferedSprint = 0
   private(set) var visibleSprintResult: VisibleSprintResult?
 
   func assign(agentID: String?, to taskID: UUID, in store: GameStore) {
@@ -65,6 +67,7 @@ final class PresentationCoordinator {
     let evidenceBefore = store.evidence.count
     let ventureBefore = store.venture
     let sprintBefore = store.sprint
+    let snapshot = TechComSnapshot(founderName: store.founderName, venture: ventureBefore, sprint: sprintBefore, stats: statsBefore, agents: store.agents, tasks: tasksBefore, dilemmaChoice: store.selectedDilemmaChoice)
     store.commitSprint()
     guard let canonicalReport = store.report else { return }
     let transition: VisibleSprintResult.Transition
@@ -87,7 +90,9 @@ final class PresentationCoordinator {
     )
     visibleSprintResult = visible
     latestEvent = .sprint(id: UUID(), result: visible)
-    publish(latestEvent!, in: store)
+    buffer(latestEvent!, venture: ventureBefore, sprint: sprintBefore)
+    store.recordTechComHeadlines(events: eventHistory, snapshot: snapshot)
+    eventHistory = []
     progression.observe(trackRecord: store.stats.trackRecord)
     if store.careerOutcome != nil {
       progression.recordCareerCompletion(trackRecord: store.stats.trackRecord)
@@ -104,8 +109,15 @@ final class PresentationCoordinator {
   }
 
   private func publish(_ event: Event, in store: GameStore) {
+    buffer(event, venture: store.venture, sprint: store.sprint)
+  }
+
+  private func buffer(_ event: Event, venture: Int, sprint: Int) {
+    if bufferedVenture != venture || bufferedSprint != sprint {
+      eventHistory = []
+      bufferedVenture = venture
+      bufferedSprint = sprint
+    }
     eventHistory.append(event)
-    if eventHistory.count > 24 { eventHistory.removeFirst(eventHistory.count - 24) }
-    store.recordTechComHeadlines(events: [event])
   }
 }

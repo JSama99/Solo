@@ -29,7 +29,7 @@ struct FounderGarageScene: View {
       VStack(alignment: .leading, spacing: 5) {
         Text("The Founder's Garage")
           .font(.title3.weight(.bold))
-        Text("Three agent bays and one founder's desk. This is a live, read-only workforce view; assignments happen in Command Deck.")
+        Text("Three agent bays and one founder's desk. Inspect work, assign agents, and review reports here.")
           .font(.caption)
           .foregroundStyle(.secondary)
       }
@@ -83,6 +83,7 @@ struct FounderGarageScene: View {
               motion: motion,
             isDimmed: focusedAgentID != nil && focusedAgentID != station.id || !gate.stationIsActionable(station),
             isActionable: gate.stationIsActionable(station),
+            isHighlighted: gate.stationIsHighlighted(station),
               differentiateWithoutColor: differentiateWithoutColor
             ) {
               focusedAgentID = station.id
@@ -191,19 +192,16 @@ struct FounderGarageScene: View {
   private var deskControl: some View {
     Button { deskPresented = true } label: {
       founderDesk
-        .opacity(gate.deskIsActionable ? 1 : 0.38)
+        .opacity(1)
         .overlay {
-          if gate.deskIsActionable {
-            RoundedRectangle(cornerRadius: 18)
-              .stroke(SoloTheme.cyan, lineWidth: gate.primary == .desk ? 2 : 1)
-              .shadow(color: SoloTheme.cyan.opacity(gate.primary == .desk ? 0.75 : 0), radius: 12)
-          }
+          RoundedRectangle(cornerRadius: 18)
+            .stroke(SoloTheme.cyan, lineWidth: gate.primary == .desk ? 2 : 1)
+            .shadow(color: SoloTheme.cyan.opacity(gate.primary == .desk ? 0.75 : 0), radius: 12)
         }
     }
     .buttonStyle(.plain)
-    .disabled(!gate.deskIsActionable)
     .accessibilityLabel("Founder desk")
-    .accessibilityHint(gate.deskIsActionable ? "Opens sprint controls" : "Unavailable until stations complete their work")
+    .accessibilityHint("Opens sprint controls")
   }
 
   private var sprintControls: some View {
@@ -283,6 +281,7 @@ private struct GarageBayStation: View {
   var motion: GarageMotionPolicy
   var isDimmed: Bool
   var isActionable: Bool
+  var isHighlighted: Bool
   var differentiateWithoutColor: Bool
   var action: () -> Void
 
@@ -303,6 +302,7 @@ private struct GarageBayStation: View {
       }
       .offset(y: motionOffset)
       .opacity(isDimmed ? 0.38 : 1)
+      .overlay { if isHighlighted { RoundedRectangle(cornerRadius: 16).stroke(SoloTheme.cyan, lineWidth: 2).shadow(color: SoloTheme.cyan.opacity(0.7), radius: 10) } }
       .animation(.smooth, value: isDimmed)
     }
     .buttonStyle(.plain)
@@ -426,7 +426,7 @@ private struct GarageStationSheet: View {
     if store.sprintPhase == .reviewAndResolve {
       return store.tasks.first { $0.assignedAgentID == station.agentID && $0.result != nil }
     }
-    return store.tasks.first { $0.assignedAgentID == nil } ?? store.tasks.first { $0.assignedAgentID == station.agentID }
+    return store.tasks.first { $0.assignedAgentID == station.agentID } ?? store.tasks.first { $0.assignedAgentID == nil }
   }
 }
 

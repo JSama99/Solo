@@ -177,7 +177,7 @@ final class GameStore {
     if activeDilemma != nil && selectedDilemmaChoice == nil { return .founderEvent }
     if tasks.allSatisfy({ $0.assignedAgentID == nil }) { return .chooseCommitments }
     if tasks.filter({ $0.assignedAgentID != nil }).count < tasks.count { return .assignTeam }
-    if tasks.contains(where: { $0.isReviewed && !$0.resolutionLocked }) { return .reviewAndResolve }
+    if tasks.contains(where: { !$0.isReviewed || !$0.resolutionLocked }) { return .reviewAndResolve }
     return .readyToCommit
   }
 
@@ -1685,11 +1685,14 @@ final class GameStore {
   }
 
   func recordTechComHeadlines(events: [PresentationCoordinator.Event]) {
-    let snapshot = TechComSnapshot(
+    recordTechComHeadlines(events: events, snapshot: TechComSnapshot(
       founderName: founderName, venture: venture, sprint: sprint, stats: stats,
       agents: agents, tasks: tasks, dilemmaChoice: selectedDilemmaChoice
-    )
-    var generator = SeededRandomNumberGenerator(seed: UInt64(venture * 10_000 + sprint * 100 + techComHeadlines.count))
+    ))
+  }
+
+  func recordTechComHeadlines(events: [PresentationCoordinator.Event], snapshot: TechComSnapshot) {
+    var generator = SeededRandomNumberGenerator(seed: UInt64(snapshot.venture * 10_000 + snapshot.sprint * 100 + techComHeadlines.count))
     let published = TechComEngine.headlines(snapshot: snapshot, events: events, generator: &generator)
     for headline in published where !techComHeadlines.contains(where: { $0.text == headline.text && $0.venture == headline.venture && $0.sprint == headline.sprint }) {
       techComHeadlines.insert(headline, at: 0)

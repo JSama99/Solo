@@ -61,9 +61,9 @@ struct TechComScreen: View {
   private func rivalRow(_ rival: TechComRival) -> some View {
     VStack(alignment: .leading, spacing: 7) {
       HStack { Text(rival.name).font(.subheadline.weight(.bold)); Spacer(); Text(rival.verificationState.label).font(.caption.weight(.semibold)).foregroundStyle(rival.isVerified ? SoloTheme.mint : SoloTheme.amber) }
-      HStack { Label("Claimed \(rival.claimedTrackRecord)", systemImage: "doc.text.magnifyingglass").foregroundStyle(SoloTheme.cyan); Spacer(); Text("Momentum \(rival.claimedMomentum)").foregroundStyle(.secondary) }.font(.caption)
-      if rival.isVerified { HStack { Label("Verified actual \(rival.actualTrackRecord)", systemImage: "checkmark.seal.fill").foregroundStyle(SoloTheme.mint); if rival.overclaimAmount > 0 { Spacer(); Text("Overclaim +\(rival.overclaimAmount)").foregroundStyle(SoloTheme.amber) } }.font(.caption.weight(.semibold)) }
-      else { Button("Verify claim • 1 Attention", systemImage: "eye.fill") { _ = store.verifyTechComRival(id: rival.id) }.buttonStyle(.bordered).tint(SoloTheme.purple).disabled(store.attentionRemaining == 0).accessibilityHint("Reveals the rival’s actual track record") }
+      Text("Claimed: record \(rival.claimedTrackRecord) • $\(rival.claimedRevenue) • momentum \(rival.claimedMomentum)").font(.caption).foregroundStyle(SoloTheme.cyan)
+      if rival.isVerified { VStack(alignment: .leading, spacing: 3) { Label("Verified: record \(rival.actualTrackRecord) • $\(rival.actualRevenue) • momentum \(rival.actualMomentum)", systemImage: "checkmark.seal.fill").foregroundStyle(SoloTheme.mint); if rival.overclaimAmount > 0 { Text("Track-record overclaim +\(rival.overclaimAmount)").foregroundStyle(SoloTheme.amber) } }.font(.caption.weight(.semibold)) }
+      else { Button("Verify claim • 1 Attention", systemImage: "eye.fill") { _ = store.verifyTechComRival(id: rival.id) }.buttonStyle(.bordered).tint(SoloTheme.purple).disabled(store.attentionRemaining == 0).accessibilityHint("Reveals all claimed rival metrics") }
     }
     .padding(.vertical, 4)
   }

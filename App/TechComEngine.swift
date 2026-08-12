@@ -19,7 +19,6 @@ struct NewsHeadlineTemplate {
   var category: TechComHeadlineCategory
   var textTemplate: String
   var trigger: (TechComSnapshot) -> Bool
-  var priorityWeight: Int
 
   func resolve(_ slots: [String: String]) -> String {
     slots.reduce(textTemplate) { text, slot in
@@ -49,7 +48,8 @@ struct TechComRival: Codable, Identifiable, Equatable {
   var actualMomentum: Int
   var isVerified = false
 
-  var verificationState: VerificationState { isVerified ? (overclaimAmount >= 8 ? .overclaimed : .confirmed) : .unverified }
+  static let overclaimThreshold = 8
+  var verificationState: VerificationState { isVerified ? (overclaimAmount >= Self.overclaimThreshold ? .overclaimed : .confirmed) : .unverified }
   var overclaimAmount: Int { max(0, claimedTrackRecord - actualTrackRecord) }
 }
 
@@ -86,11 +86,13 @@ enum TechComEngine {
     return ContentLibrary.rivalCompanies.map { definition in
       let actualTrack = generator.integer(in: 18...72)
       let gap = generator.integer(in: 0...18)
+      let actualRevenue = generator.integer(in: 650...4_200)
+      let actualMomentum = generator.integer(in: 25...88)
       return TechComRival(
         id: definition.id, name: definition.name,
         claimedTrackRecord: actualTrack + gap, actualTrackRecord: actualTrack,
-        claimedRevenue: generator.integer(in: 900...4_800), actualRevenue: generator.integer(in: 650...4_200),
-        claimedMomentum: generator.integer(in: 35...92), actualMomentum: generator.integer(in: 25...88)
+        claimedRevenue: actualRevenue + generator.integer(in: 0...900), actualRevenue: actualRevenue,
+        claimedMomentum: actualMomentum + generator.integer(in: 0...18), actualMomentum: actualMomentum
       )
     }
   }
