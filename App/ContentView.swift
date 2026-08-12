@@ -390,6 +390,9 @@ private struct GameDashboard: View {
       Tab("Venture", systemImage: "chart.line.uptrend.xyaxis") {
         VentureScreen(store: store)
       }
+      Tab("Tech.com", systemImage: "newspaper.fill") {
+        TechComScreen(store: store)
+      }
       Tab("More", systemImage: "ellipsis") {
         RecordsScreen(store: store)
       }

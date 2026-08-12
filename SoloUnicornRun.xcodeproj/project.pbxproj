@@ -70,6 +70,10 @@
 		B2BFB1EE90AB231E41812DEF /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1999948F297FBA3D5958727 /* App.swift */; };
 		B7879B5278335CFBFDA7FCD0 /* SeededRandomNumberGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE09C90DB6AC97A8F2FAA9FC /* SeededRandomNumberGenerator.swift */; };
 		FB6CDD52B76B96B369913C6B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */; };
+		E30000000000000000000001 /* TechComEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000011 /* TechComEngine.swift */; };
+		E30000000000000000000002 /* TechComScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000012 /* TechComScreen.swift */; };
+		E30000000000000000000003 /* TechComEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000013 /* TechComEngineTests.swift */; };
+		E30000000000000000000004 /* TechComPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000014 /* TechComPresentationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -147,6 +151,10 @@
 		B10000000000000000000001 /* RevenueCatConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCatConfiguration.swift; sourceTree = "<group>"; };
 		B10000000000000000000002 /* SubscriptionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStore.swift; sourceTree = "<group>"; };
 		B10000000000000000000003 /* SubscriptionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionScreen.swift; sourceTree = "<group>"; };
+		E10000000000000000000011 /* TechComEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComEngine.swift; sourceTree = "<group>"; };
+		E10000000000000000000012 /* TechComScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComScreen.swift; sourceTree = "<group>"; };
+		E10000000000000000000013 /* TechComEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComEngineTests.swift; sourceTree = "<group>"; };
+		E10000000000000000000014 /* TechComPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComPresentationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -191,6 +199,8 @@
 				C10000000000000000000016 /* ContentLibraryTests.swift */,
 				D10000000000000000000029 /* GarageVisualizationTests.swift */, D1000000000000000000002A /* AchievementScreenTests.swift */, D1000000000000000000002B /* AgentDetailTests.swift */, D1000000000000000000002C /* ModeSelectTests.swift */, D1000000000000000000002D /* PrecedentRecordsTests.swift */,
 				D10000000000000000000031 /* InteractiveGarageTests.swift */,
+				E10000000000000000000013 /* TechComEngineTests.swift */,
+				E10000000000000000000014 /* TechComPresentationTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -244,6 +254,8 @@
 				B10000000000000000000003 /* SubscriptionScreen.swift */,
 				B10000000000000000000002 /* SubscriptionStore.swift */,
 				C1000000000000000000000D /* VisibleSimulationProjection.swift */,
+				E10000000000000000000011 /* TechComEngine.swift */,
+				E10000000000000000000012 /* TechComScreen.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -368,6 +380,8 @@
 				C20000000000000000000016 /* ContentLibraryTests.swift in Sources */,
 				D20000000000000000000029 /* GarageVisualizationTests.swift in Sources */, D2000000000000000000002A /* AchievementScreenTests.swift in Sources */, D2000000000000000000002B /* AgentDetailTests.swift in Sources */, D2000000000000000000002C /* ModeSelectTests.swift in Sources */, D2000000000000000000002D /* PrecedentRecordsTests.swift in Sources */,
 				D20000000000000000000031 /* InteractiveGarageTests.swift in Sources */,
+				E30000000000000000000003 /* TechComEngineTests.swift in Sources */,
+				E30000000000000000000004 /* TechComPresentationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -413,6 +427,8 @@
 				B20000000000000000000003 /* SubscriptionScreen.swift in Sources */,
 				B20000000000000000000002 /* SubscriptionStore.swift in Sources */,
 				C2000000000000000000000D /* VisibleSimulationProjection.swift in Sources */,
+				E30000000000000000000001 /* TechComEngine.swift in Sources */,
+				E30000000000000000000002 /* TechComScreen.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

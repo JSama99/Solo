@@ -47,6 +47,8 @@ final class GameStore {
   /// deterministic career save. It never consumes the simulation RNG.
   var progressionStore: FounderProgressionStore?
   private(set) var workforceNotifications: [String] = []
+  var techComHeadlines: [TechComHeadline] = []
+  var techComRivals: [TechComRival] = []
 
   // ── Build 3: career layer ─────────────────────────────────────────
   /// Precedents banked across the career. Recorded in every venture,
@@ -88,6 +90,7 @@ final class GameStore {
 
   var hasSave: Bool {
     UserDefaults.standard.data(forKey: Self.saveKey) != nil
+      || UserDefaults.standard.data(forKey: Self.v9SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v8SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v7SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v6SaveKey) != nil
@@ -315,6 +318,8 @@ final class GameStore {
     report = nil
     pendingEffects = []
     reportCache = []
+    techComHeadlines = []
+    techComRivals = TechComEngine.rivals(seed: seed ?? 0x534F4C4F)
     randomNumberGenerator = SeededRandomNumberGenerator(seed: seed ?? UInt64.random(in: .min ... .max))
     let startingAdjustment = DoctrineProfile.profile(for: doctrine).startingStatAdjustment
     stats.trust += startingAdjustment.trust
@@ -345,6 +350,10 @@ final class GameStore {
        let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
        envelope.version == Self.saveVersion {
       loadedSave = envelope.career
+    } else if let data = UserDefaults.standard.data(forKey: Self.v9SaveKey),
+              let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
+              envelope.version == 9 {
+      loadedSave = migrateV9(envelope.career)
     } else if let data = UserDefaults.standard.data(forKey: Self.v8SaveKey),
               let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
               envelope.version == 8 {
@@ -1354,6 +1363,8 @@ final class GameStore {
     activeObligations = save.activeObligations
     decisionHistory = save.decisionHistory
     completedObjectives = save.completedObjectives
+    techComHeadlines = save.techComHeadlines
+    techComRivals = save.techComRivals.isEmpty ? TechComEngine.rivals(seed: UInt64(save.venture * 100 + save.sprint)) : save.techComRivals
     recallsShownThisVenture = 0
     activeRecall = nil
     // This safety net is bounded-mode-only, same reasoning as the clamp above:
@@ -1417,6 +1428,10 @@ final class GameStore {
   }
 
   private func migrateV8(_ legacy: CareerSave) -> CareerSave {
+    legacy
+  }
+
+  private func migrateV9(_ legacy: CareerSave) -> CareerSave {
     legacy
   }
 
@@ -1669,6 +1684,29 @@ final class GameStore {
     saveCareer()
   }
 
+  func recordTechComHeadlines(events: [PresentationCoordinator.Event]) {
+    let snapshot = TechComSnapshot(
+      founderName: founderName, venture: venture, sprint: sprint, stats: stats,
+      agents: agents, tasks: tasks, dilemmaChoice: selectedDilemmaChoice
+    )
+    var generator = SeededRandomNumberGenerator(seed: UInt64(venture * 10_000 + sprint * 100 + techComHeadlines.count))
+    let published = TechComEngine.headlines(snapshot: snapshot, events: events, generator: &generator)
+    for headline in published where !techComHeadlines.contains(where: { $0.text == headline.text && $0.venture == headline.venture && $0.sprint == headline.sprint }) {
+      techComHeadlines.insert(headline, at: 0)
+    }
+    techComHeadlines = Array(techComHeadlines.prefix(60))
+    save()
+  }
+
+  @discardableResult
+  func verifyTechComRival(id: String) -> Bool {
+    guard attentionRemaining > 0, let index = techComRivals.firstIndex(where: { $0.id == id }), !techComRivals[index].isVerified else { return false }
+    techComRivals[index].isVerified = true
+    founderAttentionSpent += 1
+    save()
+    return true
+  }
+
   private func saveCareer() {
     // FIX (Build 5): the checkpoint stage was missing from this guard, so
     // presentVentureCheckpoint() -> saveCareer() would silently no-op and
@@ -1710,11 +1748,14 @@ final class GameStore {
       companyFlags: companyFlags,
       activeObligations: activeObligations,
       decisionHistory: decisionHistory,
-      completedObjectives: completedObjectives
+      completedObjectives: completedObjectives,
+      techComHeadlines: techComHeadlines,
+      techComRivals: techComRivals
     )
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
       UserDefaults.standard.set(data, forKey: Self.saveKey)
+      UserDefaults.standard.removeObject(forKey: Self.v9SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v8SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v7SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v6SaveKey)
@@ -1854,8 +1895,9 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  private static let saveVersion = 9
-  private static let saveKey = "solo-unicorn-run-native-save-v9"
+  private static let saveVersion = 10
+  private static let saveKey = "solo-unicorn-run-native-save-v10"
+  private static let v9SaveKey = "solo-unicorn-run-native-save-v9"
   private static let v8SaveKey = "solo-unicorn-run-native-save-v8"
   private static let v7SaveKey = "solo-unicorn-run-native-save-v7"
   private static let v6SaveKey = "solo-unicorn-run-native-save-v6"

@@ -1048,6 +1048,8 @@ struct CareerSave: Codable {
   var activeObligations: [CompanyObligation]
   var decisionHistory: [CareerDecisionRecord]
   var completedObjectives: Int
+  var techComHeadlines: [TechComHeadline]
+  var techComRivals: [TechComRival]
 
   private enum CodingKeys: String, CodingKey {
     case founderName, doctrine, sprint, venture, intent, stats, agents, tasks
@@ -1057,6 +1059,7 @@ struct CareerSave: Codable {
     case careerMode, pendingVentureCheckpoint
     case recentTaskTitles, taskDeckTitles, dilemmaDeckTemplateIDs, dilemmaDeckChapter
     case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives
+    case techComHeadlines, techComRivals
   }
 
   init(
@@ -1091,7 +1094,9 @@ struct CareerSave: Codable {
     companyFlags: Set<CompanyFlag> = [],
     activeObligations: [CompanyObligation] = [],
     decisionHistory: [CareerDecisionRecord] = [],
-    completedObjectives: Int = 0
+    completedObjectives: Int = 0,
+    techComHeadlines: [TechComHeadline] = [],
+    techComRivals: [TechComRival] = []
   ) {
     self.founderName = founderName
     self.doctrine = doctrine
@@ -1125,6 +1130,8 @@ struct CareerSave: Codable {
     self.activeObligations = activeObligations
     self.decisionHistory = decisionHistory
     self.completedObjectives = completedObjectives
+    self.techComHeadlines = techComHeadlines
+    self.techComRivals = techComRivals
   }
 
   init(from decoder: Decoder) throws {
@@ -1173,6 +1180,8 @@ struct CareerSave: Codable {
     activeObligations = try container.decodeIfPresent([CompanyObligation].self, forKey: .activeObligations) ?? []
     decisionHistory = try container.decodeIfPresent([CareerDecisionRecord].self, forKey: .decisionHistory) ?? []
     completedObjectives = try container.decodeIfPresent(Int.self, forKey: .completedObjectives) ?? 0
+    techComHeadlines = try container.decodeIfPresent([TechComHeadline].self, forKey: .techComHeadlines) ?? []
+    techComRivals = try container.decodeIfPresent([TechComRival].self, forKey: .techComRivals) ?? []
   }
 }
 

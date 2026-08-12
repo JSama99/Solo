@@ -17,6 +17,7 @@ final class PresentationCoordinator {
   }
 
   private(set) var latestEvent: Event?
+  private(set) var eventHistory: [Event] = []
   private(set) var visibleSprintResult: VisibleSprintResult?
 
   func assign(agentID: String?, to taskID: UUID, in store: GameStore) {
@@ -38,6 +39,7 @@ final class PresentationCoordinator {
       agentID: agentID,
       restored: restored
     )
+    publish(latestEvent!, in: store)
   }
 
   func review(taskID: UUID, in store: GameStore) {
@@ -54,6 +56,7 @@ final class PresentationCoordinator {
       result: VisibleSimulationProjection.taskResult(from: result),
       evidenceChanged: store.evidence.count != evidenceBefore
     )
+    publish(latestEvent!, in: store)
   }
 
   func commit(in store: GameStore, progression: FounderProgressionStore) {
@@ -84,6 +87,7 @@ final class PresentationCoordinator {
     )
     visibleSprintResult = visible
     latestEvent = .sprint(id: UUID(), result: visible)
+    publish(latestEvent!, in: store)
     progression.observe(trackRecord: store.stats.trackRecord)
     if store.careerOutcome != nil {
       progression.recordCareerCompletion(trackRecord: store.stats.trackRecord)
@@ -97,5 +101,11 @@ final class PresentationCoordinator {
   func clearLatestEvent(id: UUID) {
     guard latestEvent?.id == id else { return }
     latestEvent = nil
+  }
+
+  private func publish(_ event: Event, in store: GameStore) {
+    eventHistory.append(event)
+    if eventHistory.count > 24 { eventHistory.removeFirst(eventHistory.count - 24) }
+    store.recordTechComHeadlines(events: [event])
   }
 }
