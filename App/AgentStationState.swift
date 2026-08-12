@@ -1,5 +1,27 @@
 import Foundation
 
+struct GarageTurnGate: Equatable {
+  enum Primary: Equatable { case desk, stations }
+  var phase: SprintPhase
+
+  var primary: Primary {
+    switch phase {
+    case .founderEvent, .readyToCommit: .desk
+    case .chooseCommitments, .assignTeam, .reviewAndResolve: .stations
+    }
+  }
+
+  var deskIsActionable: Bool { primary == .desk || phase != .founderEvent }
+
+  func stationIsActionable(_ station: AgentStationViewModel) -> Bool {
+    switch phase {
+    case .founderEvent, .readyToCommit: false
+    case .chooseCommitments, .assignTeam: station.semanticState != .awaitingReview
+    case .reviewAndResolve: station.semanticState == .awaitingReview
+    }
+  }
+}
+
 /// The immutable, visible data a Garage station may render. It deliberately has
 /// no reference to GameStore, assignments, or a mutation callback.
 struct AgentStationViewModel: Identifiable, Equatable {

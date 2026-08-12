@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FounderEnvironmentScreen: View {
   var store: GameStore
+  var presentation: PresentationCoordinator
 
   @Environment(FounderProgressionStore.self) private var progression
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -21,7 +22,10 @@ struct FounderEnvironmentScreen: View {
               facility: progression.currentFacility,
               stats: store.stats,
               attentionRemaining: store.attentionRemaining,
-              attentionMaximum: store.attentionMaximum
+              attentionMaximum: store.attentionMaximum,
+              store: store,
+              progression: progression,
+              presentation: presentation
             )
           }
         }

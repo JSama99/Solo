@@ -7,16 +7,24 @@ struct FounderGarageScene: View {
   var stats: FounderStats
   var attentionRemaining: Int
   var attentionMaximum: Int
+  var store: GameStore?
+  var progression: FounderProgressionStore?
+  var presentation: PresentationCoordinator?
   var motion: GarageMotionPolicy
   var date: Date
   @Binding var selectedStation: AgentStationViewModel?
 
   @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
   @State private var focusedAgentID: String?
+  @State private var deskPresented = false
+  @State private var stationPresented: AgentStationViewModel?
+
+  private var gate: GarageTurnGate { GarageTurnGate(phase: store?.sprintPhase ?? .founderEvent) }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 14) {
       header
+      sprintControls
       garageCanvas
       VStack(alignment: .leading, spacing: 5) {
         Text("The Founder's Garage")
@@ -33,6 +41,10 @@ struct FounderGarageScene: View {
     .overlay {
       RoundedRectangle(cornerRadius: 22)
         .stroke(Color.white.opacity(0.08), lineWidth: 1)
+    }
+    .sheet(isPresented: $deskPresented) { GarageDeskSheet(store: store, progression: progression, presentation: presentation) }
+    .sheet(item: $stationPresented) { station in
+      GarageStationSheet(station: station, store: store, presentation: presentation)
     }
   }
 
@@ -60,7 +72,7 @@ struct FounderGarageScene: View {
           garageShell
           ceilingBeams
           warmLighting
-          founderDesk
+          deskControl
 
           ForEach(Array(stations.enumerated()), id: \.element.id) { index, station in
             GarageBayStation(
@@ -69,11 +81,12 @@ struct FounderGarageScene: View {
               icon: bayIcon(for: station, index: index),
               date: date,
               motion: motion,
-              isDimmed: focusedAgentID != nil && focusedAgentID != station.id,
+            isDimmed: focusedAgentID != nil && focusedAgentID != station.id || !gate.stationIsActionable(station),
+            isActionable: gate.stationIsActionable(station),
               differentiateWithoutColor: differentiateWithoutColor
             ) {
               focusedAgentID = station.id
-              selectedStation = station
+              stationPresented = station
             }
             .frame(width: size.width * bayWidth(for: index), height: size.height * 0.52)
             .position(x: size.width * bayX(for: index), y: size.height * bayY(for: index))
@@ -175,6 +188,40 @@ struct FounderGarageScene: View {
     .padding(.bottom, 18)
   }
 
+  private var deskControl: some View {
+    Button { deskPresented = true } label: {
+      founderDesk
+        .opacity(gate.deskIsActionable ? 1 : 0.38)
+        .overlay {
+          if gate.deskIsActionable {
+            RoundedRectangle(cornerRadius: 18)
+              .stroke(SoloTheme.cyan, lineWidth: gate.primary == .desk ? 2 : 1)
+              .shadow(color: SoloTheme.cyan.opacity(gate.primary == .desk ? 0.75 : 0), radius: 12)
+          }
+        }
+    }
+    .buttonStyle(.plain)
+    .disabled(!gate.deskIsActionable)
+    .accessibilityLabel("Founder desk")
+    .accessibilityHint(gate.deskIsActionable ? "Opens sprint controls" : "Unavailable until stations complete their work")
+  }
+
+  private var sprintControls: some View {
+    HStack(spacing: 10) {
+      Label(store?.sprintPhase.title ?? "Founder Event", systemImage: store?.sprintPhase.symbol ?? "circle")
+        .font(.caption.weight(.bold))
+        .foregroundStyle(SoloTheme.cyan)
+      Spacer()
+      Label("\(attentionRemaining)/\(attentionMaximum)", systemImage: "eye.fill")
+        .font(.caption.weight(.bold))
+        .foregroundStyle(SoloTheme.amber)
+      Button("Desk", systemImage: "desktopcomputer") { deskPresented = true }
+        .buttonStyle(.bordered)
+    }
+    .padding(10)
+    .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
+  }
+
   private var founderMetrics: some View {
     VStack(alignment: .leading, spacing: 0) {
       Text("FOUNDER METRICS")
@@ -235,6 +282,7 @@ private struct GarageBayStation: View {
   var date: Date
   var motion: GarageMotionPolicy
   var isDimmed: Bool
+  var isActionable: Bool
   var differentiateWithoutColor: Bool
   var action: () -> Void
 
@@ -258,6 +306,7 @@ private struct GarageBayStation: View {
       .animation(.smooth, value: isDimmed)
     }
     .buttonStyle(.plain)
+    .disabled(!isActionable)
     .accessibilityLabel("\(station.name), level \(station.progression.level), \(station.progression.stressBand.label) stress")
     .accessibilityValue(station.accessibilityValue)
     .accessibilityHint("Opens read-only agent details")
@@ -294,6 +343,90 @@ private struct GarageBayStation: View {
       }
       .offset(y: -17)
     }
+  }
+}
+
+private struct GarageDeskSheet: View {
+  var store: GameStore?
+  var progression: FounderProgressionStore?
+  var presentation: PresentationCoordinator?
+
+  var body: some View {
+    NavigationStack {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 16) {
+          if let store, store.sprintPhase == .founderEvent, let dilemma = store.activeDilemma {
+            FounderDilemmaCard(dilemma: dilemma, selectedChoiceID: store.selectedDilemmaChoiceID, onSelect: store.selectDilemmaChoice)
+          } else if let store, let dilemma = store.activeDilemma, let choice = store.selectedDilemmaChoice {
+            ResolvedDilemmaSummary(dilemma: dilemma, choice: choice)
+          }
+          if let store {
+            if let objective = store.currentObjective { SprintObjectiveCard(objective: objective, progress: store.objectiveProgressText) }
+            Picker("Sprint intent", selection: Binding(get: { store.intent }, set: { store.setIntent($0) })) {
+              ForEach(SprintIntent.allCases) { Label($0.name, systemImage: $0.symbol).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            .disabled(store.tasks.contains { $0.assignedAgentID != nil })
+            Button("Commit Sprint", systemImage: "bolt.fill") {
+              if let progression, let presentation { presentation.commit(in: store, progression: progression) }
+            }
+            .buttonStyle(SoloPrimaryButtonStyle())
+            .disabled(!store.canCommitSprint)
+            if let blocker = store.commitBlockerMessage { Text(blocker).font(.caption).foregroundStyle(.secondary) }
+          }
+        }
+        .padding(16)
+      }
+      .navigationTitle("Founder Desk")
+    }
+  }
+}
+
+private struct GarageStationSheet: View {
+  var station: AgentStationViewModel
+  var store: GameStore?
+  var presentation: PresentationCoordinator?
+
+  var body: some View {
+    NavigationStack {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 14) {
+          Text(station.name).font(.title2.bold())
+          if let store, let current = store.tasks.first(where: { $0.assignedAgentID == station.agentID }) {
+            Label("Currently assigned: \(current.title)", systemImage: "person.badge.clock")
+              .font(.subheadline.weight(.semibold)).foregroundStyle(SoloTheme.amber)
+          }
+          if let store, let task = task(for: store) {
+            TaskCommandCard(task: task, agents: store.agents, founderStats: store.stats) { agentID in
+              presentation?.assign(agentID: agentID, to: task.id, in: store)
+            } onReview: {
+              presentation?.review(taskID: task.id, in: store)
+            } onResolution: { choice in
+              store.resolveReviewedTask(taskID: task.id, choice: choice)
+            }
+            if store.sprintPhase != .reviewAndResolve, !store.taskBacklog.isEmpty {
+              Menu("Swap draft from backlog", systemImage: "arrow.left.arrow.right") {
+                ForEach(store.taskBacklog) { candidate in
+                  Button(candidate.title) { _ = store.swapDraftTask(activeTaskID: task.id, backlogTaskID: candidate.id) }
+                }
+              }
+              .disabled(store.tasks.contains { $0.assignedAgentID != nil })
+            }
+          } else {
+            Text("No task is available for this station in the current phase.").foregroundStyle(.secondary)
+          }
+        }
+        .padding(16)
+      }
+      .navigationTitle("Agent Station")
+    }
+  }
+
+  private func task(for store: GameStore) -> SoloTask? {
+    if store.sprintPhase == .reviewAndResolve {
+      return store.tasks.first { $0.assignedAgentID == station.agentID && $0.result != nil }
+    }
+    return store.tasks.first { $0.assignedAgentID == nil } ?? store.tasks.first { $0.assignedAgentID == station.agentID }
   }
 }
 

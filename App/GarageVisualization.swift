@@ -7,6 +7,9 @@ struct GarageVisualization: View {
   var stats: FounderStats = .init()
   var attentionRemaining = 0
   var attentionMaximum = 0
+  var store: GameStore?
+  var progression: FounderProgressionStore?
+  var presentation: PresentationCoordinator?
 
   @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
   @State private var isVisible = false
@@ -37,9 +40,6 @@ struct GarageVisualization: View {
     .onChange(of: stationStateSignatures) { _, newStates in
       stageTransitions(newStates)
     }
-    .sheet(item: $selectedStation) { station in
-      AgentDetailPresentation(agent: AgentDetailViewModel(station: station))
-    }
   }
 
   private var shouldAnimate: Bool {
@@ -62,6 +62,9 @@ struct GarageVisualization: View {
       stats: stats,
       attentionRemaining: attentionRemaining,
       attentionMaximum: attentionMaximum,
+      store: store,
+      progression: progression,
+      presentation: presentation,
       motion: motionPolicy,
       date: date,
       selectedStation: $selectedStation

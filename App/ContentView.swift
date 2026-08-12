@@ -385,10 +385,7 @@ private struct GameDashboard: View {
   private var dashboardTabs: some View {
     TabView {
       Tab("Garage", systemImage: "house.fill") {
-        FounderEnvironmentScreen(store: store)
-      }
-      Tab("Command Deck", systemImage: "slider.horizontal.3") {
-        CommandScreen(store: store, presentation: presentation)
+        FounderEnvironmentScreen(store: store, presentation: presentation)
       }
       Tab("Venture", systemImage: "chart.line.uptrend.xyaxis") {
         VentureScreen(store: store)
@@ -596,7 +593,7 @@ private struct SprintPhaseTracker: View {
   }
 }
 
-private struct FounderDilemmaCard: View {
+struct FounderDilemmaCard: View {
   var dilemma: FounderDilemma
   var selectedChoiceID: String?
   var onSelect: (String) -> Void
@@ -635,7 +632,7 @@ private struct FounderDilemmaCard: View {
   }
 }
 
-private struct ResolvedDilemmaSummary: View {
+struct ResolvedDilemmaSummary: View {
   var dilemma: FounderDilemma
   var choice: DilemmaChoice
 
@@ -647,7 +644,7 @@ private struct ResolvedDilemmaSummary: View {
   }
 }
 
-private struct SprintObjectiveCard: View {
+struct SprintObjectiveCard: View {
   var objective: SprintObjective
   var progress: String
 
@@ -675,7 +672,7 @@ private struct SprintObjectiveCard: View {
   }
 }
 
-private struct TaskDraftBacklogCard: View {
+struct TaskDraftBacklogCard: View {
   var activeTasks: [SoloTask]
   var backlog: [SoloTask]
   var canEdit: Bool
@@ -731,7 +728,7 @@ private struct TaskDraftBacklogCard: View {
   }
 }
 
-private struct TaskCommandCard: View {
+struct TaskCommandCard: View {
   var task: SoloTask
   var agents: [SoloAgent]
   var founderStats: FounderStats
