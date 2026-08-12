@@ -842,27 +842,25 @@ struct TaskCommandCard: View {
 
       if task.isReviewed {
         Divider()
-        HStack {
-          VStack(alignment: .leading, spacing: 2) {
-            Text("Founder decision")
-              .font(.caption2)
-              .foregroundStyle(.secondary)
-            Text(task.resolution?.title ?? "Approve")
+        VStack(alignment: .leading, spacing: 8) {
+          Text("Founder decision")
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+          if task.resolutionLocked, let resolution = task.resolution {
+            Label("(resolution.title) locked", systemImage: "lock.fill")
               .font(.caption.weight(.bold))
-          }
-          Spacer()
-          Menu {
+              .foregroundStyle(SoloTheme.mint)
+          } else {
             ForEach(TaskResolutionChoice.allCases) { choice in
               Button(choice.title, systemImage: choice.symbol) {
                 onResolution(choice)
               }
+              .frame(maxWidth: .infinity)
+              .buttonStyle(.bordered)
+              .tint(choice == .approve ? SoloTheme.mint : SoloTheme.purple)
+              .accessibilityHint(choice.summary)
             }
-          } label: {
-            Label(task.resolutionLocked ? "Locked" : "Choose", systemImage: task.resolution?.symbol ?? "checkmark.circle")
           }
-          .buttonStyle(.borderedProminent)
-          .tint(task.resolutionLocked ? .gray : SoloTheme.purple)
-          .disabled(task.resolutionLocked)
         }
         Text(task.resolution?.summary ?? TaskResolutionChoice.approve.summary)
           .font(.caption)
