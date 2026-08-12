@@ -163,6 +163,8 @@
 		E10000000000000000000015 /* RevenueCelebrationFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCelebrationFeedback.swift; sourceTree = "<group>"; };
 		E10000000000000000000016 /* AppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStore.swift; sourceTree = "<group>"; };
 		E10000000000000000000017 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
+		E10000000000000000000018 /* HowToPlayScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HowToPlayScreen.swift; sourceTree = "<group>"; };
+		E10000000000000000000019 /* HowToPlayContentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HowToPlayContentTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -210,6 +212,7 @@
 				D10000000000000000000031 /* InteractiveGarageTests.swift */,
 				E10000000000000000000013 /* TechComEngineTests.swift */,
 				E10000000000000000000014 /* TechComPresentationTests.swift */,
+				E10000000000000000000019 /* HowToPlayContentTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -268,6 +271,7 @@
 				E10000000000000000000015 /* RevenueCelebrationFeedback.swift */,
 				E10000000000000000000016 /* AppSettingsStore.swift */,
 				E10000000000000000000017 /* SettingsScreen.swift */,
+				E10000000000000000000018 /* HowToPlayScreen.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -395,6 +399,7 @@
 				D20000000000000000000031 /* InteractiveGarageTests.swift in Sources */,
 				E30000000000000000000003 /* TechComEngineTests.swift in Sources */,
 				E30000000000000000000004 /* TechComPresentationTests.swift in Sources */,
+				E30000000000000000000009 /* HowToPlayContentTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -445,6 +450,7 @@
 				E30000000000000000000005 /* RevenueCelebrationFeedback.swift in Sources */,
 				E30000000000000000000006 /* AppSettingsStore.swift in Sources */,
 				E30000000000000000000007 /* SettingsScreen.swift in Sources */,
+				E30000000000000000000008 /* HowToPlayScreen.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

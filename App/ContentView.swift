@@ -134,6 +134,8 @@ private struct TitleScreen: View {
             }
             .buttonStyle(SoloSecondaryButtonStyle())
           }
+          NavigationLink { HowToPlayScreen() } label: { Label("How to Play", systemImage: "questionmark.circle").frame(maxWidth: .infinity) }
+            .buttonStyle(SoloSecondaryButtonStyle())
         }
         .padding(.horizontal, 24)
         Text("Native iOS edition • offline save • RevenueCat Test Store")
@@ -1125,6 +1127,11 @@ private struct RecordsScreen: View {
           }
           .buttonStyle(.plain)
 
+          NavigationLink { HowToPlayScreen() } label: {
+            RecordLink(title: "How to Play", subtitle: "Sprint rules, systems, and reference", symbol: "questionmark.circle.fill", count: nil)
+          }
+          .buttonStyle(.plain)
+
           Button(role: .destructive) {
             store.resetCareer()
           } label: {
@@ -1146,7 +1153,7 @@ private struct RecordLink: View {
   var title: String
   var subtitle: String
   var symbol: String
-  var count: Int
+  var count: Int?
 
   var body: some View {
     HStack(spacing: 14) {
@@ -1160,7 +1167,7 @@ private struct RecordLink: View {
         Text(subtitle).font(.caption).foregroundStyle(.secondary)
       }
       Spacer()
-      Text("\(count)").font(.headline.monospacedDigit())
+      if let count { Text("\(count)").font(.headline.monospacedDigit()) }
       Image(systemName: "chevron.right").foregroundStyle(.tertiary)
     }
     .soloCard()
