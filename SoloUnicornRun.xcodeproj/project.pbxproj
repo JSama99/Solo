@@ -52,6 +52,7 @@
 		D20000000000000000000027 /* HindsightRecordsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000027 /* HindsightRecordsScreen.swift */; };
 		D20000000000000000000028 /* PrecedentRecordsSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000028 /* PrecedentRecordsSupport.swift */; };
 		D20000000000000000000029 /* GarageVisualizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000029 /* GarageVisualizationTests.swift */; };
+		D20000000000000000000031 /* InteractiveGarageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000031 /* InteractiveGarageTests.swift */; };
 		D2000000000000000000002A /* AchievementScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000000000000000000002A /* AchievementScreenTests.swift */; };
 		D2000000000000000000002B /* AgentDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000000000000000000002B /* AgentDetailTests.swift */; };
 		D2000000000000000000002C /* ModeSelectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000000000000000000002C /* ModeSelectTests.swift */; };
@@ -127,6 +128,7 @@
 		D10000000000000000000027 /* HindsightRecordsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HindsightRecordsScreen.swift; sourceTree = "<group>"; };
 		D10000000000000000000028 /* PrecedentRecordsSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecedentRecordsSupport.swift; sourceTree = "<group>"; };
 		D10000000000000000000029 /* GarageVisualizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarageVisualizationTests.swift; sourceTree = "<group>"; };
+		D10000000000000000000031 /* InteractiveGarageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveGarageTests.swift; sourceTree = "<group>"; };
 		D1000000000000000000002A /* AchievementScreenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementScreenTests.swift; sourceTree = "<group>"; };
 		D1000000000000000000002B /* AgentDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentDetailTests.swift; sourceTree = "<group>"; };
 		D1000000000000000000002C /* ModeSelectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModeSelectTests.swift; sourceTree = "<group>"; };
@@ -188,6 +190,7 @@
 				C10000000000000000000013 /* Build10HeadquartersTests.swift */,
 				C10000000000000000000016 /* ContentLibraryTests.swift */,
 				D10000000000000000000029 /* GarageVisualizationTests.swift */, D1000000000000000000002A /* AchievementScreenTests.swift */, D1000000000000000000002B /* AgentDetailTests.swift */, D1000000000000000000002C /* ModeSelectTests.swift */, D1000000000000000000002D /* PrecedentRecordsTests.swift */,
+				D10000000000000000000031 /* InteractiveGarageTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -364,6 +367,7 @@
 				C20000000000000000000013 /* Build10HeadquartersTests.swift in Sources */,
 				C20000000000000000000016 /* ContentLibraryTests.swift in Sources */,
 				D20000000000000000000029 /* GarageVisualizationTests.swift in Sources */, D2000000000000000000002A /* AchievementScreenTests.swift in Sources */, D2000000000000000000002B /* AgentDetailTests.swift in Sources */, D2000000000000000000002C /* ModeSelectTests.swift in Sources */, D2000000000000000000002D /* PrecedentRecordsTests.swift in Sources */,
+				D20000000000000000000031 /* InteractiveGarageTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
