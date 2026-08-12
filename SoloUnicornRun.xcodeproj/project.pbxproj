@@ -74,6 +74,7 @@
 		E30000000000000000000002 /* TechComScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000012 /* TechComScreen.swift */; };
 		E30000000000000000000003 /* TechComEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000013 /* TechComEngineTests.swift */; };
 		E30000000000000000000004 /* TechComPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000014 /* TechComPresentationTests.swift */; };
+		E30000000000000000000005 /* RevenueCelebrationFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000015 /* RevenueCelebrationFeedback.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -155,6 +156,7 @@
 		E10000000000000000000012 /* TechComScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComScreen.swift; sourceTree = "<group>"; };
 		E10000000000000000000013 /* TechComEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComEngineTests.swift; sourceTree = "<group>"; };
 		E10000000000000000000014 /* TechComPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComPresentationTests.swift; sourceTree = "<group>"; };
+		E10000000000000000000015 /* RevenueCelebrationFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCelebrationFeedback.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -256,6 +258,7 @@
 				C1000000000000000000000D /* VisibleSimulationProjection.swift */,
 				E10000000000000000000011 /* TechComEngine.swift */,
 				E10000000000000000000012 /* TechComScreen.swift */,
+				E10000000000000000000015 /* RevenueCelebrationFeedback.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -429,6 +432,7 @@
 				C2000000000000000000000D /* VisibleSimulationProjection.swift in Sources */,
 				E30000000000000000000001 /* TechComEngine.swift in Sources */,
 				E30000000000000000000002 /* TechComScreen.swift in Sources */,
+				E30000000000000000000005 /* RevenueCelebrationFeedback.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

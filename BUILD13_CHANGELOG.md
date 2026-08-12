@@ -9,4 +9,4 @@
 
 ## Dependency follow-up
 
-- Build 12’s Command Deck retirement is not present on this branch. Tech.com is therefore an active additional dashboard tab; finalize the tab-slot replacement when Build 12 merges.
+- Build 12’s Command Deck retirement is present. Tech.com occupies the active dashboard alongside Garage, Venture, and More.

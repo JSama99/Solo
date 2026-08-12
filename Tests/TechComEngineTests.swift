@@ -24,7 +24,16 @@ final class TechComEngineTests: XCTestCase {
     XCTAssertTrue(headlines.contains { $0.text.contains("overclaimed by 20") })
   }
 
-  func testRivalsAreDeterministic() { XCTAssertEqual(TechComEngine.rivals(seed: 77), TechComEngine.rivals(seed: 77)) }
+  func testRivalsAreDeterministicAndClaimsNeverTrailActuals() {
+    let rivals = TechComEngine.rivals(seed: 77)
+    XCTAssertEqual(rivals, TechComEngine.rivals(seed: 77))
+    XCTAssertNotEqual(rivals, TechComEngine.rivals(seed: 78))
+    for rival in rivals {
+      XCTAssertGreaterThanOrEqual(rival.claimedTrackRecord, rival.actualTrackRecord)
+      XCTAssertGreaterThanOrEqual(rival.claimedRevenue, rival.actualRevenue)
+      XCTAssertGreaterThanOrEqual(rival.claimedMomentum, rival.actualMomentum)
+    }
+  }
 
   private func snapshot(tasks: [SoloTask] = [], agents: [SoloAgent] = []) -> TechComSnapshot { TechComSnapshot(founderName: "Founder", venture: 1, sprint: 1, stats: FounderStats(), agents: agents, tasks: tasks, dilemmaChoice: nil) }
   private func sprintResult() -> VisibleSprintResult { VisibleSprintResult(id: UUID(), venture: 1, sprint: 1, headline: "Evidence shaped the outcome", revenueDelta: 20, capitalDelta: 5, momentumDelta: 2, trustDelta: 0, energyDelta: -1, runwayDelta: -2, reviewsCompleted: 1, verifiedStrongOutcomes: 0, visibleRiskFlags: 1, evidenceRecorded: 1, transition: .nextSprint) }

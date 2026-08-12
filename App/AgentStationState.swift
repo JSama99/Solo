@@ -11,13 +11,15 @@ struct GarageTurnGate: Equatable {
     }
   }
 
-  var deskIsActionable: Bool { primary == .desk || phase != .founderEvent }
-
   func stationIsActionable(_ station: AgentStationViewModel) -> Bool {
+    phase != .founderEvent
+  }
+
+  func stationIsHighlighted(_ station: AgentStationViewModel) -> Bool {
     switch phase {
-    case .founderEvent, .readyToCommit: false
-    case .chooseCommitments, .assignTeam: station.semanticState != .awaitingReview
-    case .reviewAndResolve: station.semanticState == .awaitingReview
+    case .chooseCommitments, .assignTeam: station.semanticState == .idle
+    case .reviewAndResolve, .readyToCommit: station.semanticState == .awaitingReview
+    case .founderEvent: false
     }
   }
 }

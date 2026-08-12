@@ -1266,6 +1266,7 @@ private struct SprintReportSheet: View {
 
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var revealedStep = 0
+  @State private var deliveredRevenueFeedback = false
 
   var body: some View {
     NavigationStack {
@@ -1318,6 +1319,11 @@ private struct SprintReportSheet: View {
           Button("Close", systemImage: "xmark") { onContinue() }
             .labelStyle(.iconOnly)
         }
+      }
+      .onAppear {
+        guard report.revenueDelta > 0, !deliveredRevenueFeedback else { return }
+        deliveredRevenueFeedback = true
+        RevenueCelebrationFeedback.play()
       }
       .task {
         if reduceMotion {
