@@ -149,8 +149,7 @@ enum ContentLibrary {
       let saasBase = classifiedSaaSTasks(base)
       let saasEmpire = classifiedSaaSTasks(empire)
       return saasBase + saasEmpire
-        + productTaskExpansion(from: saasBase, as: .consumerApp)
-        + productTaskExpansion(from: saasEmpire, as: .consumerApp)
+        + ConsumerAppContent.tasks(from: saasBase.filter { $0.productTypes == [.saas] } + saasEmpire.filter { $0.productTypes == [.saas] })
         + productTaskExpansion(from: saasBase, as: .hardware)
         + productTaskExpansion(from: saasEmpire, as: .hardware)
         + productTaskExpansion(from: saasBase, as: .marketplace)
@@ -290,7 +289,7 @@ enum ContentLibrary {
         return dilemma
       }
       return saas
-        + productDilemmaExpansion(from: saas, as: .consumerApp)
+        + ConsumerAppContent.dilemmas(from: saas)
         + productDilemmaExpansion(from: saas, as: .hardware)
         + productDilemmaExpansion(from: saas, as: .marketplace)
     }

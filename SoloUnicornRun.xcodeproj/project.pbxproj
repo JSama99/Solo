@@ -86,6 +86,7 @@
 		B18000000000000000000001 /* TechComFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18000000000000000000002 /* TechComFeed.swift */; };
 		B18000000000000000000003 /* TechComFeedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18000000000000000000004 /* TechComFeedTests.swift */; };
 		B19000000000000000000001 /* GarageBayLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19000000000000000000002 /* GarageBayLayout.swift */; };
+		B20100000000000000000001 /* ConsumerAppContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20100000000000000000002 /* ConsumerAppContent.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -141,6 +142,7 @@
 		B18000000000000000000002 /* TechComFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComFeed.swift; sourceTree = "<group>"; };
 		B18000000000000000000004 /* TechComFeedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComFeedTests.swift; sourceTree = "<group>"; };
 		B19000000000000000000002 /* GarageBayLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarageBayLayout.swift; sourceTree = "<group>"; };
+		B20100000000000000000002 /* ConsumerAppContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsumerAppContent.swift; sourceTree = "<group>"; };
 		C10000000000000000000016 /* ContentLibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentLibraryTests.swift; sourceTree = "<group>"; };
 		D10000000000000000000020 /* GarageVisualization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GarageVisualization.swift; sourceTree = "<group>"; };
 		D10000000000000000000030 /* FounderGarageScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageScene.swift; sourceTree = "<group>"; };
@@ -295,6 +297,7 @@
 				B17000000000000000000002 /* RivalEngine.swift */,
 				B18000000000000000000002 /* TechComFeed.swift */,
 				B19000000000000000000002 /* GarageBayLayout.swift */,
+				B20100000000000000000002 /* ConsumerAppContent.swift */,
 				E10000000000000000000018 /* HowToPlayScreen.swift */,
 			);
 			path = App;
@@ -482,6 +485,7 @@
 				B17000000000000000000001 /* RivalEngine.swift in Sources */,
 				B18000000000000000000001 /* TechComFeed.swift in Sources */,
 				B19000000000000000000001 /* GarageBayLayout.swift in Sources */,
+				B20100000000000000000001 /* ConsumerAppContent.swift in Sources */,
 				E30000000000000000000008 /* HowToPlayScreen.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
