@@ -135,7 +135,7 @@ final class GameStoreTests: XCTestCase {
 
     XCTAssertEqual(migrated.founderName, "Founder")
     XCTAssertEqual(migrated.stage, .game)
-    XCTAssertNotNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v11"))
+    XCTAssertNotNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v12"))
     XCTAssertNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v1"))
   }
 

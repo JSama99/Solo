@@ -66,6 +66,7 @@ enum AchievementCatalog {
     Achievement(id: "independent", title: "Still Ours", detail: "Reach the summit having never taken investment.", family: .story, rarity: .gold),
     Achievement(id: "survivor", title: "Hard Lessons", detail: "Reach any failure ending — and learn from it.", family: .story, rarity: .bronze),
     Achievement(id: "people-first", title: "People First", detail: "Win a run that hired human customer success.", family: .story, rarity: .silver)
+    ,Achievement(id: "full-roster", title: "Full Roster", detail: "Grow the AI team to five.", family: .progression, rarity: .silver)
     ,Achievement(id: "out-of-garage", title: "Out of the Garage", detail: "Purchase the Founder Loft.", family: .progression, rarity: .silver)
     ,Achievement(id: "built-different", title: "Built Different", detail: "Purchase three facility upgrades.", family: .mastery, rarity: .bronze)
     ,Achievement(id: "fully-loaded-garage", title: "Fully Loaded Garage", detail: "Purchase every Garage upgrade.", family: .mastery, rarity: .gold)
@@ -241,6 +242,7 @@ final class AchievementStore {
     award("first-promotion", levels.contains(where: { $0 >= 5 }))
     award("specialist", hasPerk)
     award("full-team-development", agents.count >= 3 && levels.allSatisfy { $0 >= 5 })
+    award("full-roster", agents.count >= 5)
     award("trusted-advisor", completed.contains("aurora"))
     award("systems-architect", completed.contains("stacks"))
     award("category-creator", completed.contains("brio"))

@@ -25,6 +25,9 @@ struct TechComScreen: View {
               rivalRow(rival)
             }
           }
+          section("Talent Board", symbol: "person.crop.circle.badge.plus") {
+            talentBoard
+          }
           section("Rankings", symbol: "list.number") {
             Picker("Ranking metric", selection: $metric) {
               ForEach(TechComRankingMetric.allCases) { Text($0.rawValue).tag($0) }
@@ -66,6 +69,34 @@ struct TechComScreen: View {
       else { Button("Verify claim • 1 Attention", systemImage: "eye.fill") { _ = store.verifyTechComRival(id: rival.id) }.buttonStyle(.bordered).tint(SoloTheme.purple).disabled(store.attentionRemaining == 0).accessibilityHint("Reveals all claimed rival metrics") }
     }
     .padding(.vertical, 4)
+  }
+
+  @ViewBuilder private var talentBoard: some View {
+    if let gate = store.talentBoardGateMessage {
+      Text(gate).font(.caption).foregroundStyle(.secondary)
+    } else {
+      Text("Hire your \(store.nextTalentSlot == 4 ? "fourth" : "fifth") AI teammate. Different model families reduce shared exposure.")
+        .font(.caption).foregroundStyle(.secondary)
+      ForEach(store.talentBoardCandidates) { candidate in
+        VStack(alignment: .leading, spacing: 6) {
+          HStack {
+            Label(candidate.name, systemImage: candidate.role.symbol).font(.subheadline.weight(.bold))
+            Spacer()
+            Text("$\(candidate.price)").font(.caption.weight(.bold)).foregroundStyle(SoloTheme.cyan)
+          }
+          Text("\(candidate.role.rawValue) • \(candidate.modelFamily)").font(.caption).foregroundStyle(.secondary)
+          Text(candidate.pitch).font(.caption)
+          Button("Hire \(candidate.name)", systemImage: "person.badge.plus") { store.hire(candidate) }
+            .buttonStyle(.borderedProminent).tint(SoloTheme.purple).disabled(store.stats.capital < candidate.price)
+        }
+        .padding(.vertical, 4)
+        if candidate.id != store.talentBoardCandidates.last?.id { Divider() }
+      }
+      if store.agents.count >= 4 {
+        Button("Refresh listings • $\(TalentBoard.refreshCost)", systemImage: "arrow.clockwise") { store.refreshTalentBoard() }
+          .buttonStyle(.bordered).disabled(store.stats.capital < TalentBoard.refreshCost)
+      }
+    }
   }
 
   private func value(_ value: Int) -> String { metric == .revenue ? "$\(value)" : "\(value)" }
