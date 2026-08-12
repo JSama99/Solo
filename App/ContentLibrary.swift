@@ -11,6 +11,23 @@ import Foundation
 /// career (see BUILD5_CHANGELOG.md), and that authoring work should not
 /// require touching simulation code to do it.
 enum ContentLibrary {
+    struct RivalCompanyDefinition {
+      var id: String
+      var name: String
+    }
+
+    static let rivalCompanies = [
+      RivalCompanyDefinition(id: "northstar", name: "Northstar Systems"),
+      RivalCompanyDefinition(id: "relay", name: "Relay Works"),
+      RivalCompanyDefinition(id: "lattice", name: "Lattice Labs")
+    ]
+
+    static let techComHeadlineTemplates = [
+      NewsHeadlineTemplate(id: "trend-evidence", category: .trend, textTemplate: "Industry watch: evidence-led teams set the tone in sprint {sprint}", trigger: { _ in true }, priorityWeight: 3),
+      NewsHeadlineTemplate(id: "trend-agents", category: .trend, textTemplate: "Industry watch: agent operations remain the week’s loudest founder debate", trigger: { _ in true }, priorityWeight: 2),
+      NewsHeadlineTemplate(id: "trend-momentum", category: .trend, textTemplate: "Industry watch: early-stage operators are trading speed for proof", trigger: { $0.stats.momentum >= 0 }, priorityWeight: 1)
+    ]
+
     static var initialAgents: [SoloAgent] {
       [
         SoloAgent(id: "aurora", name: "Aurora", initials: "AU", role: .research, modelFamily: "Nova-1", reliability: 78, calibration: 0.72, drift: 0, trust: 62),
