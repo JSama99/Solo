@@ -2,6 +2,7 @@ import Foundation
 
 enum ConsumerAppContent {
   struct Copy { var title: String; var detail: String }
+  struct DilemmaCopy { var setup: String; var choices: [DilemmaChoice] }
 
   /// Ordered against the classified SaaS-specific source shape: role, category,
   /// urgency, impact, and era remain identical while every player-facing line is
@@ -77,50 +78,46 @@ enum ConsumerAppContent {
     .init(title: "Map Media Acquisition Buyers", detail: "Understand which platforms value the audience, data, and habit you have built."),
     .init(title: "Benchmark Community Support", detail: "Test whether agent replies feel timely and human enough for frustrated users."),
     .init(title: "Forecast Community Manager Fatigue", detail: "Predict where constant creator demand will burn out the people keeping the app safe."),
-    .init(title: "Land a Featured Collection", detail: "Convert one high-visibility placement into permission to win the next audience."),
-    .init(title: "Publish the Safety Ledger", detail: "Make moderation outcomes visible before rumors define the community’s standards."),
-    .init(title: "Lead a Creator Keynote", detail: "Set the product’s creative agenda before a rival platform names it first."),
-    .init(title: "Launch in a New Storefront", detail: "Open a regional distribution channel where the app already has organic demand."),
-    .init(title: "Answer a Viral Callout", detail: "Respond with receipts before a misleading clip becomes the product’s identity."),
-    .init(title: "Build an Ambassador Program", detail: "Reward credible users for teaching newcomers without buying their praise."),
-    .init(title: "Convert the Trial Cohort", detail: "Turn users who found value this week into subscribers before the habit fades."),
-    .init(title: "Rebrand for Mainstream", detail: "Signal safety and polish to people who will not adopt an insider product."),
-    .init(title: "Win a Mobile Design Award", detail: "Earn third-party recognition that lowers the trust barrier for a first download."),
-    .init(title: "Reactivate Lapsed Subscribers", detail: "Bring back former paying users with the specific improvement they left for."),
-    .init(title: "Renegotiate App Platform Fees", detail: "Protect margin before a store policy change makes the current economics permanent.")
+    .init(title: "Land a Featured Collection", detail: "Convert one high-visibility placement into permission to win the next audience.")
   ]
 
   static func tasks(from source: [SoloTask]) -> [SoloTask] {
-    return zip(source, taskCopy.prefix(source.count)).map { source, copy in
+    precondition(source.count == taskCopy.count, "Consumer App task copy must match the SaaS-specific task count.")
+    return zip(source, taskCopy).map { source, copy in
       var task = source; task.title = copy.title; task.detail = copy.detail; task.productTypes = [.consumerApp]; return task
     }
   }
 
   static func dilemmas(from source: [FounderDilemma]) -> [FounderDilemma] {
-    let setups = [
-      "A creator wants one more sharing feature, but the first-session loop is still fragile.",
-      "Brio wants to promise an algorithm that feels magical before retention data supports it.",
-      "The launch build can gain polish tonight, but the founder has already been answering creator messages for days.",
-      "A popular creator will promote the app if their audience gets an exclusive feature nobody else can use.",
-      "A subscriber says a renewal notification arrived too late and wants the charge reversed publicly.",
-      "A growth partner offers cheap installs if the app adds a more aggressive interstitial ad.",
-      "A platform outage is making new users think the app itself has failed on launch day.",
-      "A reporter asks whether push notifications are designed to help users or simply maximize opens.",
-      "A rival copied the creator challenge that made your launch visible this week.",
-      "An investor offers runway but wants the app to optimize ad yield ahead of user wellbeing.",
-      "The community is growing quickly, and users want a named human to own safety escalations.",
-      "A larger consumer platform offers to acquire the app and fold its habit loop into a portfolio."
+    let authored: [DilemmaCopy] = [
+      .init(setup: "A creator wants one more sharing feature, but the first-session loop is still fragile.", choices: choiceSet("Ship the Share Feature", "Protect First Session", "Prototype It Off-Path", [.init(momentum: 4, runway: -2), .init(momentum: -1, trust: 3), .init(momentum: 2, energy: -1)])),
+      .init(setup: "Brio wants to promise an algorithm that feels magical before retention data supports it.", choices: choiceSet("Make the Promise", "Explain the Limits", "Test With a Cohort", [.init(revenue: 240, trust: -3), .init(momentum: -1, trust: 5), .init(trust: 2, energy: -2)])),
+      .init(setup: "The launch build can gain polish tonight, but the founder has already been answering creator messages for days.", choices: choiceSet("Ship Tomorrow", "Polish Tonight", "Ask Creators to Co-Test", [.init(momentum: -2, energy: 5), .init(momentum: 4, energy: -6), .init(momentum: 1, trust: 3)])),
+      .init(setup: "A popular creator will promote the app if their audience gets an exclusive feature nobody else can use.", choices: choiceSet("Grant the Exclusive", "Keep the Product Equal", "Offer a Timed Event", [.init(revenue: 360, trust: -3), .init(momentum: -2, trust: 4), .init(momentum: 2, energy: -2)])),
+      .init(setup: "A subscriber says a renewal notification arrived too late and wants the charge reversed publicly.", choices: choiceSet("Refund and Explain", "Review the Timeline", "Offer a Credit", [.init(revenue: -220, trust: 5), .init(trust: 2, energy: -3), .init(revenue: 80, trust: 1)])),
+      .init(setup: "A growth partner offers cheap installs if the app adds a more aggressive interstitial ad.", choices: choiceSet("Take the Installs", "Keep the Session Clean", "Cap the Experiment", [.init(momentum: 5, trust: -4), .init(momentum: -2, trust: 4), .init(revenue: 100, trust: 1)])),
+      .init(setup: "A platform outage is making new users think the app itself has failed on launch day.", choices: choiceSet("Pause Acquisition", "Open a Limited Mode", "Keep Campaigns Live", [.init(momentum: -3, trust: 4), .init(momentum: 1, trust: 2), .init(revenue: 280, trust: -5)])),
+      .init(setup: "A reporter asks whether push notifications are designed to help users or simply maximize opens.", choices: choiceSet("Publish the Policy", "Focus on Growth", "Decline Comment", [.init(momentum: 1, trust: 5), .init(momentum: 4, trust: -3), .init(momentum: -3, energy: 1)])),
+      .init(setup: "A rival copied the creator challenge that made your launch visible this week.", choices: choiceSet("Escalate the Challenge", "Credit the Community", "Keep Building", [.init(momentum: 5, runway: -3), .init(revenue: 160, trust: 4), .init(momentum: -2, energy: 3)])),
+      .init(setup: "An investor offers runway but wants the app to optimize ad yield ahead of user wellbeing.", choices: choiceSet("Take the Yield Terms", "Protect User Wellbeing", "Counter With Guardrails", [.init(trust: -3, runway: 10), .init(trust: 5, runway: -3), .init(energy: -3, runway: 4)])),
+      .init(setup: "The community is growing quickly, and users want a named human to own safety escalations.", choices: choiceSet("Hire a Safety Lead", "Scale the Agent Team", "Retain an Escalation Advisor", [.init(trust: 6, runway: -4), .init(momentum: 4, trust: -3), .init(trust: 3, runway: -2)])),
+      .init(setup: "A larger consumer platform offers to acquire the app and fold its habit loop into a portfolio.", choices: choiceSet("Accept the Portfolio Deal", "Keep the App Independent", "License a Feature", [.init(revenue: 1_100, momentum: -5), .init(momentum: 6, runway: -3), .init(revenue: 540, trust: 3)]))
     ]
-    return zip(source, setups).map { dilemma, setup in
+    precondition(source.count == authored.count, "Consumer App dilemma copy must match the SaaS-specific dilemma count.")
+    return zip(source, authored).map { dilemma, copy in
       var authored = dilemma
       authored.id = "consumerApp-\(dilemma.id)"
       authored.title = "Consumer App: \(dilemma.title)"
-      authored.setup = setup
+      authored.setup = copy.setup
       authored.productTypes = [.consumerApp]
-      authored.choices = dilemma.choices.enumerated().map { index, choice in
-        DilemmaChoice(id: "consumer-\(choice.id)", title: ["Protect the Habit", "Take the Reach", "Run a Limited Test"][index], detail: ["Prioritize a durable user relationship.", "Trade some certainty for immediate attention.", "Learn with a bounded commitment before scaling."][index], consequencePreview: ["Trust and focus", "Momentum with risk", "Balanced evidence and cost"][index], effects: choice.effects, relationshipDeltas: choice.relationshipDeltas)
-      }
+      authored.choices = copy.choices
       return authored
+    }
+  }
+
+  private static func choiceSet(_ first: String, _ second: String, _ third: String, _ effects: [SimulationEffects]) -> [DilemmaChoice] {
+    [first, second, third].enumerated().map { index, title in
+      DilemmaChoice(id: "consumer-\(index)", title: title, detail: "Choose \(title.lowercased()) and accept its operating tradeoff.", consequencePreview: ["Immediate upside with a cost", "Durable value with a tradeoff", "Measured path with a cost"][index], effects: effects[index], relationshipDeltas: [:])
     }
   }
 }
