@@ -21,7 +21,7 @@ struct SubscriptionScreen: View {
           .foregroundStyle(subscriptions.isPro ? SoloTheme.mint : SoloTheme.cyan)
           Text(subscriptions.isPro
             ? "Venture 2 and Hindsight Recall are unlocked on this Apple Account."
-            : "One purchase, no subscription. Unlocks Venture 2, Hindsight Recall, and the full career outcome.")
+            : "Choose a Monthly or Annual Founder Pass subscription to unlock Venture 2, Hindsight Recall, and the full career outcome.")
             .foregroundStyle(.secondary)
         }
         .soloCard()

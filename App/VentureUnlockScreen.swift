@@ -70,7 +70,7 @@ struct VentureUnlockScreen: View {
           )
           unlockRow("brain.head.profile", "Hindsight Recall", "Past precedents surface when the conditions repeat.")
           unlockRow("trophy.fill", "Full career outcome", "Complete the twenty-four-sprint track record.")
-          Text("One purchase. No subscription.")
+          Text("Available with a Monthly or Annual Founder Pass subscription.")
             .font(.footnote)
             .foregroundStyle(.secondary)
             .padding(.top, 2)
