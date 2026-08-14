@@ -58,11 +58,10 @@ struct FounderGarageScene: View {
   }
 
   private var garageCanvas: some View {
-    ScrollView(.horizontal) {
-      GeometryReader { proxy in
-        let size = proxy.size
-        let layout = GarageBayLayout(stationCount: stations.count)
-        ZStack {
+    GeometryReader { proxy in
+      let layout = GarageBayLayout(stationCount: stations.count)
+      let scale = min(1, proxy.size.width / layout.canvasWidth)
+      ZStack {
           garageShell
           architecturalBackdrop
           ceilingBeams
@@ -89,17 +88,20 @@ struct FounderGarageScene: View {
             .frame(width: layout.bays[index].frame.width, height: layout.bays[index].frame.height)
             .position(layout.bays[index].center)
           }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-        .overlay(alignment: .bottomLeading) {
+      }
+      .frame(width: layout.canvasWidth, height: GarageBayLayout.canvasHeight)
+      .scaleEffect(scale, anchor: .topLeading)
+      .frame(width: layout.canvasWidth * scale, height: GarageBayLayout.canvasHeight * scale, alignment: .topLeading)
+      .clipShape(RoundedRectangle(cornerRadius: 18))
+      .overlay(alignment: .bottomLeading) {
           Label("Swipe to explore · Tap a station to assign or review", systemImage: "hand.draw.fill")
             .font(.caption2.weight(.medium))
             .foregroundStyle(.white.opacity(0.72))
             .padding(9)
             .background(.black.opacity(0.28), in: Capsule())
             .padding(12)
-        }
-        .overlay(alignment: .top) {
+      }
+      .overlay(alignment: .top) {
           HStack(spacing: 8) {
             Label("LIVE FLOOR", systemImage: "dot.radiowaves.left.and.right")
             Text("\(stations.count) AGENTS · SPRINT \(store?.sprint ?? 1)")
@@ -110,22 +112,20 @@ struct FounderGarageScene: View {
           .padding(.vertical, 7)
           .background(.black.opacity(0.35), in: Capsule())
           .padding(.top, 14)
-        }
-        .overlay {
+      }
+      .overlay {
           RoundedRectangle(cornerRadius: 18)
             .stroke(Color.white.opacity(0.08), lineWidth: 1)
-        }
-        .onChange(of: selectedStation) { _, next in
-          if next == nil { focusedAgentID = nil }
-        }
       }
-      .frame(width: GarageBayLayout(stationCount: stations.count).canvasWidth, height: GarageBayLayout.canvasHeight)
+      .onChange(of: selectedStation) { _, next in
+          if next == nil { focusedAgentID = nil }
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
-    .scrollIndicators(.visible)
-    .frame(height: 650)
+    .aspectRatio(980 / GarageBayLayout.canvasHeight, contentMode: .fit)
     .accessibilityElement(children: .contain)
     .accessibilityLabel("Founder Garage live workforce map")
-    .accessibilityHint("Swipe horizontally to explore the full garage")
+    .accessibilityHint("Tap a station to assign or review work")
   }
 
   private var garageShell: some View {
