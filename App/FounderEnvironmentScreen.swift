@@ -12,7 +12,6 @@ struct FounderEnvironmentScreen: View {
     NavigationStack {
       ScrollView {
         VStack(spacing: 16) {
-          environmentHeader
           if progression.currentFacility == .founderLoft, #available(iOS 18.0, *) {
             FounderLoftEnvironment()
           } else {
@@ -51,22 +50,6 @@ struct FounderEnvironmentScreen: View {
       reduceMotion: reduceMotion,
       applicationActivity: activity
     )
-  }
-
-  private var environmentHeader: some View {
-    HStack {
-      VStack(alignment: .leading, spacing: 3) {
-        Text(progression.currentFacility.name)
-          .font(.headline)
-        Text("Venture \(store.venture) • \(store.chapter.name) • Sprint \(store.sprint)/12")
-          .font(.caption)
-          .foregroundStyle(.secondary)
-      }
-      Spacer()
-      Label(store.garageCondition, systemImage: "waveform.path.ecg")
-        .font(.caption.weight(.bold))
-        .foregroundStyle(store.garageCondition == "Steady" ? SoloTheme.mint : SoloTheme.amber)
-    }
   }
 
   private var stationModels: [AgentStationViewModel] {
