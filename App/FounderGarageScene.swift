@@ -64,6 +64,7 @@ struct FounderGarageScene: View {
         let layout = GarageBayLayout(stationCount: stations.count)
         ZStack {
           garageShell
+          architecturalBackdrop
           ceilingBeams
           warmLighting
           deskControl
@@ -98,6 +99,18 @@ struct FounderGarageScene: View {
             .background(.black.opacity(0.28), in: Capsule())
             .padding(12)
         }
+        .overlay(alignment: .top) {
+          HStack(spacing: 8) {
+            Label("LIVE FLOOR", systemImage: "dot.radiowaves.left.and.right")
+            Text("\(stations.count) AGENTS · SPRINT \(store?.sprint ?? 1)")
+          }
+          .font(.caption2.weight(.bold).monospaced())
+          .foregroundStyle(.white.opacity(0.72))
+          .padding(.horizontal, 11)
+          .padding(.vertical, 7)
+          .background(.black.opacity(0.35), in: Capsule())
+          .padding(.top, 14)
+        }
         .overlay {
           RoundedRectangle(cornerRadius: 18)
             .stroke(Color.white.opacity(0.08), lineWidth: 1)
@@ -131,6 +144,38 @@ struct FounderGarageScene: View {
       }
       RadialGradient(colors: [.clear, .black.opacity(0.55)], center: .center, startRadius: 90, endRadius: 310)
     }
+  }
+
+  private var architecturalBackdrop: some View {
+    ZStack(alignment: .top) {
+      HStack(spacing: 0) {
+        ForEach(0..<5, id: \.self) { _ in
+          Rectangle()
+            .fill(.white.opacity(0.025))
+            .frame(width: 1)
+          Spacer(minLength: 0)
+        }
+      }
+      .padding(.top, 72)
+      .padding(.bottom, 112)
+
+      HStack(spacing: 12) {
+        GarageZoneSign(title: "RESEARCH / EVIDENCE", tint: SoloTheme.cyan)
+        Spacer()
+        GarageZoneSign(title: "ENGINEERING / BUILD", tint: SoloTheme.amber)
+        GarageZoneSign(title: "CAMPAIGN / TRUST", tint: SoloTheme.coral)
+      }
+      .padding(.horizontal, 22)
+      .padding(.top, 93)
+
+      VStack {
+        Spacer()
+        LinearGradient(colors: [.clear, .white.opacity(0.045), .clear], startPoint: .leading, endPoint: .trailing)
+          .frame(height: 1)
+          .padding(.bottom, 108)
+      }
+    }
+    .accessibilityHidden(true)
   }
 
   private var ceilingBeams: some View {
@@ -169,6 +214,15 @@ struct FounderGarageScene: View {
               .overlay(alignment: .topLeading) {
                 Capsule().fill(SoloTheme.cyan).frame(width: 31, height: 3).padding(13)
               }
+          }
+          .overlay(alignment: .bottomLeading) {
+            HStack(spacing: 4) {
+              Circle().fill(SoloTheme.mint).frame(width: 4, height: 4)
+              Text("COMMAND DECK")
+            }
+            .font(.system(size: 6, weight: .bold, design: .monospaced))
+            .foregroundStyle(.white.opacity(0.65))
+            .padding(8)
           }
         VStack {
           Spacer().frame(height: 89)
@@ -519,5 +573,24 @@ private struct GarageDeskShape: Shape {
     path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
     path.closeSubpath()
     return path
+  }
+}
+
+private struct GarageZoneSign: View {
+  var title: String
+  var tint: Color
+
+  var body: some View {
+    Text(title)
+      .font(.system(size: 8, weight: .bold, design: .monospaced))
+      .tracking(0.7)
+      .foregroundStyle(tint.opacity(0.85))
+      .padding(.horizontal, 8)
+      .padding(.vertical, 6)
+      .background(.black.opacity(0.3), in: RoundedRectangle(cornerRadius: 6))
+      .overlay {
+        RoundedRectangle(cornerRadius: 6)
+          .stroke(tint.opacity(0.28), lineWidth: 1)
+      }
   }
 }
