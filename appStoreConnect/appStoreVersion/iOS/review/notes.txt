@@ -1,17 +1,25 @@
-SOLO: Unicorn Run is an offline single-player startup strategy simulation. No account, sign-in, or network connection is required.
+SCREEN RECORDING
+A physical-device screen recording must be attached to the App Review reply before resubmission. It should begin at launch and show: Choose Mode; create a founder; choose product, doctrine, and mode; Open the Garage; choose three commitments; assign agents; review/resolve reports; commit a sprint; then the Founder Pass unlock screen with purchase and Restore Purchase. There are no registration, login, account deletion, user-generated content, reporting/blocking, or sensitive-data/device-capability permission flows.
 
-GETTING INTO GAMEPLAY
-Tap "New Career," enter any founder name, choose a doctrine and a career mode, then tap "Open the Garage." Each sprint you respond to a founder dilemma, draft three of five opportunities, assign AI agents, optionally review their reported results, and commit.
+TESTED CONFIGURATION
+iPhone 17 Pro and iPhone 17 Pro Max simulators, iOS 26.5. Tested: complete XCTest suite, launch, core sprint loop, save/resume, purchase/restore UI, and accessibility. No physical-device test is recorded in the project; add the model and iOS version used for the attached recording before submission.
 
-IN-APP PURCHASE (important for review)
-The app is free. Venture 1 (12 sprints) is fully playable at no cost and demonstrates every core mechanic. There is one non-consumable in-app purchase:
-- Product ID: com.talonsight.solounicornrun.founderpass.lifetime
-- Display name: Founder Pass, $4.99, one-time (not a subscription)
-- Unlocks: Venture 2, Continuous mode, and Hindsight recall
-- RevenueCat entitlement identifier: solo_unicorn_run_pro
+FUNCTION AND AUDIENCE
+SOLO: Unicorn Run is an offline single-player founder-life strategy simulation for management, strategy, and AI decision-making players. Players run a startup whose AI-agent workforce can report inaccurate results. They choose founder dilemmas and three sprint commitments, assign agents by role/model family/trust, review reports with a limited attention budget, and approve, rework, cross-check, or ship. Persistent choices, evidence records, rivals, agent progression, and career outcomes make decisions consequential.
 
-HOW TO REACH THE PAYWALL
-The Founder Pass paywall appears at the venture boundary: after completing the 12 sprints of Venture 1 in Career mode, or at the first venture checkpoint in Continuous mode. Committing a sprint advances the sprint counter (shown top-left). The purchase and Restore Purchases controls are both on that unlock screen. Purchases can be validated with a StoreKit sandbox Apple Account. If a faster path to the paywall would help review, contact us and we will provide a promo code.
+ACCESS
+No account, login, demo credentials, or sample files are required. Core gameplay works offline; an Internet connection and App Store/sandbox Apple Account are needed only to buy or restore. Tap Choose Mode, select a mode, enter any founder name, choose product type and doctrine, then Open the Garage. Each sprint: resolve the dilemma, select three opportunities, assign agents, review/resolve reports, and commit. The first 12-sprint venture is free and includes the full core loop.
 
-CONTACT
-Jermaine Nelson, jsama999@talonsight.com, +1 678 847 8569
+EXTERNAL SERVICES
+Gameplay, saves, authored scenarios, and simulation run locally. RevenueCat Purchases/RevenueCatUI retrieve the configured StoreKit offering, present purchase UI, and determine the Founder Pass entitlement. Apple StoreKit/App Store Connect process purchases. No data provider, authentication service, ads, analytics SDK, cloud backend, or generative-AI service is used for core gameplay.
+
+REGIONS
+Gameplay and content are consistent in all supported regions. Storefront pricing, currency, and availability follow App Store Connect configuration.
+
+REGULATED/THIRD-PARTY CONTENT
+This is not a regulated-industry service and provides no medical, financial, legal, gambling, or similar service. All game content is original; no protected third-party material is included.
+
+IN-APP PURCHASES
+Founder Pass unlocks Venture 2, Continuous mode, Hindsight Recall, and the full 24-sprint outcome. The catalog contains Founder Pass Lifetime (non-consumable) and Founder Pass Monthly/Annual subscriptions. The active StoreKit/RevenueCat offering determines the displayed choices and localized prices. The Annual option has a seven-day introductory free trial for eligible new US subscribers.
+
+To purchase, complete free Venture 1 (12 sprints) in Career mode, or reach the first Continuous-mode venture checkpoint. On Venture Unlock, tap Unlock Venture 2, select a purchase in the paywall, or tap Restore Purchase. The Solo Pro screen also provides purchase and restore controls.
