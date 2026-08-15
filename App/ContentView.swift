@@ -819,7 +819,7 @@ private struct VentureScreen: View {
         VStack(spacing: 16) {
           HStack(spacing: 10) {
             VentureMetric(title: "Track Record", value: "\(store.stats.trackRecord)", color: SoloTheme.cyan)
-            VentureMetric(title: "Sprint", value: "\(store.sprint)/12", color: SoloTheme.amber)
+            VentureMetric(title: "Sprint", value: "\(store.sprint)/12 • \(Int(store.ventureObjectiveProgress * 100))%", color: SoloTheme.amber)
           }
           HStack(spacing: 10) {
             VentureMetric(title: "Evidence", value: "\(store.evidence.count)", color: SoloTheme.mint)
@@ -832,6 +832,29 @@ private struct VentureScreen: View {
               .foregroundStyle(SoloTheme.amber)
             Text(store.chapter.name).font(.title2.bold())
             Text(store.chapter.subtitle).foregroundStyle(.secondary)
+          }
+          .soloCard()
+
+          let era = VentureEra.era(for: store.venture)
+          VStack(alignment: .leading, spacing: 8) {
+            Label("\(era.name) era", systemImage: "mountain.2.fill").font(.headline)
+            Text(era.newForce).foregroundStyle(.secondary)
+            Text("-\(era.runwayBurnPerSprint) Runway • -\(era.energyCostPerSprint) Energy each sprint")
+              .font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.amber)
+            Text(store.venture < era.milestoneVenture ? "\(era.milestoneVenture - store.venture) venture(s) until \(VentureEra.era(for: era.milestoneVenture + 1).name)." : "You have reached this era’s milestone.")
+              .font(.caption).foregroundStyle(.secondary)
+          }
+          .soloCard()
+
+          let objective = store.ventureObjective ?? VentureObjective.selected(for: store.venture)
+          VStack(alignment: .leading, spacing: 8) {
+            Label("Venture objective", systemImage: "target").font(.headline)
+            Text(objective.title).font(.title3.bold())
+            Text(objective.framing).font(.caption).foregroundStyle(.secondary)
+            ProgressView(value: store.ventureObjectiveProgress)
+              .tint(SoloTheme.mint)
+            Text("\(Int(store.ventureObjectiveProgress * 100))% complete • Reward: \(objective.rewardLabel)")
+              .font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.mint)
           }
           .soloCard()
 
@@ -855,14 +878,16 @@ private struct VentureScreen: View {
                 .foregroundStyle(.secondary)
             } else {
               ForEach(store.companyFlags.sorted(by: { $0.name < $1.name })) { flag in
-                Label(flag.name, systemImage: "point.topleft.down.curvedto.point.bottomright.up")
-                  .font(.subheadline.weight(.semibold))
-                  .foregroundStyle(SoloTheme.cyan)
+                VStack(alignment: .leading, spacing: 2) {
+                  Label(flag.name, systemImage: "point.topleft.down.curvedto.point.bottomright.up").font(.subheadline.weight(.semibold)).foregroundStyle(SoloTheme.cyan)
+                  Text(flag.context).font(.caption).foregroundStyle(.secondary)
+                }
               }
               ForEach(store.activeObligations) { obligation in
                 VStack(alignment: .leading, spacing: 3) {
                   Text(obligation.title).font(.subheadline.bold())
                   Text(obligation.detail).font(.caption).foregroundStyle(.secondary)
+                  Text("Caused by: \(obligation.sourceDecision)").font(.caption2).foregroundStyle(SoloTheme.cyan)
                   Text("\(obligation.effectsPerSprint.conciseLossLabel) • \(obligation.durationLabel)")
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(SoloTheme.amber)

@@ -28,6 +28,30 @@ struct VentureCheckpointScreen: View {
           }
           .soloCard()
 
+          if let grade = checkpoint.grade {
+            VStack(alignment: .leading, spacing: 8) {
+              Label("\(grade.overall) venture grade", systemImage: "graduationcap.fill").font(.headline).foregroundStyle(SoloTheme.mint)
+              Text(grade.identity).font(.title3.bold())
+              Text("Revenue \(grade.revenue) • Verification \(grade.verification) • Evidence \(grade.evidence) • Sustainability \(grade.sustainability) • Trust \(grade.trust)")
+                .font(.caption).foregroundStyle(.secondary)
+            }
+            .soloCard()
+          }
+
+          VStack(alignment: .leading, spacing: 8) {
+            Label("Next: Venture \(checkpoint.venture + 1)", systemImage: "arrow.forward.circle.fill").font(.headline)
+            Text("\(checkpoint.nextEraName ?? VentureEra.era(for: checkpoint.venture + 1).name) era").font(.title3.bold())
+            Text(checkpoint.nextEraForce ?? VentureEra.era(for: checkpoint.venture + 1).newForce).font(.caption).foregroundStyle(.secondary)
+            if checkpoint.crossesEraBoundary { Label("Era transition — the operating rules intensify here.", systemImage: "exclamationmark.triangle.fill").font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.amber) }
+            Text("Objective revealed: \(checkpoint.nextObjectiveTitle ?? "???")").font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.cyan)
+            Text("Carries forward: \(checkpoint.precedentsBanked) new precedents • agent relationships average \(checkpoint.averageRelationship)").font(.caption).foregroundStyle(.secondary)
+            ForEach(checkpoint.obligations) { obligation in
+              Text("\(obligation.title) — caused by \(obligation.sourceDecision)").font(.caption)
+            }
+            if !checkpoint.companyFlags.isEmpty { Text("Company flags: \(checkpoint.companyFlags.map(\.name).joined(separator: ", "))").font(.caption).foregroundStyle(.secondary) }
+          }
+          .soloCard()
+
           VStack(alignment: .leading, spacing: 10) {
             Text("This venture's numbers")
               .font(.headline)
