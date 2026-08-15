@@ -81,6 +81,7 @@ final class GameStore {
   private(set) var activeObligations: [CompanyObligation] = []
   private(set) var decisionHistory: [CareerDecisionRecord] = []
   private(set) var completedObjectives = 0
+  private(set) var ventureObjective: VentureObjective?
 
   /// Supplies entitlement state. Replaceable so the simulation stays testable
   /// without RevenueCat, StoreKit, or a network.
@@ -98,6 +99,7 @@ final class GameStore {
   var hasSave: Bool {
     UserDefaults.standard.data(forKey: Self.saveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v11SaveKey) != nil
+      || UserDefaults.standard.data(forKey: Self.v12SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v10SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v9SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v8SaveKey) != nil
@@ -282,7 +284,12 @@ final class GameStore {
     if careerMode == .continuous {
       return "\(era.name) era • \(era.newForce) • -\(era.runwayBurnPerSprint) Runway, -\(era.energyCostPerSprint) Energy"
     }
-    return "Operating pressure: -\(era.runwayBurnPerSprint) Runway and -\(era.energyCostPerSprint) Energy per sprint"
+    return "\(era.name) era • Operating pressure: -\(era.runwayBurnPerSprint) Runway and -\(era.energyCostPerSprint) Energy per sprint"
+  }
+
+  var ventureObjectiveProgress: Double {
+    guard let ventureObjective else { return 0 }
+    return ventureObjective.progress(revenue: stats.revenue, trust: stats.trust, evidence: evidence.count, completedObjectives: completedObjectives, obligations: activeObligations.count)
   }
 
   var objectiveProgressText: String {
@@ -366,6 +373,7 @@ final class GameStore {
     if founderName.isEmpty { founderName = "Founder" }
     sprint = 1
     venture = 1
+    ventureObjective = VentureObjective.selected(for: venture)
     precedents = []
     activeRecall = nil
     recallsShownThisVenture = 0
@@ -427,6 +435,10 @@ final class GameStore {
        let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
        envelope.version == Self.saveVersion {
       loadedSave = envelope.career
+    } else if let data = UserDefaults.standard.data(forKey: Self.v12SaveKey),
+              let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
+              envelope.version == 12 {
+      loadedSave = migrateV12(envelope.career)
     } else if let data = UserDefaults.standard.data(forKey: Self.v11SaveKey),
               let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
               envelope.version == 11 {
@@ -932,6 +944,7 @@ final class GameStore {
     stats.runway = min(365, stats.runway + earnedRunwayRecovery)
     stats.energy = min(100, stats.energy + earnedEnergyRecovery)
     stats.energy = min(100, stats.energy + facilityBonuses.ventureEnergyBonus)
+    ventureObjective = VentureObjective.selected(for: venture)
     recentTaskTitles = []
     taskDeckTitles = []
     dilemmaDeckTemplateIDs = []
@@ -943,14 +956,32 @@ final class GameStore {
   /// non-terminal checkpoint and hands control to the player rather than
   /// silently rolling into the next set of 12 sprints.
   private func presentVentureCheckpoint() {
+    let objective = ventureObjective ?? VentureObjective.selected(for: venture)
+    if objective.isMet(revenue: stats.revenue, trust: stats.trust, evidence: evidence.count, completedObjectives: completedObjectives, obligations: activeObligations.count) {
+      apply(objective.reward)
+      completedObjectives += 1
+    }
     let currentPrecedents = precedents.filter { $0.venture == venture }
+    let nextEra = VentureEra.era(for: venture + 1)
+    let era = VentureEra.era(for: venture)
+    let reviews = evidence.filter { $0.venture == venture && $0.reviewed }.count
+    let caught = evidence.filter { $0.venture == venture && $0.overclaimAmount > 0 && $0.reviewed }.count
     pendingVentureCheckpoint = VentureCheckpoint(
       venture: venture,
       trackRecordEarned: max(8, (stats.momentum + stats.trust) / 8),
       revenue: stats.revenue,
       trust: stats.trust,
       momentum: stats.momentum,
-      precedentsBanked: currentPrecedents.count
+      precedentsBanked: currentPrecedents.count,
+      grade: VentureGrader.grade(revenue: stats.revenue, attention: founderAttentionSpent, reviews: reviews, overclaimsCaught: caught, evidence: evidence.filter { $0.venture == venture }.count, energy: stats.energy, obligations: activeObligations.count, trust: stats.trust, flags: companyFlags),
+      objectiveTitle: objective.title,
+      nextObjectiveTitle: VentureObjective.selected(for: venture + 1).title,
+      nextEraName: nextEra.name,
+      nextEraForce: nextEra.newForce,
+      crossesEraBoundary: nextEra != era,
+      obligations: activeObligations,
+      companyFlags: companyFlags.sorted { $0.name < $1.name },
+      averageRelationship: averageRelationship
     )
     report = nil
     stage = .ventureCheckpoint
@@ -1465,6 +1496,7 @@ final class GameStore {
     activeObligations = save.activeObligations
     decisionHistory = save.decisionHistory
     completedObjectives = save.completedObjectives
+    ventureObjective = save.ventureObjective ?? VentureObjective.selected(for: venture)
     techComHeadlines = save.techComHeadlines
     techComRivals = save.techComRivals.isEmpty ? TechComEngine.rivals(seed: UInt64(save.venture * 100 + save.sprint)) : save.techComRivals
     talentBoardRefreshes = save.talentBoardRefreshes
@@ -1547,6 +1579,12 @@ final class GameStore {
   private func migrateV11(_ legacy: CareerSave) -> CareerSave {
     var migrated = legacy
     migrated.talentBoardRefreshes = 0
+    return migrated
+  }
+
+  private func migrateV12(_ legacy: CareerSave) -> CareerSave {
+    var migrated = legacy
+    migrated.ventureObjective = VentureObjective.selected(for: migrated.venture)
     return migrated
   }
 
@@ -1870,12 +1908,14 @@ final class GameStore {
       activeObligations: activeObligations,
       decisionHistory: decisionHistory,
       completedObjectives: completedObjectives,
+      ventureObjective: ventureObjective,
       techComHeadlines: techComHeadlines,
       techComRivals: techComRivals
     )
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
       UserDefaults.standard.set(data, forKey: Self.saveKey)
+      UserDefaults.standard.removeObject(forKey: Self.v12SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v11SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v10SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v9SaveKey)
@@ -2019,8 +2059,9 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  private static let saveVersion = 12
-  private static let saveKey = "solo-unicorn-run-native-save-v12"
+  private static let saveVersion = 13
+  private static let saveKey = "solo-unicorn-run-native-save-v13"
+  private static let v12SaveKey = "solo-unicorn-run-native-save-v12"
   private static let v11SaveKey = "solo-unicorn-run-native-save-v11"
   private static let v10SaveKey = "solo-unicorn-run-native-save-v10"
   private static let v9SaveKey = "solo-unicorn-run-native-save-v9"

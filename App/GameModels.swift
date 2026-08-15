@@ -381,6 +381,16 @@ enum CompanyFlag: String, Codable, CaseIterable, Identifiable, Hashable {
     case .licensedTechnology: "Licensed Technology"
     }
   }
+
+  var context: String {
+    switch self {
+    case .evidenceLedClaims, .evidenceDifferentiation: "Evidence is now a visible operating standard."
+    case .hypeFirst, .competitorRace: "Growth is prioritized even when claims need more proof."
+    case .protectedFounderHealth, .burnoutCulture: "This decision changed the company’s capacity expectations."
+    case .focusedProduct, .focusedExecution, .featureDebt: "This decision shaped how the roadmap is carried forward."
+    default: "A founder decision permanently changed the company’s operating posture."
+    }
+  }
 }
 
 struct CompanyObligation: Codable, Identifiable, Hashable {
@@ -1052,6 +1062,15 @@ struct VentureCheckpoint: Codable, Hashable {
   var trust: Int
   var momentum: Int
   var precedentsBanked: Int
+  var grade: VentureGrade? = nil
+  var objectiveTitle: String? = nil
+  var nextObjectiveTitle: String? = nil
+  var nextEraName: String? = nil
+  var nextEraForce: String? = nil
+  var crossesEraBoundary = false
+  var obligations: [CompanyObligation] = []
+  var companyFlags: [CompanyFlag] = []
+  var averageRelationship = 0
 
   var headline: String {
     "Venture \(venture) complete"
@@ -1098,6 +1117,7 @@ struct CareerSave: Codable {
   var activeObligations: [CompanyObligation]
   var decisionHistory: [CareerDecisionRecord]
   var completedObjectives: Int
+  var ventureObjective: VentureObjective?
   var techComHeadlines: [TechComHeadline]
   var techComRivals: [TechComRival]
 
@@ -1108,7 +1128,7 @@ struct CareerSave: Codable {
     case pendingEffects, reportCache, precedents, awaitingFounderPass
     case careerMode, pendingVentureCheckpoint
     case recentTaskTitles, taskDeckTitles, dilemmaDeckTemplateIDs, dilemmaDeckChapter
-    case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives
+    case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, ventureObjective
     case techComHeadlines, techComRivals
   }
 
@@ -1147,6 +1167,7 @@ struct CareerSave: Codable {
     activeObligations: [CompanyObligation] = [],
     decisionHistory: [CareerDecisionRecord] = [],
     completedObjectives: Int = 0,
+    ventureObjective: VentureObjective? = nil,
     techComHeadlines: [TechComHeadline] = [],
     techComRivals: [TechComRival] = []
   ) {
@@ -1184,6 +1205,7 @@ struct CareerSave: Codable {
     self.activeObligations = activeObligations
     self.decisionHistory = decisionHistory
     self.completedObjectives = completedObjectives
+    self.ventureObjective = ventureObjective
     self.techComHeadlines = techComHeadlines
     self.techComRivals = techComRivals
   }
@@ -1236,6 +1258,7 @@ struct CareerSave: Codable {
     activeObligations = try container.decodeIfPresent([CompanyObligation].self, forKey: .activeObligations) ?? []
     decisionHistory = try container.decodeIfPresent([CareerDecisionRecord].self, forKey: .decisionHistory) ?? []
     completedObjectives = try container.decodeIfPresent(Int.self, forKey: .completedObjectives) ?? 0
+    ventureObjective = try container.decodeIfPresent(VentureObjective.self, forKey: .ventureObjective)
     techComHeadlines = try container.decodeIfPresent([TechComHeadline].self, forKey: .techComHeadlines) ?? []
     techComRivals = try container.decodeIfPresent([TechComRival].self, forKey: .techComRivals) ?? []
   }
