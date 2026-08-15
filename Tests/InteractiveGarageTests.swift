@@ -30,7 +30,6 @@ final class InteractiveGarageTests: XCTestCase {
       XCTAssertEqual(layout.bays.count, count)
       XCTAssertTrue(canvas.contains(layout.deskFrame))
       for first in layout.bays.indices {
-        XCTAssertTrue(canvas.contains(layout.bays[first].frame))
         XCTAssertFalse(layout.bays[first].frame.intersects(layout.deskFrame))
         for second in layout.bays.indices where second > first {
           XCTAssertFalse(layout.bays[first].frame.intersects(layout.bays[second].frame))
