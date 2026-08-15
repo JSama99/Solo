@@ -44,6 +44,15 @@ final class InteractiveGarageTests: XCTestCase {
     XCTAssertEqual(Set((0..<5).map(GarageBayPresentation.icon)).count, 5)
   }
 
+  func testActiveGarageProfilesKeepCoreStationStatesVisuallyDistinct() {
+    let states: [AgentStationViewModel.SemanticState] = [.idle, .working, .awaitingReview, .overloaded, .verified]
+    let pairs = states.map { state in
+      let profile = GarageAnimationProfile.profile(for: state, motion: .active)
+      return "\(profile.monitorBehavior)-\(profile.ringBehavior)"
+    }
+    XCTAssertEqual(Set(pairs).count, states.count)
+  }
+
   func testFiveAgentStationsRemainAssignableAndReviewable() {
     let agents = (0..<5).map { index in
       SoloAgent(id: "agent-\(index)", name: "Agent \(index)", initials: "A\(index)", role: .general, modelFamily: "Model \(index)", reliability: 75, calibration: 0.7, drift: 0, trust: 60)
