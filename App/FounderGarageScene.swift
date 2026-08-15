@@ -23,7 +23,6 @@ struct FounderGarageScene: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 14) {
-      header
       sprintControls
       garageCanvas
       VStack(alignment: .leading, spacing: 5) {
@@ -46,15 +45,6 @@ struct FounderGarageScene: View {
     .sheet(item: $stationPresented) { station in
       GarageStationSheet(station: station, store: store, presentation: presentation)
     }
-  }
-
-  private var header: some View {
-    HStack(alignment: .firstTextBaseline) {
-      Label("FOUNDER GARAGE · LIVE VIEW", systemImage: facility.symbol)
-        .font(.caption.weight(.bold))
-        .foregroundStyle(SoloTheme.cyan)
-    }
-    .accessibilityElement(children: .combine)
   }
 
   private var garageCanvas: some View {
@@ -200,14 +190,8 @@ struct FounderGarageScene: View {
   }
 
   private var sprintControls: some View {
-    HStack(spacing: 10) {
-      Label(store?.sprintPhase.title ?? "Founder Event", systemImage: store?.sprintPhase.symbol ?? "circle")
-        .font(.caption.weight(.bold))
-        .foregroundStyle(SoloTheme.cyan)
+    HStack {
       Spacer()
-      Label("\(attentionRemaining)/\(attentionMaximum)", systemImage: "eye.fill")
-        .font(.caption.weight(.bold))
-        .foregroundStyle(SoloTheme.amber)
       Button("Desk", systemImage: "desktopcomputer") { deskPresented = true }
         .buttonStyle(.bordered)
     }

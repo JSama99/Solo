@@ -62,10 +62,6 @@ struct FounderEnvironmentScreen: View {
           .font(.caption)
           .foregroundStyle(.secondary)
       }
-      Spacer()
-      Label(store.garageCondition, systemImage: "waveform.path.ecg")
-        .font(.caption.weight(.bold))
-        .foregroundStyle(store.garageCondition == "Steady" ? SoloTheme.mint : SoloTheme.amber)
     }
   }
 
