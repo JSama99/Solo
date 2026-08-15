@@ -28,7 +28,7 @@ final class InteractiveGarageTests: XCTestCase {
       let layout = GarageBayLayout(stationCount: count)
       XCTAssertEqual(layout.bays.count, count)
       for first in layout.bays.indices {
-        XCTAssertFalse(layout.bays[first].frame.intersects(GarageBayLayout.deskFrame))
+        XCTAssertFalse(layout.bays[first].frame.intersects(layout.deskFrame))
         for second in layout.bays.indices where second > first {
           XCTAssertFalse(layout.bays[first].frame.intersects(layout.bays[second].frame))
           XCTAssertNotEqual(layout.bays[first].center, layout.bays[second].center)

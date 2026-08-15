@@ -61,6 +61,7 @@
 		73B35D04E243BD45B291E271 /* GameModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E7E924208E29B28AFAA264 /* GameModels.swift */; };
 		F24000000000000000000001 /* VentureIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F24000000000000000000002 /* VentureIdentity.swift */; };
 		F25000000000000000000001 /* VentureThesisScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F25000000000000000000002 /* VentureThesisScreen.swift */; };
+		F26000000000000000000001 /* RevenueCatImportBoundaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26000000000000000000002 /* RevenueCatImportBoundaryTests.swift */; };
 		A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2513145C1504A166E8177382 /* GameStoreTests.swift */; };
 		ABDFC492407A05E2BC397A8D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 17558F294800127BE04C0EBD /* Assets.xcassets */; };
 		AD24D57DE55399F057B4B47A /* GameStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AA2809B6198CB8955EEFAC /* GameStore.swift */; };
@@ -114,6 +115,7 @@
 		F10000000000000000000003 /* Build9ModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build9ModeTests.swift; sourceTree = "<group>"; };
 		F24000000000000000000002 /* VentureIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureIdentity.swift; sourceTree = "<group>"; };
 		F25000000000000000000002 /* VentureThesisScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureThesisScreen.swift; sourceTree = "<group>"; };
+		F26000000000000000000002 /* RevenueCatImportBoundaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCatImportBoundaryTests.swift; sourceTree = "<group>"; };
 		E10000000000000000000001 /* ContinuousModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinuousModeTests.swift; sourceTree = "<group>"; };
 		E10000000000000000000002 /* SimulationEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationEngineTests.swift; sourceTree = "<group>"; };
 		B10000000000000000000020 /* FounderPassGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderPassGateTests.swift; sourceTree = "<group>"; };
@@ -238,6 +240,7 @@
 				E10000000000000000000013 /* TechComEngineTests.swift */,
 				E10000000000000000000014 /* TechComPresentationTests.swift */,
 				E10000000000000000000019 /* HowToPlayContentTests.swift */,
+				F26000000000000000000002 /* RevenueCatImportBoundaryTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -286,6 +289,8 @@
 				D10000000000000000000004 /* VentureCheckpointScreen.swift */,
 				F10000000000000000000001 /* DailyChallenge.swift */,
 				F10000000000000000000002 /* VentureEra.swift */,
+				F24000000000000000000002 /* VentureIdentity.swift */,
+				F25000000000000000000002 /* VentureThesisScreen.swift */,
 				CE09C90DB6AC97A8F2FAA9FC /* SeededRandomNumberGenerator.swift */,
 				7CB9F64447826C8051328902 /* SimulationModels.swift */,
 				B10000000000000000000003 /* SubscriptionScreen.swift */,
@@ -386,7 +391,7 @@
 			mainGroup = CA642887A779ABB6F08FCDA4;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				B30000000000000000000001 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
+				B30000000000000000000001 /* XCLocalSwiftPackageReference "purchases-ios-spm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3CEB5942FF350B9F97498E73 /* Products */;
@@ -434,6 +439,7 @@
 				E30000000000000000000003 /* TechComEngineTests.swift in Sources */,
 				E30000000000000000000004 /* TechComPresentationTests.swift in Sources */,
 				E30000000000000000000009 /* HowToPlayContentTests.swift in Sources */,
+				F26000000000000000000001 /* RevenueCatImportBoundaryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -746,26 +752,22 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		B30000000000000000000001 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.43.0;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		B30000000000000000000001 /* XCLocalSwiftPackageReference "purchases-ios-spm" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/purchases-ios-spm;
 		};
-/* End XCRemoteSwiftPackageReference section */
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		B40000000000000000000001 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B30000000000000000000001 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			package = B30000000000000000000001 /* XCLocalSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCat;
 		};
 		B40000000000000000000002 /* RevenueCatUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B30000000000000000000001 /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
+			package = B30000000000000000000001 /* XCLocalSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
