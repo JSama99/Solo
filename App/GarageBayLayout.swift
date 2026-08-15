@@ -7,10 +7,10 @@ struct GarageBayLayout {
   }
 
   static let canvasHeight: CGFloat = 650
-  static let deskFrame = CGRect(x: 615, y: 405, width: 150, height: 185)
   var stationCount: Int
 
-  var canvasWidth: CGFloat { stationCount <= 3 ? 980 : stationCount == 4 ? 1_180 : 1_440 }
+  var canvasWidth: CGFloat { stationCount <= 3 ? 980 : stationCount == 4 ? 1_340 : 1_440 }
+  var deskFrame: CGRect { CGRect(x: canvasWidth / 2 - 75, y: 425, width: 150, height: 185) }
   var bays: [Bay] {
     let frames: [CGRect]
     switch stationCount {

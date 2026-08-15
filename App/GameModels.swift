@@ -1120,6 +1120,8 @@ struct CareerSave: Codable {
   var ventureObjective: VentureObjective?
   var thesis: VentureThesis?
   var thesisHistory: [VentureThesis]
+  var awaitingThesisSelection: Bool
+  var pendingChapterMilestone: ChapterMilestone?
   var techComHeadlines: [TechComHeadline]
   var techComRivals: [TechComRival]
 
@@ -1130,7 +1132,7 @@ struct CareerSave: Codable {
     case pendingEffects, reportCache, precedents, awaitingFounderPass
     case careerMode, pendingVentureCheckpoint
     case recentTaskTitles, taskDeckTitles, dilemmaDeckTemplateIDs, dilemmaDeckChapter
-    case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, ventureObjective, thesis, thesisHistory
+    case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, ventureObjective, thesis, thesisHistory, awaitingThesisSelection, pendingChapterMilestone
     case techComHeadlines, techComRivals
   }
 
@@ -1172,6 +1174,8 @@ struct CareerSave: Codable {
     ventureObjective: VentureObjective? = nil,
     thesis: VentureThesis? = nil,
     thesisHistory: [VentureThesis] = [],
+    awaitingThesisSelection: Bool = false,
+    pendingChapterMilestone: ChapterMilestone? = nil,
     techComHeadlines: [TechComHeadline] = [],
     techComRivals: [TechComRival] = []
   ) {
@@ -1212,6 +1216,8 @@ struct CareerSave: Codable {
     self.ventureObjective = ventureObjective
     self.thesis = thesis
     self.thesisHistory = thesisHistory
+    self.awaitingThesisSelection = awaitingThesisSelection
+    self.pendingChapterMilestone = pendingChapterMilestone
     self.techComHeadlines = techComHeadlines
     self.techComRivals = techComRivals
   }
@@ -1267,6 +1273,8 @@ struct CareerSave: Codable {
     ventureObjective = try container.decodeIfPresent(VentureObjective.self, forKey: .ventureObjective)
     thesis = try container.decodeIfPresent(VentureThesis.self, forKey: .thesis)
     thesisHistory = try container.decodeIfPresent([VentureThesis].self, forKey: .thesisHistory) ?? []
+    awaitingThesisSelection = try container.decodeIfPresent(Bool.self, forKey: .awaitingThesisSelection) ?? false
+    pendingChapterMilestone = try container.decodeIfPresent(ChapterMilestone.self, forKey: .pendingChapterMilestone)
     techComHeadlines = try container.decodeIfPresent([TechComHeadline].self, forKey: .techComHeadlines) ?? []
     techComRivals = try container.decodeIfPresent([TechComRival].self, forKey: .techComRivals) ?? []
   }
@@ -1278,6 +1286,10 @@ struct SaveEnvelope: Codable {
 }
 
 extension SimulationEffects {
+  var conciseGainLabel: String {
+    let parts = [revenue == 0 ? nil : "+$\(revenue)", momentum == 0 ? nil : "+\(momentum) Momentum", trust == 0 ? nil : "+\(trust) Trust", energy == 0 ? nil : "+\(energy) Energy", runway == 0 ? nil : "+\(runway) Runway"].compactMap { $0 }
+    return parts.isEmpty ? "No reward earned" : parts.joined(separator: " • ")
+  }
   var conciseLossLabel: String {
     let parts = [
       revenue == 0 ? nil : "\(revenue > 0 ? "+" : "")$\(revenue)",

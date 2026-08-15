@@ -88,6 +88,7 @@ final class GameStore {
   private(set) var thesis: VentureThesis = .sustainable
   private(set) var thesisHistory: [VentureThesis] = []
   private(set) var pendingChapterMilestone: ChapterMilestone?
+  private(set) var awaitingThesisSelection = false
 
   /// Supplies entitlement state. Replaceable so the simulation stays testable
   /// without RevenueCat, StoreKit, or a network.
@@ -104,6 +105,8 @@ final class GameStore {
 
   var hasSave: Bool {
     UserDefaults.standard.data(forKey: Self.saveKey) != nil
+      || UserDefaults.standard.data(forKey: Self.v14SaveKey) != nil
+      || UserDefaults.standard.data(forKey: Self.v13SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v11SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v12SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v10SaveKey) != nil
@@ -382,6 +385,7 @@ final class GameStore {
     ventureObjective = VentureObjective.selected(for: venture)
     thesis = selectedThesis
     thesisHistory = []
+    awaitingThesisSelection = true
     precedents = []
     activeRecall = nil
     recallsShownThisVenture = 0
@@ -443,6 +447,14 @@ final class GameStore {
        let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
        envelope.version == Self.saveVersion {
       loadedSave = envelope.career
+    } else if let data = UserDefaults.standard.data(forKey: Self.v14SaveKey),
+              let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
+              envelope.version == 14 {
+      loadedSave = migrateV14(envelope.career)
+    } else if let data = UserDefaults.standard.data(forKey: Self.v13SaveKey),
+              let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
+              envelope.version == 13 {
+      loadedSave = migrateV13(envelope.career)
     } else if let data = UserDefaults.standard.data(forKey: Self.v12SaveKey),
               let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
               envelope.version == 12 {
@@ -789,6 +801,7 @@ final class GameStore {
       }
     }
     let era = VentureEra.era(for: venture)
+    precondition(!awaitingThesisSelection, "A venture cannot commit a sprint before its thesis is chosen.")
     let thesisProfile = ThesisProfile.profile(for: thesis)
     effects.runway -= era.runwayBurnPerSprint
     effects.energy -= max(0, era.energyCostPerSprint + thesisProfile.energyCostDelta)
@@ -865,7 +878,7 @@ final class GameStore {
     }
     if effects.revenue > 0 { effects.revenue = Int((Double(effects.revenue) * thesisProfile.revenueMultiplier).rounded()) }
     if effects.trust < 0 { effects.trust = Int((Double(effects.trust) * thesisProfile.trustPenaltyMultiplier).rounded()) }
-    effects.trust += thesisProfile.customerLoyaltyModifier
+    if effects.trust > 0 { effects.trust = Int((Double(effects.trust) * (1 + Double(thesisProfile.customerLoyaltyModifier) / 100)).rounded()) }
     apply(effects)
     if facilityBonuses.sprintEnergyRecovery > 0 {
       stats.energy = min(100, stats.energy + facilityBonuses.sprintEnergyRecovery)
@@ -963,6 +976,7 @@ final class GameStore {
     stats.energy = min(100, stats.energy + facilityBonuses.ventureEnergyBonus)
     ventureObjective = VentureObjective.selected(for: venture)
     selectedThesis = thesis
+    awaitingThesisSelection = true
     recentTaskTitles = []
     taskDeckTitles = []
     dilemmaDeckTemplateIDs = []
@@ -972,7 +986,8 @@ final class GameStore {
 
   func selectThesisAndBegin() {
     thesis = selectedThesis
-    thesisHistory.append(thesis)
+    if thesisHistory.count < venture { thesisHistory.append(thesis) }
+    awaitingThesisSelection = false
     pendingChapterMilestone = nil
     prepareSprint()
     stage = .game
@@ -992,7 +1007,7 @@ final class GameStore {
     let multiplier = beginning == .surviveOrScale ? 2 : 1
     let reward = earned ? SimulationEffects(momentum: (full ? 4 : 2) * multiplier, trust: full ? multiplier : 0) : SimulationEffects()
     apply(reward)
-    pendingChapterMilestone = .init(id: "V\(venture)-\(beginning.rawValue)", completed: completed, beginning: beginning, objectiveProgress: ventureObjectiveProgress, reward: reward, rewardLabel: earned ? reward.conciseLossLabel : "No reward — review 2 tasks in a chapter")
+    pendingChapterMilestone = .init(id: "V\(venture)-\(beginning.rawValue)", completed: completed, beginning: beginning, objectiveProgress: ventureObjectiveProgress, reward: reward, rewardLabel: earned ? reward.conciseGainLabel : "No reward — review 2 tasks in a chapter")
     stage = .chapterMilestone
   }
 
@@ -1202,9 +1217,17 @@ final class GameStore {
     reportCache = []
     founderAttentionSpent = 0
     defer { refreshHindsightRecall() }
+    let profile = ThesisProfile.profile(for: thesis)
     correlatedFailureEvent = SimulationEngine.generateCorrelatedFailureEvent(
       venture: venture, sprint: sprint, agents: agents, rng: &randomNumberGenerator
     )
+    if profile.correlatedFailureProbabilityDelta > 0, correlatedFailureEvent == nil,
+       randomNumberGenerator.probability() < profile.correlatedFailureProbabilityDelta {
+      correlatedFailureEvent = SimulationEngine.generateCorrelatedFailureEvent(venture: venture, sprint: sprint, agents: agents, rng: &randomNumberGenerator)
+    } else if profile.correlatedFailureProbabilityDelta < 0, correlatedFailureEvent != nil,
+              randomNumberGenerator.probability() < -profile.correlatedFailureProbabilityDelta {
+      correlatedFailureEvent = nil
+    }
     let draft = makeTaskDraft()
     tasks = draft.active
     taskBacklog = draft.backlog
@@ -1544,6 +1567,8 @@ final class GameStore {
     thesis = save.thesis ?? .sustainable
     selectedThesis = thesis
     thesisHistory = save.thesisHistory
+    awaitingThesisSelection = save.awaitingThesisSelection
+    pendingChapterMilestone = save.pendingChapterMilestone
     techComHeadlines = save.techComHeadlines
     techComRivals = save.techComRivals.isEmpty ? TechComEngine.rivals(seed: UInt64(save.venture * 100 + save.sprint)) : save.techComRivals
     talentBoardRefreshes = save.talentBoardRefreshes
@@ -1576,6 +1601,10 @@ final class GameStore {
       stage = .ventureUnlock
     } else if pendingVentureCheckpoint != nil {
       stage = .ventureCheckpoint
+    } else if pendingChapterMilestone != nil {
+      stage = .chapterMilestone
+    } else if awaitingThesisSelection {
+      stage = .ventureThesis
     } else {
       stage = .game
     }
@@ -1632,6 +1661,21 @@ final class GameStore {
   private func migrateV12(_ legacy: CareerSave) -> CareerSave {
     var migrated = legacy
     migrated.ventureObjective = VentureObjective.selected(for: migrated.venture)
+    return migrated
+  }
+
+  private func migrateV13(_ legacy: CareerSave) -> CareerSave {
+    var migrated = legacy
+    migrated.thesis = .sustainable
+    migrated.thesisHistory = []
+    migrated.awaitingThesisSelection = false
+    return migrated
+  }
+
+  private func migrateV14(_ legacy: CareerSave) -> CareerSave {
+    var migrated = legacy
+    migrated.awaitingThesisSelection = false
+    migrated.pendingChapterMilestone = nil
     return migrated
   }
 
@@ -1917,7 +1961,7 @@ final class GameStore {
     // the checkpoint would vanish on reload. Found by tracing the actual
     // save path after adding the new stage, not assumed.
     guard
-      (stage == .game || stage == .outcome || stage == .ventureUnlock || stage == .ventureCheckpoint)
+      (stage == .game || stage == .outcome || stage == .ventureUnlock || stage == .ventureCheckpoint || stage == .ventureThesis || stage == .chapterMilestone)
         && careerMode != .daily
     else { return }
     let payload = CareerSave(
@@ -1958,12 +2002,16 @@ final class GameStore {
       ventureObjective: ventureObjective,
       thesis: thesis,
       thesisHistory: thesisHistory,
+      awaitingThesisSelection: awaitingThesisSelection,
+      pendingChapterMilestone: pendingChapterMilestone,
       techComHeadlines: techComHeadlines,
       techComRivals: techComRivals
     )
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
       UserDefaults.standard.set(data, forKey: Self.saveKey)
+      UserDefaults.standard.removeObject(forKey: Self.v14SaveKey)
+      UserDefaults.standard.removeObject(forKey: Self.v13SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v12SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v11SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v10SaveKey)
@@ -2108,8 +2156,9 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  private static let saveVersion = 14
-  private static let saveKey = "solo-unicorn-run-native-save-v14"
+  private static let saveVersion = 15
+  private static let saveKey = "solo-unicorn-run-native-save-v15"
+  private static let v14SaveKey = "solo-unicorn-run-native-save-v14"
   private static let v13SaveKey = "solo-unicorn-run-native-save-v13"
   private static let v12SaveKey = "solo-unicorn-run-native-save-v12"
   private static let v11SaveKey = "solo-unicorn-run-native-save-v11"
