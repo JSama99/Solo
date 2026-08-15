@@ -783,7 +783,7 @@ struct TaskCommandCard: View {
             .font(.caption2)
             .foregroundStyle(.secondary)
           if task.resolutionLocked, let resolution = task.resolution {
-            Label("(resolution.title) locked", systemImage: "lock.fill")
+            Label("\(resolution.title) locked", systemImage: "lock.fill")
               .font(.caption.weight(.bold))
               .foregroundStyle(SoloTheme.mint)
           } else {
