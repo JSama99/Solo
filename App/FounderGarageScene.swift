@@ -304,7 +304,14 @@ private struct GarageBayStation: View {
       }
       .offset(y: motionOffset)
       .opacity(isDimmed ? 0.38 : 1)
-      .overlay { if isHighlighted { RoundedRectangle(cornerRadius: 16).stroke(SoloTheme.cyan, lineWidth: 2).shadow(color: SoloTheme.cyan.opacity(0.7), radius: 10) } }
+      .overlay {
+        if isHighlighted {
+          let profile = GarageAnimationProfile.profile(for: station.semanticState, motion: motion)
+          RoundedRectangle(cornerRadius: 16).stroke(SoloTheme.cyan, lineWidth: 2)
+            .shadow(color: SoloTheme.cyan.opacity(0.7), radius: 10)
+            .offset(x: GarageAnimationRenderer.warningOffset(profile: profile, transitionProgress: profile.transition == .warning ? 0.35 : 1))
+        }
+      }
       .animation(.smooth, value: isDimmed)
     }
     .buttonStyle(.plain)
@@ -315,6 +322,8 @@ private struct GarageBayStation: View {
   }
 
   private var workstation: some View {
+    let profile = GarageAnimationProfile.profile(for: station.semanticState, motion: motion)
+    let time = date.timeIntervalSinceReferenceDate + GaragePhase.offset(identity: station.id, index: 0) * 2.4
     ZStack(alignment: .bottom) {
       RoundedRectangle(cornerRadius: 8)
         .fill(Color(red: 0.12, green: 0.14, blue: 0.17))
@@ -326,7 +335,7 @@ private struct GarageBayStation: View {
           .frame(width: 68, height: 50)
           .overlay {
             RoundedRectangle(cornerRadius: 3)
-              .fill(accent.opacity(station.semanticState == .idle ? 0.20 : 0.42))
+              .fill(GarageAnimationRenderer.monitorColor(profile: profile).opacity(GarageAnimationRenderer.monitorOpacity(profile: profile, time: time)))
               .padding(4)
               .overlay {
                 Image(systemName: icon).font(.caption).foregroundStyle(accent)
@@ -338,6 +347,11 @@ private struct GarageBayStation: View {
           .overlay { Image(systemName: "chart.line.uptrend.xyaxis").font(.caption2).foregroundStyle(accent.opacity(0.85)) }
       }
       .offset(y: -3)
+      if profile.particleCount > 0 {
+        GarageAnimationRenderer.particleLayer(count: profile.particleCount, time: time, identity: station.id, index: 0, motion: motion, color: accent)
+          .scaleEffect(0.65)
+          .offset(y: -10)
+      }
       ZStack {
         Circle().stroke(accent.opacity(0.75), lineWidth: 2).frame(width: 60, height: 60)
         Circle().fill(accent).frame(width: 42, height: 42)
