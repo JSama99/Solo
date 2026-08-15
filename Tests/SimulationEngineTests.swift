@@ -219,8 +219,8 @@ final class SimulationEngineTests: XCTestCase {
     XCTAssertEqual(ContentLibrary.taskPool(for: .scale).count, 100)
   }
 
-  func testContentLibraryDilemmaCountUnchangedFromBuild4() {
-    XCTAssertEqual(ContentLibrary.dilemmaPool.count, 12)
+  func testContentLibraryDilemmaCountIncludesAllProductTypes() {
+    XCTAssertEqual(ContentLibrary.dilemmaPool.count, 48)
   }
 
   func testContentLibraryObjectiveCountUnchangedFromBuild4() {
@@ -230,7 +230,7 @@ final class SimulationEngineTests: XCTestCase {
   func testContentLibraryDilemmasAreEvenlySpreadAcrossChapters() {
     for chapter in VentureChapter.allCases {
       let count = ContentLibrary.dilemmaPool.filter { $0.chapter == chapter }.count
-      XCTAssertEqual(count, 3, "\(chapter.name) should have exactly 3 dilemmas")
+      XCTAssertEqual(count, 12, "\(chapter.name) should have 12 dilemmas across product types")
     }
   }
 

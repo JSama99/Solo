@@ -16,20 +16,26 @@ final class ProductTypeContentTests: XCTestCase {
 
   func testConsumerAppContentIsAuthoredAndUnique() {
     let tasks = ContentLibrary.allTaskPool.filter { $0.productTypes == [.consumerApp] }
-    XCTAssertEqual(tasks.count, 70)
+    XCTAssertEqual(tasks.count, 71)
     XCTAssertEqual(Set(tasks.map(\.detail)).count, tasks.count)
-    XCTAssertTrue(tasks.allSatisfy { task in
-      let pieces = task.title.components(separatedBy: task.title)
-      return pieces.count == 2
-    })
+    XCTAssertTrue(tasks.allSatisfy { !hasRepeatedPhrase(in: $0.title) })
     let dilemmas = ContentLibrary.dilemmaPool.filter { $0.productTypes == [.consumerApp] }
     XCTAssertEqual(dilemmas.count, 12)
     XCTAssertEqual(Set(dilemmas.map(\.setup)).count, dilemmas.count)
+    XCTAssertEqual(Set(dilemmas.map(\.choices)).count, dilemmas.count)
+    XCTAssertTrue(dilemmas.allSatisfy { Set($0.choices.map(\.detail)).count == $0.choices.count && Set($0.choices.map(\.consequencePreview)).count == $0.choices.count })
     XCTAssertFalse(dilemmas.contains { consumer in
       ContentLibrary.dilemmaPool.contains { other in
         other.productTypes == [.saas] && other.id.hasSuffix(consumer.id.replacingOccurrences(of: "consumerApp-", with: "")) && other.choices == consumer.choices
       }
     })
+  }
+
+  func testProductTypeCompositionPreservesCountsAndUniversalDilemmas() {
+    XCTAssertEqual(Set(ProductType.allCases.map { type in ContentLibrary.allTaskPool.filter { $0.productTypes?.contains(type) ?? true }.count }).count, 1)
+    XCTAssertEqual(Set(ProductType.allCases.map { type in ContentLibrary.dilemmaPool.filter { $0.productTypes?.contains(type) ?? true }.count }).count, 1)
+    let universal = FounderDilemma(id: "future-universal", title: "Universal", setup: "Universal future content.", chapter: .prototype, featuredAgentID: nil, choices: [])
+    XCTAssertNil(ContentLibrary.classifiedDilemmas([universal]).first?.productTypes)
   }
 
   func testEveryProductHasDilemmasInEachChapter() {
@@ -76,5 +82,14 @@ final class ProductTypeContentTests: XCTestCase {
     let migrated = GameStore()
     migrated.continueCareer()
     XCTAssertEqual(migrated.productType, .saas)
+  }
+
+  private func hasRepeatedPhrase(in title: String) -> Bool {
+    let words = title.lowercased().split { !$0.isLetter && !$0.isNumber }
+    var phrases = Set<String>()
+    for index in 0 ..< max(0, words.count - 1) {
+      if !phrases.insert(words[index ... index + 1].joined(separator: " ")).inserted { return true }
+    }
+    return false
   }
 }

@@ -67,6 +67,8 @@ struct FounderGarageScene: View {
           ceilingBeams
           warmLighting
           deskControl
+            .frame(width: layout.deskFrame.width, height: layout.deskFrame.height)
+            .position(x: layout.deskFrame.midX, y: layout.deskFrame.midY)
 
           ForEach(Array(stations.enumerated()), id: \.element.id) { index, station in
             GarageBayStation(

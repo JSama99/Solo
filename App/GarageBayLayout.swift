@@ -7,10 +7,13 @@ struct GarageBayLayout {
   }
 
   static let canvasHeight: CGFloat = 650
-  static let deskFrame = CGRect(x: 615, y: 405, width: 150, height: 185)
+  static let deskSize = CGSize(width: 150, height: 172)
   var stationCount: Int
 
-  var canvasWidth: CGFloat { stationCount <= 3 ? 980 : stationCount == 4 ? 1_180 : 1_440 }
+  var canvasWidth: CGFloat { stationCount <= 3 ? 980 : stationCount == 4 ? 1_320 : 1_440 }
+  var deskFrame: CGRect {
+    CGRect(x: (canvasWidth - Self.deskSize.width) / 2, y: Self.canvasHeight - Self.deskSize.height - 18, width: Self.deskSize.width, height: Self.deskSize.height)
+  }
   var bays: [Bay] {
     let frames: [CGRect]
     switch stationCount {
