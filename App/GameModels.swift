@@ -1072,6 +1072,31 @@ struct VentureCheckpoint: Codable, Hashable {
   var companyFlags: [CompanyFlag] = []
   var averageRelationship = 0
 
+  private enum CodingKeys: String, CodingKey { case venture, trackRecordEarned, revenue, trust, momentum, precedentsBanked, grade, objectiveTitle, nextObjectiveTitle, nextEraName, nextEraForce, crossesEraBoundary, obligations, companyFlags, averageRelationship }
+
+  init(venture: Int, trackRecordEarned: Int, revenue: Int, trust: Int, momentum: Int, precedentsBanked: Int, grade: VentureGrade? = nil, objectiveTitle: String? = nil, nextObjectiveTitle: String? = nil, nextEraName: String? = nil, nextEraForce: String? = nil, crossesEraBoundary: Bool = false, obligations: [CompanyObligation] = [], companyFlags: [CompanyFlag] = [], averageRelationship: Int = 0) {
+    self.venture = venture; self.trackRecordEarned = trackRecordEarned; self.revenue = revenue; self.trust = trust; self.momentum = momentum; self.precedentsBanked = precedentsBanked; self.grade = grade; self.objectiveTitle = objectiveTitle; self.nextObjectiveTitle = nextObjectiveTitle; self.nextEraName = nextEraName; self.nextEraForce = nextEraForce; self.crossesEraBoundary = crossesEraBoundary; self.obligations = obligations; self.companyFlags = companyFlags; self.averageRelationship = averageRelationship
+  }
+
+  init(from decoder: Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    venture = try values.decode(Int.self, forKey: .venture)
+    trackRecordEarned = try values.decode(Int.self, forKey: .trackRecordEarned)
+    revenue = try values.decode(Int.self, forKey: .revenue)
+    trust = try values.decode(Int.self, forKey: .trust)
+    momentum = try values.decode(Int.self, forKey: .momentum)
+    precedentsBanked = try values.decode(Int.self, forKey: .precedentsBanked)
+    grade = try values.decodeIfPresent(VentureGrade.self, forKey: .grade)
+    objectiveTitle = try values.decodeIfPresent(String.self, forKey: .objectiveTitle)
+    nextObjectiveTitle = try values.decodeIfPresent(String.self, forKey: .nextObjectiveTitle)
+    nextEraName = try values.decodeIfPresent(String.self, forKey: .nextEraName)
+    nextEraForce = try values.decodeIfPresent(String.self, forKey: .nextEraForce)
+    crossesEraBoundary = try values.decodeIfPresent(Bool.self, forKey: .crossesEraBoundary) ?? false
+    obligations = try values.decodeIfPresent([CompanyObligation].self, forKey: .obligations) ?? []
+    companyFlags = try values.decodeIfPresent([CompanyFlag].self, forKey: .companyFlags) ?? []
+    averageRelationship = try values.decodeIfPresent(Int.self, forKey: .averageRelationship) ?? 0
+  }
+
   var headline: String {
     "Venture \(venture) complete"
   }
@@ -1117,6 +1142,7 @@ struct CareerSave: Codable {
   var activeObligations: [CompanyObligation]
   var decisionHistory: [CareerDecisionRecord]
   var completedObjectives: Int
+  var completedVentureObjectives: Int
   var ventureObjective: VentureObjective?
   var thesis: VentureThesis?
   var thesisHistory: [VentureThesis]
@@ -1132,7 +1158,7 @@ struct CareerSave: Codable {
     case pendingEffects, reportCache, precedents, awaitingFounderPass
     case careerMode, pendingVentureCheckpoint
     case recentTaskTitles, taskDeckTitles, dilemmaDeckTemplateIDs, dilemmaDeckChapter
-    case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, ventureObjective, thesis, thesisHistory, awaitingThesisSelection, pendingChapterMilestone
+    case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, completedVentureObjectives, ventureObjective, thesis, thesisHistory, awaitingThesisSelection, pendingChapterMilestone
     case techComHeadlines, techComRivals
   }
 
@@ -1171,6 +1197,7 @@ struct CareerSave: Codable {
     activeObligations: [CompanyObligation] = [],
     decisionHistory: [CareerDecisionRecord] = [],
     completedObjectives: Int = 0,
+    completedVentureObjectives: Int = 0,
     ventureObjective: VentureObjective? = nil,
     thesis: VentureThesis? = nil,
     thesisHistory: [VentureThesis] = [],
@@ -1213,6 +1240,7 @@ struct CareerSave: Codable {
     self.activeObligations = activeObligations
     self.decisionHistory = decisionHistory
     self.completedObjectives = completedObjectives
+    self.completedVentureObjectives = completedVentureObjectives
     self.ventureObjective = ventureObjective
     self.thesis = thesis
     self.thesisHistory = thesisHistory
@@ -1270,6 +1298,7 @@ struct CareerSave: Codable {
     activeObligations = try container.decodeIfPresent([CompanyObligation].self, forKey: .activeObligations) ?? []
     decisionHistory = try container.decodeIfPresent([CareerDecisionRecord].self, forKey: .decisionHistory) ?? []
     completedObjectives = try container.decodeIfPresent(Int.self, forKey: .completedObjectives) ?? 0
+    completedVentureObjectives = try container.decodeIfPresent(Int.self, forKey: .completedVentureObjectives) ?? 0
     ventureObjective = try container.decodeIfPresent(VentureObjective.self, forKey: .ventureObjective)
     thesis = try container.decodeIfPresent(VentureThesis.self, forKey: .thesis)
     thesisHistory = try container.decodeIfPresent([VentureThesis].self, forKey: .thesisHistory) ?? []

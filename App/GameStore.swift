@@ -83,6 +83,7 @@ final class GameStore {
   private(set) var activeObligations: [CompanyObligation] = []
   private(set) var decisionHistory: [CareerDecisionRecord] = []
   private(set) var completedObjectives = 0
+  private(set) var completedVentureObjectives = 0
   private(set) var ventureObjective: VentureObjective?
   var selectedThesis: VentureThesis = .sustainable
   private(set) var thesis: VentureThesis = .sustainable
@@ -298,7 +299,7 @@ final class GameStore {
 
   var ventureObjectiveProgress: Double {
     guard let ventureObjective else { return 0 }
-    return ventureObjective.progress(revenue: stats.revenue, trust: stats.trust, evidence: evidence.count, completedObjectives: completedObjectives, obligations: activeObligations.count)
+    return ventureObjective.progress(revenue: stats.revenue, trust: stats.trust, evidence: evidence.count, completedObjectives: completedVentureObjectives, obligations: activeObligations.count)
   }
 
   var objectiveProgressText: String {
@@ -395,6 +396,7 @@ final class GameStore {
     activeObligations = []
     decisionHistory = []
     completedObjectives = 0
+    completedVentureObjectives = 0
     recentTaskTitles = []
     taskDeckTitles = []
     dilemmaDeckTemplateIDs = []
@@ -910,11 +912,12 @@ final class GameStore {
       reviewedCount: reviewed
     )
 
+    let runLength = careerMode == .daily ? DailyChallenge.sprintsPerRun : Self.sprintsPerVenture
+    if sprint == runLength { evaluateVentureObjectiveAtCompletion() }
     careerOutcome = acquisitionAccepted ? acquisitionOutcome() : resolvedOutcome()
     if careerMode == .daily, careerOutcome != nil {
       dailyChallengeStore.record(score: careerScore)
     }
-    let runLength = careerMode == .daily ? DailyChallenge.sprintsPerRun : Self.sprintsPerVenture
     if careerOutcome == nil && sprint == runLength {
       achievementStore?.recordVentureCommit(context: achievementContext)
       switch careerMode {
@@ -1016,10 +1019,6 @@ final class GameStore {
   /// silently rolling into the next set of 12 sprints.
   private func presentVentureCheckpoint() {
     let objective = ventureObjective ?? VentureObjective.selected(for: venture)
-    if objective.isMet(revenue: stats.revenue, trust: stats.trust, evidence: evidence.count, completedObjectives: completedObjectives, obligations: activeObligations.count) {
-      apply(objective.reward)
-      completedObjectives += 1
-    }
     let currentPrecedents = precedents.filter { $0.venture == venture }
     let nextEra = VentureEra.era(for: venture + 1)
     let era = VentureEra.era(for: venture)
@@ -1044,6 +1043,13 @@ final class GameStore {
     )
     report = nil
     stage = .ventureCheckpoint
+  }
+
+  private func evaluateVentureObjectiveAtCompletion() {
+    let objective = ventureObjective ?? VentureObjective.selected(for: venture)
+    guard objective.isMet(revenue: stats.revenue, trust: stats.trust, evidence: evidence.count, completedObjectives: completedVentureObjectives, obligations: activeObligations.count) else { return }
+    apply(objective.reward)
+    completedVentureObjectives += 1
   }
 
   /// The player's choice at a venture checkpoint: keep going.
@@ -1563,6 +1569,7 @@ final class GameStore {
     activeObligations = save.activeObligations
     decisionHistory = save.decisionHistory
     completedObjectives = save.completedObjectives
+    completedVentureObjectives = save.completedVentureObjectives
     ventureObjective = save.ventureObjective ?? VentureObjective.selected(for: venture)
     thesis = save.thesis ?? .sustainable
     selectedThesis = thesis
@@ -1999,6 +2006,7 @@ final class GameStore {
       activeObligations: activeObligations,
       decisionHistory: decisionHistory,
       completedObjectives: completedObjectives,
+      completedVentureObjectives: completedVentureObjectives,
       ventureObjective: ventureObjective,
       thesis: thesis,
       thesisHistory: thesisHistory,
