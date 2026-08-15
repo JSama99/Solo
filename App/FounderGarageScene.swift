@@ -287,6 +287,14 @@ private struct GarageBayStation: View {
   var differentiateWithoutColor: Bool
   var action: () -> Void
 
+  private var profile: GarageAnimationProfile {
+    GarageAnimationProfile.profile(for: station.semanticState, motion: motion)
+  }
+
+  private var stationTime: Double {
+    GarageAnimationRenderer.stationTime(date: date, identity: station.id, index: 0)
+  }
+
   private var motionOffset: CGFloat {
     guard motion == .active else { return 0 }
     let phase = GaragePhase.offset(identity: station.id, index: 0) * .pi * 2
@@ -297,14 +305,25 @@ private struct GarageBayStation: View {
     Button(action: action) {
       VStack(spacing: 6) {
         ZStack {
-          Circle().fill(accent.opacity(0.22)).frame(width: 166, height: 142).blur(radius: 21)
+          Circle()
+            .fill(GarageAnimationRenderer.monitorColor(profile: profile, accent: accent).opacity(glowOpacity))
+            .frame(width: 166, height: 142)
+            .blur(radius: 21)
           workstation
         }
         GarageStationTag(station: station, accent: accent, differentiateWithoutColor: differentiateWithoutColor)
       }
-      .offset(y: motionOffset)
+      .offset(
+        x: GarageAnimationRenderer.ambientWarningOffset(profile: profile, time: stationTime),
+        y: motionOffset
+      )
       .opacity(isDimmed ? 0.38 : 1)
-      .overlay { if isHighlighted { RoundedRectangle(cornerRadius: 16).stroke(SoloTheme.cyan, lineWidth: 2).shadow(color: SoloTheme.cyan.opacity(0.7), radius: 10) } }
+      .overlay {
+        if isHighlighted {
+          RoundedRectangle(cornerRadius: 16).stroke(SoloTheme.cyan, lineWidth: 2)
+            .shadow(color: SoloTheme.cyan.opacity(0.7), radius: 10)
+        }
+      }
       .animation(.smooth, value: isDimmed)
     }
     .buttonStyle(.plain)
@@ -314,8 +333,23 @@ private struct GarageBayStation: View {
     .accessibilityHint("Opens read-only agent details")
   }
 
+  private var glowOpacity: Double {
+    switch profile.monitorBehavior {
+    case .dim: 0.12
+    case .steady: 0.22
+    case .activity: 0.30
+    case .warm: 0.34
+    }
+  }
+
+  private var statusColor: Color {
+    GarageAnimationRenderer.statusColor(for: station.semanticState)
+  }
+
   private var workstation: some View {
-    ZStack(alignment: .bottom) {
+    let profile = self.profile
+    let time = stationTime
+    return ZStack(alignment: .bottom) {
       RoundedRectangle(cornerRadius: 8)
         .fill(Color(red: 0.12, green: 0.14, blue: 0.17))
         .frame(width: 142, height: 14)
@@ -326,7 +360,10 @@ private struct GarageBayStation: View {
           .frame(width: 68, height: 50)
           .overlay {
             RoundedRectangle(cornerRadius: 3)
-              .fill(accent.opacity(station.semanticState == .idle ? 0.20 : 0.42))
+              .fill(
+                GarageAnimationRenderer.monitorColor(profile: profile, accent: accent)
+                  .opacity(GarageAnimationRenderer.monitorOpacity(profile: profile, time: time))
+              )
               .padding(4)
               .overlay {
                 Image(systemName: icon).font(.caption).foregroundStyle(accent)
@@ -338,12 +375,40 @@ private struct GarageBayStation: View {
           .overlay { Image(systemName: "chart.line.uptrend.xyaxis").font(.caption2).foregroundStyle(accent.opacity(0.85)) }
       }
       .offset(y: -3)
+      if profile.particleCount > 0 {
+        GarageAnimationRenderer.particleLayer(
+          count: profile.particleCount,
+          time: time,
+          identity: station.id,
+          index: 0,
+          motion: motion,
+          color: statusColor,
+          diameter: 6,
+          spread: 74,
+          rise: 84,
+          baseline: 6,
+          opacity: 0.85
+        )
+        .offset(y: -34)
+      }
       ZStack {
-        Circle().stroke(accent.opacity(0.75), lineWidth: 2).frame(width: 60, height: 60)
+        Circle()
+          .stroke(accent.opacity(0.75), lineWidth: 2)
+          .frame(width: 60, height: 60)
+          .scaleEffect(GarageAnimationRenderer.bayRingScale(profile: profile, time: time))
+          .opacity(GarageAnimationRenderer.ringOpacity(profile: profile, time: time, transitionProgress: 1))
         Circle().fill(accent).frame(width: 42, height: 42)
         Text(station.initials).font(.headline.weight(.heavy)).foregroundStyle(Color.black.opacity(0.75))
+        Image(systemName: station.semanticState.glyph)
+          .font(.system(size: 11, weight: .black))
+          .foregroundStyle(statusColor)
+          .padding(5)
+          .background(.black.opacity(0.86), in: .circle)
+          .offset(x: 25, y: -25)
+          .accessibilityHidden(true)
       }
-      .offset(y: -17)
+      .offset(y: GarageAnimationRenderer.avatarOffset(profile: profile, time: time) - 17)
+      .rotationEffect(.degrees(GarageAnimationRenderer.avatarTilt(profile: profile, time: time)))
     }
   }
 }

@@ -170,8 +170,8 @@ struct AgentStation: View {
         Circle()
           .stroke(trustColor, lineWidth: 4)
           .frame(width: 68, height: 68)
-          .scaleEffect(ringScale(profile: profile, time: time))
-          .opacity(ringOpacity(profile: profile, time: time, transitionProgress: transitionProgress))
+          .scaleEffect(GarageAnimationRenderer.ringScale(profile: profile, time: time))
+          .opacity(GarageAnimationRenderer.ringOpacity(profile: profile, time: time, transitionProgress: transitionProgress))
 
         avatar(profile: profile, time: time, transitionProgress: transitionProgress)
 
@@ -185,7 +185,7 @@ struct AgentStation: View {
         }
 
         if profile.particleCount > 0 {
-          particleLayer(count: profile.particleCount, time: time)
+          GarageAnimationRenderer.particleLayer(count: profile.particleCount, time: time, identity: station.id, index: index, motion: motion, color: statusColor)
         }
 
         Image(systemName: station.semanticState.glyph)
@@ -244,7 +244,7 @@ struct AgentStation: View {
 
   @ViewBuilder
   private func avatar(profile: GarageAnimationProfile, time: Double, transitionProgress: Double) -> some View {
-    let bob = avatarOffset(profile: profile, time: time)
+    let bob = GarageAnimationRenderer.avatarOffset(profile: profile, time: time)
     VStack(spacing: 2) {
       Circle()
         .fill(.white.opacity(0.88))
@@ -258,20 +258,20 @@ struct AgentStation: View {
       }
       .offset(y: -22)
     }
-    .offset(x: warningOffset(profile: profile, transitionProgress: transitionProgress), y: bob)
-    .rotationEffect(.degrees(avatarTilt(profile: profile, time: time)))
+    .offset(x: GarageAnimationRenderer.warningOffset(profile: profile, transitionProgress: transitionProgress), y: bob)
+    .rotationEffect(.degrees(GarageAnimationRenderer.avatarTilt(profile: profile, time: time)))
   }
 
   @ViewBuilder
   private func monitor(profile: GarageAnimationProfile, time: Double) -> some View {
-    let activity = monitorOpacity(profile: profile, time: time)
+    let activity = GarageAnimationRenderer.monitorOpacity(profile: profile, time: time)
     VStack(spacing: 2) {
       RoundedRectangle(cornerRadius: 3)
         .fill(.black.opacity(0.8))
         .frame(height: 20)
         .overlay {
           RoundedRectangle(cornerRadius: 2)
-            .fill(monitorColor(profile: profile).opacity(activity))
+            .fill(GarageAnimationRenderer.monitorColor(profile: profile).opacity(activity))
             .padding(3)
         }
       RoundedRectangle(cornerRadius: 1)
@@ -279,77 +279,6 @@ struct AgentStation: View {
         .frame(width: 14, height: 3)
     }
     .accessibilityHidden(true)
-  }
-
-  @ViewBuilder
-  private func particleLayer(count: Int, time: Double) -> some View {
-    ForEach(0..<count, id: \.self) { particle in
-      let particlePhase = GaragePhase.offset(identity: "\(station.id)-\(particle)", index: index)
-      let travel = motion == .active ? (time * 0.22 + particlePhase).truncatingRemainder(dividingBy: 1) : 0
-      Circle()
-        .fill(statusColor.opacity(0.45))
-        .frame(width: 3, height: 3)
-        .offset(
-          x: CGFloat((particlePhase - 0.5) * 28),
-          y: CGFloat(16 - travel * 34)
-        )
-        .opacity(1 - travel)
-    }
-  }
-
-  private func avatarOffset(profile: GarageAnimationProfile, time: Double) -> CGFloat {
-    guard profile.allowsLoop else { return 0 }
-    let wave = sin(time * (.pi * 2) / 2.4)
-    switch profile.avatarPose {
-    case .still: return 0
-    case .breathing: return CGFloat(wave * 0.8)
-    case .working: return CGFloat(wave * 2.5)
-    case .heavy: return CGFloat(wave * 1.2)
-    }
-  }
-
-  private func avatarTilt(profile: GarageAnimationProfile, time: Double) -> Double {
-    guard profile.allowsLoop else { return 0 }
-    let wave = sin(time * (.pi * 2) / 2.4)
-    return profile.avatarPose == .heavy ? wave * 2 : 0
-  }
-
-  private func warningOffset(profile: GarageAnimationProfile, transitionProgress: Double) -> CGFloat {
-    guard profile.transition == .warning, transitionProgress < 1 else { return 0 }
-    return CGFloat(sin(transitionProgress * .pi * 3) * (1 - transitionProgress) * 3)
-  }
-
-  private func ringScale(profile: GarageAnimationProfile, time: Double) -> CGFloat {
-    guard profile.allowsLoop, profile.ringBehavior == .pendingPulse else { return 1 }
-    return 1 + CGFloat((sin(time * (.pi * 2) / 2.2) + 1) * 0.035)
-  }
-
-  private func ringOpacity(profile: GarageAnimationProfile, time: Double, transitionProgress: Double) -> Double {
-    if profile.ringBehavior == .pendingPulse, profile.allowsLoop {
-      return 0.62 + (sin(time * (.pi * 2) / 2.2) + 1) * 0.15
-    }
-    if profile.transition == .confirmation, transitionProgress < 1 {
-      return 1 - transitionProgress * 0.28
-    }
-    return 0.9
-  }
-
-  private func monitorColor(profile: GarageAnimationProfile) -> Color {
-    switch profile.monitorBehavior {
-    case .dim: .gray
-    case .steady: SoloTheme.cyan
-    case .activity: SoloTheme.cyan
-    case .warm: SoloTheme.amber
-    }
-  }
-
-  private func monitorOpacity(profile: GarageAnimationProfile, time: Double) -> Double {
-    guard profile.allowsLoop, profile.monitorBehavior == .activity else {
-      return profile.monitorBehavior == .dim ? 0.28 : 0.72
-    }
-    let stops = [0.48, 0.76, 0.58, 0.86, 0.64]
-    let position = (time / 3.4).truncatingRemainder(dividingBy: 1) * Double(stops.count)
-    return stops[Int(position) % stops.count]
   }
 
   private func transitionProgress(at date: Date) -> Double {

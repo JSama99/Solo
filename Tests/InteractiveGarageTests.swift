@@ -54,6 +54,86 @@ final class InteractiveGarageTests: XCTestCase {
     XCTAssertTrue(stations.allSatisfy { GarageTurnGate(phase: .reviewAndResolve).stationIsActionable($0) })
   }
 
+  // MARK: - Shared animation renderer
+
+  func testMonitorTreatmentIsDistinctAcrossSemanticStates() {
+    let accent = SoloTheme.coral
+    var treatments: Set<String> = []
+    for state in AgentStationViewModel.SemanticState.allCases {
+      let profile = GarageAnimationProfile.profile(for: state, motion: .active)
+      let color = GarageAnimationRenderer.monitorColor(profile: profile, accent: accent)
+      let opacity = GarageAnimationRenderer.monitorOpacity(profile: profile, time: 0)
+      treatments.insert("\(color)-\(opacity)")
+    }
+    XCTAssertGreaterThanOrEqual(treatments.count, 3)
+  }
+
+  func testMonitorColorPreservesAgentAccentButOverridesForIdleAndOverloaded() {
+    let accent = SoloTheme.coral
+    let working = GarageAnimationProfile.profile(for: .working, motion: .active)
+    let idle = GarageAnimationProfile.profile(for: .idle, motion: .active)
+    let overloaded = GarageAnimationProfile.profile(for: .overloaded, motion: .active)
+
+    XCTAssertEqual(GarageAnimationRenderer.monitorColor(profile: working, accent: accent), accent)
+    XCTAssertEqual(GarageAnimationRenderer.monitorColor(profile: idle, accent: accent), .gray)
+    XCTAssertEqual(GarageAnimationRenderer.monitorColor(profile: overloaded, accent: accent), SoloTheme.amber)
+  }
+
+  func testBayRingPulsesOnlyWhileAwaitingReview() {
+    let awaiting = GarageAnimationProfile.profile(for: .awaitingReview, motion: .active)
+    let scales = stride(from: 0.0, to: 2.2, by: 0.1).map {
+      GarageAnimationRenderer.bayRingScale(profile: awaiting, time: $0)
+    }
+    XCTAssertGreaterThan(Double(scales.max()! - scales.min()!), 0.05)
+
+    for state in AgentStationViewModel.SemanticState.allCases where state != .awaitingReview {
+      let profile = GarageAnimationProfile.profile(for: state, motion: .active)
+      XCTAssertEqual(GarageAnimationRenderer.bayRingScale(profile: profile, time: 1.3), 1)
+    }
+  }
+
+  func testAmbientWarningOffsetKeepsMovingForWarningStates() {
+    let drifting = GarageAnimationProfile.profile(for: .drifting, motion: .active)
+    XCTAssertEqual(drifting.transition, .warning)
+    let offsets = stride(from: 0.0, to: 0.9, by: 0.05).map {
+      GarageAnimationRenderer.ambientWarningOffset(profile: drifting, time: $0)
+    }
+    XCTAssertGreaterThan(Double(offsets.map(abs).max()!), 1.0)
+
+    let working = GarageAnimationProfile.profile(for: .working, motion: .active)
+    XCTAssertEqual(GarageAnimationRenderer.ambientWarningOffset(profile: working, time: 0.4), 0)
+  }
+
+  func testReduceMotionFreezesSharedRendererOutputs() {
+    for state in AgentStationViewModel.SemanticState.allCases {
+      let profile = GarageAnimationProfile.profile(for: state, motion: .staticPose)
+      XCTAssertEqual(GarageAnimationRenderer.avatarOffset(profile: profile, time: 1.7), 0)
+      XCTAssertEqual(GarageAnimationRenderer.avatarTilt(profile: profile, time: 1.7), 0)
+      XCTAssertEqual(GarageAnimationRenderer.bayRingScale(profile: profile, time: 1.7), 1)
+      XCTAssertEqual(GarageAnimationRenderer.ambientWarningOffset(profile: profile, time: 1.7), 0)
+    }
+  }
+
+  func testStationTimeIsDeterministicAndPhaseShiftedPerStation() {
+    let date = Date(timeIntervalSinceReferenceDate: 1_000)
+    XCTAssertEqual(
+      GarageAnimationRenderer.stationTime(date: date, identity: "aurora", index: 0),
+      GarageAnimationRenderer.stationTime(date: date, identity: "aurora", index: 0)
+    )
+    XCTAssertNotEqual(
+      GarageAnimationRenderer.stationTime(date: date, identity: "aurora", index: 0),
+      GarageAnimationRenderer.stationTime(date: date, identity: "stacks", index: 1)
+    )
+  }
+
+  func testStatusColorsCoverEverySemanticState() {
+    let colors = AgentStationViewModel.SemanticState.allCases.map {
+      GarageAnimationRenderer.statusColor(for: $0)
+    }
+    XCTAssertEqual(colors.count, AgentStationViewModel.SemanticState.allCases.count)
+    XCTAssertGreaterThanOrEqual(Set(colors.map { "\($0)" }).count, 4)
+  }
+
   @MainActor func testFullTurnKeepsStationsReachable() throws {
     let store = GameStore()
     store.selectedCareerMode = .bounded
