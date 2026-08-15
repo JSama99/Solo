@@ -8,6 +8,8 @@ final class GameStore {
     case title
     case modeSelect
     case setup
+    case ventureThesis
+    case chapterMilestone
     case game
     case ventureUnlock
     case ventureCheckpoint
@@ -82,6 +84,10 @@ final class GameStore {
   private(set) var decisionHistory: [CareerDecisionRecord] = []
   private(set) var completedObjectives = 0
   private(set) var ventureObjective: VentureObjective?
+  var selectedThesis: VentureThesis = .sustainable
+  private(set) var thesis: VentureThesis = .sustainable
+  private(set) var thesisHistory: [VentureThesis] = []
+  private(set) var pendingChapterMilestone: ChapterMilestone?
 
   /// Supplies entitlement state. Replaceable so the simulation stays testable
   /// without RevenueCat, StoreKit, or a network.
@@ -374,6 +380,8 @@ final class GameStore {
     sprint = 1
     venture = 1
     ventureObjective = VentureObjective.selected(for: venture)
+    thesis = selectedThesis
+    thesisHistory = []
     precedents = []
     activeRecall = nil
     recallsShownThisVenture = 0
@@ -410,7 +418,7 @@ final class GameStore {
     stats.momentum += startingAdjustment.momentum
     stats.energy += startingAdjustment.energy
     prepareSprint()
-    stage = .game
+    stage = .ventureThesis
     sanitizeState()
     if careerMode != .daily { save() }
   }
@@ -781,8 +789,9 @@ final class GameStore {
       }
     }
     let era = VentureEra.era(for: venture)
+    let thesisProfile = ThesisProfile.profile(for: thesis)
     effects.runway -= era.runwayBurnPerSprint
-    effects.energy -= era.energyCostPerSprint
+    effects.energy -= max(0, era.energyCostPerSprint + thesisProfile.energyCostDelta)
     switch intent {
     case .build:
       effects.momentum += 3
@@ -854,6 +863,9 @@ final class GameStore {
     if effects.revenue > 0 {
       effects.revenue = Int((Double(effects.revenue) * RivalEngine.revenueMultiplier(marketShare: share, fieldSize: rivalStandings.count - 1)).rounded())
     }
+    if effects.revenue > 0 { effects.revenue = Int((Double(effects.revenue) * thesisProfile.revenueMultiplier).rounded()) }
+    if effects.trust < 0 { effects.trust = Int((Double(effects.trust) * thesisProfile.trustPenaltyMultiplier).rounded()) }
+    effects.trust += thesisProfile.customerLoyaltyModifier
     apply(effects)
     if facilityBonuses.sprintEnergyRecovery > 0 {
       stats.energy = min(100, stats.energy + facilityBonuses.sprintEnergyRecovery)
@@ -911,8 +923,13 @@ final class GameStore {
         presentVentureCheckpoint()
       }
     } else if careerOutcome == nil {
+      let previousChapter = chapter
       sprint += 1
       prepareSprint()
+      let nextChapter = chapter
+      if previousChapter != nextChapter {
+        presentChapterMilestone(completed: previousChapter, beginning: nextChapter)
+      }
     }
     if careerOutcome != nil {
       achievementStore?.closeRun(context: achievementContext)
@@ -945,11 +962,38 @@ final class GameStore {
     stats.energy = min(100, stats.energy + earnedEnergyRecovery)
     stats.energy = min(100, stats.energy + facilityBonuses.ventureEnergyBonus)
     ventureObjective = VentureObjective.selected(for: venture)
+    selectedThesis = thesis
     recentTaskTitles = []
     taskDeckTitles = []
     dilemmaDeckTemplateIDs = []
     dilemmaDeckChapter = nil
+    stage = .ventureThesis
+  }
+
+  func selectThesisAndBegin() {
+    thesis = selectedThesis
+    thesisHistory.append(thesis)
+    pendingChapterMilestone = nil
     prepareSprint()
+    stage = .game
+    saveCareer()
+  }
+
+  func dismissChapterMilestone() {
+    pendingChapterMilestone = nil
+    stage = .game
+    saveCareer()
+  }
+
+  private func presentChapterMilestone(completed: VentureChapter, beginning: VentureChapter) {
+    let reviewed = evidence.filter { $0.venture == venture && VentureChapter.chapter(for: $0.sprint) == completed && $0.reviewed }.count
+    let full = reviewed >= 3
+    let earned = reviewed >= 2
+    let multiplier = beginning == .surviveOrScale ? 2 : 1
+    let reward = earned ? SimulationEffects(momentum: (full ? 4 : 2) * multiplier, trust: full ? multiplier : 0) : SimulationEffects()
+    apply(reward)
+    pendingChapterMilestone = .init(id: "V\(venture)-\(beginning.rawValue)", completed: completed, beginning: beginning, objectiveProgress: ventureObjectiveProgress, reward: reward, rewardLabel: earned ? reward.conciseLossLabel : "No reward — review 2 tasks in a chapter")
+    stage = .chapterMilestone
   }
 
   /// Continuous mode only. Snapshots the just-completed venture into a
@@ -1497,6 +1541,9 @@ final class GameStore {
     decisionHistory = save.decisionHistory
     completedObjectives = save.completedObjectives
     ventureObjective = save.ventureObjective ?? VentureObjective.selected(for: venture)
+    thesis = save.thesis ?? .sustainable
+    selectedThesis = thesis
+    thesisHistory = save.thesisHistory
     techComHeadlines = save.techComHeadlines
     techComRivals = save.techComRivals.isEmpty ? TechComEngine.rivals(seed: UInt64(save.venture * 100 + save.sprint)) : save.techComRivals
     talentBoardRefreshes = save.talentBoardRefreshes
@@ -1909,6 +1956,8 @@ final class GameStore {
       decisionHistory: decisionHistory,
       completedObjectives: completedObjectives,
       ventureObjective: ventureObjective,
+      thesis: thesis,
+      thesisHistory: thesisHistory,
       techComHeadlines: techComHeadlines,
       techComRivals: techComRivals
     )
@@ -2059,8 +2108,9 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  private static let saveVersion = 13
-  private static let saveKey = "solo-unicorn-run-native-save-v13"
+  private static let saveVersion = 14
+  private static let saveKey = "solo-unicorn-run-native-save-v14"
+  private static let v13SaveKey = "solo-unicorn-run-native-save-v13"
   private static let v12SaveKey = "solo-unicorn-run-native-save-v12"
   private static let v11SaveKey = "solo-unicorn-run-native-save-v11"
   private static let v10SaveKey = "solo-unicorn-run-native-save-v10"

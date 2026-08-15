@@ -20,6 +20,12 @@ struct ContentView: View {
       case .setup:
         FounderSetupScreen(store: store)
           .transition(.move(edge: .trailing).combined(with: .opacity))
+      case .ventureThesis:
+        VentureThesisScreen(store: store)
+          .transition(.move(edge: .bottom).combined(with: .opacity))
+      case .chapterMilestone:
+        ChapterMilestoneScreen(store: store)
+          .transition(.move(edge: .bottom).combined(with: .opacity))
       case .game:
         GameDashboard(store: store)
           .transition(.opacity)
@@ -843,6 +849,13 @@ private struct VentureScreen: View {
               .font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.amber)
             Text(store.venture < era.milestoneVenture ? "\(era.milestoneVenture - store.venture) venture(s) until \(VentureEra.era(for: era.milestoneVenture + 1).name)." : "You have reached this era’s milestone.")
               .font(.caption).foregroundStyle(.secondary)
+          }
+          .soloCard()
+
+          VStack(alignment: .leading, spacing: 6) {
+            Label("Active thesis", systemImage: "compass.drawing").font(.headline)
+            Text(store.thesis.name).font(.title3.bold())
+            Text(store.thesis.summary).font(.caption).foregroundStyle(.secondary)
           }
           .soloCard()
 

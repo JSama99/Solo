@@ -60,6 +60,7 @@
 		28C211C9462EF7C2C17DC4C2 /* SimulationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CB9F64447826C8051328902 /* SimulationModels.swift */; };
 		73B35D04E243BD45B291E271 /* GameModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E7E924208E29B28AFAA264 /* GameModels.swift */; };
 		F24000000000000000000001 /* VentureIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F24000000000000000000002 /* VentureIdentity.swift */; };
+		F25000000000000000000001 /* VentureThesisScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F25000000000000000000002 /* VentureThesisScreen.swift */; };
 		A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2513145C1504A166E8177382 /* GameStoreTests.swift */; };
 		ABDFC492407A05E2BC397A8D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 17558F294800127BE04C0EBD /* Assets.xcassets */; };
 		AD24D57DE55399F057B4B47A /* GameStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AA2809B6198CB8955EEFAC /* GameStore.swift */; };
@@ -112,6 +113,7 @@
 		F10000000000000000000002 /* VentureEra.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureEra.swift; sourceTree = "<group>"; };
 		F10000000000000000000003 /* Build9ModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build9ModeTests.swift; sourceTree = "<group>"; };
 		F24000000000000000000002 /* VentureIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureIdentity.swift; sourceTree = "<group>"; };
+		F25000000000000000000002 /* VentureThesisScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureThesisScreen.swift; sourceTree = "<group>"; };
 		E10000000000000000000001 /* ContinuousModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinuousModeTests.swift; sourceTree = "<group>"; };
 		E10000000000000000000002 /* SimulationEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationEngineTests.swift; sourceTree = "<group>"; };
 		B10000000000000000000020 /* FounderPassGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderPassGateTests.swift; sourceTree = "<group>"; };
@@ -468,6 +470,7 @@
 				F20000000000000000000001 /* DailyChallenge.swift in Sources */,
 				F20000000000000000000002 /* VentureEra.swift in Sources */,
 				F24000000000000000000001 /* VentureIdentity.swift in Sources */,
+				F25000000000000000000001 /* VentureThesisScreen.swift in Sources */,
 				C20000000000000000000011 /* FounderLoftEnvironment.swift in Sources */,
 				C2000000000000000000000A /* HeadquartersProgressScreen.swift in Sources */,
 				C2000000000000000000000B /* PresentationCoordinator.swift in Sources */,

@@ -1118,6 +1118,8 @@ struct CareerSave: Codable {
   var decisionHistory: [CareerDecisionRecord]
   var completedObjectives: Int
   var ventureObjective: VentureObjective?
+  var thesis: VentureThesis?
+  var thesisHistory: [VentureThesis]
   var techComHeadlines: [TechComHeadline]
   var techComRivals: [TechComRival]
 
@@ -1128,7 +1130,7 @@ struct CareerSave: Codable {
     case pendingEffects, reportCache, precedents, awaitingFounderPass
     case careerMode, pendingVentureCheckpoint
     case recentTaskTitles, taskDeckTitles, dilemmaDeckTemplateIDs, dilemmaDeckChapter
-    case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, ventureObjective
+    case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, ventureObjective, thesis, thesisHistory
     case techComHeadlines, techComRivals
   }
 
@@ -1168,6 +1170,8 @@ struct CareerSave: Codable {
     decisionHistory: [CareerDecisionRecord] = [],
     completedObjectives: Int = 0,
     ventureObjective: VentureObjective? = nil,
+    thesis: VentureThesis? = nil,
+    thesisHistory: [VentureThesis] = [],
     techComHeadlines: [TechComHeadline] = [],
     techComRivals: [TechComRival] = []
   ) {
@@ -1206,6 +1210,8 @@ struct CareerSave: Codable {
     self.decisionHistory = decisionHistory
     self.completedObjectives = completedObjectives
     self.ventureObjective = ventureObjective
+    self.thesis = thesis
+    self.thesisHistory = thesisHistory
     self.techComHeadlines = techComHeadlines
     self.techComRivals = techComRivals
   }
@@ -1259,6 +1265,8 @@ struct CareerSave: Codable {
     decisionHistory = try container.decodeIfPresent([CareerDecisionRecord].self, forKey: .decisionHistory) ?? []
     completedObjectives = try container.decodeIfPresent(Int.self, forKey: .completedObjectives) ?? 0
     ventureObjective = try container.decodeIfPresent(VentureObjective.self, forKey: .ventureObjective)
+    thesis = try container.decodeIfPresent(VentureThesis.self, forKey: .thesis)
+    thesisHistory = try container.decodeIfPresent([VentureThesis].self, forKey: .thesisHistory) ?? []
     techComHeadlines = try container.decodeIfPresent([TechComHeadline].self, forKey: .techComHeadlines) ?? []
     techComRivals = try container.decodeIfPresent([TechComRival].self, forKey: .techComRivals) ?? []
   }

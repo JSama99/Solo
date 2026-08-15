@@ -1,5 +1,36 @@
 import Foundation
 
+enum VentureThesis: String, Codable, CaseIterable, Identifiable {
+  case enterprise, viral, sustainable
+  var id: Self { self }
+  var name: String { rawValue.capitalized }
+  var summary: String { switch self { case .enterprise: "Pursue larger contracts while trust expectations rise."; case .viral: "Trade steadiness for faster, more volatile growth."; case .sustainable: "Protect energy and loyalty while growing deliberately." } }
+}
+
+struct ThesisProfile: Hashable {
+  var revenueMultiplier: Double
+  var trustPenaltyMultiplier: Double
+  var energyCostDelta: Int
+  var correlatedFailureProbabilityDelta: Double
+  var customerLoyaltyModifier: Int
+  static func profile(for thesis: VentureThesis) -> ThesisProfile {
+    switch thesis {
+    case .enterprise: .init(revenueMultiplier: 1.18, trustPenaltyMultiplier: 1.35, energyCostDelta: 0, correlatedFailureProbabilityDelta: 0, customerLoyaltyModifier: 1)
+    case .viral: .init(revenueMultiplier: 1.30, trustPenaltyMultiplier: 1.15, energyCostDelta: 1, correlatedFailureProbabilityDelta: 0.08, customerLoyaltyModifier: -2)
+    case .sustainable: .init(revenueMultiplier: 0.88, trustPenaltyMultiplier: 0.75, energyCostDelta: -1, correlatedFailureProbabilityDelta: -0.04, customerLoyaltyModifier: 4)
+    }
+  }
+}
+
+struct ChapterMilestone: Codable, Identifiable, Hashable {
+  var id: String
+  var completed: VentureChapter
+  var beginning: VentureChapter
+  var objectiveProgress: Double
+  var reward: SimulationEffects
+  var rewardLabel: String
+}
+
 struct VentureObjective: Codable, Identifiable, Hashable {
   var id: String
   var title: String
