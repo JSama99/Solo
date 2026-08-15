@@ -57,36 +57,66 @@ struct FounderGarageScene: View {
     .accessibilityElement(children: .combine)
   }
 
+  private var usesIllustratedScene: Bool {
+    let ids = Set(stations.map { $0.agentID.lowercased() })
+    return stations.count <= 3 && ids.isSubset(of: ["aurora", "stacks", "brio"])
+  }
+
+  /// The illustrated scene uses the source art's fixed 1600×900 canvas. The
+  /// generic layout retains its flexible width for expanded rosters.
+  private var canvasWidth: CGFloat {
+    usesIllustratedScene
+      ? GarageBayLayout.canvasHeight * (1600 / 900)
+      : GarageBayLayout(stationCount: stations.count).canvasWidth
+  }
+
   private var garageCanvas: some View {
     ScrollView(.horizontal) {
       GeometryReader { proxy in
         let size = proxy.size
         let layout = GarageBayLayout(stationCount: stations.count)
         ZStack {
-          garageShell
-          ceilingBeams
-          warmLighting
-          deskControl
-            .frame(width: layout.deskFrame.width, height: layout.deskFrame.height)
-            .position(x: layout.deskFrame.midX, y: layout.deskFrame.midY)
-
-          ForEach(Array(stations.enumerated()), id: \.element.id) { index, station in
-            GarageBayStation(
-              station: station,
-              accent: accent(for: station, index: index),
-              icon: bayIcon(for: station, index: index),
+          if usesIllustratedScene {
+            FounderGarageIllustration(
+              stations: stations,
               date: date,
               motion: motion,
-            isDimmed: focusedAgentID != nil && focusedAgentID != station.id || !gate.stationIsActionable(station),
-            isActionable: gate.stationIsActionable(station),
-            isHighlighted: gate.stationIsHighlighted(station),
-              differentiateWithoutColor: differentiateWithoutColor
-            ) {
-              focusedAgentID = station.id
-              stationPresented = station
+              gate: gate,
+              focusedAgentID: focusedAgentID,
+              deskIsPrimary: gate.primary == .desk,
+              differentiateWithoutColor: differentiateWithoutColor,
+              onSelectStation: { station in
+                focusedAgentID = station.id
+                stationPresented = station
+              },
+              onSelectDesk: { deskPresented = true }
+            )
+          } else {
+            garageShell
+            ceilingBeams
+            warmLighting
+            deskControl
+              .frame(width: layout.deskFrame.width, height: layout.deskFrame.height)
+              .position(x: layout.deskFrame.midX, y: layout.deskFrame.midY)
+
+            ForEach(Array(stations.enumerated()), id: \.element.id) { index, station in
+              GarageBayStation(
+                station: station,
+                accent: accent(for: station, index: index),
+                icon: bayIcon(for: station, index: index),
+                date: date,
+                motion: motion,
+                isDimmed: focusedAgentID != nil && focusedAgentID != station.id || !gate.stationIsActionable(station),
+                isActionable: gate.stationIsActionable(station),
+                isHighlighted: gate.stationIsHighlighted(station),
+                differentiateWithoutColor: differentiateWithoutColor
+              ) {
+                focusedAgentID = station.id
+                stationPresented = station
+              }
+              .frame(width: layout.bays[index].frame.width, height: layout.bays[index].frame.height)
+              .position(layout.bays[index].center)
             }
-            .frame(width: layout.bays[index].frame.width, height: layout.bays[index].frame.height)
-            .position(layout.bays[index].center)
           }
         }
         .clipShape(RoundedRectangle(cornerRadius: 18))
@@ -106,7 +136,7 @@ struct FounderGarageScene: View {
           if next == nil { focusedAgentID = nil }
         }
       }
-      .frame(width: GarageBayLayout(stationCount: stations.count).canvasWidth, height: GarageBayLayout.canvasHeight)
+      .frame(width: canvasWidth, height: GarageBayLayout.canvasHeight)
     }
     .scrollIndicators(.visible)
     .frame(height: 650)
@@ -432,7 +462,7 @@ private struct GarageStationSheet: View {
   }
 }
 
-private struct GarageStationTag: View {
+struct GarageStationTag: View {
   var station: AgentStationViewModel
   var accent: Color
   var differentiateWithoutColor: Bool
