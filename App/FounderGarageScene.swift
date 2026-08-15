@@ -23,7 +23,6 @@ struct FounderGarageScene: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 14) {
-      sprintControls
       garageCanvas
       VStack(alignment: .leading, spacing: 5) {
         Text("The Founder's Garage")
@@ -186,17 +185,7 @@ struct FounderGarageScene: View {
     }
     .buttonStyle(.plain)
     .accessibilityLabel("Founder desk")
-    .accessibilityHint("Opens sprint controls")
-  }
-
-  private var sprintControls: some View {
-    HStack {
-      Spacer()
-      Button("Desk", systemImage: "desktopcomputer") { deskPresented = true }
-        .buttonStyle(.bordered)
-    }
-    .padding(10)
-    .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
+    .accessibilityHint("Opens founder controls")
   }
 
   private var founderMetrics: some View {
