@@ -23,10 +23,12 @@ final class InteractiveGarageTests: XCTestCase {
     XCTAssertTrue(GarageTurnGate(phase: .assignTeam).stationIsHighlighted(idle))
   }
 
-  func testThreeToFiveBayLayoutsNeverOverlapEachOtherOrDesk() {
+  func testThreeToFiveBayLayoutsStayInBoundsAndNeverOverlapEachOtherOrDesk() {
     for count in 3...5 {
       let layout = GarageBayLayout(stationCount: count)
+      let canvas = CGRect(x: 0, y: 0, width: layout.canvasWidth, height: GarageBayLayout.canvasHeight)
       XCTAssertEqual(layout.bays.count, count)
+      XCTAssertTrue(canvas.contains(layout.deskFrame))
       for first in layout.bays.indices {
         XCTAssertFalse(layout.bays[first].frame.intersects(layout.deskFrame))
         for second in layout.bays.indices where second > first {

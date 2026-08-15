@@ -283,15 +283,21 @@ enum ContentLibrary {
     /// situations remain universal, while product-specific situations receive
     /// a full, role/category-identical authored counterpart per business.
     static var dilemmaPool: [FounderDilemma] {
-      let saas = baseDilemmaPool.map { dilemma in
+      let saas = classifiedDilemmas(baseDilemmaPool)
+      let productSpecificSaaS = saas.filter { $0.productTypes == [.saas] }
+      return saas
+        + ConsumerAppContent.dilemmas(from: productSpecificSaaS)
+        + productDilemmaExpansion(from: productSpecificSaaS, as: .hardware)
+        + productDilemmaExpansion(from: productSpecificSaaS, as: .marketplace)
+    }
+
+    static func classifiedDilemmas(_ source: [FounderDilemma]) -> [FounderDilemma] {
+      let originalIDs: Set<String> = ["prototype-scope", "prototype-claim", "prototype-night", "customer-custom", "customer-refund", "customer-discount", "launch-outage", "launch-press", "launch-copycat", "scale-investor", "scale-hire", "scale-acquisition"]
+      return source.map { dilemma in
         var dilemma = dilemma
-        dilemma.productTypes = [.saas]
+        if dilemma.productTypes == nil, originalIDs.contains(dilemma.id) { dilemma.productTypes = [.saas] }
         return dilemma
       }
-      return saas
-        + ConsumerAppContent.dilemmas(from: saas)
-        + productDilemmaExpansion(from: saas, as: .hardware)
-        + productDilemmaExpansion(from: saas, as: .marketplace)
     }
 
     private static func classifiedSaaSTasks(_ source: [SoloTask]) -> [SoloTask] {
