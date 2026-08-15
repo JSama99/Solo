@@ -1,99 +1,4 @@
 import SwiftUI
-import
-          RoundedRectangle(cornerRadius: 18)
-            .stroke(Color.white.opacity(0.08), lineWidth: 1)
-        }
-        .onChange(of: selectedStation) { _, next in
-          if next == nil { focusedAgentID = nil }
-        }
-      }
-      .frame(width: GarageBayLayout(stationCount: stations.count).canvasWidth, height: GarageBayLayout.canvasHeight)
-    }
-    .scrollIndicators(.visible)
-    .frame(height: 650)
-    .accessibilityElement(children: .contain)
-    .accessibilityLabel("Founder Garage live workforce map")
-    .accessibilityHint("Swipe horizontally to explore the full garage")
-  }
-
-  private var garageShell: some View {
-    ZStack {
-      LinearGradient(
-        colors: [Color(red: 0.13, green: 0.15, blue: 0.19), Color(red: 0.055, green: 0.065, blue: 0.085)],
-        startPoint: .top,
-        endPoint: .bottom
-      )
-      VStack(spacing: 0) {
-        Rectangle().fill(Color.clear).frame(height: 0)
-        Spacer()
-        Rectangle()
-          .fill(LinearGradient(colors: [Color(red: 0.10, green: 0.12, blue: 0.15), Color(red: 0.035, green: 0.045, blue: 0.06)], startPoint: .top, endPoint: .bottom))
-          .frame(height: 112)
-      }
-      RadialGradient(colors: [.clear, .black.opacity(0.55)], center: .center, startRadius: 90, endRadius: 310)
-    }
-  }
-
-  private var ceilingBeams: some View {
-    VStack(spacing: 27) {
-      Rectangle().fill(Color(red: 0.16, green: 0.12, blue: 0.09)).frame(height: 7)
-      Rectangle().fill(Color(red: 0.12, green: 0.09, blue: 0.07)).frame(height: 5)
-      Spacer()
-    }
-    .opacity(0.8)
-  }
-
-  private var warmLighting: some View {
-    HStack(spacing: 0) {
-      ForEach(0..<4, id: \.self) { _ in
-        VStack(spacing: 0) {
-          Capsule().fill(Color(red: 0.9, green: 0.8, blue: 0.65)).frame(width: 22, height: 6)
-          Circle().fill(Color.orange.opacity(0.14)).frame(width: 125, height: 80).blur(radius: 18)
-        }
-        .frame(maxWidth: .infinity, alignment: .top)
-      }
-    }
-    .padding(.top, 12)
-  }
-
-  private var founderDesk: some View {
-    VStack(spacing: 0) {
-      Spacer()
-      ZStack {
-        RoundedRectangle(cornerRadius: 8)
-          .fill(Color(red: 0.035, green: 0.055, blue: 0.075))
-          .frame(width: 150, height: 86)
-          .overlay {
-            RoundedRectangle(cornerRadius: 5)
-              .fill(Color(red: 0.06, green: 0.11, blue: 0.15))
-              .padding(5)
-              .overlay(alignment: .topLeading) {
-                Capsule().fill(SoloTheme.cyan).frame(width: 31, height: 3).padding(13)
-              }
-          }
-        VStack {
-          Spacer().frame(height: 89)
-          Rectangle().fill(Color(red: 0.13, green: 0.15, blue: 0.18)).frame(width: 18, height: 16)
-          Capsule().fill(Color(red: 0.18, green: 0.21, blue: 0.25)).frame(width: 68, height: 6)
-        }
-      }
-      GarageDeskShape()
-        .fill(LinearGradient(colors: [Color(red: 0.42, green: 0.28, blue: 0.17), Color(red: 0.20, green: 0.13, blue: 0.08)], startPoint: .top, endPoint: .bottom))
-        .frame(height: 43)
-        .padding(.horizontal, 42)
-        .shadow(color: .black.opacity(0.45), radius: 10, y: 8)
-    }
-    .padding(.bottom, 18)
-  }
-
-  private var deskControl: some View {
-    Button { deskPresented = true } label: {
-      founderDesk
-        .opacity(1)
-        .overlay {
-          RoundedRectangle(cornerRadius: 18)
-            .stroke(SoloTheme.cyan, lineWidth: gate.primary == .desk ? 2 : 1)
-            .shadow(color: SoloTheme.cyan.opacity(gate.primimport SwiftUI
 
 /// A live, interactive visual map of the founder's garage.
 struct FounderGarageScene: View {
@@ -193,7 +98,101 @@ struct FounderGarageScene: View {
             .background(.black.opacity(0.28), in: Capsule())
             .padding(12)
         }
-        .overlay {ary == .desk ? 0.75 : 0), radius: 12)
+        .overlay {
+          RoundedRectangle(cornerRadius: 18)
+            .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        }
+        .onChange(of: selectedStation) { _, next in
+          if next == nil { focusedAgentID = nil }
+        }
+      }
+      .frame(width: GarageBayLayout(stationCount: stations.count).canvasWidth, height: GarageBayLayout.canvasHeight)
+    }
+    .scrollIndicators(.visible)
+    .frame(height: 650)
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel("Founder Garage live workforce map")
+    .accessibilityHint("Swipe horizontally to explore the full garage")
+  }
+
+  private var garageShell: some View {
+    ZStack {
+      LinearGradient(
+        colors: [Color(red: 0.13, green: 0.15, blue: 0.19), Color(red: 0.055, green: 0.065, blue: 0.085)],
+        startPoint: .top,
+        endPoint: .bottom
+      )
+      VStack(spacing: 0) {
+        Rectangle().fill(Color.clear).frame(height: 0)
+        Spacer()
+        Rectangle()
+          .fill(LinearGradient(colors: [Color(red: 0.10, green: 0.12, blue: 0.15), Color(red: 0.035, green: 0.045, blue: 0.06)], startPoint: .top, endPoint: .bottom))
+          .frame(height: 112)
+      }
+      RadialGradient(colors: [.clear, .black.opacity(0.55)], center: .center, startRadius: 90, endRadius: 310)
+    }
+  }
+
+  private var ceilingBeams: some View {
+    VStack(spacing: 27) {
+      Rectangle().fill(Color(red: 0.16, green: 0.12, blue: 0.09)).frame(height: 7)
+      Rectangle().fill(Color(red: 0.12, green: 0.09, blue: 0.07)).frame(height: 5)
+      Spacer()
+    }
+    .opacity(0.8)
+  }
+
+  private var warmLighting: some View {
+    HStack(spacing: 0) {
+      ForEach(0..<4, id: \.self) { _ in
+        VStack(spacing: 0) {
+          Capsule().fill(Color(red: 0.9, green: 0.8, blue: 0.65)).frame(width: 22, height: 6)
+          Circle().fill(Color.orange.opacity(0.14)).frame(width: 125, height: 80).blur(radius: 18)
+        }
+        .frame(maxWidth: .infinity, alignment: .top)
+      }
+    }
+    .padding(.top, 12)
+  }
+
+  private var founderDesk: some View {
+    VStack(spacing: 0) {
+      Spacer()
+      ZStack {
+        RoundedRectangle(cornerRadius: 8)
+          .fill(Color(red: 0.035, green: 0.055, blue: 0.075))
+          .frame(width: 150, height: 86)
+          .overlay {
+            RoundedRectangle(cornerRadius: 5)
+              .fill(Color(red: 0.06, green: 0.11, blue: 0.15))
+              .padding(5)
+              .overlay(alignment: .topLeading) {
+                Capsule().fill(SoloTheme.cyan).frame(width: 31, height: 3).padding(13)
+              }
+          }
+        VStack {
+          Spacer().frame(height: 89)
+          Rectangle().fill(Color(red: 0.13, green: 0.15, blue: 0.18)).frame(width: 18, height: 16)
+          Capsule().fill(Color(red: 0.18, green: 0.21, blue: 0.25)).frame(width: 68, height: 6)
+        }
+      }
+      GarageDeskShape()
+        .fill(LinearGradient(colors: [Color(red: 0.42, green: 0.28, blue: 0.17), Color(red: 0.20, green: 0.13, blue: 0.08)], startPoint: .top, endPoint: .bottom))
+        .frame(height: 43)
+        .padding(.horizontal, 42)
+        .shadow(color: .black.opacity(0.45), radius: 10, y: 8)
+    }
+    .padding(.bottom, 18)
+  }
+
+  private var deskControl: some View {
+    Button { deskPresented = true } label: {
+      founderDesk
+        .opacity(1)
+        .overlay {
+          RoundedRectangle(cornerRadius: 18)
+            .stroke(SoloTheme.cyan, lineWidth: gate.primary == .desk ? 2 : 1)
+            .shadow(color: SoloTheme.cyan.opacity(gate.primary == .desk ? 0.75 : 0), radius: 12)
         }
     }
     .buttonStyle(.plain)
@@ -308,7 +307,8 @@ private struct GarageBayStation: View {
       .overlay {
         if isHighlighted {
           let profile = GarageAnimationProfile.profile(for: station.semanticState, motion: motion)
-          RoundedRectangle(cornerRadius: 16).stroke(SoloTheme.cyan, lineWidth: 2)
+          RoundedRectangle(cornerRadius: 16)
+            .stroke(SoloTheme.cyan, lineWidth: 2)
             .shadow(color: SoloTheme.cyan.opacity(0.7), radius: 10)
             .offset(x: GarageAnimationRenderer.warningOffset(profile: profile, transitionProgress: profile.transition == .warning ? 0.35 : 1))
         }
