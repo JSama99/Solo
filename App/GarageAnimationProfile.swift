@@ -95,7 +95,12 @@ enum GarageAnimationRenderer {
   static func avatarOffset(profile: GarageAnimationProfile, time: Double) -> CGFloat {
     guard profile.allowsLoop else { return 0 }
     let wave = sin(time * (.pi * 2) / 2.4)
-    switch profile.avatarPose { case .still: 0; case .breathing: CGFloat(wave * 0.8); case .working: CGFloat(wave * 2.5); case .heavy: CGFloat(wave * 1.2) }
+    switch profile.avatarPose {
+    case .still: return 0
+    case .breathing: return CGFloat(wave * 0.8)
+    case .working: return CGFloat(wave * 2.5)
+    case .heavy: return CGFloat(wave * 1.2)
+    }
   }
 
   static func avatarTilt(profile: GarageAnimationProfile, time: Double) -> Double {

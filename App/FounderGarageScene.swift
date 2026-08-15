@@ -60,7 +60,6 @@ struct FounderGarageScene: View {
   private var garageCanvas: some View {
     ScrollView(.horizontal) {
       GeometryReader { proxy in
-        let size = proxy.size
         let layout = GarageBayLayout(stationCount: stations.count)
         ZStack {
           garageShell
@@ -325,7 +324,7 @@ private struct GarageBayStation: View {
   private var workstation: some View {
     let profile = GarageAnimationProfile.profile(for: station.semanticState, motion: motion)
     let time = date.timeIntervalSinceReferenceDate + GaragePhase.offset(identity: station.id, index: 0) * 2.4
-    ZStack(alignment: .bottom) {
+    return ZStack(alignment: .bottom) {
       RoundedRectangle(cornerRadius: 8)
         .fill(Color(red: 0.12, green: 0.14, blue: 0.17))
         .frame(width: 142, height: 14)
