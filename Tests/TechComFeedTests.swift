@@ -4,7 +4,7 @@ import XCTest
 @MainActor
 final class TechComFeedTests: XCTestCase {
   func testFeedIsDeterministicAndDoesNotUseRNG() {
-    var generator = SeededRandomNumberGenerator(seed: 44)
+    let generator = SeededRandomNumberGenerator(seed: 44)
     let before = generator
     let standings = RivalEngine.standings(companies: ContentLibrary.rivalSimulationCompanies, venture: 2, sprint: 3, careerSeed: 7, player: FounderStats(), playerFlags: [])
     XCTAssertEqual(TechComFeedEngine.posts(venture: 2, sprint: 3, stats: FounderStats(), standings: standings), TechComFeedEngine.posts(venture: 2, sprint: 3, stats: FounderStats(), standings: standings))

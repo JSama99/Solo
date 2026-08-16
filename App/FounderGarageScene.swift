@@ -73,7 +73,6 @@ struct FounderGarageScene: View {
   private var garageCanvas: some View {
     ScrollView(.horizontal) {
       GeometryReader { proxy in
-        let size = proxy.size
         let layout = GarageBayLayout(stationCount: stations.count)
         ZStack {
           if usesIllustratedScene {

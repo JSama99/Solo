@@ -7,7 +7,7 @@ final class RivalEngineTests: XCTestCase {
     let stats = FounderStats()
     let seed = RivalEngine.careerSeed(founderName: "Ada", productType: .saas)
     let first = RivalEngine.strength(of: rival, venture: 4, sprint: 7, careerSeed: seed, player: stats, playerFlags: [])
-    var generator = SeededRandomNumberGenerator(seed: 42)
+    let generator = SeededRandomNumberGenerator(seed: 42)
     let before = generator
     let second = RivalEngine.strength(of: rival, venture: 4, sprint: 7, careerSeed: seed, player: stats, playerFlags: [])
     XCTAssertEqual(first, second)
