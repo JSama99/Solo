@@ -22,17 +22,14 @@ struct FounderGarageScene: View {
   private var gate: GarageTurnGate { GarageTurnGate(phase: store?.sprintPhase ?? .founderEvent) }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 14) {
-      header
+    VStack(spacing: 14) {
+      commandHeader
       sprintControls
       garageCanvas
-      VStack(alignment: .leading, spacing: 5) {
-        Text("The Founder's Garage")
-          .font(.title3.weight(.bold))
-        Text("\(stations.count) agent bays and one founder's desk. Assign agents and review reports here.")
-          .font(.caption)
-          .foregroundStyle(.secondary)
-      }
+        .frame(height: 430)
+      evidenceControl
+      commandDeck
+      founderReview
       founderMetrics
     }
     .padding(14)
@@ -46,6 +43,76 @@ struct FounderGarageScene: View {
     .sheet(item: $stationPresented) { station in
       GarageStationSheet(station: station, store: store, presentation: presentation)
     }
+  }
+
+  private var commandHeader: some View {
+    HStack(spacing: 0) {
+      Text("SOLO").font(.title2.weight(.black)).padding(.trailing, 16)
+      commandMetric("RUNWAY", value: "\(stats.runway)d", symbol: "dollarsign.circle", color: .green)
+      commandMetric("ENERGY", value: "\(Int(stats.energy))%", symbol: "bolt.fill", color: SoloTheme.cyan)
+      commandMetric("TRUST", value: "\(Int(stats.trust))%", symbol: "heart", color: .purple)
+      commandMetric("SPRINT", value: String(format: "%02d", store?.sprint ?? 1), symbol: "rocket.fill", color: .orange)
+    }
+    .padding(.vertical, 14)
+    .padding(.horizontal, 16)
+    .frame(maxWidth: .infinity)
+    .background(.black.opacity(0.62), in: RoundedRectangle(cornerRadius: 22))
+  }
+
+  private func commandMetric(_ title: String, value: String, symbol: String, color: Color) -> some View {
+    VStack(alignment: .leading, spacing: 2) {
+      Label(title, systemImage: symbol).font(.caption2.weight(.bold)).foregroundStyle(.secondary)
+      Text(value).font(.title3.weight(.heavy)).foregroundStyle(color)
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(.leading, 12)
+    .overlay(alignment: .leading) { Rectangle().fill(.white.opacity(0.15)).frame(width: 1, height: 40) }
+  }
+
+  private var evidenceControl: some View {
+    Button { deskPresented = true } label: {
+      Label("EVIDENCE", systemImage: "doc.text")
+        .font(.headline.weight(.bold))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background(Color(red: 0.03, green: 0.09, blue: 0.12), in: RoundedRectangle(cornerRadius: 16))
+    }
+    .buttonStyle(.plain)
+    .accessibilityLabel("Evidence and sprint controls")
+  }
+
+  private var commandDeck: some View {
+    HStack(spacing: 10) {
+      ForEach(stations) { station in
+        Button { focusedAgentID = station.id; stationPresented = station } label: {
+          VStack(alignment: .leading, spacing: 6) {
+            Image(systemName: station.semanticState.glyph).font(.title2).foregroundStyle(SoloTheme.cyan)
+            Text(station.name).font(.caption.weight(.bold)).lineLimit(1)
+            Text("LV \(station.progression.level)").font(.caption2.monospaced()).foregroundStyle(.secondary)
+          }
+          .frame(maxWidth: .infinity, minHeight: 86, alignment: .leading)
+          .padding(10)
+          .background(.black.opacity(0.42), in: RoundedRectangle(cornerRadius: 15))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Open \(station.name) task controls")
+      }
+    }
+  }
+
+  private var founderReview: some View {
+    HStack(spacing: 14) {
+      Image(systemName: "crown.fill").font(.title2).foregroundStyle(.yellow)
+      VStack(alignment: .leading, spacing: 3) {
+        Text("FOUNDER REVIEW").font(.caption.weight(.heavy)).foregroundStyle(.yellow)
+        Text(store?.activeDilemma?.setup ?? "Review evidence before committing the next move.").font(.caption).foregroundStyle(.secondary).lineLimit(2)
+      }
+      Spacer()
+      Button { deskPresented = true } label: { Image(systemName: "checkmark").font(.title3.weight(.bold)).padding(12).background(.yellow, in: RoundedRectangle(cornerRadius: 12)) }
+        .buttonStyle(.plain).accessibilityLabel("Open founder review")
+    }
+    .padding(14)
+    .background(.black.opacity(0.38), in: RoundedRectangle(cornerRadius: 18))
   }
 
   private var header: some View {
