@@ -13,21 +13,7 @@ struct FounderEnvironmentScreen: View {
       ScrollView {
         VStack(spacing: 16) {
           environmentHeader
-          if progression.currentFacility == .founderLoft, #available(iOS 18.0, *) {
-            FounderLoftEnvironment()
-          } else {
-            GarageVisualization(
-              stations: stationModels,
-              policy: presentationPolicy,
-              facility: progression.currentFacility,
-              stats: store.stats,
-              attentionRemaining: store.attentionRemaining,
-              attentionMaximum: store.attentionMaximum,
-              store: store,
-              progression: progression,
-              presentation: presentation
-            )
-          }
+          FounderComputerScreen(store: store, presentation: presentation, stations: stationModels)
         }
         .padding(16)
         .frame(maxWidth: .infinity)
