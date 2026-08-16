@@ -211,7 +211,6 @@
 				B10000000000000000000021 /* HindsightTests.swift */,
 				C1000000000000000000000E /* FacilityProgressionTests.swift */,
 				C1000000000000000000000F /* PresentationMappingTests.swift */,
-				C10000000000000000000013 /* GarageVisualizationTests.swift */,
 				C10000000000000000000019 /* AgentDetailTests.swift */,
 				C10000000000000000000022 /* PrecedentRecordsTests.swift */,
 				C10000000000000000000024 /* AchievementScreenTests.swift */,
