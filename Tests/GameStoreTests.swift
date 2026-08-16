@@ -770,6 +770,44 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(reloaded.activeDilemma?.title, expectedDilemma)
   }
 
+  func testRestClearsEligibleUnreviewedAssignmentWithoutAdvancingRNG() throws {
+    let store = makeStore(seed: 9_001)
+    try assignFirstTask(in: store)
+    let agentID = try XCTUnwrap(store.tasks[0].assignedAgentID)
+    let stateBeforeRest = store.randomNumberGenerator
+
+    store.restAgent(agentID: agentID)
+
+    XCTAssertNil(store.tasks[0].assignedAgentID)
+    XCTAssertTrue(store.restingAgentIDs.contains(agentID))
+    XCTAssertEqual(store.randomNumberGenerator, stateBeforeRest)
+  }
+
+  func testRestCannotClearReviewedWork() throws {
+    let store = makeStore(seed: 9_002)
+    try assignFirstTask(in: store)
+    store.review(taskID: store.tasks[0].id)
+    let agentID = try XCTUnwrap(store.tasks[0].assignedAgentID)
+
+    store.restAgent(agentID: agentID)
+
+    XCTAssertEqual(store.tasks[0].assignedAgentID, agentID)
+    XCTAssertFalse(store.restingAgentIDs.contains(agentID))
+  }
+
+  func testAssignmentCancelsRest() throws {
+    let store = makeStore(seed: 9_003)
+    if let dilemma = store.activeDilemma, let choice = dilemma.choices.first { store.selectDilemmaChoice(choice.id) }
+    let agent = try XCTUnwrap(store.agents.first)
+    let task = try XCTUnwrap(store.tasks.first)
+    store.restAgent(agentID: agent.id)
+
+    store.assign(agentID: agent.id, to: task.id)
+
+    XCTAssertFalse(store.restingAgentIDs.contains(agent.id))
+    XCTAssertEqual(store.tasks[0].assignedAgentID, agent.id)
+  }
+
   private func makeStore(seed: UInt64 = 1_234) -> GameStore {
     let store = GameStore()
     store.resetCareer()

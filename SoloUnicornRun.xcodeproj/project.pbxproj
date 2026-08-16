@@ -27,6 +27,7 @@
 		C20000000000000000000004 /* FacilityProgressionConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000004 /* FacilityProgressionConfiguration.swift */; };
 		C20000000000000000000005 /* FacilityTier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000005 /* FacilityTier.swift */; };
 		C20000000000000000000006 /* FounderEnvironmentScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000006 /* FounderEnvironmentScreen.swift */; };
+		C20000000000000000000007 /* FounderComputerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000007 /* FounderComputerScreen.swift */; };
 		C20000000000000000000008 /* FounderProgressionSave.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000008 /* FounderProgressionSave.swift */; };
 		C20000000000000000000009 /* FounderProgressionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000009 /* FounderProgressionStore.swift */; };
 		C2000000000000000000000A /* HeadquartersProgressScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000A /* HeadquartersProgressScreen.swift */; };
@@ -126,6 +127,7 @@
 		C10000000000000000000004 /* FacilityProgressionConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacilityProgressionConfiguration.swift; sourceTree = "<group>"; };
 		C10000000000000000000005 /* FacilityTier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacilityTier.swift; sourceTree = "<group>"; };
 		C10000000000000000000006 /* FounderEnvironmentScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderEnvironmentScreen.swift; sourceTree = "<group>"; };
+		C10000000000000000000007 /* FounderComputerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderComputerScreen.swift; sourceTree = "<group>"; };
 		C10000000000000000000008 /* FounderProgressionSave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderProgressionSave.swift; sourceTree = "<group>"; };
 		C10000000000000000000009 /* FounderProgressionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderProgressionStore.swift; sourceTree = "<group>"; };
 		C1000000000000000000000A /* HeadquartersProgressScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadquartersProgressScreen.swift; sourceTree = "<group>"; };
@@ -267,6 +269,7 @@
 				C10000000000000000000005 /* FacilityTier.swift */,
 				C10000000000000000000010 /* FacilityUpgrade.swift */,
 				C10000000000000000000006 /* FounderEnvironmentScreen.swift */,
+				C10000000000000000000007 /* FounderComputerScreen.swift */,
 				C10000000000000000000011 /* FounderLoftEnvironment.swift */,
 				C10000000000000000000008 /* FounderProgressionSave.swift */,
 				C10000000000000000000009 /* FounderProgressionStore.swift */,
@@ -459,6 +462,7 @@
 				C20000000000000000000005 /* FacilityTier.swift in Sources */,
 				C20000000000000000000010 /* FacilityUpgrade.swift in Sources */,
 				C20000000000000000000006 /* FounderEnvironmentScreen.swift in Sources */,
+				C20000000000000000000007 /* FounderComputerScreen.swift in Sources */,
 				C20000000000000000000008 /* FounderProgressionSave.swift in Sources */,
 				C20000000000000000000009 /* FounderProgressionStore.swift in Sources */,
 				73B35D04E243BD45B291E271 /* GameModels.swift in Sources */,

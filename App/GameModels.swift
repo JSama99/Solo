@@ -1120,6 +1120,7 @@ struct CareerSave: Codable {
   var tasks: [SoloTask]
   var taskBacklog: [SoloTask]
   var founderAttentionSpent: Int
+  var restingAgentIDs: Set<String>
   var activeDilemma: FounderDilemma?
   var selectedDilemmaChoiceID: String?
   var currentObjective: SprintObjective?
@@ -1153,7 +1154,7 @@ struct CareerSave: Codable {
 
   private enum CodingKeys: String, CodingKey {
     case founderName, doctrine, productType, talentBoardRefreshes, sprint, venture, intent, stats, agents, tasks
-    case taskBacklog, founderAttentionSpent, activeDilemma, selectedDilemmaChoiceID, currentObjective
+    case taskBacklog, founderAttentionSpent, restingAgentIDs, activeDilemma, selectedDilemmaChoiceID, currentObjective
     case evidence, outcome, randomNumberGenerator, correlatedFailureEvent
     case pendingEffects, reportCache, precedents, awaitingFounderPass
     case careerMode, pendingVentureCheckpoint
@@ -1175,6 +1176,7 @@ struct CareerSave: Codable {
     tasks: [SoloTask],
     taskBacklog: [SoloTask] = [],
     founderAttentionSpent: Int = 0,
+    restingAgentIDs: Set<String> = [],
     activeDilemma: FounderDilemma? = nil,
     selectedDilemmaChoiceID: String? = nil,
     currentObjective: SprintObjective? = nil,
@@ -1218,6 +1220,7 @@ struct CareerSave: Codable {
     self.tasks = tasks
     self.taskBacklog = taskBacklog
     self.founderAttentionSpent = founderAttentionSpent
+    self.restingAgentIDs = restingAgentIDs
     self.activeDilemma = activeDilemma
     self.selectedDilemmaChoiceID = selectedDilemmaChoiceID
     self.currentObjective = currentObjective
@@ -1265,6 +1268,7 @@ struct CareerSave: Codable {
     taskBacklog = try container.decodeIfPresent([SoloTask].self, forKey: .taskBacklog) ?? []
     founderAttentionSpent = try container.decodeIfPresent(Int.self, forKey: .founderAttentionSpent)
       ?? tasks.filter(\.isReviewed).count
+    restingAgentIDs = try container.decodeIfPresent(Set<String>.self, forKey: .restingAgentIDs) ?? []
     activeDilemma = try container.decodeIfPresent(FounderDilemma.self, forKey: .activeDilemma)
     selectedDilemmaChoiceID = try container.decodeIfPresent(String.self, forKey: .selectedDilemmaChoiceID)
     currentObjective = try container.decodeIfPresent(SprintObjective.self, forKey: .currentObjective)
