@@ -89,11 +89,27 @@ struct FounderGarageIllustration: View {
             let dimmed = focusedAgentID != nil && focusedAgentID != station.id || !actionable
             Color.black.opacity(dimmed ? 0.32 : 0).frame(width: rect(bay.hitRect).width, height: rect(bay.hitRect).height).position(x: rect(bay.hitRect).midX, y: rect(bay.hitRect).midY).allowsHitTesting(false)
             if gate.stationIsHighlighted(station) { Circle().stroke(Self.color(bay.agentID), lineWidth: 2).shadow(color: Self.color(bay.agentID).opacity(0.7), radius: 10).frame(width: (bay.radius + 14) * 2 * scale, height: (bay.radius + 14) * 2 * scale).position(point(bay.avatar)).allowsHitTesting(false) }
-            Button { onSelectStation(station) } label: { Color.clear }.frame(width: rect(bay.hitRect).width, height: rect(bay.hitRect).height).position(x: rect(bay.hitRect).midX, y: rect(bay.hitRect).midY).buttonStyle(.plain).disabled(!actionable).accessibilityLabel("\(station.name), level \(station.progression.level), \(station.progression.stressBand.label) stress").accessibilityValue(station.accessibilityValue).accessibilityHint("Opens read-only agent details")
+            Button { onSelectStation(station) } label: {
+              Rectangle().fill(.clear).contentShape(Rectangle())
+            }
+            .frame(width: rect(bay.hitRect).width, height: rect(bay.hitRect).height)
+            .position(x: rect(bay.hitRect).midX, y: rect(bay.hitRect).midY)
+            .buttonStyle(.plain)
+            .disabled(!actionable)
+            .accessibilityLabel("\(station.name), level \(station.progression.level), \(station.progression.stressBand.label) stress")
+            .accessibilityValue(station.accessibilityValue)
+            .accessibilityHint("Opens agent task controls")
             GarageStationTag(station: station, accent: Self.color(bay.agentID), differentiateWithoutColor: differentiateWithoutColor).opacity(dimmed ? 0.38 : 1).position(x: point(bay.avatar).x, y: point(bay.avatar).y + (bay.radius + 34) * scale).allowsHitTesting(false)
           }
         }
-        Button(action: onSelectDesk) { Color.clear }.frame(width: rect(Self.deskRect).width, height: rect(Self.deskRect).height).position(x: rect(Self.deskRect).midX, y: rect(Self.deskRect).midY).buttonStyle(.plain).accessibilityLabel("Founder desk").accessibilityHint("Opens sprint controls")
+        Button(action: onSelectDesk) {
+          Rectangle().fill(.clear).contentShape(Rectangle())
+        }
+        .frame(width: rect(Self.deskRect).width, height: rect(Self.deskRect).height)
+        .position(x: rect(Self.deskRect).midX, y: rect(Self.deskRect).midY)
+        .buttonStyle(.plain)
+        .accessibilityLabel("Founder desk")
+        .accessibilityHint("Opens sprint controls")
       }
     }
   }
