@@ -18,6 +18,7 @@ final class FounderPassGateTests: XCTestCase {
     store.resetCareer()
     store.entitlements = StaticEntitlementProvider(hasFounderPass: hasPass)
     store.startCareer(seed: seed)
+    store.confirmVentureThesisIfNeeded()
     return store
   }
 
@@ -26,6 +27,7 @@ final class FounderPassGateTests: XCTestCase {
     var iterations = 0
     while store.careerOutcome == nil && !store.isVentureLocked && iterations < 40 {
       iterations += 1
+      store.confirmVentureThesisIfNeeded()
       let startingVenture = store.venture
       for (offset, task) in store.tasks.enumerated() {
         let agent = store.agents[offset % store.agents.count]

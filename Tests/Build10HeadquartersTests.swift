@@ -100,6 +100,7 @@ final class Build10HeadquartersTests: XCTestCase {
   func testAgentProgressionEarnsXPAndStressFromCommittedWork() {
     let store = GameStore()
     store.startCareer(seed: 99)
+    store.confirmVentureThesisIfNeeded()
     let task = store.tasks[0]
     let agent = store.agents.first(where: { $0.role == task.role }) ?? store.agents[0]
     store.assign(agentID: agent.id, to: task.id)

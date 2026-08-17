@@ -275,6 +275,9 @@ final class GameStore {
   }
 
   var commitBlockerMessage: String? {
+    guard !awaitingThesisSelection else {
+      return "Choose this venture's thesis before committing a sprint."
+    }
     let hasAssignment = tasks.contains { $0.assignedAgentID != nil }
     guard hasAssignment else {
       return "Assign at least one agent before committing the sprint."
@@ -428,7 +431,9 @@ final class GameStore {
     stats.trust += startingAdjustment.trust
     stats.momentum += startingAdjustment.momentum
     stats.energy += startingAdjustment.energy
-    prepareSprint()
+    // The first sprint is drafted by selectThesisAndBegin, not here. Drafting it
+    // twice burned two task-deck cards and a chapter dilemma before the player
+    // ever saw them, which is what made the venture deck recycle early.
     stage = .ventureThesis
     sanitizeState()
     if careerMode != .daily { save() }
@@ -442,8 +447,14 @@ final class GameStore {
     selectedCareerMode = .daily
     selectedDoctrine = .guided
     selectedProductType = .saas
+    selectedThesis = .sustainable
     founderName = "Daily Founder"
     startCareer(seed: DailyChallenge.seed())
+    // The Daily Challenge is a shared-seed run everyone is scored against, so
+    // its thesis is fixed rather than chosen. Committing it here follows the
+    // same code path (and therefore the same RNG consumption) as a player
+    // confirming a thesis on the venture screen.
+    selectThesisAndBegin()
   }
 
   func continueCareer() {
@@ -668,7 +679,7 @@ final class GameStore {
       return
     }
     if let task = tasks.first(where: { $0.assignedAgentID == agentID && $0.isReviewed }) {
-      alertMessage = "(task.title) has been reviewed and cannot be cleared."
+      alertMessage = "\(task.title) has been reviewed and cannot be cleared."
       return
     }
     if let task = tasks.first(where: { $0.assignedAgentID == agentID }) {
@@ -832,7 +843,8 @@ final class GameStore {
       }
     }
     let era = VentureEra.era(for: venture)
-    precondition(!awaitingThesisSelection, "A venture cannot commit a sprint before its thesis is chosen.")
+    // The pending-thesis invariant is enforced by commitBlockerMessage above,
+    // which returns early. It is a blocked action, never a crash.
     let thesisProfile = ThesisProfile.profile(for: thesis)
     effects.runway -= era.runwayBurnPerSprint
     effects.energy -= max(0, era.energyCostPerSprint + thesisProfile.energyCostDelta)
@@ -991,7 +1003,6 @@ final class GameStore {
       pendingVentureCheckpoint = nil
     }
     advanceToNextVenture()
-    stage = .game
     saveCareer()
   }
 
@@ -1091,8 +1102,9 @@ final class GameStore {
       return
     }
     pendingVentureCheckpoint = nil
+    // advanceToNextVenture routes to .ventureThesis: every venture, including
+    // one continued from a checkpoint, opens with its thesis choice.
     advanceToNextVenture()
-    stage = .game
     saveCareer()
   }
 
@@ -2200,8 +2212,11 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  private static let saveVersion = 16
-  private static let saveKey = "solo-unicorn-run-native-save-v16"
+  static let saveVersion = 16
+  /// The key the current save format is written to. Not private so tests can
+  /// assert against the live key instead of hard-coding a version that goes
+  /// stale the next time the format changes.
+  static let saveKey = "solo-unicorn-run-native-save-v16"
   private static let v15SaveKey = "solo-unicorn-run-native-save-v15"
   private static let v14SaveKey = "solo-unicorn-run-native-save-v14"
   private static let v13SaveKey = "solo-unicorn-run-native-save-v13"

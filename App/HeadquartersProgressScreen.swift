@@ -3,6 +3,7 @@ import SwiftUI
 struct HeadquartersProgressScreen: View {
   var store: GameStore
   @Environment(FounderProgressionStore.self) private var progression
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var pendingPurchase: TreasuryPurchase?
 
   var body: some View {
@@ -32,6 +33,8 @@ struct HeadquartersProgressScreen: View {
       Text("COMPANY TREASURY").font(.caption.weight(.black)).tracking(2).foregroundStyle(SoloTheme.cyan)
       Text(store.stats.capital, format: .currency(code: "USD").precision(.fractionLength(0)))
         .font(.largeTitle.bold().monospacedDigit())
+        .contentTransition(.numericText(value: Double(store.stats.capital)))
+        .gameplayMotion(.celebration, value: store.stats.capital)
       Text("Capital funds headquarters and infrastructure. Purchases are permanent and never take Capital below zero.")
         .font(.caption).foregroundStyle(.secondary)
     }
@@ -42,6 +45,8 @@ struct HeadquartersProgressScreen: View {
     VStack(alignment: .leading, spacing: 12) {
       Text("HEADQUARTERS").font(.caption.weight(.black)).tracking(2).foregroundStyle(SoloTheme.cyan)
       Label(progression.currentFacility.name, systemImage: progression.currentFacility.symbol).font(.title3.bold())
+        .contentTransition(.interpolate)
+        .symbolEffect(.bounce, value: progression.currentFacility)
       Text(progression.currentFacility == .founderLoft
         ? "Sustainable founder operations: +5 Energy at the beginning of each venture."
         : "The original operating base. Garage upgrades are active while this headquarters is selected.")
@@ -64,6 +69,7 @@ struct HeadquartersProgressScreen: View {
       }
     }
     .soloCard()
+    .gameplayMotion(.celebration, value: progression.currentFacility)
   }
 
   private var upgradesCard: some View {
@@ -92,9 +98,11 @@ struct HeadquartersProgressScreen: View {
           }
         }
         .padding(12).background(.white.opacity(0.035), in: .rect(cornerRadius: 12))
+        .gameplayMotion(.celebration, value: owned)
       }
     }
     .soloCard()
+    .gameplayMotion(value: progression.purchasedUpgrades)
   }
 
   private var facilitySwitcher: some View {
@@ -109,12 +117,15 @@ struct HeadquartersProgressScreen: View {
       }
     }
     .soloCard()
+    .gameplayMotion(value: progression.ownedFacilities)
   }
 
   private func complete(_ purchase: TreasuryPurchase) {
-    switch purchase {
-    case .facility(let facility, _): _ = store.purchaseFacility(facility)
-    case .upgrade(let upgrade, _): _ = store.purchaseFacilityUpgrade(upgrade)
+    withAnimation(MotionKind.celebration.resolved(reduceMotion: reduceMotion)) {
+      switch purchase {
+      case .facility(let facility, _): _ = store.purchaseFacility(facility)
+      case .upgrade(let upgrade, _): _ = store.purchaseFacilityUpgrade(upgrade)
+      }
     }
   }
 
@@ -143,11 +154,13 @@ private struct FacilitySwitchRow: View {
         Image(systemName: facility.symbol)
         Text(facility.name)
         Spacer()
-        if isActive { Image(systemName: "checkmark") }
+        if isActive { Image(systemName: "checkmark").transition(.scale.combined(with: .opacity)) }
       }
     }
     .buttonStyle(.bordered)
     .tint(isActive ? SoloTheme.cyan : .secondary)
+    .gameplayMotion(.emphasis, value: isActive)
+    .accessibilityAddTraits(isActive ? [.isButton, .isSelected] : .isButton)
   }
 }
 

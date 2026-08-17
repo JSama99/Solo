@@ -12,11 +12,14 @@ struct AchievementsScreen: View {
         VStack(alignment: .leading, spacing: 6) {
           Text("Founder Level \(achievements.level)")
             .font(.title2.bold())
+            .contentTransition(.numericText(value: Double(achievements.level)))
           Text("\(achievements.unlockedCount) of \(AchievementCatalog.all.count) achievements unlocked")
             .font(.caption)
             .foregroundStyle(.secondary)
+            .contentTransition(.numericText(value: Double(achievements.unlockedCount)))
         }
         .soloCard()
+        .gameplayMotion(.celebration, value: achievements.unlockedCount)
 
         Picker("Achievement family", selection: $family) {
           ForEach(AchievementFamily.allCases, id: \.rawValue) { family in
@@ -33,8 +36,10 @@ struct AchievementsScreen: View {
               progress: achievements.progress(for: achievement, context: displayContext),
               isNew: achievements.isRetroactivelyNew(achievement.id)
             )
+            .transition(.opacity.combined(with: .scale(scale: 0.96)))
           }
         }
+        .gameplayMotion(.state, value: family)
       }
       .padding(16)
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -77,8 +82,9 @@ private struct AchievementBadgeCard: View {
       HStack(alignment: .top) {
         Image(systemName: achievement.rarity == .gold ? "medal.star.fill" : "medal.fill")
           .font(.title2)
-          .foregroundStyle(unlockedAt == nil ? .secondary : rarityColor)
+          .foregroundStyle(unlockedAt == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(rarityColor))
           .grayscale(unlockedAt == nil ? 1 : 0)
+          .symbolEffect(.bounce, value: unlockedAt)
         Spacer()
         if isNew {
           Text("NEW")
@@ -87,6 +93,7 @@ private struct AchievementBadgeCard: View {
             .padding(.horizontal, 6)
             .padding(.vertical, 3)
             .background(SoloTheme.cyan.opacity(0.14), in: .capsule)
+            .transition(.scale.combined(with: .opacity))
         }
       }
       Text(achievement.title)
@@ -122,6 +129,8 @@ private struct AchievementBadgeCard: View {
       RoundedRectangle(cornerRadius: 16)
         .stroke(isNew ? SoloTheme.cyan.opacity(0.72) : .white.opacity(0.08))
     }
+    .gameplayMotion(.celebration, value: unlockedAt)
+    .gameplayMotion(.state, value: isNew)
     .accessibilityElement(children: .combine)
     .accessibilityLabel(achievement.title)
     .accessibilityValue(accessibilityValue)

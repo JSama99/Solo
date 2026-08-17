@@ -126,7 +126,7 @@ final class GameStoreTests: XCTestCase {
 
     XCTAssertEqual(migrated.founderName, "Founder")
     XCTAssertEqual(migrated.stage, .game)
-    XCTAssertNotNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v12"))
+    XCTAssertNotNil(UserDefaults.standard.data(forKey: GameStore.saveKey))
     XCTAssertNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v1"))
   }
 
@@ -379,7 +379,7 @@ final class GameStoreTests: XCTestCase {
 
     XCTAssertEqual(migrated.stage, .game)
     XCTAssertNil(migrated.tasks[0].result)
-    XCTAssertNotNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v9"))
+    XCTAssertNotNil(UserDefaults.standard.data(forKey: GameStore.saveKey))
     XCTAssertNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v2"))
   }
 
@@ -411,7 +411,7 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(migrated.reportCache.count, 1)
     XCTAssertEqual(migrated.evidence.first?.venture, migrated.venture)
     XCTAssertFalse(migrated.evidence.first?.taskInstanceID.isEmpty ?? true)
-    XCTAssertNotNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v9"))
+    XCTAssertNotNil(UserDefaults.standard.data(forKey: GameStore.saveKey))
     XCTAssertNil(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v3"))
   }
 
@@ -652,8 +652,12 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(restored.randomNumberGenerator, expectedRNG)
     XCTAssertEqual(restored.taskBacklog.count, 2)
     XCTAssertNotNil(restored.activeDilemma)
-    let migratedData = try XCTUnwrap(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v9"))
-    XCTAssertEqual(try JSONDecoder().decode(SaveEnvelope.self, from: migratedData).version, 9)
+    let migratedData = try XCTUnwrap(UserDefaults.standard.data(forKey: GameStore.saveKey))
+    XCTAssertEqual(
+      try JSONDecoder().decode(SaveEnvelope.self, from: migratedData).version,
+      GameStore.saveVersion,
+      "a migrated save must be rewritten at the current save version"
+    )
   }
 
   func testBuild6TaskDeckDoesNotRepeatAcrossFirstVenture() throws {
@@ -732,7 +736,7 @@ final class GameStoreTests: XCTestCase {
     original.commitSprint()
     original.report = nil
 
-    let saved = try XCTUnwrap(UserDefaults.standard.data(forKey: "solo-unicorn-run-native-save-v9"))
+    let saved = try XCTUnwrap(UserDefaults.standard.data(forKey: GameStore.saveKey))
 
     if let dilemma = original.activeDilemma,
        let choice = dilemma.choices.first(where: { $0.id != "sell" }) ?? dilemma.choices.first {
@@ -749,7 +753,7 @@ final class GameStoreTests: XCTestCase {
     let expectedTitles = original.tasks.map(\.title)
     let expectedDilemma = original.activeDilemma?.title
 
-    UserDefaults.standard.set(saved, forKey: "solo-unicorn-run-native-save-v9")
+    UserDefaults.standard.set(saved, forKey: GameStore.saveKey)
     let reloaded = GameStore()
     reloaded.entitlements = StaticEntitlementProvider(hasFounderPass: true)
     reloaded.continueCareer()
@@ -813,10 +817,12 @@ final class GameStoreTests: XCTestCase {
     store.resetCareer()
     store.entitlements = StaticEntitlementProvider(hasFounderPass: true)
     store.startCareer(seed: seed)
+    store.confirmVentureThesisIfNeeded()
     return store
   }
 
   private func assignFirstTask(in store: GameStore) throws {
+    store.confirmVentureThesisIfNeeded()
     if let dilemma = store.activeDilemma,
        let choice = dilemma.choices.first(where: { $0.id != "sell" }) ?? dilemma.choices.first {
       store.selectDilemmaChoice(choice.id)

@@ -324,7 +324,14 @@ enum ContentLibrary {
       source.compactMap { task in
         guard task.productTypes == [.saas] else { return nil }
         var localized = task
-        localized.title = "\(type.name): \(localizedTitle(for: task, type: type)) — \(task.title)"
+        // The suffix exists to keep titles unique when several source tasks
+        // share one localized name. When the localization falls through to the
+        // source title, appending it again reads as "Hardware: Audit Agent
+        // Outputs — Audit Agent Outputs" on screen.
+        let localizedName = localizedTitle(for: task, type: type)
+        localized.title = localizedName == task.title
+          ? "\(type.name): \(task.title)"
+          : "\(type.name): \(localizedName) — \(task.title)"
         localized.detail = localizedDetail(for: task, type: type)
         localized.productTypes = [type]
         return localized

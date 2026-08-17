@@ -6,6 +6,7 @@ struct ContentView: View {
   @Environment(AchievementStore.self) private var achievements
   @Environment(FounderProgressionStore.self) private var progression
   @State private var achievementToast: Achievement?
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   var body: some View {
     ZStack {
@@ -50,7 +51,7 @@ struct ContentView: View {
         .allowsHitTesting(false)
       }
     }
-    .animation(.smooth, value: store.stage)
+    .gameplayMotion(.state, value: store.stage)
     .onAppear {
       // Bind the real entitlement source once the environment is available.
       store.entitlements = subscriptions
@@ -64,10 +65,12 @@ struct ContentView: View {
     }
     .onChange(of: achievements.latestUnlock?.id) { _, _ in
       guard let achievement = achievements.latestUnlock else { return }
-      withAnimation(.snappy) { achievementToast = achievement }
+      withAnimation(MotionKind.celebration.resolved(reduceMotion: reduceMotion)) {
+        achievementToast = achievement
+      }
       DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
         guard achievementToast?.id == achievement.id else { return }
-        withAnimation(.smooth) { achievementToast = nil }
+        withAnimation(MotionKind.state.resolved(reduceMotion: reduceMotion)) { achievementToast = nil }
       }
     }
     .sensoryFeedback(.success, trigger: achievementToast?.id)
@@ -88,68 +91,74 @@ private struct TitleScreen: View {
   @Environment(AchievementStore.self) private var achievements
 
   var body: some View {
-    ScrollView {
-      VStack(spacing: 28) {
-        Spacer(minLength: 52)
-        ZStack {
-          Circle()
-            .fill(SoloTheme.purple.opacity(0.2))
-            .frame(width: 180, height: 180)
-            .blur(radius: 16)
-          Image(systemName: "sparkles")
-            .font(.system(size: 78, weight: .black))
-            .foregroundStyle(SoloTheme.cyan)
-            .shadow(color: SoloTheme.cyan.opacity(0.7), radius: 18)
-        }
-        VStack(spacing: 8) {
-          Text("SOLO:")
-            .font(.system(size: 50, weight: .black, design: .rounded))
-          Text("UNICORN RUN")
-            .font(.system(size: 22, weight: .bold, design: .rounded))
-            .tracking(6)
-            .foregroundStyle(SoloTheme.cyan)
-          Text("A founder-life simulation")
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(.secondary)
-        }
-        Text("Build a company from a garage, direct an AI workforce, and survive the decisions you made.")
-          .font(.title3.weight(.medium))
-          .multilineTextAlignment(.center)
-          .foregroundStyle(.white.opacity(0.85))
-          .padding(.horizontal, 24)
-        Label("Founder Level \(achievements.level) · \(achievements.totalXP) XP", systemImage: "medal.star.fill")
-          .font(.subheadline.weight(.bold))
-          .foregroundStyle(SoloTheme.cyan)
-          .padding(.horizontal, 14)
-          .padding(.vertical, 9)
-          .background(SoloTheme.card, in: .capsule)
-        VStack(spacing: 12) {
-          Button("Choose Mode", systemImage: "play.fill") {
-            store.beginModeSelection()
+    // The How to Play link needs a stack to push onto. Without one SwiftUI
+    // renders it as a permanently disabled control, which is how it shipped:
+    // the button was on screen and inert.
+    NavigationStack {
+      ScrollView {
+        VStack(spacing: 28) {
+          Spacer(minLength: 52)
+          ZStack {
+            Circle()
+              .fill(SoloTheme.purple.opacity(0.2))
+              .frame(width: 180, height: 180)
+              .blur(radius: 16)
+            Image(systemName: "sparkles")
+              .font(.system(size: 78, weight: .black))
+              .foregroundStyle(SoloTheme.cyan)
+              .shadow(color: SoloTheme.cyan.opacity(0.7), radius: 18)
           }
-          .buttonStyle(SoloPrimaryButtonStyle())
-
-          if store.hasSave {
-            Button("Continue Career", systemImage: "arrow.right.circle.fill") {
-              store.continueCareer()
-              progression.ensureCareerIdentity()
-              progression.observe(trackRecord: store.stats.trackRecord)
-              if store.careerOutcome != nil {
-                progression.recordCareerCompletion(trackRecord: store.stats.trackRecord)
-              }
+          VStack(spacing: 8) {
+            Text("SOLO:")
+              .font(.system(size: 50, weight: .black, design: .rounded))
+            Text("UNICORN RUN")
+              .font(.system(size: 22, weight: .bold, design: .rounded))
+              .tracking(6)
+              .foregroundStyle(SoloTheme.cyan)
+            Text("A founder-life simulation")
+              .font(.subheadline.weight(.semibold))
+              .foregroundStyle(.secondary)
+          }
+          Text("Build a company from a garage, direct an AI workforce, and survive the decisions you made.")
+            .font(.title3.weight(.medium))
+            .multilineTextAlignment(.center)
+            .foregroundStyle(.white.opacity(0.85))
+            .padding(.horizontal, 24)
+          Label("Founder Level \(achievements.level) · \(achievements.totalXP) XP", systemImage: "medal.star.fill")
+            .font(.subheadline.weight(.bold))
+            .foregroundStyle(SoloTheme.cyan)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .background(SoloTheme.card, in: .capsule)
+          VStack(spacing: 12) {
+            Button("Choose Mode", systemImage: "play.fill") {
+              store.beginModeSelection()
             }
-            .buttonStyle(SoloSecondaryButtonStyle())
+            .buttonStyle(SoloPrimaryButtonStyle())
+
+            if store.hasSave {
+              Button("Continue Career", systemImage: "arrow.right.circle.fill") {
+                store.continueCareer()
+                progression.ensureCareerIdentity()
+                progression.observe(trackRecord: store.stats.trackRecord)
+                if store.careerOutcome != nil {
+                  progression.recordCareerCompletion(trackRecord: store.stats.trackRecord)
+                }
+              }
+              .buttonStyle(SoloSecondaryButtonStyle())
+            }
+            NavigationLink { HowToPlayScreen() } label: { Label("How to Play", systemImage: "questionmark.circle").frame(maxWidth: .infinity) }
+              .buttonStyle(SoloSecondaryButtonStyle())
           }
-          NavigationLink { HowToPlayScreen() } label: { Label("How to Play", systemImage: "questionmark.circle").frame(maxWidth: .infinity) }
-            .buttonStyle(SoloSecondaryButtonStyle())
+          .padding(.horizontal, 24)
+          Text("Native iOS edition • offline save • RevenueCat Test Store")
+            .font(.caption)
+            .foregroundStyle(.tertiary)
+          Spacer(minLength: 32)
         }
-        .padding(.horizontal, 24)
-        Text("Native iOS edition • offline save • RevenueCat Test Store")
-          .font(.caption)
-          .foregroundStyle(.tertiary)
-        Spacer(minLength: 32)
+        .frame(maxWidth: .infinity)
       }
-      .frame(maxWidth: .infinity)
+      .background(SoloTheme.background)
     }
   }
 }
@@ -232,6 +241,7 @@ private struct AchievementToast: View {
 private struct FounderSetupScreen: View {
   @Bindable var store: GameStore
   @Environment(FounderProgressionStore.self) private var progression
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   var body: some View {
     NavigationStack {
@@ -263,7 +273,9 @@ private struct FounderSetupScreen: View {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
               ForEach(CareerMode.allCases) { mode in
                 Button {
-                  withAnimation(.snappy) { store.selectedCareerMode = mode }
+                  withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) {
+                    store.selectedCareerMode = mode
+                  }
                 } label: {
                   CareerModeCard(mode: mode, isSelected: store.selectedCareerMode == mode)
                 }
@@ -280,7 +292,9 @@ private struct FounderSetupScreen: View {
               .foregroundStyle(SoloTheme.cyan)
             ForEach(ProductType.allCases) { productType in
               Button {
-                withAnimation(.snappy) { store.selectedProductType = productType }
+                withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) {
+                  store.selectedProductType = productType
+                }
               } label: {
                 ProductTypeCard(productType: productType, isSelected: store.selectedProductType == productType)
               }
@@ -292,7 +306,9 @@ private struct FounderSetupScreen: View {
           VStack(spacing: 12) {
             ForEach(FounderDoctrine.allCases) { doctrine in
               Button {
-                withAnimation(.snappy) { store.selectedDoctrine = doctrine }
+                withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) {
+                  store.selectedDoctrine = doctrine
+                }
               } label: {
                 DoctrineCard(
                   doctrine: doctrine,
@@ -469,350 +485,6 @@ private struct GameDashboard: View {
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
     }
-  }
-}
-
-private struct AgentRow: View {
-  var agent: SoloAgent
-
-  var body: some View {
-    HStack(spacing: 12) {
-      Text(agent.initials)
-        .font(.caption.weight(.black))
-        .frame(width: 44, height: 44)
-        .background(SoloTheme.purple.gradient, in: .circle)
-      VStack(alignment: .leading, spacing: 3) {
-        HStack {
-          Text(agent.name).font(.headline)
-          Text(agent.role.rawValue).font(.caption).foregroundStyle(.secondary)
-        }
-        Text(agent.assignment == nil ? "Ready • \(agent.archetype)" : "Working • \(agent.modelFamily)")
-          .font(.caption)
-          .foregroundStyle(agent.assignment == nil ? .secondary : SoloTheme.cyan)
-        Text(agent.traitSummary)
-          .font(.caption2)
-          .foregroundStyle(.secondary)
-      }
-      Spacer()
-      VStack(alignment: .trailing, spacing: 3) {
-        Text(agent.relationshipLabel).font(.caption.weight(.bold))
-        Text("Bond \(agent.relationship) • Drift \(Int(agent.drift))").font(.caption2).foregroundStyle(.secondary)
-      }
-    }
-    .padding(14)
-    .background(SoloTheme.card, in: .rect(cornerRadius: 16))
-    .accessibilityElement(children: .combine)
-  }
-}
-
-private struct SprintPhaseTracker: View {
-  var current: SprintPhase
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 10) {
-      HStack {
-        Label("SPRINT FLOW", systemImage: current.symbol)
-          .font(.caption.weight(.black))
-          .foregroundStyle(SoloTheme.cyan)
-        Spacer()
-        Text("STEP \(current.rawValue) OF 5")
-          .font(.caption2.weight(.black))
-          .foregroundStyle(.secondary)
-      }
-      Text(current.title).font(.headline)
-      HStack(spacing: 6) {
-        ForEach(SprintPhase.allCases) { phase in
-          Capsule()
-            .fill(phase.rawValue <= current.rawValue ? SoloTheme.cyan : .white.opacity(0.09))
-            .frame(height: 6)
-        }
-      }
-    }
-    .soloCard()
-  }
-}
-
-struct FounderDilemmaCard: View {
-  var dilemma: FounderDilemma
-  var selectedChoiceID: String?
-  var onSelect: (String) -> Void
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      Label("FOUNDER DILEMMA", systemImage: "arrow.triangle.branch")
-        .font(.caption.weight(.black))
-        .tracking(1.2)
-        .foregroundStyle(SoloTheme.amber)
-      Text(dilemma.title).font(.title3.bold())
-      Text(dilemma.setup).font(.subheadline).foregroundStyle(.secondary)
-      ForEach(dilemma.choices) { choice in
-        Button {
-          onSelect(choice.id)
-        } label: {
-          HStack(alignment: .top, spacing: 12) {
-            Image(systemName: selectedChoiceID == choice.id ? "checkmark.circle.fill" : "circle")
-              .foregroundStyle(selectedChoiceID == choice.id ? SoloTheme.cyan : .secondary)
-            VStack(alignment: .leading, spacing: 3) {
-              Text(choice.title).font(.subheadline.weight(.bold))
-              Text(choice.detail).font(.caption).foregroundStyle(.secondary)
-              Text(choice.consequencePreview)
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(SoloTheme.amber)
-            }
-            Spacer()
-          }
-          .padding(12)
-          .background(selectedChoiceID == choice.id ? SoloTheme.purple.opacity(0.16) : .white.opacity(0.035), in: .rect(cornerRadius: 12))
-        }
-        .buttonStyle(.plain)
-      }
-    }
-    .soloCard()
-  }
-}
-
-struct ResolvedDilemmaSummary: View {
-  var dilemma: FounderDilemma
-  var choice: DilemmaChoice
-
-  var body: some View {
-    Label("\(dilemma.title): \(choice.title)", systemImage: "checkmark.seal.fill")
-      .font(.caption.weight(.semibold))
-      .foregroundStyle(SoloTheme.mint)
-      .soloCard()
-  }
-}
-
-struct SprintObjectiveCard: View {
-  var objective: SprintObjective
-  var progress: String
-
-  var body: some View {
-    HStack(alignment: .top, spacing: 12) {
-      Image(systemName: "target")
-        .font(.title2)
-        .foregroundStyle(SoloTheme.mint)
-      VStack(alignment: .leading, spacing: 4) {
-        Text("OPTIONAL SPRINT OBJECTIVE")
-          .font(.caption2.weight(.black))
-          .foregroundStyle(SoloTheme.mint)
-        Text(objective.title).font(.headline)
-        Text(objective.detail).font(.caption).foregroundStyle(.secondary)
-        Text(progress)
-          .font(.caption.weight(.bold))
-          .foregroundStyle(SoloTheme.cyan)
-        Text("Reward: \(objective.rewardLabel)")
-          .font(.caption.weight(.semibold))
-          .foregroundStyle(SoloTheme.mint)
-      }
-      Spacer()
-    }
-    .soloCard()
-  }
-}
-
-struct TaskDraftBacklogCard: View {
-  var activeTasks: [SoloTask]
-  var backlog: [SoloTask]
-  var canEdit: Bool
-  var onSwap: (UUID, UUID) -> Bool
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      HStack {
-        Label("SPRINT DRAFT", systemImage: "square.stack.3d.up.fill")
-          .font(.caption.weight(.black))
-          .foregroundStyle(SoloTheme.cyan)
-        Spacer()
-        Text("Choose 3 of 5")
-          .font(.caption2.weight(.bold))
-          .foregroundStyle(.secondary)
-      }
-      Text("The two opportunities left here will create the listed consequences when the sprint commits.")
-        .font(.caption)
-        .foregroundStyle(.secondary)
-
-      ForEach(backlog) { candidate in
-        HStack(alignment: .top, spacing: 10) {
-          Image(systemName: candidate.category.symbol)
-            .foregroundStyle(candidate.urgency == .critical ? SoloTheme.amber : SoloTheme.cyan)
-            .frame(width: 24)
-          VStack(alignment: .leading, spacing: 3) {
-            Text(candidate.title).font(.subheadline.weight(.bold))
-            Text(candidate.detail).font(.caption).foregroundStyle(.secondary)
-            Text("If ignored: \(candidate.consequenceLabel)")
-              .font(.caption2.weight(.semibold))
-              .foregroundStyle(SoloTheme.amber)
-          }
-          Spacer()
-          Menu("Swap In", systemImage: "arrow.left.arrow.right") {
-            ForEach(activeTasks) { active in
-              Button("Replace \(active.title)") {
-                _ = onSwap(active.id, candidate.id)
-              }
-            }
-          }
-          .disabled(!canEdit)
-        }
-        .padding(12)
-        .background(.white.opacity(0.035), in: .rect(cornerRadius: 12))
-      }
-      if !canEdit {
-        Text("Draft locked because work has started.")
-          .font(.caption2)
-          .foregroundStyle(.secondary)
-      }
-    }
-    .soloCard()
-  }
-}
-
-struct TaskCommandCard: View {
-  var task: SoloTask
-  var agents: [SoloAgent]
-  var founderStats: FounderStats
-  var onAssign: (String?) -> Void
-  var onReview: () -> Void
-  var onResolution: (TaskResolutionChoice) -> Void
-
-  @State private var inspectedAgent: AgentDetailViewModel?
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      HStack(alignment: .top) {
-        Image(systemName: task.role.symbol)
-          .foregroundStyle(SoloTheme.cyan)
-          .frame(width: 28)
-        VStack(alignment: .leading, spacing: 3) {
-          Text(task.title).font(.headline)
-          Text(task.detail).font(.caption).foregroundStyle(.secondary)
-          HStack(spacing: 6) {
-            Label(task.category.rawValue, systemImage: task.category.symbol)
-            Text("•")
-            Text(task.urgency.label)
-          }
-          .font(.caption2.weight(.semibold))
-          .foregroundStyle(task.urgency == .critical ? SoloTheme.amber : .secondary)
-        }
-        Spacer()
-      }
-
-      Picker("Assign agent", selection: Binding(
-        get: { task.assignedAgentID },
-        set: onAssign
-      )) {
-        Text("Unassigned").tag(String?.none)
-        ForEach(agents) { agent in
-          Text("\(agent.name) • \(agent.role.rawValue)").tag(String?.some(agent.id))
-        }
-      }
-      .pickerStyle(.menu)
-      .buttonStyle(.bordered)
-
-      if let assignedAgent {
-        Button("Inspect \(assignedAgent.name)", systemImage: "person.text.rectangle") {
-          inspectedAgent = AgentDetailViewModel.commandDeck(
-            agent: assignedAgent,
-            task: task,
-            founderStats: founderStats
-          )
-        }
-        .buttonStyle(.bordered)
-      }
-
-      if let result = task.result {
-        VStack(alignment: .leading, spacing: 7) {
-          HStack {
-            Label("Reported \(result.reportedQuality)", systemImage: "doc.text.magnifyingglass")
-              .foregroundStyle(SoloTheme.cyan)
-            Spacer()
-            Text(result.verificationState.label)
-              .foregroundStyle(task.isReviewed ? SoloTheme.mint : SoloTheme.amber)
-          }
-          HStack {
-            Text("Evidence \(result.evidenceCompleteness)%")
-            Spacer()
-            Text("Confidence \(result.confidenceRangeLabel)")
-          }
-          Text(result.knownOperationalRisk)
-          if let actualQuality = result.revealedActualQuality {
-            Divider()
-            HStack {
-              Label("Verified actual \(actualQuality)", systemImage: "checkmark.seal.fill")
-                .foregroundStyle(SoloTheme.mint)
-              Spacer()
-              if result.overclaimAmount > 0 {
-                Text("Overclaim +\(result.overclaimAmount)")
-                  .foregroundStyle(SoloTheme.amber)
-              }
-            }
-          }
-        }
-        .font(.caption.weight(.semibold))
-        .accessibilityElement(children: .combine)
-      } else {
-        Label("Assign an agent to request a report", systemImage: "chart.bar.doc.horizontal")
-          .font(.caption)
-          .foregroundStyle(.secondary)
-      }
-
-      HStack {
-        VStack(alignment: .leading, spacing: 2) {
-          Text("Base \(task.reward)")
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(SoloTheme.mint)
-          if task.skipEffects != SimulationEffects() {
-            Text("Ignored: \(task.consequenceLabel)")
-              .font(.caption2)
-              .foregroundStyle(SoloTheme.amber)
-          }
-        }
-        Spacer()
-        Button(task.isReviewed ? "Reviewed" : "Founder Review", systemImage: task.isReviewed ? "checkmark.seal.fill" : "eye.fill") {
-          onReview()
-        }
-        .buttonStyle(.bordered)
-        .tint(SoloTheme.purple)
-        .disabled(task.result == nil || task.isReviewed)
-      }
-
-      if task.isReviewed {
-        Divider()
-        VStack(alignment: .leading, spacing: 8) {
-          Text("Founder decision")
-            .font(.caption2)
-            .foregroundStyle(.secondary)
-          if task.resolutionLocked, let resolution = task.resolution {
-            Label("(resolution.title) locked", systemImage: "lock.fill")
-              .font(.caption.weight(.bold))
-              .foregroundStyle(SoloTheme.mint)
-          } else {
-            ForEach(TaskResolutionChoice.allCases) { choice in
-              Button(choice.title, systemImage: choice.symbol) {
-                onResolution(choice)
-              }
-              .frame(maxWidth: .infinity)
-              .buttonStyle(.bordered)
-              .tint(choice == .approve ? SoloTheme.mint : SoloTheme.purple)
-              .accessibilityHint(choice.summary)
-            }
-          }
-        }
-        Text(task.resolution?.summary ?? TaskResolutionChoice.approve.summary)
-          .font(.caption)
-          .foregroundStyle(.secondary)
-      }
-    }
-    .padding(16)
-    .background(SoloTheme.card, in: .rect(cornerRadius: 18))
-    .sheet(item: $inspectedAgent) { agent in
-      AgentDetailPresentation(agent: agent)
-    }
-  }
-
-  private var assignedAgent: SoloAgent? {
-    guard let assignedAgentID = task.assignedAgentID else { return nil }
-    return agents.first(where: { $0.id == assignedAgentID })
   }
 }
 
@@ -1308,7 +980,7 @@ private struct SprintReportSheet: View {
         } else {
           for step in 1...4 {
             try? await Task.sleep(for: .milliseconds(180))
-            withAnimation(.snappy) { revealedStep = step }
+            withAnimation(MotionKind.emphasis.animation) { revealedStep = step }
           }
         }
       }

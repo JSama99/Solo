@@ -270,10 +270,12 @@ final class PrecedentRecordingDeterminismTests: XCTestCase {
     store.resetCareer()
     store.entitlements = StaticEntitlementProvider(hasFounderPass: true)
     store.startCareer(seed: seed)
+    store.confirmVentureThesisIfNeeded()
     var parts: [String] = []
     var iterations = 0
     while store.careerOutcome == nil && iterations < 24 {
       iterations += 1
+      store.confirmVentureThesisIfNeeded()
       for (offset, task) in store.tasks.enumerated() {
         store.assign(agentID: store.agents[offset % store.agents.count].id, to: task.id)
       }
@@ -304,6 +306,7 @@ final class PrecedentRecordingDeterminismTests: XCTestCase {
     var iterations = 0
     while store.careerOutcome == nil && store.precedents.isEmpty && iterations < 24 {
       iterations += 1
+      store.confirmVentureThesisIfNeeded()
       // Commit everything unverified — the reliable way to make a sprint matter.
       for (offset, task) in store.tasks.enumerated() {
         store.assign(agentID: store.agents[offset % store.agents.count].id, to: task.id)
@@ -330,6 +333,7 @@ final class PrecedentRecordingDeterminismTests: XCTestCase {
     var iterations = 0
     while store.careerOutcome == nil && store.precedents.isEmpty && iterations < 24 {
       iterations += 1
+      store.confirmVentureThesisIfNeeded()
       for (offset, task) in store.tasks.enumerated() {
         store.assign(agentID: store.agents[offset % store.agents.count].id, to: task.id)
       }
