@@ -346,8 +346,8 @@ private struct AgentWorkspaceCard: View {
       .contentTransition(.interpolate)
   }
 
-  /// The desk itself. The monitor pulses only while the agent is actually
-  /// working, so the motion reports simulation state rather than decorating it.
+  /// The desk itself. The monitor animates once when work state changes instead
+  /// of running an indefinite effect for every active agent card.
   private var workspace: some View {
     HStack {
       Image(systemName: station.role.symbol).font(.title).foregroundStyle(accent)
@@ -357,7 +357,7 @@ private struct AgentWorkspaceCard: View {
       }
       Spacer()
       Image(systemName: "desktopcomputer").foregroundStyle(accent)
-        .symbolEffect(.pulse, options: .repeating.speed(0.5), isActive: isWorking && !reduceMotion)
+        .symbolEffect(.bounce, value: isWorking && !reduceMotion)
     }
     .padding(12).background(.black.opacity(0.16), in: .rect(cornerRadius: 14))
   }
