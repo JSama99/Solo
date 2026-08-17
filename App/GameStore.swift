@@ -264,9 +264,13 @@ final class GameStore {
 
   var sprintPhase: SprintPhase {
     if activeDilemma != nil && selectedDilemmaChoice == nil { return .founderEvent }
-    if tasks.allSatisfy({ $0.assignedAgentID == nil }) { return .chooseCommitments }
-    if tasks.filter({ $0.assignedAgentID != nil }).count < tasks.count { return .assignTeam }
-    if tasks.contains(where: { !$0.isReviewed || !$0.resolutionLocked }) { return .reviewAndResolve }
+    let assignedAgentIDs = Set(tasks.compactMap(\.assignedAgentID))
+    if assignedAgentIDs.isEmpty && restingAgentIDs.isEmpty { return .chooseCommitments }
+    if assignedAgentIDs.union(restingAgentIDs).count < agents.count { return .assignTeam }
+    if tasks.contains(where: { $0.isReviewed && !$0.resolutionLocked }) { return .reviewAndResolve }
+    if attentionRemaining > 0 && tasks.contains(where: { $0.assignedAgentID != nil && !$0.isReviewed }) {
+      return .reviewAndResolve
+    }
     return .readyToCommit
   }
 

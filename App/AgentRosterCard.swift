@@ -21,7 +21,7 @@ struct AgentRosterCard: View {
           .font(.caption.weight(.semibold))
           .foregroundStyle(statusColor)
           .contentTransition(.opacity)
-          .animation(.smooth(duration: 0.2), value: agent.status)
+          .gameplayMotion(value: agent.status)
         Text("Lv \(agent.level) • \(agent.stressBand.label)")
           .font(.caption.weight(.semibold))
           .foregroundStyle(agent.stressBand == .critical || agent.stressBand == .overloaded ? SoloTheme.amber : .secondary)
@@ -35,7 +35,7 @@ struct AgentRosterCard: View {
           .font(.headline.monospacedDigit())
           .foregroundStyle(trustColor)
           .contentTransition(.numericText(value: agent.trust))
-          .animation(.snappy, value: agent.trust)
+          .gameplayMotion(.emphasis, value: agent.trust)
         Capsule()
           .fill(trustColor.opacity(0.28))
           .frame(width: 54, height: 4)
@@ -43,7 +43,7 @@ struct AgentRosterCard: View {
             Capsule()
               .fill(trustColor)
               .frame(width: max(3, 54 * CGFloat(agent.trust / 100)), height: 4)
-              .animation(.snappy, value: agent.trust)
+              .gameplayMotion(.emphasis, value: agent.trust)
           }
       }
     }

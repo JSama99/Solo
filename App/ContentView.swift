@@ -980,7 +980,9 @@ private struct SprintReportSheet: View {
         } else {
           for step in 1...4 {
             try? await Task.sleep(for: .milliseconds(180))
-            withAnimation(MotionKind.emphasis.animation) { revealedStep = step }
+            withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) {
+              revealedStep = step
+            }
           }
         }
       }
@@ -1066,6 +1068,8 @@ private struct ResultRow: View {
 }
 
 struct SoloPrimaryButtonStyle: ButtonStyle {
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
   func makeBody(configuration: Configuration) -> some View {
     configuration.label
       .font(.headline)
@@ -1074,7 +1078,7 @@ struct SoloPrimaryButtonStyle: ButtonStyle {
       .background(SoloTheme.cyan.gradient, in: .rect(cornerRadius: 15))
       .foregroundStyle(.black)
       .scaleEffect(configuration.isPressed ? 0.97 : 1)
-      .animation(.snappy, value: configuration.isPressed)
+      .animation(reduceMotion ? nil : .snappy, value: configuration.isPressed)
   }
 }
 

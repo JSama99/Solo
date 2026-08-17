@@ -41,6 +41,44 @@ final class GameStoreTests: XCTestCase {
     XCTAssertTrue(store.commitBlockerMessage?.contains("Choose how to resolve") == true)
   }
 
+  func testSprintPhaseTreatsExplicitRestAsAStaffedDecision() throws {
+    let store = makeStore(seed: 7_002)
+    if let choice = store.activeDilemma?.choices.first {
+      store.selectDilemmaChoice(choice.id)
+    }
+    let task = try XCTUnwrap(store.tasks.first)
+    store.assign(agentID: store.agents[0].id, to: task.id)
+    store.restAgent(agentID: store.agents[1].id)
+    store.restAgent(agentID: store.agents[2].id)
+
+    XCTAssertEqual(store.sprintPhase, .reviewAndResolve)
+
+    store.review(taskID: task.id)
+    store.resolveReviewedTask(taskID: task.id, choice: .approve)
+
+    XCTAssertEqual(store.sprintPhase, .readyToCommit)
+    XCTAssertTrue(store.canCommitSprint)
+  }
+
+  func testSprintPhaseAllowsUnreviewedWorkWhenAttentionIsExhausted() throws {
+    let store = makeStore(seed: 7_003, doctrine: .pure)
+    if let choice = store.activeDilemma?.choices.first {
+      store.selectDilemmaChoice(choice.id)
+    }
+    for (index, task) in store.tasks.enumerated() {
+      store.assign(agentID: store.agents[index].id, to: task.id)
+    }
+    for task in store.tasks.prefix(store.attentionMaximum) {
+      store.review(taskID: task.id)
+      store.resolveReviewedTask(taskID: task.id, choice: .approve)
+    }
+
+    XCTAssertEqual(store.attentionRemaining, 0)
+    XCTAssertTrue(store.tasks.contains(where: { !$0.isReviewed }))
+    XCTAssertEqual(store.sprintPhase, .readyToCommit)
+    XCTAssertTrue(store.canCommitSprint)
+  }
+
   func testReviewImprovesSpecialistForecast() throws {
     let store = makeStore()
     let taskIndex = try XCTUnwrap(
@@ -812,10 +850,14 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(store.tasks[0].assignedAgentID, agent.id)
   }
 
-  private func makeStore(seed: UInt64 = 1_234) -> GameStore {
+  private func makeStore(
+    seed: UInt64 = 1_234,
+    doctrine: FounderDoctrine = .guided
+  ) -> GameStore {
     let store = GameStore()
     store.resetCareer()
     store.entitlements = StaticEntitlementProvider(hasFounderPass: true)
+    store.selectedDoctrine = doctrine
     store.startCareer(seed: seed)
     store.confirmVentureThesisIfNeeded()
     return store

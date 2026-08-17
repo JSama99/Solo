@@ -5,8 +5,6 @@ struct FounderEnvironmentScreen: View {
   var presentation: PresentationCoordinator
 
   @Environment(FounderProgressionStore.self) private var progression
-  @Environment(\.accessibilityReduceMotion) private var reduceMotion
-  @Environment(\.scenePhase) private var scenePhase
 
   var body: some View {
     NavigationStack {

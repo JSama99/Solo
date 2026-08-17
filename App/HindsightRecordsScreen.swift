@@ -48,7 +48,7 @@ struct HindsightRecordsScreen: View {
       .transition(.opacity)
     }
     .navigationTitle("Hindsight")
-    .animation(.smooth(duration: 0.2), value: filter)
+    .animation(reduceMotion ? nil : .smooth(duration: 0.2), value: filter)
     .onAppear {
       knownIDs = Set(precedents.map(\.id))
     }
