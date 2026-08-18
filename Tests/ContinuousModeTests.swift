@@ -22,6 +22,7 @@ final class ContinuousModeTests: XCTestCase {
     store.entitlements = StaticEntitlementProvider(hasFounderPass: hasPass)
     store.selectedCareerMode = mode
     store.startCareer(seed: seed)
+    store.confirmVentureThesisIfNeeded()
     return store
   }
 
@@ -36,6 +37,7 @@ final class ContinuousModeTests: XCTestCase {
       && !store.isVentureLocked
       && iterations < 40 {
       iterations += 1
+      store.confirmVentureThesisIfNeeded()
       for (offset, task) in store.tasks.enumerated() {
         let agent = store.agents[offset % store.agents.count]
         store.assign(agentID: agent.id, to: task.id)
@@ -120,7 +122,38 @@ final class ContinuousModeTests: XCTestCase {
     XCTAssertNil(store.pendingVentureCheckpoint)
     XCTAssertEqual(store.venture, 2)
     XCTAssertEqual(store.sprint, 1)
+    // Build 25 put a thesis at the head of every venture, so continuing from a
+    // checkpoint opens the next venture's thesis rather than dropping straight
+    // into the sprint board. The sprint board is only prepared once the thesis
+    // is confirmed.
+    XCTAssertEqual(store.stage, .ventureThesis)
+    XCTAssertTrue(store.awaitingThesisSelection)
+
+    store.selectThesisAndBegin()
+
     XCTAssertEqual(store.stage, .game)
+    XCTAssertFalse(store.awaitingThesisSelection)
+    XCTAssertFalse(store.tasks.isEmpty, "confirming the thesis must prepare the new venture's sprint")
+  }
+
+  /// A pending thesis used to be enforced with a `precondition`, which crashed
+  /// the app instead of telling the player what to do. It is a commit blocker
+  /// now, like every other unmet commit requirement.
+  func testPendingThesisBlocksCommitWithoutCrashing() throws {
+    let store = makeStore(mode: .continuous)
+    playToVentureEnd(store)
+    try XCTSkipUnless(store.pendingVentureCheckpoint != nil)
+    store.continueFromCheckpoint()
+    XCTAssertTrue(store.awaitingThesisSelection)
+
+    let sprintBefore = store.sprint
+    XCTAssertFalse(store.canCommitSprint)
+    XCTAssertEqual(store.commitBlockerMessage, "Choose this venture's thesis before committing a sprint.")
+
+    store.commitSprint()
+
+    XCTAssertEqual(store.sprint, sprintBefore, "a blocked commit must not advance the sprint")
+    XCTAssertEqual(store.alertMessage, "Choose this venture's thesis before committing a sprint.")
   }
 
   func testContinuousModeCanAdvancePastTwoVentures() throws {

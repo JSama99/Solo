@@ -1,0 +1,188 @@
+import SwiftUI
+import XCTest
+@testable import Solo_Unicorn_Run
+
+/// Motion in SOLO has two hard rules, and both are testable:
+///
+/// 1. Reduce Motion is honored everywhere, because every gameplay animation is
+///    resolved through `MotionKind` rather than written inline.
+/// 2. Presentation never touches the simulation. Deriving what a screen shows —
+///    station view models, visual states, visible sprint projections — must not
+///    consume a single value from the seeded generator, or a run would stop
+///    being reproducible the moment a view redrew.
+@MainActor
+final class GameplayMotionTests: XCTestCase {
+  override func tearDown() {
+    for key in UserDefaults.standard.dictionaryRepresentation().keys
+    where key.hasPrefix("solo-unicorn-run-native-save-") {
+      UserDefaults.standard.removeObject(forKey: key)
+    }
+    super.tearDown()
+  }
+
+  // ── Reduce Motion policy ────────────────────────────────────────────
+
+  func testEveryMotionKindResolvesToNothingUnderReduceMotion() {
+    for kind in [MotionKind.state, .emphasis, .celebration] {
+      XCTAssertNil(
+        kind.resolved(reduceMotion: true),
+        "\(kind) must produce no animation when Reduce Motion is on"
+      )
+    }
+  }
+
+  func testEveryMotionKindAnimatesWhenReduceMotionIsOff() {
+    for kind in [MotionKind.state, .emphasis, .celebration] {
+      XCTAssertEqual(kind.resolved(reduceMotion: false), kind.animation)
+    }
+  }
+
+  func testMotionKindsAreDistinctSoTheyReadAsDifferentEvents() {
+    XCTAssertNotEqual(MotionKind.state.animation, MotionKind.emphasis.animation)
+    XCTAssertNotEqual(MotionKind.emphasis.animation, MotionKind.celebration.animation)
+    XCTAssertNotEqual(MotionKind.state.animation, MotionKind.celebration.animation)
+  }
+
+  func testMotionKindsUseTheProjectsSpringVocabulary() {
+    XCTAssertEqual(MotionKind.state.animation, .smooth)
+    XCTAssertEqual(MotionKind.emphasis.animation, .snappy)
+    XCTAssertEqual(MotionKind.celebration.animation, .bouncy)
+  }
+
+  // ── Presentation must not consume simulation RNG ────────────────────
+
+  /// Plays an identical scripted career in two stores from the same seed. The
+  /// second store additionally derives every presentation value a view would
+  /// derive, at every step. If any of that derivation reached into the seeded
+  /// generator, the two runs would diverge.
+  func testDerivingPresentationStateDoesNotConsumeSimulationRandomness() throws {
+    let quiet = playScriptedCareer(seed: 4_242, derivingPresentation: false)
+    let animated = playScriptedCareer(seed: 4_242, derivingPresentation: true)
+
+    XCTAssertEqual(animated.venture, quiet.venture)
+    XCTAssertEqual(animated.sprint, quiet.sprint)
+    XCTAssertEqual(animated.stats, quiet.stats)
+    XCTAssertEqual(animated.taskTitles, quiet.taskTitles)
+    XCTAssertEqual(animated.evidenceIDs, quiet.evidenceIDs)
+    XCTAssertEqual(animated.agentTrust, quiet.agentTrust)
+    XCTAssertEqual(animated.reportSprints, quiet.reportSprints)
+  }
+
+  /// The same guarantee stated at the unit level: projecting a task result is a
+  /// pure function of the result it is handed.
+  func testVisibleProjectionIsPureForAGivenResult() throws {
+    let store = makeStore(seed: 7_777)
+    let task = try XCTUnwrap(store.tasks.first)
+    store.assign(agentID: store.agents[0].id, to: task.id)
+    let result = try XCTUnwrap(store.tasks.first(where: { $0.id == task.id })?.result)
+
+    let first = VisibleSimulationProjection.taskResult(from: result)
+    let second = VisibleSimulationProjection.taskResult(from: result)
+
+    XCTAssertEqual(first, second, "the same result must always project to the same visible values")
+  }
+
+  func testStationViewModelDerivationIsStableAcrossRepeatedRedraws() throws {
+    let store = makeStore(seed: 1_212)
+    let task = try XCTUnwrap(store.tasks.first)
+    let agent = store.agents[0]
+    store.assign(agentID: agent.id, to: task.id)
+    let assigned = store.tasks.first(where: { $0.id == task.id })
+
+    let renders = (0..<25).map { _ in
+      AgentStationViewModel.derive(agent: agent, task: assigned, founderStats: store.stats)
+    }
+
+    XCTAssertEqual(Set(renders.map(\.semanticState)).count, 1, "a redraw must not change semantic state")
+    XCTAssertEqual(renders.first, renders.last)
+  }
+
+  // ── Helpers ─────────────────────────────────────────────────────────
+
+  private struct CareerFingerprint {
+    var venture: Int
+    var sprint: Int
+    var stats: FounderStats
+    var taskTitles: [String]
+    var evidenceIDs: [UUID]
+    var agentTrust: [Double]
+    var reportSprints: [Int]
+  }
+
+  private func makeStore(seed: UInt64) -> GameStore {
+    let store = GameStore()
+    store.resetCareer()
+    store.entitlements = StaticEntitlementProvider(hasFounderPass: true)
+    store.startCareer(seed: seed)
+    store.confirmVentureThesisIfNeeded()
+    return store
+  }
+
+  private func playScriptedCareer(seed: UInt64, derivingPresentation: Bool) -> CareerFingerprint {
+    let store = makeStore(seed: seed)
+    var reportSprints: [Int] = []
+
+    for _ in 0..<6 {
+      guard store.careerOutcome == nil, store.pendingVentureCheckpoint == nil else { break }
+      store.confirmVentureThesisIfNeeded()
+      for (offset, task) in store.tasks.enumerated() {
+        let agent = store.agents[offset % store.agents.count]
+        store.assign(agentID: agent.id, to: task.id)
+        if derivingPresentation { derivePresentation(in: store) }
+      }
+      if let dilemma = store.activeDilemma, let choice = dilemma.choices.first {
+        store.selectDilemmaChoice(choice.id)
+      }
+      for task in store.tasks where task.result != nil {
+        store.review(taskID: task.id)
+        if derivingPresentation { derivePresentation(in: store) }
+      }
+      store.stats.runway = max(store.stats.runway, 80)
+      store.stats.energy = max(store.stats.energy, 80)
+      store.commitSprint()
+      if let report = store.report {
+        reportSprints.append(report.sprint)
+        if derivingPresentation {
+          _ = VisibleSimulationProjection.sprintResult(
+            canonicalReport: report,
+            venture: store.venture,
+            tasks: store.tasks,
+            statsBefore: store.stats,
+            statsAfter: store.stats,
+            evidenceBefore: 0,
+            evidenceAfter: store.evidence.count,
+            transition: .nextSprint
+          )
+        }
+      }
+      store.report = nil
+    }
+
+    return CareerFingerprint(
+      venture: store.venture,
+      sprint: store.sprint,
+      stats: store.stats,
+      taskTitles: store.tasks.map(\.title),
+      evidenceIDs: store.evidence.map(\.id),
+      agentTrust: store.agents.map(\.trust),
+      reportSprints: reportSprints
+    )
+  }
+
+  /// Everything a Garage redraw derives, exercised for its side effects — of
+  /// which there must be none.
+  private func derivePresentation(in store: GameStore) {
+    for agent in store.agents {
+      let task = store.tasks.first { $0.assignedAgentID == agent.id }
+      _ = AgentVisualState.derive(agent: agent, task: task, founderStats: store.stats)
+      let station = AgentStationViewModel.derive(agent: agent, task: task, founderStats: store.stats)
+      _ = station.accessibilityValue
+      _ = station.trustBand
+      let gate = GarageTurnGate(phase: store.sprintPhase)
+      _ = gate.primary
+      _ = gate.stationIsActionable(station)
+      _ = gate.stationIsHighlighted(station)
+      _ = task?.result.map(VisibleSimulationProjection.taskResult)
+    }
+  }
+}

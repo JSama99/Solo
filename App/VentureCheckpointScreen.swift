@@ -27,15 +27,20 @@ struct VentureCheckpointScreen: View {
               .foregroundStyle(.secondary)
           }
           .soloCard()
+          .milestoneReveal(order: 0)
 
           if let grade = checkpoint.grade {
             VStack(alignment: .leading, spacing: 8) {
-              Label("\(grade.overall) venture grade", systemImage: "graduationcap.fill").font(.headline).foregroundStyle(SoloTheme.mint)
+              Label("\(grade.overall) venture grade", systemImage: "graduationcap.fill")
+                .font(.headline)
+                .foregroundStyle(SoloTheme.mint)
+                .symbolEffect(.bounce, value: grade.overall)
               Text(grade.identity).font(.title3.bold())
               Text("Revenue \(grade.revenue) • Verification \(grade.verification) • Evidence \(grade.evidence) • Sustainability \(grade.sustainability) • Trust \(grade.trust)")
                 .font(.caption).foregroundStyle(.secondary)
             }
             .soloCard()
+            .milestoneReveal(order: 1)
           }
 
           VStack(alignment: .leading, spacing: 8) {
@@ -51,19 +56,22 @@ struct VentureCheckpointScreen: View {
             if !checkpoint.companyFlags.isEmpty { Text("Company flags: \(checkpoint.companyFlags.map(\.name).joined(separator: ", "))").font(.caption).foregroundStyle(.secondary) }
           }
           .soloCard()
+          .milestoneReveal(order: 2)
 
           VStack(alignment: .leading, spacing: 10) {
             Text("This venture's numbers")
               .font(.headline)
-            checkpointRow("chart.line.uptrend.xyaxis", "Track Record earned", "+\(checkpoint.trackRecordEarned)")
-            checkpointRow("dollarsign.circle.fill", "Revenue", "$\(checkpoint.revenue)")
-            checkpointRow("shield.fill", "Trust", "\(checkpoint.trust)")
-            checkpointRow("bolt.fill", "Momentum", "\(checkpoint.momentum)")
+            checkpointRow("chart.line.uptrend.xyaxis", "Track Record earned", "+\(checkpoint.trackRecordEarned)", checkpoint.trackRecordEarned)
+            checkpointRow("dollarsign.circle.fill", "Revenue", "$\(checkpoint.revenue)", checkpoint.revenue)
+            checkpointRow("shield.fill", "Trust", "\(checkpoint.trust)", checkpoint.trust)
+            checkpointRow("bolt.fill", "Momentum", "\(checkpoint.momentum)", checkpoint.momentum)
             checkpointRow(
-              "brain.head.profile", "Precedents banked this venture", "\(checkpoint.precedentsBanked)"
+              "brain.head.profile", "Precedents banked this venture", "\(checkpoint.precedentsBanked)",
+              checkpoint.precedentsBanked
             )
           }
           .soloCard()
+          .milestoneReveal(order: 3)
 
           VStack(alignment: .leading, spacing: 8) {
             Text("Your call")
@@ -79,6 +87,7 @@ struct VentureCheckpointScreen: View {
             }
           }
           .soloCard()
+          .milestoneReveal(order: 4)
 
           VStack(spacing: 10) {
             Button {
@@ -99,6 +108,7 @@ struct VentureCheckpointScreen: View {
             }
             .buttonStyle(.bordered)
           }
+          .milestoneReveal(order: 5)
         } else {
           // Defensive fallback: should be unreachable, since this screen only
           // ever presents when GameStore has just populated the checkpoint.
@@ -114,7 +124,10 @@ struct VentureCheckpointScreen: View {
     .background(SoloTheme.background)
   }
 
-  private func checkpointRow(_ symbol: String, _ title: String, _ value: String) -> some View {
+  /// `amount` is the raw number behind the formatted string, so the numeric
+  /// content transition has something to interpolate between when the summary
+  /// is re-rendered.
+  private func checkpointRow(_ symbol: String, _ title: String, _ value: String, _ amount: Int) -> some View {
     HStack {
       Label(title, systemImage: symbol)
         .font(.subheadline)
@@ -123,6 +136,8 @@ struct VentureCheckpointScreen: View {
       Text(value)
         .font(.subheadline.bold())
         .foregroundStyle(SoloTheme.amber)
+        .contentTransition(.numericText(value: Double(amount)))
+        .gameplayMotion(.celebration, value: amount)
     }
     .accessibilityElement(children: .combine)
   }

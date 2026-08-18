@@ -14,6 +14,20 @@ final class ProductTypeContentTests: XCTestCase {
     }
   }
 
+  /// A task the player reads as "Hardware: Audit Agent Outputs — Audit Agent
+  /// Outputs" is a content bug, not flavor. Product localization only appends
+  /// the source title when it actually differs from the localized one.
+  func testNoProductTaskTitleRepeatsItself() {
+    for type in ProductType.allCases {
+      for task in ContentLibrary.allTaskPool where task.productTypes == [type] {
+        XCTAssertFalse(
+          hasRepeatedPhrase(in: task.title),
+          "\(type) task title repeats itself: \(task.title)"
+        )
+      }
+    }
+  }
+
   func testConsumerAppContentIsAuthoredAndUnique() {
     let tasks = ContentLibrary.allTaskPool.filter { $0.productTypes == [.consumerApp] }
     XCTAssertEqual(tasks.count, 71)
@@ -54,6 +68,7 @@ final class ProductTypeContentTests: XCTestCase {
       store.resetCareer()
       store.selectedProductType = type
       store.startCareer(seed: 8_140)
+      store.confirmVentureThesisIfNeeded()
       for _ in 0 ..< 4 {
         XCTAssertTrue(store.tasks.allSatisfy { $0.productTypes?.contains(type) ?? true })
         XCTAssertTrue(store.taskBacklog.allSatisfy { $0.productTypes?.contains(type) ?? true })
@@ -64,6 +79,7 @@ final class ProductTypeContentTests: XCTestCase {
         store.assign(agentID: agent.id, to: task.id)
         store.commitSprint()
         store.finishReport()
+        store.confirmVentureThesisIfNeeded()
       }
     }
   }

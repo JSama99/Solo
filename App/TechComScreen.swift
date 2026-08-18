@@ -20,13 +20,21 @@ struct TechComScreen: View {
           section("Decision Feed", symbol: "megaphone.fill") {
             Text("Statement \(store.statementAvailable ? "available" : "spent") • Coverage \(store.stats.coverage >= 0 ? "+" : "")\(store.stats.coverage)")
               .font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.cyan)
+              .contentTransition(.numericText(value: Double(store.stats.coverage)))
+              .gameplayMotion(.state, value: store.stats.coverage)
+              .gameplayMotion(.state, value: store.statementAvailable)
             ForEach(store.feedPosts) { post in
               VStack(alignment: .leading, spacing: 5) {
                 Text(post.headline).font(.subheadline.weight(.bold))
                 Text(post.body).font(.caption).foregroundStyle(.secondary)
-                if let resolved = post.resolvedActionID, let action = post.actions.first(where: { $0.id == resolved }) { Text(action.label).font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.mint) }
-                else { ForEach(post.actions) { action in Button(action.label) { store.resolveFeed(postID: post.id, actionID: action.id) }.buttonStyle(.bordered).disabled(action.requiresStatement && !store.statementAvailable) } }
+                if let resolved = post.resolvedActionID, let action = post.actions.first(where: { $0.id == resolved }) {
+                  Label(action.label, systemImage: "checkmark.seal.fill")
+                    .font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.mint)
+                    .transition(.scale(scale: 0.94).combined(with: .opacity))
+                }
+                else { ForEach(post.actions) { action in Button(action.label) { store.resolveFeed(postID: post.id, actionID: action.id) }.buttonStyle(.bordered).disabled(action.requiresStatement && !store.statementAvailable) }.transition(.opacity) }
               }
+              .gameplayMotion(.emphasis, value: post.resolvedActionID)
               if post.id != store.feedPosts.last?.id { Divider() }
             }
           }
@@ -47,9 +55,12 @@ struct TechComScreen: View {
             }
             .pickerStyle(.segmented)
             ForEach(Array(TechComEngine.rankings(snapshot: snapshot, rivals: store.techComRivals, metric: metric).enumerated()), id: \.element.id) { offset, entry in
-              HStack { Text("\(offset + 1)").foregroundStyle(.secondary).frame(width: 20); Text(entry.name).fontWeight(entry.isPlayer ? .bold : .regular); Spacer(); Text(value(entry.value)).foregroundStyle(entry.isPlayer ? SoloTheme.cyan : .primary) }
+              HStack { Text("\(offset + 1)").foregroundStyle(.secondary).frame(width: 20); Text(entry.name).fontWeight(entry.isPlayer ? .bold : .regular); Spacer(); Text(value(entry.value)).foregroundStyle(entry.isPlayer ? SoloTheme.cyan : .primary).contentTransition(.numericText(value: Double(entry.value))) }
                 .font(.subheadline)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Rank \(offset + 1), \(entry.name), \(value(entry.value))")
             }
+            .gameplayMotion(.state, value: metric)
           }
           section("Market Share", symbol: "chart.pie.fill") {
             ForEach(store.rivalStandings) { standing in
@@ -89,10 +100,11 @@ struct TechComScreen: View {
     VStack(alignment: .leading, spacing: 7) {
       HStack { Text(rival.name).font(.subheadline.weight(.bold)); Spacer(); Text(rival.verificationState.label).font(.caption.weight(.semibold)).foregroundStyle(rival.isVerified ? SoloTheme.mint : SoloTheme.amber) }
       Text("Claimed: record \(rival.claimedTrackRecord) • $\(rival.claimedRevenue) • momentum \(rival.claimedMomentum)").font(.caption).foregroundStyle(SoloTheme.cyan)
-      if rival.isVerified { VStack(alignment: .leading, spacing: 3) { Label("Verified: record \(rival.actualTrackRecord) • $\(rival.actualRevenue) • momentum \(rival.actualMomentum)", systemImage: "checkmark.seal.fill").foregroundStyle(SoloTheme.mint); if rival.overclaimAmount > 0 { Text("Track-record overclaim +\(rival.overclaimAmount)").foregroundStyle(SoloTheme.amber) } }.font(.caption.weight(.semibold)) }
-      else { Button("Verify claim • 1 Attention", systemImage: "eye.fill") { _ = store.verifyTechComRival(id: rival.id) }.buttonStyle(.bordered).tint(SoloTheme.purple).disabled(store.attentionRemaining == 0).accessibilityHint("Reveals all claimed rival metrics") }
+      if rival.isVerified { VStack(alignment: .leading, spacing: 3) { Label("Verified: record \(rival.actualTrackRecord) • $\(rival.actualRevenue) • momentum \(rival.actualMomentum)", systemImage: "checkmark.seal.fill").foregroundStyle(SoloTheme.mint); if rival.overclaimAmount > 0 { Text("Track-record overclaim +\(rival.overclaimAmount)").foregroundStyle(SoloTheme.amber) } }.font(.caption.weight(.semibold)).transition(.move(edge: .top).combined(with: .opacity)) }
+      else { Button("Verify claim • 1 Attention", systemImage: "eye.fill") { _ = store.verifyTechComRival(id: rival.id) }.buttonStyle(.bordered).tint(SoloTheme.purple).disabled(store.attentionRemaining == 0).accessibilityHint("Reveals all claimed rival metrics").transition(.opacity) }
     }
     .padding(.vertical, 4)
+    .gameplayMotion(.emphasis, value: rival.isVerified)
   }
 
   @ViewBuilder private var talentBoard: some View {

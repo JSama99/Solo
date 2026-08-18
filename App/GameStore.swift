@@ -34,6 +34,9 @@ final class GameStore {
   var taskBacklog: [SoloTask] = []
   /// Founder Attention now pays for reviews, rework, and cross-checks.
   private(set) var founderAttentionSpent = 0
+  /// An intentional recovery choice for this sprint. It is separate from an
+  /// unassigned agent so the computer can describe the founder's decision.
+  private(set) var restingAgentIDs: Set<String> = []
   private(set) var activeDilemma: FounderDilemma?
   private(set) var selectedDilemmaChoiceID: String?
   private(set) var currentObjective: SprintObjective?
@@ -106,6 +109,7 @@ final class GameStore {
 
   var hasSave: Bool {
     UserDefaults.standard.data(forKey: Self.saveKey) != nil
+      || UserDefaults.standard.data(forKey: Self.v15SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v14SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v13SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v11SaveKey) != nil
@@ -260,9 +264,13 @@ final class GameStore {
 
   var sprintPhase: SprintPhase {
     if activeDilemma != nil && selectedDilemmaChoice == nil { return .founderEvent }
-    if tasks.allSatisfy({ $0.assignedAgentID == nil }) { return .chooseCommitments }
-    if tasks.filter({ $0.assignedAgentID != nil }).count < tasks.count { return .assignTeam }
-    if tasks.contains(where: { !$0.isReviewed || !$0.resolutionLocked }) { return .reviewAndResolve }
+    let assignedAgentIDs = Set(tasks.compactMap(\.assignedAgentID))
+    if assignedAgentIDs.isEmpty && restingAgentIDs.isEmpty { return .chooseCommitments }
+    if assignedAgentIDs.union(restingAgentIDs).count < agents.count { return .assignTeam }
+    if tasks.contains(where: { $0.isReviewed && !$0.resolutionLocked }) { return .reviewAndResolve }
+    if attentionRemaining > 0 && tasks.contains(where: { $0.assignedAgentID != nil && !$0.isReviewed }) {
+      return .reviewAndResolve
+    }
     return .readyToCommit
   }
 
@@ -271,6 +279,9 @@ final class GameStore {
   }
 
   var commitBlockerMessage: String? {
+    guard !awaitingThesisSelection else {
+      return "Choose this venture's thesis before committing a sprint."
+    }
     let hasAssignment = tasks.contains { $0.assignedAgentID != nil }
     guard hasAssignment else {
       return "Assign at least one agent before committing the sprint."
@@ -407,6 +418,7 @@ final class GameStore {
     agents = ContentLibrary.initialAgents
     taskBacklog = []
     founderAttentionSpent = 0
+    restingAgentIDs = []
     activeDilemma = nil
     selectedDilemmaChoiceID = nil
     currentObjective = nil
@@ -423,7 +435,9 @@ final class GameStore {
     stats.trust += startingAdjustment.trust
     stats.momentum += startingAdjustment.momentum
     stats.energy += startingAdjustment.energy
-    prepareSprint()
+    // The first sprint is drafted by selectThesisAndBegin, not here. Drafting it
+    // twice burned two task-deck cards and a chapter dilemma before the player
+    // ever saw them, which is what made the venture deck recycle early.
     stage = .ventureThesis
     sanitizeState()
     if careerMode != .daily { save() }
@@ -437,8 +451,14 @@ final class GameStore {
     selectedCareerMode = .daily
     selectedDoctrine = .guided
     selectedProductType = .saas
+    selectedThesis = .sustainable
     founderName = "Daily Founder"
     startCareer(seed: DailyChallenge.seed())
+    // The Daily Challenge is a shared-seed run everyone is scored against, so
+    // its thesis is fixed rather than chosen. Committing it here follows the
+    // same code path (and therefore the same RNG consumption) as a player
+    // confirming a thesis on the venture screen.
+    selectThesisAndBegin()
   }
 
   func continueCareer() {
@@ -449,6 +469,10 @@ final class GameStore {
        let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
        envelope.version == Self.saveVersion {
       loadedSave = envelope.career
+    } else if let data = UserDefaults.standard.data(forKey: Self.v15SaveKey),
+              let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
+              envelope.version == 15 {
+      loadedSave = migrateV15(envelope.career)
     } else if let data = UserDefaults.standard.data(forKey: Self.v14SaveKey),
               let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
               envelope.version == 14 {
@@ -606,6 +630,7 @@ final class GameStore {
     }
 
     if let agentID {
+      restingAgentIDs.remove(agentID)
       if let lockedTask = tasks.first(where: {
         $0.assignedAgentID == agentID && $0.isReviewed && $0.id != taskID
       }) {
@@ -646,6 +671,25 @@ final class GameStore {
     }
     updateKnownOperationalRisks()
     syncAssignments()
+    save()
+  }
+
+  /// Marks an agent unavailable for the current sprint without changing the
+  /// deterministic simulation. Recovery is still applied at commit.
+  func restAgent(agentID: String) {
+    guard agents.contains(where: { $0.id == agentID }) else { return }
+    guard sprintPhase != .founderEvent else {
+      alertMessage = "Resolve the founder dilemma before resting an agent."
+      return
+    }
+    if let task = tasks.first(where: { $0.assignedAgentID == agentID && $0.isReviewed }) {
+      alertMessage = "\(task.title) has been reviewed and cannot be cleared."
+      return
+    }
+    if let task = tasks.first(where: { $0.assignedAgentID == agentID }) {
+      assign(agentID: nil, to: task.id)
+    }
+    restingAgentIDs.insert(agentID)
     save()
   }
 
@@ -803,7 +847,8 @@ final class GameStore {
       }
     }
     let era = VentureEra.era(for: venture)
-    precondition(!awaitingThesisSelection, "A venture cannot commit a sprint before its thesis is chosen.")
+    // The pending-thesis invariant is enforced by commitBlockerMessage above,
+    // which returns early. It is a blocked action, never a crash.
     let thesisProfile = ThesisProfile.profile(for: thesis)
     effects.runway -= era.runwayBurnPerSprint
     effects.energy -= max(0, era.energyCostPerSprint + thesisProfile.energyCostDelta)
@@ -962,7 +1007,6 @@ final class GameStore {
       pendingVentureCheckpoint = nil
     }
     advanceToNextVenture()
-    stage = .game
     saveCareer()
   }
 
@@ -1062,8 +1106,9 @@ final class GameStore {
       return
     }
     pendingVentureCheckpoint = nil
+    // advanceToNextVenture routes to .ventureThesis: every venture, including
+    // one continued from a checkpoint, opens with its thesis choice.
     advanceToNextVenture()
-    stage = .game
     saveCareer()
   }
 
@@ -1198,6 +1243,7 @@ final class GameStore {
     reportCache = []
     taskBacklog = []
     founderAttentionSpent = 0
+    restingAgentIDs = []
     statementSpent = 0
     activeDilemma = nil
     selectedDilemmaChoiceID = nil
@@ -1222,6 +1268,7 @@ final class GameStore {
   private func prepareSprint() {
     reportCache = []
     founderAttentionSpent = 0
+    restingAgentIDs = []
     defer { refreshHindsightRecall() }
     let profile = ThesisProfile.profile(for: thesis)
     correlatedFailureEvent = SimulationEngine.generateCorrelatedFailureEvent(
@@ -1548,6 +1595,7 @@ final class GameStore {
     tasks = save.tasks
     taskBacklog = save.taskBacklog
     founderAttentionSpent = save.founderAttentionSpent
+    restingAgentIDs = save.restingAgentIDs
     activeDilemma = save.activeDilemma
     selectedDilemmaChoiceID = save.selectedDilemmaChoiceID
     currentObjective = save.currentObjective
@@ -1685,6 +1733,8 @@ final class GameStore {
     migrated.pendingChapterMilestone = nil
     return migrated
   }
+
+  private func migrateV15(_ legacy: CareerSave) -> CareerSave { legacy }
 
   private func migrateV6(_ legacy: CareerSave) -> CareerSave {
     legacy
@@ -1984,6 +2034,7 @@ final class GameStore {
       tasks: tasks,
       taskBacklog: taskBacklog,
       founderAttentionSpent: founderAttentionSpent,
+      restingAgentIDs: restingAgentIDs,
       activeDilemma: activeDilemma,
       selectedDilemmaChoiceID: selectedDilemmaChoiceID,
       currentObjective: currentObjective,
@@ -2018,6 +2069,7 @@ final class GameStore {
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
       UserDefaults.standard.set(data, forKey: Self.saveKey)
+      UserDefaults.standard.removeObject(forKey: Self.v15SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v14SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v13SaveKey)
       UserDefaults.standard.removeObject(forKey: Self.v12SaveKey)
@@ -2164,8 +2216,12 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  private static let saveVersion = 15
-  private static let saveKey = "solo-unicorn-run-native-save-v15"
+  static let saveVersion = 16
+  /// The key the current save format is written to. Not private so tests can
+  /// assert against the live key instead of hard-coding a version that goes
+  /// stale the next time the format changes.
+  static let saveKey = "solo-unicorn-run-native-save-v16"
+  private static let v15SaveKey = "solo-unicorn-run-native-save-v15"
   private static let v14SaveKey = "solo-unicorn-run-native-save-v14"
   private static let v13SaveKey = "solo-unicorn-run-native-save-v13"
   private static let v12SaveKey = "solo-unicorn-run-native-save-v12"
