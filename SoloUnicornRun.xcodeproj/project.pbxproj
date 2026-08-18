@@ -88,6 +88,9 @@
 		E30000000000000000000012 /* GameplayMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000022 /* GameplayMotionTests.swift */; };
 		E30000000000000000000010 /* GameStoreTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000020 /* GameStoreTestSupport.swift */; };
 		E30000000000000000000011 /* GameplayMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000021 /* GameplayMotion.swift */; };
+		F27000000000000000000001 /* FounderMotionComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27000000000000000000011 /* FounderMotionComponents.swift */; };
+		F27000000000000000000002 /* LiveWorkspaceSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27000000000000000000012 /* LiveWorkspaceSurface.swift */; };
+		F27000000000000000000003 /* MotionVerificationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27000000000000000000013 /* MotionVerificationScreen.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -183,6 +186,9 @@
 		E10000000000000000000022 /* GameplayMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameplayMotionTests.swift; sourceTree = "<group>"; };
 		E10000000000000000000020 /* GameStoreTestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStoreTestSupport.swift; sourceTree = "<group>"; };
 		E10000000000000000000021 /* GameplayMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameplayMotion.swift; sourceTree = "<group>"; };
+		F27000000000000000000011 /* FounderMotionComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderMotionComponents.swift; sourceTree = "<group>"; };
+		F27000000000000000000012 /* LiveWorkspaceSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkspaceSurface.swift; sourceTree = "<group>"; };
+		F27000000000000000000013 /* MotionVerificationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionVerificationScreen.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -252,10 +258,13 @@
 				C10000000000000000000005 /* FacilityTier.swift */,
 				C10000000000000000000006 /* FounderEnvironmentScreen.swift */,
 				C10000000000000000000007 /* FounderComputerScreen.swift */,
+				F27000000000000000000011 /* FounderMotionComponents.swift */,
 				C10000000000000000000008 /* FounderProgressionSave.swift */,
 				C10000000000000000000009 /* FounderProgressionStore.swift */,
 				D3E7E924208E29B28AFAA264 /* GameModels.swift */,
 				E10000000000000000000021 /* GameplayMotion.swift */,
+				F27000000000000000000012 /* LiveWorkspaceSurface.swift */,
+				F27000000000000000000013 /* MotionVerificationScreen.swift */,
 				94AA2809B6198CB8955EEFAC /* GameStore.swift */,
 				C1000000000000000000000A /* HeadquartersProgressScreen.swift */,
 				FB05034A23E5A13D7BBCBDF0 /* Info.plist */,
@@ -440,10 +449,13 @@
 				C20000000000000000000010 /* FacilityUpgrade.swift in Sources */,
 				C20000000000000000000006 /* FounderEnvironmentScreen.swift in Sources */,
 				C20000000000000000000007 /* FounderComputerScreen.swift in Sources */,
+				F27000000000000000000001 /* FounderMotionComponents.swift in Sources */,
 				C20000000000000000000008 /* FounderProgressionSave.swift in Sources */,
 				C20000000000000000000009 /* FounderProgressionStore.swift in Sources */,
 				73B35D04E243BD45B291E271 /* GameModels.swift in Sources */,
 				E30000000000000000000011 /* GameplayMotion.swift in Sources */,
+				F27000000000000000000002 /* LiveWorkspaceSurface.swift in Sources */,
+				F27000000000000000000003 /* MotionVerificationScreen.swift in Sources */,
 				AD24D57DE55399F057B4B47A /* GameStore.swift in Sources */,
 				B20000000000000000000010 /* EntitlementProviding.swift in Sources */,
 				B20000000000000000000011 /* Hindsight.swift in Sources */,

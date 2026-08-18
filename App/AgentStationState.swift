@@ -100,10 +100,26 @@ struct AgentStationViewModel: Identifiable, Equatable {
     return "\(semanticState.label). Trust \(Int(trust.rounded())). \(task) Mood: \(mood)."
   }
 
-  static func derive(agent: SoloAgent, task: SoloTask?, founderStats: FounderStats) -> Self {
+  static func derive(
+    agent: SoloAgent,
+    task: SoloTask?,
+    founderStats: FounderStats,
+    presentationPhase: PresentationCoordinator.AgentPhase? = nil
+  ) -> Self {
     let visualState = AgentVisualState.derive(agent: agent, task: task, founderStats: founderStats)
     let semanticState: SemanticState
-    if visualState.warnings.contains(.overloaded) {
+    if let presentationPhase {
+      switch presentationPhase {
+      case .assignmentReceived, .working, .workComplete:
+        semanticState = .working
+      case .awaitingReview:
+        semanticState = .awaitingReview
+      case .reviewing, .reviewed, .resolving, .resolved:
+        semanticState = task?.isReviewed == true ? (isVerified(visualState.verification) ? .verified : .drifting) : .awaitingReview
+      case .idle:
+        semanticState = .idle
+      }
+    } else if visualState.warnings.contains(.overloaded) {
       semanticState = .overloaded
     } else if visualState.warnings.contains(.drifting)
       || isVisibleConcern(visualState.verification) {

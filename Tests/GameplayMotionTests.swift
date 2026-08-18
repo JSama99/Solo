@@ -98,6 +98,109 @@ final class GameplayMotionTests: XCTestCase {
     XCTAssertEqual(renders.first, renders.last)
   }
 
+  // ── Presentation lifecycle ──────────────────────────────────────────
+
+  func testAssignmentStagesWorkingBeforeAwaitingReviewWithoutChangingCanonicalResult() async throws {
+    let store = makeStore(seed: 9_101)
+    let task = try XCTUnwrap(store.tasks.first)
+    let agent = store.agents[0]
+    let presentation = makeFastPresentation()
+
+    presentation.assign(agentID: agent.id, to: task.id, in: store)
+    let canonical = try XCTUnwrap(store.tasks.first(where: { $0.id == task.id })?.result)
+    XCTAssertEqual(presentation.presentation(for: agent.id)?.phase, .assignmentReceived)
+
+    try await Task.sleep(for: .milliseconds(35))
+    XCTAssertEqual(presentation.presentation(for: agent.id)?.phase, .working)
+    XCTAssertEqual(store.tasks.first(where: { $0.id == task.id })?.result, canonical)
+
+    try await Task.sleep(for: .milliseconds(115))
+    XCTAssertEqual(presentation.presentation(for: agent.id)?.phase, .workComplete)
+    XCTAssertEqual(store.tasks.first(where: { $0.id == task.id })?.result, canonical)
+
+    try await Task.sleep(for: .milliseconds(40))
+    XCTAssertEqual(presentation.presentation(for: agent.id)?.phase, .awaitingReview)
+    XCTAssertEqual(store.tasks.first(where: { $0.id == task.id })?.result, canonical)
+  }
+
+  func testRemovingAssignmentCancelsPresentationSequence() async throws {
+    let store = makeStore(seed: 9_102)
+    let task = try XCTUnwrap(store.tasks.first)
+    let agent = store.agents[0]
+    let presentation = makeFastPresentation()
+
+    presentation.assign(agentID: agent.id, to: task.id, in: store)
+    try await Task.sleep(for: .milliseconds(35))
+    XCTAssertEqual(presentation.presentation(for: agent.id)?.phase, .working)
+
+    presentation.assign(agentID: nil, to: task.id, in: store)
+    XCTAssertNil(presentation.presentation(for: agent.id))
+    try await Task.sleep(for: .milliseconds(180))
+    XCTAssertNil(presentation.presentation(for: agent.id))
+    XCTAssertNil(store.tasks.first(where: { $0.id == task.id })?.result)
+  }
+
+  func testPresentationOverrideShowsWorkingAlthoughCanonicalResultAlreadyExists() throws {
+    let store = makeStore(seed: 9_103)
+    let task = try XCTUnwrap(store.tasks.first)
+    let agent = store.agents[0]
+    store.assign(agentID: agent.id, to: task.id)
+    let assigned = try XCTUnwrap(store.tasks.first(where: { $0.id == task.id }))
+    XCTAssertNotNil(assigned.result)
+
+    let canonicalStation = AgentStationViewModel.derive(agent: agent, task: assigned, founderStats: store.stats)
+    let presentedStation = AgentStationViewModel.derive(
+      agent: agent,
+      task: assigned,
+      founderStats: store.stats,
+      presentationPhase: .working
+    )
+
+    XCTAssertEqual(canonicalStation.semanticState, .awaitingReview)
+    XCTAssertEqual(presentedStation.semanticState, .working)
+  }
+
+  func testFounderReviewRevealsFiveFactsInOrder() async throws {
+    let store = makeStore(seed: 9_105)
+    let task = try XCTUnwrap(store.tasks.first)
+    let agent = store.agents[0]
+    let presentation = makeFastPresentation()
+    presentation.assign(agentID: agent.id, to: task.id, in: store)
+
+    try await Task.sleep(for: .milliseconds(175))
+    XCTAssertEqual(presentation.presentation(for: agent.id)?.phase, .awaitingReview)
+    presentation.review(taskID: task.id, in: store)
+    XCTAssertEqual(presentation.presentation(for: agent.id)?.phase, .reviewing)
+    XCTAssertEqual(presentation.presentation(for: agent.id)?.reviewRevealStep, 0)
+
+    try await Task.sleep(for: .milliseconds(25))
+    XCTAssertEqual(presentation.presentation(for: agent.id)?.reviewRevealStep, 1)
+    try await Task.sleep(for: .milliseconds(45))
+    XCTAssertEqual(presentation.presentation(for: agent.id)?.reviewRevealStep, 5)
+    XCTAssertEqual(presentation.presentation(for: agent.id)?.phase, .reviewed)
+    XCTAssertTrue(try XCTUnwrap(store.tasks.first(where: { $0.id == task.id })).isReviewed)
+  }
+
+  #if DEBUG
+  func testDebugMotionPreviewDoesNotMutateGameStore() {
+    let store = makeStore(seed: 9_104)
+    let tasksBefore = store.tasks
+    let agentsBefore = store.agents
+    let statsBefore = store.stats
+    let evidenceIDsBefore = store.evidence.map(\.id)
+    let presentation = PresentationCoordinator()
+
+    for phase in PresentationCoordinator.AgentPhase.allCases {
+      presentation.stageDebug(phase, agentID: "aurora")
+    }
+
+    XCTAssertEqual(store.tasks, tasksBefore)
+    XCTAssertEqual(store.agents, agentsBefore)
+    XCTAssertEqual(store.stats, statsBefore)
+    XCTAssertEqual(store.evidence.map(\.id), evidenceIDsBefore)
+  }
+  #endif
+
   // ── Helpers ─────────────────────────────────────────────────────────
 
   private struct CareerFingerprint {
@@ -117,6 +220,18 @@ final class GameplayMotionTests: XCTestCase {
     store.startCareer(seed: seed)
     store.confirmVentureThesisIfNeeded()
     return store
+  }
+
+  private func makeFastPresentation() -> PresentationCoordinator {
+    PresentationCoordinator(timing: .init(
+      assignmentAcknowledgement: .milliseconds(30),
+      working: .milliseconds(100),
+      progressTick: .milliseconds(20),
+      workComplete: .milliseconds(30),
+      reviewFocus: .milliseconds(20),
+      reviewStagger: .milliseconds(10),
+      resolution: .milliseconds(30)
+    ))
   }
 
   private func playScriptedCareer(seed: UInt64, derivingPresentation: Bool) -> CareerFingerprint {
