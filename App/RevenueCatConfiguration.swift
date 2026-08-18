@@ -17,7 +17,7 @@ import Foundation
 enum RevenueCatConfiguration {
   /// The single entitlement that unlocks paid content. This identifier — and
   /// only this identifier — must match the RevenueCat dashboard exactly.
-  static let entitlementIdentifier = "solo_unicorn_run_pro"
+  static let entitlementIdentifier = "Solo: Unicorn Run Pro"
   static let entitlementDisplayName = "Founder Pass"
 
   /// The App Store Connect product configured for this app.

@@ -21,7 +21,7 @@ struct SubscriptionScreen: View {
           .foregroundStyle(subscriptions.isPro ? SoloTheme.mint : SoloTheme.cyan)
           Text(subscriptions.isPro
             ? "Venture 2 and Hindsight Recall are unlocked on this Apple Account."
-            : "One purchase, no subscription. Unlocks Venture 2, Hindsight Recall, and the full career outcome.")
+            : "Choose a monthly, annual, or lifetime Founder Pass to unlock Venture 2, Hindsight Recall, and the full career outcome.")
             .foregroundStyle(.secondary)
         }
         .soloCard()
@@ -74,6 +74,8 @@ struct SubscriptionScreen: View {
         }
         .buttonStyle(SoloSecondaryButtonStyle())
         .disabled(subscriptions.isLoading)
+
+        PurchaseLegalDisclosure()
 
         if subscriptions.isPro {
           Button("Manage Subscription", systemImage: "person.crop.circle") {

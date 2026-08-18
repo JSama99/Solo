@@ -70,7 +70,7 @@ struct VentureUnlockScreen: View {
           )
           unlockRow("brain.head.profile", "Hindsight Recall", "Past precedents surface when the conditions repeat.")
           unlockRow("trophy.fill", "Full career outcome", "Complete the twenty-four-sprint track record.")
-          Text("One purchase. No subscription.")
+          Text("Choose monthly, annual, or lifetime access. Subscriptions renew automatically until canceled; lifetime access does not renew.")
             .font(.footnote)
             .foregroundStyle(.secondary)
             .padding(.top, 2)
@@ -97,6 +97,8 @@ struct VentureUnlockScreen: View {
           }
           .buttonStyle(.bordered)
           .frame(maxWidth: .infinity)
+
+          PurchaseLegalDisclosure()
 
           Button(store.pendingVentureCheckpoint == nil ? "Back to Garage" : "Back to Checkpoint") {
             store.reviewCompletedVenture()

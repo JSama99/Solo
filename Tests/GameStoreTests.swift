@@ -664,7 +664,7 @@ final class GameStoreTests: XCTestCase {
   }
 
   func testRevenueCatCatalogIdentifiers() {
-    XCTAssertEqual(RevenueCatConfiguration.entitlementIdentifier, "solo_unicorn_run_pro")
+    XCTAssertEqual(RevenueCatConfiguration.entitlementIdentifier, "Solo: Unicorn Run Pro")
     XCTAssertEqual(RevenueCatConfiguration.entitlementDisplayName, "Founder Pass")
     XCTAssertEqual(
       RevenueCatConfiguration.expectedStoreProductIdentifier,
