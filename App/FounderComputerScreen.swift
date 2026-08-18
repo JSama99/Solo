@@ -12,14 +12,24 @@ struct FounderComputerScreen: View {
   @State private var restCandidate: RestCandidate?
   @State private var evidenceExpanded = false
   @State private var resolutionTick = 0
+  @State private var assignmentTick = 0
+  @State private var approvalTick = 0
+  @State private var resolutionFeedback: ResolutionFeedback?
 
   var body: some View {
     ScrollViewReader { proxy in
       ScrollView {
         LazyVStack(spacing: 16) {
           hud
-          FounderReviewStrip(store: store, onSelectAgent: select, onCommit: commit)
-            .gameplayMotion(value: store.sprintPhase)
+          FounderReviewStrip(
+            store: store,
+            onSelectAgent: select,
+            onCommit: commit,
+            onResolve: resolve,
+            onReview: reviewTask
+          )
+          .resolutionFeedback(resolutionFeedback)
+          .gameplayMotion(value: ReviewStripSnapshot(store: store))
           ForEach(orderedStations) { station in
             AgentWorkspaceCard(
               station: station,
@@ -47,10 +57,13 @@ struct FounderComputerScreen: View {
     }
     .sensoryFeedback(.selection, trigger: selectedAgentID)
     .sensoryFeedback(.success, trigger: store.sprint)
+    .sensoryFeedback(.impact(weight: .medium, intensity: 0.9), trigger: assignmentTick)
+    .sensoryFeedback(.success, trigger: approvalTick)
     .sensoryFeedback(.impact(weight: .light), trigger: resolutionTick)
     .sheet(item: $assignmentDestination) { destination in
-      TaskAssignmentSheet(store: store, presentation: presentation, agentID: destination.agentID) {
+      TaskAssignmentSheet(store: store, presentation: presentation, agentID: destination.agentID) { assigned in
         assignmentDestination = nil
+        if assigned { assignmentTick += 1 }
         announce("Assignment updated.")
       }
     }
@@ -89,45 +102,24 @@ struct FounderComputerScreen: View {
           .id(store.sprintPhase)
           .transition(.opacity.combined(with: .move(edge: .trailing)))
       }
-      HStack(spacing: 8) {
-        metric("Runway", store.stats.runway, unit: "d", symbol: "calendar")
-        metric("Energy", store.stats.energy, symbol: "battery.75percent")
-        metric("Trust", store.stats.trust, symbol: "checkmark.shield")
-        metric("Attention", store.attentionRemaining, of: store.attentionMaximum, symbol: "eye")
+      LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: 6) {
+        ResourceMetricView(label: "Runway", value: store.stats.runway, symbol: "calendar", format: .days)
+        ResourceMetricView(label: "Energy", value: store.stats.energy, symbol: "battery.75percent")
+        ResourceMetricView(label: "Trust", value: store.stats.trust, symbol: "checkmark.shield")
+        ResourceMetricView(
+          label: "Attention",
+          value: store.attentionRemaining,
+          maximum: store.attentionMaximum,
+          symbol: "eye"
+        )
+        ResourceMetricView(label: "Momentum", value: store.stats.momentum, symbol: "bolt.horizontal")
+        ResourceMetricView(label: "Revenue", value: store.stats.revenue, symbol: "chart.line.uptrend.xyaxis", format: .currency)
+        ResourceMetricView(label: "Capital", value: store.stats.capital, symbol: "banknote", format: .currency)
       }
       Text("Venture \(store.venture) · Sprint \(store.sprint)/12 · \(store.chapter.name)").font(.caption).foregroundStyle(.secondary)
     }
     .padding(14).background(SoloTheme.card, in: .rect(cornerRadius: 18))
     .gameplayMotion(value: store.sprintPhase)
-    .gameplayMotion(value: HUDSnapshot(store: store))
-  }
-
-  /// Every resource the HUD reads, so one modifier animates all of them together
-  /// when a sprint resolves.
-  private struct HUDSnapshot: Equatable {
-    var runway: Int, energy: Int, trust: Int, attention: Int, sprint: Int, venture: Int
-    @MainActor init(store: GameStore) {
-      runway = store.stats.runway; energy = store.stats.energy; trust = store.stats.trust
-      attention = store.attentionRemaining; sprint = store.sprint; venture = store.venture
-    }
-  }
-
-  private func metric(_ label: String, _ value: Int, of maximum: Int? = nil, unit: String = "", symbol: String) -> some View {
-    Label {
-      VStack(alignment: .leading, spacing: 1) {
-        HStack(spacing: 0) {
-          Text("\(value)").contentTransition(.numericText(value: Double(value)))
-          if let maximum { Text("/\(maximum)") } else if !unit.isEmpty { Text(unit) }
-        }
-        .font(.subheadline.weight(.bold))
-        Text(label).font(.caption2).foregroundStyle(.secondary)
-      }
-    } icon: {
-      Image(systemName: symbol).foregroundStyle(SoloTheme.cyan)
-    }
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .accessibilityElement(children: .combine)
-    .accessibilityLabel(maximum.map { "\(label), \(value) of \($0)" } ?? "\(label), \(value)\(unit)")
   }
 
   private var commandDeck: some View {
@@ -141,7 +133,7 @@ struct FounderComputerScreen: View {
           command(store.restingAgentIDs.contains(agent.id) ? "Resting" : "Rest", "bed.double", enabled: canRest(agent.id)) { restCandidate = .init(agentID: agent.id, name: agent.name, hasAssignment: task(for: agent.id) != nil) }
         }
         if let task = task(for: agent.id), task.isReviewed {
-          resolutionControls(task).transition(.opacity.combined(with: .move(edge: .bottom)))
+          resolutionStatus(task).transition(.opacity.combined(with: .move(edge: .bottom)))
         }
       } else { Text("Select an agent to issue commands.").foregroundStyle(.secondary) }
       phaseReason
@@ -165,6 +157,18 @@ struct FounderComputerScreen: View {
     }
   }
 
+  /// Everything that decides which review surface is on screen, so the strip
+  /// animates when the founder's job changes rather than on every redraw.
+  private struct ReviewStripSnapshot: Equatable {
+    var phase: SprintPhase, reviewTaskID: UUID?, resolveTaskID: UUID?, canCommit: Bool
+    @MainActor init(store: GameStore) {
+      phase = store.sprintPhase
+      reviewTaskID = store.tasks.first { $0.assignedAgentID != nil && !$0.isReviewed }?.id
+      resolveTaskID = store.tasks.first { $0.isReviewed && !$0.resolutionLocked }?.id
+      canCommit = store.canCommitSprint
+    }
+  }
+
   private func command(_ title: String, _ symbol: String, enabled: Bool, action: @escaping () -> Void) -> some View {
     Button(title, systemImage: symbol, action: action)
       .buttonStyle(.borderedProminent).tint(SoloTheme.purple)
@@ -173,7 +177,9 @@ struct FounderComputerScreen: View {
       .accessibilityHint(enabled ? "Acts on the selected agent." : disabledReason)
   }
 
-  @ViewBuilder private func resolutionControls(_ task: SoloTask) -> some View {
+  /// The command deck reports the founder's decision; the decision itself is
+  /// made in the elevated review panel at the top of the screen.
+  @ViewBuilder private func resolutionStatus(_ task: SoloTask) -> some View {
     VStack(alignment: .leading, spacing: 12) {
       Divider()
       if task.resolutionLocked, let resolution = task.resolution {
@@ -181,12 +187,9 @@ struct FounderComputerScreen: View {
           .foregroundStyle(SoloTheme.mint)
           .symbolEffect(.bounce, value: resolution)
       } else {
-        Text("Founder resolution required").font(.subheadline.weight(.bold))
-        ForEach(TaskResolutionChoice.allCases) { choice in
-          Button(choice.title, systemImage: choice.symbol) { resolve(taskID: task.id, choice: choice) }
-            .buttonStyle(.bordered).frame(maxWidth: .infinity, alignment: .leading).accessibilityHint(choice.summary)
-        }
-        Text("Rework: 1 Attention, 4 Energy, 1 Runway. Cross-Check: 1 Attention and an independent model family.").font(.caption2).foregroundStyle(.secondary)
+        Label("Founder review is waiting at the top of the screen.", systemImage: "arrow.up.circle.fill")
+          .font(.caption.weight(.semibold))
+          .foregroundStyle(SoloTheme.amber)
       }
     }
   }
@@ -233,17 +236,28 @@ struct FounderComputerScreen: View {
 
   private func review(_ id: String) {
     guard let task = task(for: id) else { return }
+    reviewTask(task.id)
+  }
+
+  /// Runs the founder review and lets the resolution panel spring in behind it.
+  private func reviewTask(_ taskID: UUID) {
     withAnimation(MotionKind.celebration.resolved(reduceMotion: reduceMotion)) {
-      presentation.review(taskID: task.id, in: store)
+      presentation.review(taskID: taskID, in: store)
     }
-    announce("Review complete.")
+    announce("Review complete. Choose a resolution.")
   }
 
   private func resolve(taskID: UUID, choice: TaskResolutionChoice) {
+    let lockedBefore = store.tasks.first { $0.id == taskID }?.resolutionLocked ?? false
     withAnimation(MotionKind.celebration.resolved(reduceMotion: reduceMotion)) {
       store.resolveReviewedTask(taskID: taskID, choice: choice)
     }
+    // Only answer with feedback if the simulation actually accepted the call;
+    // a blocked resolution surfaces its own alert instead.
+    guard !lockedBefore, store.tasks.first(where: { $0.id == taskID })?.resolutionLocked == true else { return }
     resolutionTick += 1
+    if choice == .approve { approvalTick += 1 }
+    resolutionFeedback = ResolutionFeedback(choice: choice, count: resolutionTick)
     announce("\(choice.title) selected.")
   }
 
@@ -273,6 +287,14 @@ private struct AgentWorkspaceCard: View {
   var action: () -> Void
   var accent: Color { switch station.agentID { case "aurora": SoloTheme.purple; case "stacks": SoloTheme.cyan; case "brio": SoloTheme.coral; default: SoloTheme.mint } }
 
+  /// Counts assignments handed to this agent so the acknowledgement replays for
+  /// each one, including a reassignment to a task the agent already held.
+  @State private var assignmentCount = 0
+
+  private var activity: AgentWorkIndicator.Activity {
+    .derive(task: task, isResting: isResting)
+  }
+
   var body: some View {
     Button(action: action) {
       VStack(alignment: .leading, spacing: 12) {
@@ -284,6 +306,7 @@ private struct AgentWorkspaceCard: View {
           .transition(.opacity.combined(with: .move(edge: .leading)))
         Text(station.mood).font(.subheadline).foregroundStyle(.secondary)
         workspace
+        AgentWorkIndicator(activity: activity, accent: accent)
         if let task, let result = task.result {
           report(result, reviewed: task.isReviewed)
             .transition(.opacity.combined(with: .move(edge: .bottom)))
@@ -291,13 +314,18 @@ private struct AgentWorkspaceCard: View {
         if selected { Text("Selected workspace").font(.caption.weight(.bold)).foregroundStyle(accent).transition(.opacity) }
       }
       .padding(16)
-      .frame(maxWidth: .infinity, minHeight: selected ? 315 : 260, alignment: .leading)
+      .frame(maxWidth: .infinity, minHeight: selected ? 355 : 300, alignment: .leading)
       .background(accent.opacity(selected ? 0.14 : 0.06), in: .rect(cornerRadius: 22))
       .overlay { RoundedRectangle(cornerRadius: 22).stroke(selected ? accent : .white.opacity(0.09), lineWidth: selected ? 2 : 1) }
+      .workingGlow(isWorking: activity == .working, accent: accent, cornerRadius: 22)
+      .assignmentAcknowledgement(trigger: assignmentCount, accent: accent)
     }
-    .buttonStyle(.plain)
-    .gameplayMotion(.emphasis, value: selected)
+    .buttonStyle(AgentCardPressStyle(isSelected: selected, accent: accent))
     .gameplayMotion(value: WorkSnapshot(taskID: task?.id, hasResult: task?.result != nil, reviewed: task?.isReviewed ?? false, state: station.semanticState, resting: isResting))
+    .onChange(of: task?.id) { previous, current in
+      guard let current, current != previous else { return }
+      assignmentCount += 1
+    }
     .accessibilityElement(children: .combine)
     .accessibilityLabel("\(station.name), \(station.role.rawValue), level \(station.progression.level)")
     .accessibilityValue(station.accessibilityValue)
@@ -398,21 +426,130 @@ private struct TaskAssignmentSheet: View {
   var store: GameStore
   var presentation: PresentationCoordinator
   var agentID: String
-  var didFinish: () -> Void
+  /// `true` when the sheet handed the agent work, so the founder screen knows
+  /// whether to play the assignment beat.
+  var didFinish: (Bool) -> Void
+
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  /// The row whose Assign control has been pressed. It confirms in place for a
+  /// beat before the sheet leaves, so the founder sees the command land.
+  @State private var committedTaskID: UUID?
+
+  /// How long the confirmed control stays on screen before the sheet dismisses.
+  private static let confirmationHold: Duration = .milliseconds(320)
+
   private var agent: SoloAgent? { store.agents.first { $0.id == agentID } }
-  var body: some View { NavigationStack { List { ForEach(store.tasks) { task in
-    VStack(alignment: .leading, spacing: 7) { Text(task.title).font(.headline); Text(task.detail).font(.caption).foregroundStyle(.secondary); Text("\(task.role.rawValue) · \(task.category.rawValue) · \(task.urgency.label)").font(.caption2); Text("Reward: \(task.reward) · If ignored: \(task.consequenceLabel)").font(.caption2).foregroundStyle(SoloTheme.amber); Text(task.isReviewed ? "Reviewed — locked" : task.assignedAgentID.flatMap { id in store.agents.first { $0.id == id }?.name }.map { "Assigned: \($0)" } ?? "Unassigned").font(.caption.weight(.semibold)); if let agent { Text(agent.role == task.role || agent.role == .general || task.role == .general ? "Role fit" : "Role mismatch — allowed").font(.caption2).foregroundStyle(agent.role == task.role ? SoloTheme.mint : SoloTheme.amber) }; HStack { Button("Assign") { presentation.assign(agentID: agentID, to: task.id, in: store); dismiss(); didFinish() }.buttonStyle(.borderedProminent).disabled(task.isReviewed); if task.assignedAgentID == agentID && !task.isReviewed { Button("Remove", role: .destructive) { presentation.assign(agentID: nil, to: task.id, in: store); dismiss(); didFinish() }.buttonStyle(.bordered) } }
-    }.padding(.vertical, 5)
-  } }.navigationTitle("Assign \(agent?.name ?? "Agent")").toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } } } }
+
+  var body: some View {
+    NavigationStack {
+      List {
+        ForEach(store.tasks) { task in
+          row(task)
+        }
+      }
+      .navigationTitle("Assign \(agent?.name ?? "Agent")")
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+      }
+    }
+    .sensoryFeedback(.impact(weight: .light), trigger: committedTaskID)
+  }
+
+  private func row(_ task: SoloTask) -> some View {
+    VStack(alignment: .leading, spacing: 7) {
+      Text(task.title).font(.headline)
+      Text(task.detail).font(.caption).foregroundStyle(.secondary)
+      Text("\(task.role.rawValue) · \(task.category.rawValue) · \(task.urgency.label)").font(.caption2)
+      Text("Reward: \(task.reward) · If ignored: \(task.consequenceLabel)")
+        .font(.caption2).foregroundStyle(SoloTheme.amber)
+      Text(task.isReviewed ? "Reviewed — locked" : task.assignedAgentID.flatMap { id in store.agents.first { $0.id == id }?.name }.map { "Assigned: \($0)" } ?? "Unassigned")
+        .font(.caption.weight(.semibold))
+      if let agent {
+        Text(agent.role == task.role || agent.role == .general || task.role == .general ? "Role fit" : "Role mismatch — allowed")
+          .font(.caption2)
+          .foregroundStyle(agent.role == task.role ? SoloTheme.mint : SoloTheme.amber)
+      }
+      HStack {
+        let committed = committedTaskID == task.id
+        Button(committed ? "Assigned" : "Assign", systemImage: committed ? "checkmark.circle.fill" : "checklist") {
+          commit(task)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(committed ? SoloTheme.mint : SoloTheme.purple)
+        .symbolEffect(.bounce, value: committed)
+        .scaleEffect(committed ? 1.08 : 1)
+        .gameplayMotion(.celebration, value: committed)
+        .disabled(task.isReviewed || committedTaskID != nil)
+        if task.assignedAgentID == agentID && !task.isReviewed {
+          Button("Remove", role: .destructive) {
+            presentation.assign(agentID: nil, to: task.id, in: store)
+            dismiss()
+            didFinish(false)
+          }
+          .buttonStyle(.bordered)
+          .disabled(committedTaskID != nil)
+        }
+      }
+    }
+    .padding(.vertical, 5)
+  }
+
+  /// Reacts on the control first, then commits the assignment and closes so the
+  /// card's acknowledgement is the next thing the founder sees.
+  private func commit(_ task: SoloTask) {
+    withAnimation(MotionKind.celebration.resolved(reduceMotion: reduceMotion)) {
+      committedTaskID = task.id
+    }
+    Task { @MainActor in
+      try? await Task.sleep(for: Self.confirmationHold)
+      presentation.assign(agentID: agentID, to: task.id, in: store)
+      dismiss()
+      didFinish(true)
+    }
+  }
 }
 
 private struct FounderReviewStrip: View {
   var store: GameStore
   var onSelectAgent: (String) -> Void
   var onCommit: () -> Void
+  var onResolve: (UUID, TaskResolutionChoice) -> Void
+  var onReview: (UUID) -> Void
+
+  /// The task whose verified report is waiting on a founder decision. Its
+  /// arrival is what brings the review panel on screen.
+  private var pendingResolution: SoloTask? {
+    store.tasks.first { $0.isReviewed && !$0.resolutionLocked }
+  }
 
   var body: some View {
+    Group {
+      if let task = pendingResolution {
+        FounderResolutionPanel(
+          task: task,
+          agentName: task.assignedAgentID.flatMap { id in store.agents.first { $0.id == id }?.name } ?? "Agent",
+          accent: SoloTheme.mint,
+          attentionRemaining: store.attentionRemaining
+        ) { choice in
+          onResolve(task.id, choice)
+        }
+        .id(task.id)
+        .transition(
+          .asymmetric(
+            insertion: .scale(scale: 0.9, anchor: .top)
+              .combined(with: .move(edge: .top))
+              .combined(with: .opacity),
+            removal: .scale(scale: 0.96).combined(with: .opacity)
+          )
+        )
+      } else {
+        stateStrip
+      }
+    }
+  }
+
+  @ViewBuilder private var stateStrip: some View {
     Group {
       switch store.sprintPhase {
       case .founderEvent:
@@ -434,7 +571,6 @@ private struct FounderReviewStrip: View {
         }.padding(14)
       default:
         if let task = store.tasks.first(where: { $0.assignedAgentID != nil && !$0.isReviewed }) { strip("Review \(task.title)", task: task) }
-        else if let task = store.tasks.first(where: { $0.isReviewed && !$0.resolutionLocked }) { strip("Resolve \(task.title)", task: task) }
         else { Text("Assign work, then return for Founder Review. Attention \(store.attentionRemaining)/\(store.attentionMaximum)").padding(14) }
       }
     }
@@ -443,10 +579,27 @@ private struct FounderReviewStrip: View {
     .transition(.opacity.combined(with: .scale(scale: 0.98)))
   }
 
+  /// The call to action that turns delivered work into a founder decision. It
+  /// selects the agent and runs the review, so the review panel's entrance is
+  /// the direct answer to the tap.
   private func strip(_ title: String, task: SoloTask) -> some View {
-    Button { if let id = task.assignedAgentID { onSelectAgent(id) } } label: {
-      Label(title, systemImage: "eye").frame(maxWidth: .infinity, alignment: .leading).padding(14)
+    let ready = store.sprintPhase == .reviewAndResolve && task.result != nil && store.attentionRemaining > 0
+    return Button {
+      if let id = task.assignedAgentID { onSelectAgent(id) }
+      if ready { onReview(task.id) }
+    } label: {
+      HStack {
+        Label(ready ? title : "Waiting on \(task.title)", systemImage: ready ? "eye.fill" : "hourglass")
+        Spacer()
+        if ready {
+          Image(systemName: "chevron.right").font(.caption.weight(.bold)).foregroundStyle(SoloTheme.cyan)
+        }
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(14)
+      .contentShape(.rect)
     }
     .buttonStyle(.plain)
+    .symbolEffect(.pulse, options: .repeating, value: ready)
   }
 }
