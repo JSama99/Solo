@@ -61,6 +61,23 @@ private struct MilestoneRevealModifier: ViewModifier {
   }
 }
 
+private struct FounderEntranceModifier: ViewModifier {
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  var order: Int
+  @State private var visible = false
+
+  func body(content: Content) -> some View {
+    content
+      .opacity(visible ? 1 : 0)
+      .offset(y: visible || reduceMotion ? 0 : 12)
+      .onAppear {
+        guard !visible else { return }
+        let animation = reduceMotion ? nil : Animation.smooth(duration: 0.4).delay(Double(order) * 0.07)
+        withAnimation(animation) { visible = true }
+      }
+  }
+}
+
 extension View {
   /// Animates changes to `value` with the shared gameplay timing, honoring
   /// Reduce Motion without the call site having to check for it.
@@ -72,5 +89,9 @@ extension View {
   /// element is simply present immediately.
   func milestoneReveal(order: Int) -> some View {
     modifier(MilestoneRevealModifier(order: order))
+  }
+
+  func founderEntrance(order: Int) -> some View {
+    modifier(FounderEntranceModifier(order: order))
   }
 }
