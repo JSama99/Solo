@@ -12,6 +12,7 @@ struct MotionVerificationScreen: View {
     case brioExpanded = "Brio Expanded"
     case auroraIdle = "Aurora Idle"
     case auroraWorking = "Aurora Working"
+    case awaitingReview = "Awaiting Review"
     case auroraCompletion = "Aurora Completion"
     case stacksWorking = "Stacks Working"
     case brioWorking = "Brio Working"
@@ -104,12 +105,12 @@ struct MotionVerificationScreen: View {
     case .auroraExpanded, .stacksExpanded, .brioExpanded:
       workstationLayout(agentID: previewAgentID, expanded: true)
 
-    case .auroraIdle, .auroraWorking, .auroraCompletion, .stacksWorking, .brioWorking:
+    case .auroraIdle, .auroraWorking, .auroraCompletion, .awaitingReview, .stacksWorking, .brioWorking:
       LiveWorkspaceSurface(
         agentID: previewAgentID,
         taskTitle: "Validate launch evidence",
         phase: previewPhase,
-        progress: previewPhase == .working ? 0.64 : (previewPhase == .workComplete ? 1 : 0),
+        progress: previewPhase == .working ? 0.64 : (previewPhase == .idle ? 0 : 1),
         reduceMotion: reduceMotion
       )
 
@@ -225,6 +226,7 @@ struct MotionVerificationScreen: View {
     switch stage {
     case .auroraIdle: .idle
     case .auroraCompletion: .workComplete
+    case .awaitingReview: .awaitingReview
     default: .working
     }
   }
@@ -243,6 +245,7 @@ struct MotionVerificationScreen: View {
     switch stage {
     case .auroraIdle, .auroraCollapsed, .auroraExpanded: presentation.stageDebug(.idle, agentID: "aurora")
     case .auroraWorking: presentation.stageDebug(.working, agentID: "aurora")
+    case .awaitingReview: presentation.stageDebug(.awaitingReview, agentID: "aurora")
     case .auroraCompletion: presentation.stageDebug(.workComplete, agentID: "aurora")
     case .stacksWorking, .stacksCollapsed, .stacksExpanded: presentation.stageDebug(.working, agentID: "stacks")
     case .brioWorking, .brioCollapsed, .brioExpanded: presentation.stageDebug(.working, agentID: "brio")

@@ -162,7 +162,11 @@ struct FounderComputerScreen: View {
       action: { select(agentID) },
       onAssign: { assignmentDestination = .init(agentID: agentID) },
       onReview: { review(agentID) },
-      onRest: { restCandidate = .init(agentID: agentID, name: station.name, hasAssignment: assignedTask != nil) }
+      onRest: { restCandidate = .init(agentID: agentID, name: station.name, hasAssignment: assignedTask != nil) },
+      onResolve: { choice in guard let taskID = assignedTask?.id else { return }; resolve(taskID: taskID, choice: choice) },
+      canAssign: canAssign,
+      canReview: canReview(agentID),
+      canRest: canRest(agentID)
     )
   }
 
@@ -202,9 +206,6 @@ struct FounderComputerScreen: View {
           command("Assign", "checklist", enabled: canAssign) { assignmentDestination = .init(agentID: agent.id) }
           command("Review", "eye", enabled: canReview(agent.id)) { review(agent.id) }
           command(store.restingAgentIDs.contains(agent.id) ? "Resting" : "Rest", "bed.double", enabled: canRest(agent.id)) { restCandidate = .init(agentID: agent.id, name: agent.name, hasAssignment: task(for: agent.id) != nil) }
-        }
-        if let task = task(for: agent.id), task.isReviewed {
-          resolutionControls(task).transition(.opacity.combined(with: .move(edge: .bottom)))
         }
       } else { Text("Select an agent to issue commands.").foregroundStyle(.secondary) }
       phaseReason
@@ -390,6 +391,10 @@ struct AgentWorkspaceCard: View {
   var onAssign: () -> Void
   var onReview: () -> Void
   var onRest: () -> Void
+  var onResolve: (TaskResolutionChoice) -> Void
+  var canAssign: Bool
+  var canReview: Bool
+  var canRest: Bool
   var accent: Color { switch station.agentID { case "aurora": SoloTheme.purple; case "stacks": SoloTheme.cyan; case "brio": SoloTheme.coral; default: SoloTheme.mint } }
 
   var body: some View {
@@ -458,14 +463,30 @@ struct AgentWorkspaceCard: View {
   }
 
   private var attributes: some View {
-    HStack(spacing: 8) {
-      attribute("Stress", station.progression.stressBand.label, "gauge.with.dots.needle.50percent")
-      attribute("Trust", "\(Int(station.trust.rounded()))", "checkmark.shield")
-      attribute("XP", "\(station.progression.xp)", "sparkles")
-      if let specialization = station.progression.specialization { attribute("Focus", specialization, station.role.symbol) }
+    VStack(alignment: .leading, spacing: 7) {
+      HStack(spacing: 8) {
+        attribute("Stress", station.progression.stressBand.label, "gauge.with.dots.needle.50percent")
+        attribute("Trust", "\(Int(station.trust.rounded()))", "checkmark.shield")
+        attribute("XP", "\(station.progression.xp)", "sparkles")
+        attribute("Focus", station.progression.specialization ?? station.role.rawValue, station.role.symbol)
+      }
+      if selected {
+        HStack(spacing: 8) {
+          Text("LEVEL \(station.progression.level)").font(.caption2.weight(.bold)).foregroundStyle(.secondary)
+          ProgressView(value: xpProgress).tint(accent)
+          Text(xpProgress.formatted(.percent.precision(.fractionLength(0)))).font(.caption2.monospacedDigit().weight(.bold))
+        }
+        .transition(.opacity)
+      }
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .gameplayMotion(value: StatusSnapshot(stress: station.progression.stressBand, trust: station.trustBand))
+  }
+
+  private var xpProgress: Double {
+    let current = AgentLevel.threshold(forLevel: station.progression.level)
+    guard let next = AgentLevel.nextThreshold(forXP: station.progression.xp) else { return 1 }
+    return min(1, max(0, Double(station.progression.xp - current) / Double(next - current)))
   }
 
   private func attribute(_ title: String, _ value: String, _ symbol: String) -> some View {
@@ -514,18 +535,37 @@ struct AgentWorkspaceCard: View {
   }
 
   private var actions: some View {
-    HStack(spacing: 8) {
-      if task == nil && !isResting { cardAction("Assign", "checklist", onAssign) }
-      if let task, !task.isReviewed && effectivePhase == .awaitingReview { cardAction("Review", "eye", onReview) }
-      if !isResting && (task == nil || task?.isReviewed == false) { cardAction("Rest", "bed.double", onRest) }
-      if task?.resolutionLocked == true { Label("Resolved", systemImage: "lock.fill").font(.caption.weight(.bold)).foregroundStyle(SoloTheme.mint) }
-      Spacer(minLength: 0)
+    VStack(alignment: .leading, spacing: 10) {
+      HStack(spacing: 8) {
+        if task == nil && !isResting { cardAction("Assign", "checklist", onAssign, enabled: canAssign) }
+        if let task, !task.isReviewed && effectivePhase == .awaitingReview { cardAction("Review", "eye", onReview, enabled: canReview) }
+        if !isResting && (task == nil || task?.isReviewed == false) { cardAction("Rest", "bed.double", onRest, enabled: canRest) }
+        if task?.resolutionLocked == true { Label("Resolved", systemImage: "lock.fill").font(.caption.weight(.bold)).foregroundStyle(SoloTheme.mint) }
+        Spacer(minLength: 0)
+      }
+      if let task, task.isReviewed { inlineResolution(task) }
     }
     .padding(.top, 2)
   }
 
-  private func cardAction(_ title: String, _ symbol: String, _ operation: @escaping () -> Void) -> some View {
-    Button(title, systemImage: symbol, action: operation).buttonStyle(.borderedProminent).tint(accent).controlSize(.small).frame(minHeight: 38)
+  private func cardAction(_ title: String, _ symbol: String, _ operation: @escaping () -> Void, enabled: Bool) -> some View {
+    Button(title, systemImage: symbol, action: operation).buttonStyle(.borderedProminent).tint(accent).controlSize(.small).frame(minHeight: 38).disabled(!enabled)
+  }
+
+  @ViewBuilder private func inlineResolution(_ task: SoloTask) -> some View {
+    if task.resolutionLocked, let resolution = task.resolution {
+      Label("\(resolution.title) locked", systemImage: "lock.fill").font(.caption.weight(.bold)).foregroundStyle(SoloTheme.mint)
+    } else {
+      VStack(alignment: .leading, spacing: 7) {
+        Text("FOUNDER RESOLUTION").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+        ForEach(TaskResolutionChoice.allCases) { choice in
+          Button(choice.title, systemImage: choice.symbol) { onResolve(choice) }
+            .buttonStyle(.bordered)
+            .tint(resolutionFocus == choice ? SoloTheme.mint : accent)
+            .disabled(effectivePhase == .resolving)
+        }
+      }
+    }
   }
 
   private var effectivePhase: PresentationCoordinator.AgentPhase {
