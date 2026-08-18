@@ -23,7 +23,7 @@ final class GameplayMotionTests: XCTestCase {
   // ── Reduce Motion policy ────────────────────────────────────────────
 
   func testEveryMotionKindResolvesToNothingUnderReduceMotion() {
-    for kind in [MotionKind.state, .emphasis, .celebration] {
+    for kind in [MotionKind.state, .emphasis, .celebration, .impact] {
       XCTAssertNil(
         kind.resolved(reduceMotion: true),
         "\(kind) must produce no animation when Reduce Motion is on"
@@ -32,7 +32,7 @@ final class GameplayMotionTests: XCTestCase {
   }
 
   func testEveryMotionKindAnimatesWhenReduceMotionIsOff() {
-    for kind in [MotionKind.state, .emphasis, .celebration] {
+    for kind in [MotionKind.state, .emphasis, .celebration, .impact] {
       XCTAssertEqual(kind.resolved(reduceMotion: false), kind.animation)
     }
   }
@@ -41,6 +41,7 @@ final class GameplayMotionTests: XCTestCase {
     XCTAssertNotEqual(MotionKind.state.animation, MotionKind.emphasis.animation)
     XCTAssertNotEqual(MotionKind.emphasis.animation, MotionKind.celebration.animation)
     XCTAssertNotEqual(MotionKind.state.animation, MotionKind.celebration.animation)
+    XCTAssertNotEqual(MotionKind.impact.animation, MotionKind.emphasis.animation)
   }
 
   func testMotionKindsUseTheProjectsSpringVocabulary() {
