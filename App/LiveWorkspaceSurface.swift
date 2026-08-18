@@ -6,6 +6,7 @@ struct LiveWorkspaceSurface: View {
   var phase: PresentationCoordinator.AgentPhase
   var progress: Double
   var reduceMotion: Bool
+  var isVerified = false
 
   private var accent: Color {
     switch agentID {
@@ -18,18 +19,24 @@ struct LiveWorkspaceSurface: View {
 
   private var isWorking: Bool { phase == .working }
   private var isComplete: Bool { phase == .workComplete }
+  private var isAwaitingReview: Bool { phase == .awaitingReview }
 
   var body: some View {
-    TimelineView(.animation(minimumInterval: 1 / 24, paused: reduceMotion)) { context in
+    TimelineView(.animation(minimumInterval: isWorking ? 1 / 20 : 1 / 12, paused: reduceMotion)) { context in
       let time = context.date.timeIntervalSinceReferenceDate
+      let reviewPulse = isAwaitingReview ? 0.5 + 0.5 * sin(time * .pi * 2 / 2.5) : 0
       VStack(alignment: .leading, spacing: 10) {
         HStack {
           Text("LIVE WORKSPACE")
             .font(.caption2.weight(.black))
             .foregroundStyle(accent)
           Spacer()
-          Label(phase.statusLabel.uppercased(), systemImage: statusSymbol)
+          Label(isVerified ? "VERIFIED" : phase.statusLabel.uppercased(), systemImage: isVerified ? "checkmark.seal.fill" : statusSymbol)
             .font(.caption2.weight(.bold))
+            .foregroundStyle(isVerified ? SoloTheme.mint : (isAwaitingReview ? accent : .primary))
+            .padding(.horizontal, isAwaitingReview || isVerified ? 7 : 0)
+            .padding(.vertical, isAwaitingReview || isVerified ? 4 : 0)
+            .background((isVerified ? SoloTheme.mint : accent).opacity(isAwaitingReview ? 0.16 + reviewPulse * 0.17 : (isVerified ? 0.16 : 0)), in: Capsule())
             .contentTransition(.interpolate)
         }
 
@@ -44,6 +51,8 @@ struct LiveWorkspaceSurface: View {
             )
           workspace(time: time)
             .padding(10)
+            .id("\(agentID)-\(phase.rawValue)-\(isVerified)")
+            .transition(.opacity.combined(with: .move(edge: .bottom)))
           if phase == .assignmentReceived {
             assignmentChip
           }
@@ -54,9 +63,21 @@ struct LiveWorkspaceSurface: View {
         .frame(height: 108)
         .overlay {
           RoundedRectangle(cornerRadius: 12)
-            .stroke(accent.opacity(isWorking || isComplete ? 0.72 : 0.2), lineWidth: isComplete ? 2.5 : 1)
+            .stroke(
+              (isVerified ? SoloTheme.mint : accent).opacity(
+                isComplete ? 0.92 : (isWorking ? 0.88 : (isAwaitingReview ? 0.28 + reviewPulse * 0.44 : (isVerified ? 0.58 : 0.2)))
+              ),
+              lineWidth: isComplete ? 2.5 : (isAwaitingReview || isVerified ? 1.7 : 1)
+            )
         }
-        .shadow(color: accent.opacity(isComplete ? 0.65 : (isWorking ? 0.25 : 0)), radius: isComplete ? 16 : 8)
+        .overlay {
+          if isAwaitingReview {
+            RoundedRectangle(cornerRadius: 12)
+              .stroke(accent.opacity(reviewPulse * 0.42), lineWidth: 5)
+              .blur(radius: 5)
+          }
+        }
+        .shadow(color: (isVerified ? SoloTheme.mint : accent).opacity(isComplete ? 0.65 : (isWorking ? 0.4 : (isVerified ? 0.2 : 0))), radius: isComplete ? 16 : (isWorking ? 11 : 8))
 
         if isWorking || isComplete {
           HStack(spacing: 8) {
@@ -71,6 +92,7 @@ struct LiveWorkspaceSurface: View {
       }
       .padding(12)
       .background(.black.opacity(0.2), in: .rect(cornerRadius: 14))
+      .animation(MotionKind.state.resolved(reduceMotion: reduceMotion), value: phase)
     }
     .accessibilityElement(children: .combine)
     .accessibilityLabel(Text("Live workspace, \(phase.statusLabel)"))
@@ -79,10 +101,13 @@ struct LiveWorkspaceSurface: View {
 
   @ViewBuilder
   private func workspace(time: TimeInterval) -> some View {
+    let idlePhase = time.truncatingRemainder(dividingBy: 7.2)
+    let idlePulse = reduceMotion || idlePhase > 1 ? 0 : sin(idlePhase * .pi)
+    let intensity = isWorking ? 1.0 : idlePulse * 0.18
     switch agentID {
-    case "aurora": AuroraWorkspace(time: time, progress: progress, active: isWorking, accent: accent)
-    case "stacks": StacksWorkspace(time: time, progress: progress, active: isWorking, accent: accent)
-    case "brio": BrioWorkspace(time: time, progress: progress, active: isWorking, accent: accent)
+    case "aurora": AuroraWorkspace(time: time, progress: progress, intensity: intensity, accent: accent)
+    case "stacks": StacksWorkspace(time: time, progress: progress, intensity: intensity, accent: accent)
+    case "brio": BrioWorkspace(time: time, progress: progress, intensity: intensity, accent: accent)
     default: DefaultWorkspace(active: isWorking, accent: accent)
     }
   }
@@ -133,31 +158,35 @@ struct LiveWorkspaceSurface: View {
 private struct AuroraWorkspace: View {
   var time: TimeInterval
   var progress: Double
-  var active: Bool
+  var intensity: Double
   var accent: Color
 
   var body: some View {
     GeometryReader { geometry in
-      let travel = active ? time.truncatingRemainder(dividingBy: 1.35) / 1.35 : time.truncatingRemainder(dividingBy: 7) / 7
+      let active = intensity > 0.2
+      let travel = active ? time.truncatingRemainder(dividingBy: 1.18) / 1.18 : time.truncatingRemainder(dividingBy: 7.2) / 7.2
       let x = geometry.size.width * travel
       ZStack(alignment: .leading) {
         Path { path in
           path.move(to: CGPoint(x: 8, y: geometry.size.height * 0.68))
           path.addLine(to: CGPoint(x: geometry.size.width - 8, y: geometry.size.height * 0.68))
         }
-        .stroke(accent.opacity(active ? 0.72 : 0.2), style: StrokeStyle(lineWidth: 2, dash: [5, 5]))
+        .stroke(accent.opacity(0.16 + intensity * 0.72), style: StrokeStyle(lineWidth: active ? 2.5 : 1, dash: [5, 5]))
         ForEach(0..<6, id: \.self) { index in
           let nodeX = 12 + (geometry.size.width - 24) * Double(index) / 5
+          let nodeTravel = Double(index) / 5
+          let scanGlow = max(0, 1 - abs(travel - nodeTravel) * 4)
           Circle()
-            .fill(Double(index) / 5 <= progress ? accent : .clear)
-            .stroke(accent.opacity(0.85), lineWidth: 1.5)
-            .frame(width: active ? 11 : 8, height: active ? 11 : 8)
+            .fill(accent.opacity(Double(index) / 5 <= progress ? 0.38 + intensity * 0.62 : 0.05 + scanGlow * intensity * 0.26))
+            .stroke(accent.opacity(0.36 + intensity * 0.64), lineWidth: active ? 2 : 1)
+            .frame(width: active ? 14 : 8, height: active ? 14 : 8)
+            .shadow(color: SoloTheme.cyan.opacity(scanGlow * intensity), radius: 7)
             .position(x: nodeX, y: geometry.size.height * (index.isMultiple(of: 2) ? 0.42 : 0.68))
         }
         Rectangle()
           .fill(LinearGradient(colors: [.clear, SoloTheme.cyan, .white, .clear], startPoint: .top, endPoint: .bottom))
-          .frame(width: active ? 3 : 1, height: geometry.size.height - 8)
-          .shadow(color: SoloTheme.cyan, radius: active ? 7 : 2)
+          .frame(width: active ? 5 : 1, height: geometry.size.height - 8)
+          .shadow(color: SoloTheme.cyan, radius: active ? 12 : 2)
           .offset(x: x)
         Text(active ? "SCANNING EVIDENCE" : "EVIDENCE MONITOR")
           .font(.caption2.monospaced().weight(.bold))
@@ -171,12 +200,14 @@ private struct AuroraWorkspace: View {
 private struct StacksWorkspace: View {
   var time: TimeInterval
   var progress: Double
-  var active: Bool
+  var intensity: Double
   var accent: Color
 
   var body: some View {
     GeometryReader { geometry in
-      let sweep = geometry.size.width * (time.truncatingRemainder(dividingBy: active ? 1.1 : 6) / (active ? 1.1 : 6))
+      let active = intensity > 0.2
+      let sweep = geometry.size.width * (time.truncatingRemainder(dividingBy: active ? 0.95 : 7.2) / (active ? 0.95 : 7.2))
+      let activeBlock = Int((time * 5).truncatingRemainder(dividingBy: 7))
       VStack(alignment: .leading, spacing: 9) {
         HStack {
           Label(active ? "BUILD EXECUTION" : "PROCESSOR READY", systemImage: "cpu.fill")
@@ -184,12 +215,14 @@ private struct StacksWorkspace: View {
           Spacer()
           Image(systemName: active ? "bolt.horizontal.fill" : "power")
             .symbolEffect(.pulse, isActive: active)
+            .scaleEffect(active ? 1.08 + 0.12 * sin(time * 8) : 1)
         }
         HStack(spacing: 6) {
           ForEach(0..<7, id: \.self) { index in
             RoundedRectangle(cornerRadius: 3)
-              .fill(Double(index + 1) / 7 <= progress ? accent.gradient : Color.white.opacity(0.09).gradient)
-              .frame(maxWidth: .infinity, minHeight: 32)
+              .fill((Double(index + 1) / 7 <= progress || (active && index == activeBlock)) ? accent.gradient : Color.white.opacity(0.09).gradient)
+              .frame(maxWidth: .infinity, minHeight: active ? 37 : 30)
+              .shadow(color: active && index == activeBlock ? accent.opacity(0.72) : .clear, radius: 7)
               .overlay(alignment: .bottom) {
                 Text("\(index + 1)").font(.system(size: 8, weight: .bold, design: .monospaced)).padding(.bottom, 3)
               }
@@ -200,8 +233,8 @@ private struct StacksWorkspace: View {
       .overlay(alignment: .leading) {
         Rectangle()
           .fill(LinearGradient(colors: [.clear, .white.opacity(active ? 0.8 : 0.18), .clear], startPoint: .leading, endPoint: .trailing))
-          .frame(width: 38)
-          .offset(x: sweep - 20)
+          .frame(width: active ? 56 : 26)
+          .offset(x: sweep - (active ? 28 : 13))
       }
     }
   }
@@ -210,18 +243,19 @@ private struct StacksWorkspace: View {
 private struct BrioWorkspace: View {
   var time: TimeInterval
   var progress: Double
-  var active: Bool
+  var intensity: Double
   var accent: Color
 
   var body: some View {
     GeometryReader { geometry in
+      let active = intensity > 0.2
       HStack(spacing: 12) {
         ZStack {
           ForEach(0..<3, id: \.self) { index in
             Circle()
-              .stroke(accent.opacity(active ? 0.8 - Double(index) * 0.2 : 0.16), lineWidth: 2)
-              .frame(width: 24 + CGFloat(index) * 17, height: 24 + CGFloat(index) * 17)
-              .scaleEffect(active ? 0.88 + 0.12 * sin(time * 4 + Double(index)) : 0.94)
+              .stroke(accent.opacity(0.12 + intensity * (0.92 - Double(index) * 0.2)), lineWidth: active ? 2.8 : 1)
+              .frame(width: 24 + CGFloat(index) * 18, height: 24 + CGFloat(index) * 18)
+              .scaleEffect(active ? 0.8 + 0.24 * sin(time * 5 + Double(index)) : 0.94)
           }
           Image(systemName: "antenna.radiowaves.left.and.right")
             .foregroundStyle(accent)
@@ -232,11 +266,12 @@ private struct BrioWorkspace: View {
             .foregroundStyle(accent)
           HStack(alignment: .bottom, spacing: 4) {
             ForEach(0..<12, id: \.self) { index in
-              let amplitude = active ? abs(sin(time * 5 + Double(index) * 0.72)) : 0.12 + 0.05 * sin(time + Double(index))
+              let amplitude = active ? abs(sin(time * 6 + Double(index) * 0.72)) : 0.1 + intensity * 0.35 * abs(sin(time * 2 + Double(index)))
               Capsule()
-                .fill(Double(index) / 12 <= progress ? accent : accent.opacity(0.22))
+                .fill(Double(index) / 12 <= progress || (active && index == Int((time * 6).truncatingRemainder(dividingBy: 12))) ? accent : accent.opacity(0.22))
                 .frame(maxWidth: .infinity)
-                .frame(height: 8 + 42 * amplitude)
+                .frame(height: 9 + 52 * amplitude)
+                .shadow(color: accent.opacity(active ? 0.45 : 0), radius: 4)
             }
           }
           .frame(maxHeight: .infinity, alignment: .bottom)

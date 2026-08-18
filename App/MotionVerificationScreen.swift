@@ -7,6 +7,7 @@ struct MotionVerificationScreen: View {
     case auroraIdle = "Aurora Idle"
     case auroraWorking = "Aurora Working"
     case auroraCompletion = "Aurora Completion"
+    case awaitingReview = "Awaiting Review"
     case stacksWorking = "Stacks Working"
     case brioWorking = "Brio Working"
     case review = "Founder Review"
@@ -92,13 +93,14 @@ struct MotionVerificationScreen: View {
       .accessibilityLabel("Aurora motion QA selection card")
       .accessibilityValue(selected ? "Selected" : "Not selected")
 
-    case .auroraIdle, .auroraWorking, .auroraCompletion, .stacksWorking, .brioWorking:
+    case .auroraIdle, .auroraWorking, .auroraCompletion, .awaitingReview, .stacksWorking, .brioWorking:
       LiveWorkspaceSurface(
         agentID: previewAgentID,
         taskTitle: "Validate launch evidence",
         phase: previewPhase,
         progress: previewPhase == .working ? 0.64 : (previewPhase == .workComplete ? 1 : 0),
-        reduceMotion: reduceMotion
+        reduceMotion: reduceMotion,
+        isVerified: false
       )
 
     case .review:
@@ -117,6 +119,14 @@ struct MotionVerificationScreen: View {
 
     case .verified:
       VStack(alignment: .leading, spacing: 16) {
+        LiveWorkspaceSurface(
+          agentID: "aurora",
+          taskTitle: "Validate launch evidence",
+          phase: .reviewed,
+          progress: 1,
+          reduceMotion: reduceMotion,
+          isVerified: true
+        )
         VerificationImpact(state: .confirmed, active: true, reduceMotion: reduceMotion)
         Text("Evidence 84%")
           .font(.title2.monospacedDigit().weight(.black))
@@ -180,6 +190,7 @@ struct MotionVerificationScreen: View {
     switch stage {
     case .auroraIdle: .idle
     case .auroraCompletion: .workComplete
+    case .awaitingReview: .awaitingReview
     default: .working
     }
   }
@@ -199,6 +210,7 @@ struct MotionVerificationScreen: View {
     case .auroraIdle: presentation.stageDebug(.idle, agentID: "aurora")
     case .auroraWorking: presentation.stageDebug(.working, agentID: "aurora")
     case .auroraCompletion: presentation.stageDebug(.workComplete, agentID: "aurora")
+    case .awaitingReview: presentation.stageDebug(.awaitingReview, agentID: "aurora")
     case .stacksWorking: presentation.stageDebug(.working, agentID: "stacks")
     case .brioWorking: presentation.stageDebug(.working, agentID: "brio")
     case .review: presentation.stageDebug(.reviewing, agentID: "aurora")

@@ -12,6 +12,12 @@ struct FounderComputerScreen: View {
   @State private var restCandidate: RestCandidate?
   @State private var evidenceExpanded = false
   @State private var resolutionTick = 0
+  @State private var assignmentArrivalAgentID: String?
+  @State private var activeReviewTaskID: UUID?
+  @State private var reviewStage = 0
+  @State private var resolutionFocus: TaskResolutionChoice?
+  @State private var evidencePulse = false
+  @State private var commitPulse = false
   #if DEBUG
   @State private var showsMotionVerification = false
   #endif
@@ -294,6 +300,8 @@ struct FounderComputerScreen: View {
   }
 
   private func resolve(taskID: UUID, choice: TaskResolutionChoice) {
+    resolutionFocus = choice
+    resolutionTick += 1
     withAnimation(MotionKind.celebration.resolved(reduceMotion: reduceMotion)) {
       presentation.resolve(taskID: taskID, choice: choice, in: store)
     }
@@ -414,7 +422,8 @@ struct AgentWorkspaceCard: View {
       taskTitle: task?.title,
       phase: isResting ? .idle : effectivePhase,
       progress: presentation?.progress ?? (station.semanticState == .working ? 0.45 : 0),
-      reduceMotion: reduceMotion
+      reduceMotion: reduceMotion,
+      isVerified: isConfirmedWork
     )
   }
 
@@ -433,6 +442,14 @@ struct AgentWorkspaceCard: View {
     switch phase {
     case .awaitingReview, .reviewing, .reviewed, .resolving, .resolved: return true
     case .idle, .assignmentReceived, .working, .workComplete: return false
+    }
+  }
+
+  private var isConfirmedWork: Bool {
+    guard task?.isReviewed == true else { return false }
+    switch task?.result?.verificationState {
+    case .verified, .confirmed: return true
+    default: return false
     }
   }
 
@@ -498,32 +515,7 @@ struct AgentWorkspaceCard: View {
     } icon: {
       Image(systemName: symbol).foregroundStyle(accent)
     }
-    .onAppear { update() }.onChange(of: active) { _, _ in update() }
   }
-  private func update() { withAnimation(active ? .linear(duration: 1.15).repeatForever(autoreverses: true) : nil) { scan = active } }
-}
-
-private struct StacksWorkspaceActivity: View {
-  var accent: Color
-  var active: Bool
-  @State private var build = false
-  var body: some View {
-    HStack(spacing: 3) { ForEach(0..<5, id: \.self) { index in RoundedRectangle(cornerRadius: 1).fill(accent).frame(width: 5, height: index.isMultiple(of: 2) ? 8 : 13).opacity(build ? (index < 3 ? 1 : 0.3) : 0.25) } }
-      .offset(x: build ? 3 : -3)
-      .onAppear { update() }.onChange(of: active) { _, _ in update() }
-  }
-  private func update() { withAnimation(active ? .easeInOut(duration: 0.72).repeatForever(autoreverses: true) : nil) { build = active } }
-}
-
-private struct BrioWorkspaceActivity: View {
-  var accent: Color
-  var active: Bool
-  @State private var signal = false
-  var body: some View {
-    HStack(alignment: .center, spacing: 3) { ForEach(0..<4, id: \.self) { index in Capsule().fill(accent).frame(width: 3, height: signal ? CGFloat(7 + index * 3) : CGFloat(5 + (3 - index) * 2)).opacity(signal ? 1 : 0.32) } }
-      .onAppear { update() }.onChange(of: active) { _, _ in update() }
-  }
-  private func update() { withAnimation(active ? .easeInOut(duration: 0.68).repeatForever(autoreverses: true) : nil) { signal = active } }
 }
 
 private struct HUDMetric: View {
@@ -666,7 +658,13 @@ private struct FounderReviewStrip: View {
   }
 
   private var reviewableTaskID: UUID? {
-    store.tasks.first(where: { $0.assignedAgentID != nil && !$0.isReviewed && $0.result != nil })?.id
+    store.tasks.first(where: { task in
+      guard let agentID = task.assignedAgentID,
+            !task.isReviewed,
+            task.result != nil else { return false }
+      let phase = presentation.presentation(for: agentID)?.phase
+      return phase == nil || phase == .awaitingReview
+    })?.id
   }
 
   private func strip(_ title: String, task: SoloTask) -> some View {
