@@ -4,6 +4,12 @@ import SwiftUI
 struct MotionVerificationScreen: View {
   enum Stage: String, CaseIterable, Identifiable {
     case selection = "Agent Selection"
+    case auroraCollapsed = "Aurora Collapsed"
+    case auroraExpanded = "Aurora Expanded"
+    case stacksCollapsed = "Stacks Collapsed"
+    case stacksExpanded = "Stacks Expanded"
+    case brioCollapsed = "Brio Collapsed"
+    case brioExpanded = "Brio Expanded"
     case auroraIdle = "Aurora Idle"
     case auroraWorking = "Aurora Working"
     case auroraCompletion = "Aurora Completion"
@@ -92,6 +98,12 @@ struct MotionVerificationScreen: View {
       .accessibilityLabel("Aurora motion QA selection card")
       .accessibilityValue(selected ? "Selected" : "Not selected")
 
+    case .auroraCollapsed, .stacksCollapsed, .brioCollapsed:
+      workstationLayout(agentID: previewAgentID, expanded: false)
+
+    case .auroraExpanded, .stacksExpanded, .brioExpanded:
+      workstationLayout(agentID: previewAgentID, expanded: true)
+
     case .auroraIdle, .auroraWorking, .auroraCompletion, .stacksWorking, .brioWorking:
       LiveWorkspaceSurface(
         agentID: previewAgentID,
@@ -170,10 +182,43 @@ struct MotionVerificationScreen: View {
 
   private var previewAgentID: String {
     switch stage {
-    case .stacksWorking: "stacks"
-    case .brioWorking: "brio"
+    case .stacksWorking, .stacksCollapsed, .stacksExpanded: "stacks"
+    case .brioWorking, .brioCollapsed, .brioExpanded: "brio"
     default: "aurora"
     }
+  }
+
+  private func workstationLayout(agentID: String, expanded: Bool) -> some View {
+    let accent: Color = agentID == "aurora" ? SoloTheme.purple : (agentID == "stacks" ? SoloTheme.cyan : SoloTheme.coral)
+    let name = agentID == "aurora" ? "Aurora" : (agentID == "stacks" ? "Stacks" : "Brio")
+    let role = agentID == "aurora" ? "Research & Evidence" : (agentID == "stacks" ? "Engineering & Execution" : "Growth & Campaigns")
+    return VStack(alignment: .leading, spacing: 14) {
+      HStack {
+        RoundedRectangle(cornerRadius: 16).fill(accent.opacity(0.2)).frame(width: expanded ? 88 : 62, height: expanded ? 88 : 62).overlay { Text(String(name.prefix(2)).uppercased()).font(.headline.weight(.black)).foregroundStyle(accent) }
+        VStack(alignment: .leading) { Text(name).font(.title3.weight(.bold)); Text("\(role) · Level 1").font(.caption).foregroundStyle(.secondary) }
+        Spacer()
+        Text(expanded ? "WORKING" : "READY").font(.caption2.weight(.black)).foregroundStyle(accent)
+      }
+      HStack(spacing: 8) { qaChip("Stress", "Focused", accent); qaChip("Trust", "84", accent); qaChip("XP", "32", accent) }
+      Text("CURRENT ASSIGNMENT").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+      Text(expanded ? "Validate launch evidence" : "No active assignment").font(.subheadline.weight(.semibold))
+      if expanded {
+        LiveWorkspaceSurface(agentID: agentID, taskTitle: "Validate launch evidence", phase: .working, progress: 0.64, reduceMotion: reduceMotion, expanded: true)
+        Text("RESULT / EVIDENCE").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+        Label("Reported Quality · 78", systemImage: "chart.bar.fill").font(.caption)
+        Button("Review", systemImage: "eye") { }.buttonStyle(.borderedProminent).tint(accent)
+      } else {
+        Label("LIVE WORKSPACE · READY", systemImage: "desktopcomputer").font(.caption2.monospaced().weight(.bold)).foregroundStyle(accent)
+      }
+    }
+    .padding(16)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(accent.opacity(expanded ? 0.2 : 0.07), in: RoundedRectangle(cornerRadius: 22))
+    .overlay { RoundedRectangle(cornerRadius: 22).stroke(accent.opacity(expanded ? 1 : 0.35), lineWidth: expanded ? 2 : 1) }
+  }
+
+  private func qaChip(_ title: String, _ value: String, _ accent: Color) -> some View {
+    Text("\(title) \(value)").font(.caption2.weight(.semibold)).padding(.horizontal, 8).padding(.vertical, 6).background(.black.opacity(0.16), in: Capsule()).foregroundStyle(accent)
   }
 
   private var previewPhase: PresentationCoordinator.AgentPhase {
@@ -196,11 +241,11 @@ struct MotionVerificationScreen: View {
 
   private func stagePresentation() {
     switch stage {
-    case .auroraIdle: presentation.stageDebug(.idle, agentID: "aurora")
+    case .auroraIdle, .auroraCollapsed, .auroraExpanded: presentation.stageDebug(.idle, agentID: "aurora")
     case .auroraWorking: presentation.stageDebug(.working, agentID: "aurora")
     case .auroraCompletion: presentation.stageDebug(.workComplete, agentID: "aurora")
-    case .stacksWorking: presentation.stageDebug(.working, agentID: "stacks")
-    case .brioWorking: presentation.stageDebug(.working, agentID: "brio")
+    case .stacksWorking, .stacksCollapsed, .stacksExpanded: presentation.stageDebug(.working, agentID: "stacks")
+    case .brioWorking, .brioCollapsed, .brioExpanded: presentation.stageDebug(.working, agentID: "brio")
     case .review: presentation.stageDebug(.reviewing, agentID: "aurora")
     case .verified: presentation.stageDebug(.reviewed, agentID: "aurora")
     case .resolution: presentation.stageDebug(.resolved, agentID: "aurora")

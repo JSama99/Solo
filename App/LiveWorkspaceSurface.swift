@@ -6,6 +6,7 @@ struct LiveWorkspaceSurface: View {
   var phase: PresentationCoordinator.AgentPhase
   var progress: Double
   var reduceMotion: Bool
+  var expanded = false
 
   private var accent: Color {
     switch agentID {
@@ -51,7 +52,7 @@ struct LiveWorkspaceSurface: View {
             completionOverlay
           }
         }
-        .frame(height: 108)
+        .frame(height: expanded ? 136 : 108)
         .overlay {
           RoundedRectangle(cornerRadius: 12)
             .stroke(accent.opacity(isWorking || isComplete ? 0.72 : 0.2), lineWidth: isComplete ? 2.5 : 1)
