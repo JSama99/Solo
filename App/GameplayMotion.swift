@@ -14,12 +14,15 @@ enum MotionKind {
   case emphasis
   /// Earned moments: task completion, level ups, milestones, upgrades.
   case celebration
+  /// A short, contained acknowledgement for a changed resource or verified fact.
+  case impact
 
   var animation: Animation {
     switch self {
     case .state: .smooth
     case .emphasis: .snappy
     case .celebration: .bouncy
+    case .impact: .spring(duration: 0.34, bounce: 0.22)
     }
   }
 
@@ -27,6 +30,21 @@ enum MotionKind {
   /// "change the value immediately", which is what `withAnimation(nil)` and
   /// `.animation(nil, value:)` both honor.
   func resolved(reduceMotion: Bool) -> Animation? {
+    reduceMotion ? nil : animation
+  }
+}
+
+/// Timing shared by the staged Founder Computer choreography. These values are
+/// presentation-only and deliberately never derive from simulation randomness.
+enum SoloMotion {
+  static let press = Animation.easeOut(duration: 0.10)
+  static let focus = Animation.spring(duration: 0.30, bounce: 0.28)
+  static let arrival = Animation.spring(duration: 0.42, bounce: 0.18)
+  static let impact = Animation.spring(duration: 0.28, bounce: 0.25)
+  static let settle = Animation.smooth(duration: 0.24)
+  static let reviewStep = 0.075
+
+  static func resolved(_ animation: Animation, reduceMotion: Bool) -> Animation? {
     reduceMotion ? nil : animation
   }
 }
