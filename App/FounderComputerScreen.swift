@@ -12,6 +12,14 @@ struct FounderComputerScreen: View {
   @State private var restCandidate: RestCandidate?
   @State private var evidenceExpanded = false
   @State private var resolutionTick = 0
+  // Presentation-only choreography. None of these values participate in the
+  // deterministic simulation or are persisted in a save.
+  @State private var assignmentArrivalAgentID: String?
+  @State private var activeReviewTaskID: UUID?
+  @State private var reviewStage = 0
+  @State private var resolutionFocus: TaskResolutionChoice?
+  @State private var commitPulse = false
+  @State private var evidencePulse = false
   #if DEBUG
   @State private var showsMotionVerification = false
   #endif
@@ -25,19 +33,7 @@ struct FounderComputerScreen: View {
             .gameplayMotion(value: store.sprintPhase)
             .founderEntrance(order: 1)
           ForEach(orderedStations) { station in
-            let agentPresentation = presentation.presentation(for: station.agentID)
-            AgentWorkspaceCard(
-              station: station,
-              agent: agent(for: station.agentID),
-              task: task(for: station.agentID),
-              presentation: agentPresentation,
-              isResting: store.restingAgentIDs.contains(station.agentID),
-              selected: selectedAgentID == station.agentID,
-              assignmentArrival: assignmentArrivalAgentID == station.agentID,
-              reviewStage: activeReviewTaskID == task(for: station.agentID)?.id ? reviewStage : 0,
-              resolutionFocus: resolutionFocus,
-              reduceMotion: reduceMotion
-            ) { select(station.agentID) }
+            workspaceCard(for: station)
             .id(station.id)
             .opacity(isReviewFocused && selectedAgentID != station.agentID ? 0.86 : 1)
             .founderEntrance(order: rank(station.agentID) + 2)
@@ -50,6 +46,7 @@ struct FounderComputerScreen: View {
         .scrollTargetLayout()
       }
       .scrollTargetBehavior(.viewAligned)
+      .safeAreaPadding(.bottom, 96)
       .onAppear { selectedAgentID = selectedAgentID ?? orderedStations.first?.id }
       .onChange(of: selectedAgentID) { _, id in
         guard let id else { return }
@@ -145,6 +142,34 @@ struct FounderComputerScreen: View {
     }.sorted { rank($0.agentID) < rank($1.agentID) }
   }
 
+  @ViewBuilder
+  private func workspaceCard(for station: AgentStationViewModel) -> some View {
+    let agentID = station.agentID
+    let assignedTask = task(for: agentID)
+    let isSelected = selectedAgentID == agentID
+    let currentReviewStage = activeReviewTaskID == assignedTask?.id ? reviewStage : 0
+    AgentWorkspaceCard(
+      station: station,
+      agent: agent(for: agentID),
+      task: assignedTask,
+      presentation: presentation.presentation(for: agentID),
+      isResting: store.restingAgentIDs.contains(agentID),
+      selected: isSelected,
+      assignmentArrival: assignmentArrivalAgentID == agentID,
+      reviewStage: currentReviewStage,
+      resolutionFocus: resolutionFocus,
+      reduceMotion: reduceMotion,
+      action: { select(agentID) },
+      onAssign: { assignmentDestination = .init(agentID: agentID) },
+      onReview: { review(agentID) },
+      onRest: { restCandidate = .init(agentID: agentID, name: station.name, hasAssignment: assignedTask != nil) },
+      onResolve: { choice in guard let taskID = assignedTask?.id else { return }; resolve(taskID: taskID, choice: choice) },
+      canAssign: canAssign,
+      canReview: canReview(agentID),
+      canRest: canRest(agentID)
+    )
+  }
+
   private var hud: some View {
     VStack(alignment: .leading, spacing: 10) {
       HStack {
@@ -181,9 +206,6 @@ struct FounderComputerScreen: View {
           command("Assign", "checklist", enabled: canAssign) { assignmentDestination = .init(agentID: agent.id) }
           command("Review", "eye", enabled: canReview(agent.id)) { review(agent.id) }
           command(store.restingAgentIDs.contains(agent.id) ? "Resting" : "Rest", "bed.double", enabled: canRest(agent.id)) { restCandidate = .init(agentID: agent.id, name: agent.name, hasAssignment: task(for: agent.id) != nil) }
-        }
-        if let task = task(for: agent.id), task.isReviewed {
-          resolutionControls(task).transition(.opacity.combined(with: .move(edge: .bottom)))
         }
       } else { Text("Select an agent to issue commands.").foregroundStyle(.secondary) }
       phaseReason
@@ -294,6 +316,8 @@ struct FounderComputerScreen: View {
   }
 
   private func resolve(taskID: UUID, choice: TaskResolutionChoice) {
+    resolutionFocus = choice
+    resolutionTick += 1
     withAnimation(MotionKind.celebration.resolved(reduceMotion: reduceMotion)) {
       presentation.resolve(taskID: taskID, choice: choice, in: store)
     }
@@ -316,6 +340,42 @@ struct FounderComputerScreen: View {
 private struct AssignmentDestination: Identifiable { var agentID: String; var id: String { agentID } }
 private struct RestCandidate: Identifiable { var agentID: String; var name: String; var hasAssignment: Bool; var id: String { agentID } }
 
+private struct AgentPortrait: View {
+  var agentID: String
+  var initials: String
+  var name: String
+  var accent: Color
+  var state: AgentStationViewModel.SemanticState
+  var selected: Bool
+  var reduceMotion: Bool
+
+  private var assetName: String? { AgentPortraitAsset.name(for: agentID) }
+  private var image: UIImage? { assetName.flatMap(UIImage.init(named:)) }
+  private var attentionState: Bool { state == .awaitingReview || state == .overloaded }
+
+  var body: some View {
+    ZStack {
+      RoundedRectangle(cornerRadius: 18)
+        .fill(accent.opacity(0.18))
+      if let image {
+        Image(uiImage: image)
+          .resizable()
+          .scaledToFill()
+          .accessibilityHidden(true)
+      } else {
+        Text(initials).font(.headline.weight(.heavy)).foregroundStyle(accent)
+      }
+    }
+    .frame(width: selected ? 88 : 62, height: selected ? 88 : 62)
+    .clipShape(RoundedRectangle(cornerRadius: 18))
+    .overlay { RoundedRectangle(cornerRadius: 18).stroke(accent.opacity(selected ? 0.95 : 0.5), lineWidth: selected ? 2 : 1) }
+    .shadow(color: accent.opacity(selected ? 0.42 : 0.14), radius: selected ? 10 : 4)
+    .scaleEffect(attentionState && !reduceMotion ? 1.02 : 1)
+    .animation(SoloMotion.resolved(SoloMotion.impact, reduceMotion: reduceMotion), value: state)
+    .accessibilityLabel("\(name), \(agentID == "aurora" ? "Research and Evidence" : agentID == "stacks" ? "Engineering and Execution" : "Growth and Campaigns") agent")
+  }
+}
+
 struct AgentWorkspaceCard: View {
   var station: AgentStationViewModel
   var agent: SoloAgent?
@@ -328,30 +388,33 @@ struct AgentWorkspaceCard: View {
   var resolutionFocus: TaskResolutionChoice?
   var reduceMotion: Bool
   var action: () -> Void
+  var onAssign: () -> Void
+  var onReview: () -> Void
+  var onRest: () -> Void
+  var onResolve: (TaskResolutionChoice) -> Void
+  var canAssign: Bool
+  var canReview: Bool
+  var canRest: Bool
   var accent: Color { switch station.agentID { case "aurora": SoloTheme.purple; case "stacks": SoloTheme.cyan; case "brio": SoloTheme.coral; default: SoloTheme.mint } }
 
   var body: some View {
-    Button(action: action) {
-      VStack(alignment: .leading, spacing: 12) {
-        header
-        HStack(spacing: 8) { badge("Stress", station.progression.stressBand.label); badge("Trust", station.trustBand.label) }
-          .gameplayMotion(value: StatusSnapshot(stress: station.progression.stressBand, trust: station.trustBand))
-        taskHeadline
-        Text(station.mood).font(.subheadline).foregroundStyle(.secondary)
-        workspace
-        if let task, let result = task.result, canRevealResult {
-          report(result, reviewed: task.isReviewed, revealStep: presentation?.reviewRevealStep ?? 5)
-            .transition(.opacity.combined(with: .move(edge: .bottom)))
-        }
-        if selected { Text("Selected workspace").font(.caption.weight(.bold)).foregroundStyle(accent).transition(.opacity) }
+    VStack(alignment: .leading, spacing: selected ? 16 : 12) {
+      identity
+      attributes
+      assignmentSummary
+      if selected {
+        expandedContent.transition(.opacity.combined(with: .move(edge: .bottom)))
+      } else {
+        compactWorkspace
       }
-      .padding(16)
-      .frame(maxWidth: .infinity, minHeight: selected ? 348 : 290, alignment: .leading)
-      .background(accent.opacity(selected ? 0.23 : 0.07), in: .rect(cornerRadius: 22))
-      .overlay { RoundedRectangle(cornerRadius: 22).stroke(selected ? accent : .white.opacity(0.09), lineWidth: selected ? 3 : 1) }
-      .shadow(color: selected ? accent.opacity(0.38) : .clear, radius: selected ? 16 : 0, y: selected ? 8 : 0)
     }
-    .buttonStyle(WorkspacePressButtonStyle(reduceMotion: reduceMotion))
+    .padding(16)
+    .frame(maxWidth: .infinity, minHeight: selected ? 520 : 210, alignment: .leading)
+    .background(accent.opacity(selected ? 0.20 : 0.07), in: .rect(cornerRadius: 22))
+    .overlay { RoundedRectangle(cornerRadius: 22).stroke(selected ? accent : .white.opacity(0.09), lineWidth: selected ? 2.5 : 1) }
+    .shadow(color: selected ? accent.opacity(0.30) : .clear, radius: selected ? 14 : 0, y: selected ? 7 : 0)
+    .contentShape(.rect(cornerRadius: 22))
+    .onTapGesture(perform: action)
     .scaleEffect(cardScale)
     .phaseAnimator([0, 1, 2], trigger: selected) { content, phase in
       content.scaleEffect(!reduceMotion && selected && phase == 1 ? 1.035 : 1)
@@ -360,11 +423,12 @@ struct AgentWorkspaceCard: View {
     }
     .gameplayMotion(.emphasis, value: selected)
     .gameplayMotion(value: WorkSnapshot(taskID: task?.id, hasResult: task?.result != nil, reviewed: task?.isReviewed ?? false, state: station.semanticState, resting: isResting))
-    .accessibilityElement(children: .combine)
-    .accessibilityLabel("\(station.name), \(station.role.rawValue), level \(station.progression.level)")
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel("\(station.name), \(station.role.rawValue) agent")
     .accessibilityValue(station.accessibilityValue)
     .accessibilityHint("Select this agent workspace")
     .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
+    .accessibilityAction { action() }
   }
 
   /// The work state this card animates on: a new assignment, a delivered
@@ -378,14 +442,11 @@ struct AgentWorkspaceCard: View {
     var stress: AgentStressBand; var trust: AgentStationViewModel.TrustBand
   }
 
-  private var header: some View {
+  private var identity: some View {
     HStack {
-      ZStack {
-        Circle().fill(accent.opacity(0.25)).frame(width: 56, height: 56)
-        Text(station.initials).font(.headline.weight(.heavy)).foregroundStyle(accent)
-      }
+      AgentPortrait(agentID: station.agentID, initials: station.initials, name: station.name, accent: accent, state: station.semanticState, selected: selected, reduceMotion: reduceMotion)
       VStack(alignment: .leading) {
-        Text(station.name).font(.title3.weight(.bold))
+        Text(station.name).font(selected ? .title3.weight(.bold) : .headline.weight(.bold))
         HStack(spacing: 3) {
           Text(station.role.rawValue + " · Level ")
           Text(String(station.progression.level)).contentTransition(.numericText(value: Double(station.progression.level)))
@@ -401,21 +462,110 @@ struct AgentWorkspaceCard: View {
     .gameplayMotion(.celebration, value: station.progression.level)
   }
 
-  private func badge(_ title: String, _ value: String) -> some View {
-    Text("\(title): \(value)").font(.caption2.weight(.semibold))
-      .padding(.horizontal, 8).padding(.vertical, 5)
-      .background(.black.opacity(0.16), in: Capsule())
-      .contentTransition(.interpolate)
+  private var attributes: some View {
+    VStack(alignment: .leading, spacing: 7) {
+      HStack(spacing: 8) {
+        attribute("Stress", station.progression.stressBand.label, "gauge.with.dots.needle.50percent")
+        attribute("Trust", "\(Int(station.trust.rounded()))", "checkmark.shield")
+        attribute("XP", "\(station.progression.xp)", "sparkles")
+        attribute("Focus", station.progression.specialization ?? station.role.rawValue, station.role.symbol)
+      }
+      if selected {
+        HStack(spacing: 8) {
+          Text("LEVEL \(station.progression.level)").font(.caption2.weight(.bold)).foregroundStyle(.secondary)
+          ProgressView(value: xpProgress).tint(accent)
+          Text(xpProgress.formatted(.percent.precision(.fractionLength(0)))).font(.caption2.monospacedDigit().weight(.bold))
+        }
+        .transition(.opacity)
+      }
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .gameplayMotion(value: StatusSnapshot(stress: station.progression.stressBand, trust: station.trustBand))
   }
 
-  private var workspace: some View {
-    LiveWorkspaceSurface(
-      agentID: station.agentID,
-      taskTitle: task?.title,
-      phase: isResting ? .idle : effectivePhase,
-      progress: presentation?.progress ?? (station.semanticState == .working ? 0.45 : 0),
-      reduceMotion: reduceMotion
-    )
+  private var xpProgress: Double {
+    let current = AgentLevel.threshold(forLevel: station.progression.level)
+    guard let next = AgentLevel.nextThreshold(forXP: station.progression.xp) else { return 1 }
+    return min(1, max(0, Double(station.progression.xp - current) / Double(next - current)))
+  }
+
+  private func attribute(_ title: String, _ value: String, _ symbol: String) -> some View {
+    Label { VStack(alignment: .leading, spacing: 1) { Text(title.uppercased()).font(.system(size: 9, weight: .bold)).foregroundStyle(.secondary); Text(value).font(.caption2.weight(.semibold)).lineLimit(1) } } icon: {
+      Image(systemName: symbol).font(.caption2).foregroundStyle(accent)
+    }
+    .padding(.horizontal, 8).padding(.vertical, 7)
+    .background(.black.opacity(0.18), in: RoundedRectangle(cornerRadius: 9))
+    .contentTransition(.interpolate)
+  }
+
+  private var assignmentSummary: some View {
+    VStack(alignment: .leading, spacing: 5) {
+      Text("CURRENT ASSIGNMENT").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+      HStack(alignment: .firstTextBaseline, spacing: 8) {
+        Text(headline).font(.subheadline.weight(.semibold)).lineLimit(selected ? 2 : 1)
+        Spacer(minLength: 0)
+        Text(isResting ? "Resting" : effectivePhase.statusLabel).font(.caption2.weight(.bold)).foregroundStyle(accent)
+      }
+      if selected && effectivePhase == .working { ProgressView(value: presentation?.progress ?? 0.45).tint(accent) }
+    }
+  }
+
+  private var compactWorkspace: some View {
+    HStack(spacing: 8) {
+      Image(systemName: station.role.symbol).foregroundStyle(accent)
+      Text("LIVE WORKSPACE · \(effectivePhase.statusLabel.uppercased())").font(.caption2.monospaced().weight(.bold)).foregroundStyle(accent.opacity(0.85))
+      Spacer()
+      Image(systemName: "chevron.down").font(.caption.weight(.bold)).foregroundStyle(.secondary)
+    }
+    .padding(.top, 2)
+  }
+
+  private var expandedContent: some View {
+    VStack(alignment: .leading, spacing: 14) {
+      LiveWorkspaceSurface(agentID: station.agentID, taskTitle: task?.title, phase: isResting ? .idle : effectivePhase, progress: presentation?.progress ?? (station.semanticState == .working ? 0.45 : 0), reduceMotion: reduceMotion, expanded: true)
+      if let task, let result = task.result, canRevealResult {
+        VStack(alignment: .leading, spacing: 8) {
+          Text("RESULT / EVIDENCE").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+          report(result, reviewed: task.isReviewed, revealStep: max(reviewStage, presentation?.reviewRevealStep ?? 5))
+        }
+        .transition(.opacity.combined(with: .move(edge: .bottom)))
+      }
+      actions
+    }
+  }
+
+  private var actions: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      HStack(spacing: 8) {
+        if task == nil && !isResting { cardAction("Assign", "checklist", onAssign, enabled: canAssign) }
+        if let task, !task.isReviewed && effectivePhase == .awaitingReview { cardAction("Review", "eye", onReview, enabled: canReview) }
+        if !isResting && (task == nil || task?.isReviewed == false) { cardAction("Rest", "bed.double", onRest, enabled: canRest) }
+        if task?.resolutionLocked == true { Label("Resolved", systemImage: "lock.fill").font(.caption.weight(.bold)).foregroundStyle(SoloTheme.mint) }
+        Spacer(minLength: 0)
+      }
+      if let task, task.isReviewed { inlineResolution(task) }
+    }
+    .padding(.top, 2)
+  }
+
+  private func cardAction(_ title: String, _ symbol: String, _ operation: @escaping () -> Void, enabled: Bool) -> some View {
+    Button(title, systemImage: symbol, action: operation).buttonStyle(.borderedProminent).tint(accent).controlSize(.small).frame(minHeight: 38).disabled(!enabled)
+  }
+
+  @ViewBuilder private func inlineResolution(_ task: SoloTask) -> some View {
+    if task.resolutionLocked, let resolution = task.resolution {
+      Label("\(resolution.title) locked", systemImage: "lock.fill").font(.caption.weight(.bold)).foregroundStyle(SoloTheme.mint)
+    } else {
+      VStack(alignment: .leading, spacing: 7) {
+        Text("FOUNDER RESOLUTION").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+        ForEach(TaskResolutionChoice.allCases) { choice in
+          Button(choice.title, systemImage: choice.symbol) { onResolve(choice) }
+            .buttonStyle(.bordered)
+            .tint(resolutionFocus == choice ? SoloTheme.mint : accent)
+            .disabled(effectivePhase == .resolving)
+        }
+      }
+    }
   }
 
   private var effectivePhase: PresentationCoordinator.AgentPhase {
@@ -447,13 +597,6 @@ struct AgentWorkspaceCard: View {
   private var headline: String {
     if let title = task?.title { return title }
     return isResting ? "Recovery sprint selected" : "No task assigned"
-  }
-
-  private var taskHeadline: some View {
-    Text(headline)
-      .font(.headline)
-      .id(headline)
-      .transition(.opacity.combined(with: .move(edge: .trailing)))
   }
 
   private func verifiedSummary(actual: Int, overclaim: Int) -> String {
@@ -498,9 +641,7 @@ struct AgentWorkspaceCard: View {
     } icon: {
       Image(systemName: symbol).foregroundStyle(accent)
     }
-    .onAppear { update() }.onChange(of: active) { _, _ in update() }
   }
-  private func update() { withAnimation(active ? .linear(duration: 1.15).repeatForever(autoreverses: true) : nil) { scan = active } }
 }
 
 private struct StacksWorkspaceActivity: View {
