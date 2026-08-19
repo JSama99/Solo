@@ -101,7 +101,7 @@ struct VentureUnlockScreen: View {
           Button(store.pendingVentureCheckpoint == nil ? "Back to Garage" : "Back to Checkpoint") {
             store.reviewCompletedVenture()
           }
-            .buttonStyle(.plain)
+            .buttonStyle(SoloPressStyle())
             .foregroundStyle(.secondary)
             .padding(.top, 2)
         }

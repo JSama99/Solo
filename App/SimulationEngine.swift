@@ -205,8 +205,16 @@ enum SimulationEngine {
   /// exact divisor and cap are tunable; the structural fix (bounded,
   /// proportional contribution instead of an uncapped 1:1 term) is what
   /// matters and is not a judgment call.
+  ///
+  /// The same ceiling also applies to evidence and objective accumulation in
+  /// the detailed score below. A bounded career tops out at 72 deduplicated
+  /// evidence entries and 24 objectives, so its historical scores remain
+  /// unchanged. Venture progression deliberately remains uncapped: distance
+  /// through the career is what Empire mode exists to reward.
+  static let scoreComponentCap = 5_000
+
   static func careerScore(stats: FounderStats) -> Int {
-    let revenueContribution = min(stats.revenue / 4, 5_000)
+    let revenueContribution = min(stats.revenue / 4, scoreComponentCap)
     return max(
       0,
       stats.trackRecord * 10
@@ -228,8 +236,8 @@ enum SimulationEngine {
     completedVentures: Int
   ) -> Int {
     let base = careerScore(stats: stats)
-    let qualityBonus = max(0, verifiedEvidence) * 35
-    let objectiveBonus = max(0, completedObjectives) * 120
+    let qualityBonus = min(max(0, verifiedEvidence) * 35, scoreComponentCap)
+    let objectiveBonus = min(max(0, completedObjectives) * 120, scoreComponentCap)
     let relationshipBonus = max(0, min(100, averageRelationship)) * 8
     let ventureBonus = max(0, completedVentures) * 250
     let obligationPenalty = max(0, unresolvedObligations) * 180

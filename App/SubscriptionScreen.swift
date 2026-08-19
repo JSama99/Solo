@@ -58,7 +58,7 @@ struct SubscriptionScreen: View {
                 .padding(15)
                 .background(SoloTheme.card, in: .rect(cornerRadius: 14))
               }
-              .buttonStyle(.plain)
+              .buttonStyle(SoloPressStyle())
               .disabled(subscriptions.purchasingPackageID != nil)
             }
           }

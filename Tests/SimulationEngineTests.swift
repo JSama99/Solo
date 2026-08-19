@@ -156,6 +156,66 @@ final class SimulationEngineTests: XCTestCase {
     XCTAssertGreaterThan(strong, fragile)
   }
 
+  func testVerifiedEvidenceContributionSaturatesAtComponentCap() {
+    let atCap = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 143, completedObjectives: 0,
+      averageRelationship: 0, unresolvedObligations: 0, completedVentures: 0
+    )
+    let excessive = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 2_000, completedObjectives: 0,
+      averageRelationship: 0, unresolvedObligations: 0, completedVentures: 0
+    )
+    XCTAssertEqual(excessive, atCap)
+  }
+
+  func testObjectiveContributionSaturatesAtComponentCap() {
+    let atCap = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 0, completedObjectives: 42,
+      averageRelationship: 0, unresolvedObligations: 0, completedVentures: 0
+    )
+    let excessive = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 0, completedObjectives: 2_000,
+      averageRelationship: 0, unresolvedObligations: 0, completedVentures: 0
+    )
+    XCTAssertEqual(excessive, atCap)
+  }
+
+  func testMaximalBoundedAccumulationScoreIsUnchanged() {
+    XCTAssertEqual(SimulationEngine.careerScore(stats: FounderStats()), 2_665)
+    XCTAssertEqual(
+      SimulationEngine.careerScore(
+        stats: FounderStats(), verifiedEvidence: 72, completedObjectives: 24,
+        averageRelationship: 0, unresolvedObligations: 0, completedVentures: 0
+      ),
+      8_065
+    )
+  }
+
+  func testVentureProgressionStaysUncapped() {
+    let twenty = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 0, completedObjectives: 0,
+      averageRelationship: 0, unresolvedObligations: 0, completedVentures: 20
+    )
+    let sixty = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 0, completedObjectives: 0,
+      averageRelationship: 0, unresolvedObligations: 0, completedVentures: 60
+    )
+    XCTAssertGreaterThan(sixty, twenty)
+    XCTAssertEqual(sixty - twenty, 40 * 250)
+  }
+
+  func testEmpireAccumulationDoesNotDwarfAWellPlayedRun() {
+    let accumulated = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 2_160, completedObjectives: 720,
+      averageRelationship: 0, unresolvedObligations: 0, completedVentures: 60
+    )
+    let wellPlayed = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 72, completedObjectives: 24,
+      averageRelationship: 100, unresolvedObligations: 0, completedVentures: 60
+    )
+    XCTAssertLessThan(Double(accumulated) / Double(wellPlayed), 2.5)
+  }
+
   // ── careerScore: the actual fix, verified numerically ───────────────
 
   func testCareerScoreCapsRevenueContribution() {

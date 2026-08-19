@@ -50,6 +50,40 @@ final class GameplayMotionTests: XCTestCase {
     XCTAssertEqual(MotionKind.celebration.animation, .bouncy)
   }
 
+  func testEverySoloMotionTimingResolvesToNothingUnderReduceMotion() {
+    let timings: [Animation] = [
+      SoloMotion.press,
+      SoloMotion.focus,
+      SoloMotion.arrival,
+      SoloMotion.impact,
+      SoloMotion.settle
+    ]
+    for timing in timings {
+      XCTAssertNil(SoloMotion.resolved(timing, reduceMotion: true))
+    }
+  }
+
+  func testEverySoloMotionTimingResolvesToItselfOtherwise() {
+    let timings: [Animation] = [
+      SoloMotion.press,
+      SoloMotion.focus,
+      SoloMotion.arrival,
+      SoloMotion.impact,
+      SoloMotion.settle
+    ]
+    for timing in timings {
+      XCTAssertEqual(SoloMotion.resolved(timing, reduceMotion: false), timing)
+    }
+  }
+
+  func testSoloMotionPressTimingIsLocked() {
+    XCTAssertEqual(SoloMotion.press, .easeOut(duration: 0.10))
+  }
+
+  func testSoloMotionSettleTimingIsLocked() {
+    XCTAssertEqual(SoloMotion.settle, .smooth(duration: 0.24))
+  }
+
   // ── Presentation must not consume simulation RNG ────────────────────
 
   /// Plays an identical scripted career in two stores from the same seed. The

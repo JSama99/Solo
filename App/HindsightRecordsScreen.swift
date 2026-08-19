@@ -39,6 +39,7 @@ struct HindsightRecordsScreen: View {
             ) {
               toggle(precedent.id)
             }
+            .transition(arrivalTransition)
           }
         }
       }
@@ -68,13 +69,19 @@ struct HindsightRecordsScreen: View {
 
   private var precedentIDs: [UUID] { precedents.map(\.id) }
 
+  private var arrivalTransition: AnyTransition {
+    guard !reduceMotion else { return .identity }
+    return .asymmetric(
+      insertion: .move(edge: .top)
+        .combined(with: .scale(scale: 0.92, anchor: .top))
+        .combined(with: .opacity),
+      removal: .opacity
+    )
+  }
+
   private func toggle(_ id: UUID) {
-    if reduceMotion {
+    withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) {
       expansion.toggle(id)
-    } else {
-      withAnimation(.smooth(duration: 0.28)) {
-        expansion.toggle(id)
-      }
     }
   }
 
@@ -82,12 +89,15 @@ struct HindsightRecordsScreen: View {
     let newest = Set(IDs).subtracting(knownIDs)
     knownIDs = Set(IDs)
     guard let inserted = precedents.last(where: { newest.contains($0.id) }) else { return }
-    highlightedID = inserted.id
+    withAnimation(MotionKind.celebration.resolved(reduceMotion: reduceMotion)) {
+      highlightedID = inserted.id
+    }
+    AccessibilityNotification.Announcement("New Hindsight record: \(inserted.recallTitle)").post()
     highlightDismissTask?.cancel()
     highlightDismissTask = Task { @MainActor in
       try? await Task.sleep(for: .seconds(0.65))
       guard !Task.isCancelled else { return }
-      withAnimation(reduceMotion ? nil : .smooth(duration: 0.2)) {
+      withAnimation(SoloMotion.resolved(SoloMotion.settle, reduceMotion: reduceMotion)) {
         highlightedID = nil
       }
     }
@@ -100,6 +110,7 @@ private struct PrecedentRecordRow: View {
   var isHighlighted: Bool
   var reduceMotion: Bool
   var onToggle: () -> Void
+  @State private var impactPulse = false
 
   var body: some View {
     Button(action: onToggle) {
@@ -109,6 +120,16 @@ private struct PrecedentRecordRow: View {
             .foregroundStyle(precedent.isFlagged ? SoloTheme.amber : SoloTheme.cyan)
             .frame(width: 22)
           VStack(alignment: .leading, spacing: 3) {
+            if isHighlighted {
+              Text("JUST RECORDED")
+                .font(.caption2.weight(.black))
+                .tracking(1)
+                .foregroundStyle(SoloTheme.cyan)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(SoloTheme.cyan.opacity(0.14), in: .capsule)
+                .transition(.opacity.combined(with: .scale(scale: 0.88)))
+            }
             Text(precedent.recallTitle)
               .font(.subheadline.weight(.bold))
             Text(precedent.context.summary)
@@ -120,7 +141,7 @@ private struct PrecedentRecordRow: View {
           Image(systemName: "chevron.down")
             .font(.caption.weight(.bold))
             .rotationEffect(.degrees(isExpanded && !reduceMotion ? 180 : 0))
-            .animation(reduceMotion ? nil : .smooth(duration: 0.28), value: isExpanded)
+            .animation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion), value: isExpanded)
             .accessibilityHidden(true)
         }
         Text(precedent.outcome.summary)
@@ -135,18 +156,34 @@ private struct PrecedentRecordRow: View {
             detail("Recorded context", value: precedent.context.summary)
             detail("Observed outcome", value: precedent.outcome.summary)
           }
-          .transition(.opacity)
+          .transition(reduceMotion ? .identity : .move(edge: .top))
         }
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(13)
-      .background(isHighlighted ? SoloTheme.cyan.opacity(0.14) : SoloTheme.card, in: .rect(cornerRadius: 16))
+      .background(SoloTheme.card, in: .rect(cornerRadius: 16))
       .overlay {
         RoundedRectangle(cornerRadius: 16)
-          .stroke(isHighlighted ? SoloTheme.cyan.opacity(0.7) : .white.opacity(0.08))
+          .fill(SoloTheme.cyan.opacity(isHighlighted ? 0.12 : 0))
       }
+      .overlay {
+        RoundedRectangle(cornerRadius: 16)
+          .stroke(isHighlighted ? SoloTheme.cyan.opacity(0.8) : .white.opacity(0.08), lineWidth: isHighlighted ? 2 : 1)
+      }
+      .scaleEffect(impactPulse ? 1.015 : 1)
+      .shadow(color: SoloTheme.cyan.opacity(impactPulse ? 0.42 : 0), radius: 14)
     }
-    .buttonStyle(.plain)
+    .buttonStyle(SoloPressStyle())
+    .task(id: isHighlighted) {
+      guard isHighlighted, !reduceMotion else {
+        impactPulse = false
+        return
+      }
+      withAnimation(SoloMotion.impact) { impactPulse = true }
+      try? await Task.sleep(for: .milliseconds(180))
+      guard !Task.isCancelled else { return }
+      withAnimation(SoloMotion.settle) { impactPulse = false }
+    }
     .accessibilityElement(children: .combine)
     .accessibilityLabel("\(precedent.recallTitle). \(precedent.outcome.summary)")
     .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")

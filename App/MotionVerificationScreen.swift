@@ -93,7 +93,7 @@ struct MotionVerificationScreen: View {
         .overlay { RoundedRectangle(cornerRadius: 22).stroke(selected ? SoloTheme.purple : .white.opacity(0.1), lineWidth: selected ? 3 : 1) }
         .shadow(color: selected ? SoloTheme.purple.opacity(0.5) : .clear, radius: 16, y: 8)
       }
-      .buttonStyle(QAPressStyle(reduceMotion: reduceMotion))
+      .buttonStyle(SoloPressStyle(scale: 0.96))
       .scaleEffect(selected ? 1.035 : 1)
       .animation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion), value: selected)
       .accessibilityLabel("Aurora motion QA selection card")
@@ -257,13 +257,4 @@ struct MotionVerificationScreen: View {
   }
 }
 
-private struct QAPressStyle: ButtonStyle {
-  var reduceMotion: Bool
-
-  func makeBody(configuration: Configuration) -> some View {
-    configuration.label
-      .scaleEffect(configuration.isPressed && !reduceMotion ? 0.96 : 1)
-      .animation(reduceMotion ? nil : .smooth(duration: 0.08), value: configuration.isPressed)
-  }
-}
 #endif

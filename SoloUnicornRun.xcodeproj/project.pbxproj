@@ -92,6 +92,7 @@
 		F27000000000000000000002 /* LiveWorkspaceSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27000000000000000000012 /* LiveWorkspaceSurface.swift */; };
 		F27000000000000000000003 /* MotionVerificationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27000000000000000000013 /* MotionVerificationScreen.swift */; };
 		F28000000000000000000001 /* AgentPortraitAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = F28000000000000000000011 /* AgentPortraitAsset.swift */; };
+		B28000000000000000000001 /* OutcomeBackdropMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -191,6 +192,7 @@
 		F27000000000000000000012 /* LiveWorkspaceSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkspaceSurface.swift; sourceTree = "<group>"; };
 		F27000000000000000000013 /* MotionVerificationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionVerificationScreen.swift; sourceTree = "<group>"; };
 		F28000000000000000000011 /* AgentPortraitAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentPortraitAsset.swift; sourceTree = "<group>"; };
+		B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutcomeBackdropMotionTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -239,6 +241,7 @@
 				E10000000000000000000022 /* GameplayMotionTests.swift */,
 				E10000000000000000000020 /* GameStoreTestSupport.swift */,
 				F26000000000000000000002 /* RevenueCatImportBoundaryTests.swift */,
+				B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -433,6 +436,7 @@
 				E30000000000000000000012 /* GameplayMotionTests.swift in Sources */,
 				E30000000000000000000010 /* GameStoreTestSupport.swift in Sources */,
 				F26000000000000000000001 /* RevenueCatImportBoundaryTests.swift in Sources */,
+				B28000000000000000000001 /* OutcomeBackdropMotionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
