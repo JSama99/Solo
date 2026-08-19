@@ -7,6 +7,7 @@ struct FounderComputerScreen: View {
 
   @Environment(FounderProgressionStore.self) private var progression
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @State private var selectedAgentID: String?
   @State private var assignmentDestination: AssignmentDestination?
   @State private var restCandidate: RestCandidate?
@@ -172,21 +173,30 @@ struct FounderComputerScreen: View {
 
   private var hud: some View {
     VStack(alignment: .leading, spacing: 10) {
-      HStack {
-        Text("FOUNDER COMPUTER").font(.caption.weight(.bold)).foregroundStyle(SoloTheme.cyan)
-        Spacer()
-        Label(store.sprintPhase.title, systemImage: store.sprintPhase.symbol)
-          .font(.caption.weight(.bold))
-          .contentTransition(.interpolate)
-          .symbolEffect(.bounce, value: store.sprintPhase)
-          .id(store.sprintPhase)
-          .transition(.opacity.combined(with: .move(edge: .trailing)))
+      Group {
+        if dynamicTypeSize.isAccessibilitySize {
+          VStack(alignment: .leading, spacing: 8) {
+            hudTitle
+            hudPhase
+          }
+        } else {
+          HStack {
+            hudTitle
+            Spacer()
+            hudPhase
+          }
+        }
       }
-      HStack(spacing: 8) {
-        HUDMetricView(label: "Runway", value: store.stats.runway, unit: "d", symbol: "calendar")
-        HUDMetricView(label: "Energy", value: store.stats.energy, symbol: "battery.75percent")
-        HUDMetricView(label: "Trust", value: store.stats.trust, symbol: "checkmark.shield")
-        HUDMetricView(label: "Attention", value: store.attentionRemaining, maximum: store.attentionMaximum, symbol: "eye")
+      Group {
+        if dynamicTypeSize.isAccessibilitySize {
+          LazyVGrid(columns: accessibilityMetricColumns, alignment: .leading, spacing: 8) {
+            hudMetrics
+          }
+        } else {
+          HStack(spacing: 8) {
+            hudMetrics
+          }
+        }
       }
       Text("Venture \(store.venture) · Sprint \(store.sprint)/12 · \(store.chapter.name)").font(.caption).foregroundStyle(.secondary)
     }
@@ -195,6 +205,34 @@ struct FounderComputerScreen: View {
     .overlay { RoundedRectangle(cornerRadius: 18).stroke(SoloTheme.cyan.opacity(commitPulse ? 0.7 : 0), lineWidth: 1.5) }
     .animation(SoloMotion.resolved(SoloMotion.impact, reduceMotion: reduceMotion), value: commitPulse)
     .gameplayMotion(value: store.sprintPhase)
+  }
+
+  private var hudTitle: some View {
+    Text("FOUNDER COMPUTER")
+      .font(.caption.weight(.bold))
+      .foregroundStyle(SoloTheme.cyan)
+      .fixedSize(horizontal: false, vertical: true)
+  }
+
+  private var hudPhase: some View {
+    Label(store.sprintPhase.title, systemImage: store.sprintPhase.symbol)
+      .font(.caption.weight(.bold))
+      .fixedSize(horizontal: false, vertical: true)
+      .contentTransition(.interpolate)
+      .symbolEffect(.bounce, value: store.sprintPhase)
+      .id(store.sprintPhase)
+      .transition(.opacity.combined(with: .move(edge: .trailing)))
+  }
+
+  @ViewBuilder private var hudMetrics: some View {
+    HUDMetricView(label: "Runway", value: store.stats.runway, unit: "d", symbol: "calendar")
+    HUDMetricView(label: "Energy", value: store.stats.energy, symbol: "battery.75percent")
+    HUDMetricView(label: "Trust", value: store.stats.trust, symbol: "checkmark.shield")
+    HUDMetricView(label: "Attention", value: store.attentionRemaining, maximum: store.attentionMaximum, symbol: "eye")
+  }
+
+  private var accessibilityMetricColumns: [GridItem] {
+    [GridItem(.flexible(), alignment: .leading)]
   }
 
   private var commandDeck: some View {
@@ -395,6 +433,7 @@ struct AgentWorkspaceCard: View {
   var canAssign: Bool
   var canReview: Bool
   var canRest: Bool
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   var accent: Color { switch station.agentID { case "aurora": SoloTheme.purple; case "stacks": SoloTheme.cyan; case "brio": SoloTheme.coral; default: SoloTheme.mint } }
 
   var body: some View {
@@ -443,32 +482,57 @@ struct AgentWorkspaceCard: View {
   }
 
   private var identity: some View {
-    HStack {
-      AgentPortrait(agentID: station.agentID, initials: station.initials, name: station.name, accent: accent, state: station.semanticState, selected: selected, reduceMotion: reduceMotion)
-      VStack(alignment: .leading) {
-        Text(station.name).font(selected ? .title3.weight(.bold) : .headline.weight(.bold))
-        HStack(spacing: 3) {
-          Text(station.role.rawValue + " · Level ")
-          Text(String(station.progression.level)).contentTransition(.numericText(value: Double(station.progression.level)))
+    Group {
+      if dynamicTypeSize.isAccessibilitySize {
+        VStack(alignment: .leading, spacing: 10) {
+          AgentPortrait(agentID: station.agentID, initials: station.initials, name: station.name, accent: accent, state: station.semanticState, selected: selected, reduceMotion: reduceMotion)
+          identityText
+          statusLabel
         }
-        .font(.caption).foregroundStyle(.secondary)
+      } else {
+        HStack {
+          AgentPortrait(agentID: station.agentID, initials: station.initials, name: station.name, accent: accent, state: station.semanticState, selected: selected, reduceMotion: reduceMotion)
+          identityText
+          Spacer()
+          statusLabel
+        }
       }
-      Spacer()
-      Label(isResting ? "Resting" : effectivePhase.statusLabel, systemImage: isResting ? "bed.double.fill" : station.semanticState.glyph)
-        .font(.caption.weight(.bold)).foregroundStyle(accent)
-        .contentTransition(.interpolate)
-        .symbolEffect(.bounce, value: station.semanticState)
     }
     .gameplayMotion(.celebration, value: station.progression.level)
   }
 
+  private var identityText: some View {
+    VStack(alignment: .leading) {
+      Text(station.name).font(selected ? .title3.weight(.bold) : .headline.weight(.bold))
+      HStack(spacing: 3) {
+        Text(station.role.rawValue + " · Level ")
+        Text(String(station.progression.level)).contentTransition(.numericText(value: Double(station.progression.level)))
+      }
+      .font(.caption).foregroundStyle(.secondary)
+    }
+    .fixedSize(horizontal: false, vertical: true)
+  }
+
+  private var statusLabel: some View {
+    Label(isResting ? "Resting" : effectivePhase.statusLabel, systemImage: isResting ? "bed.double.fill" : station.semanticState.glyph)
+      .font(.caption.weight(.bold)).foregroundStyle(accent)
+      .fixedSize(horizontal: false, vertical: true)
+      .contentTransition(.interpolate)
+      .symbolEffect(.bounce, value: station.semanticState)
+  }
+
   private var attributes: some View {
     VStack(alignment: .leading, spacing: 7) {
-      HStack(spacing: 8) {
-        attribute("Stress", station.progression.stressBand.label, "gauge.with.dots.needle.50percent")
-        attribute("Trust", "\(Int(station.trust.rounded()))", "checkmark.shield")
-        attribute("XP", "\(station.progression.xp)", "sparkles")
-        attribute("Focus", station.progression.specialization ?? station.role.rawValue, station.role.symbol)
+      Group {
+        if dynamicTypeSize.isAccessibilitySize {
+          LazyVGrid(columns: [GridItem(.flexible(), alignment: .leading)], alignment: .leading, spacing: 8) {
+            attributeViews
+          }
+        } else {
+          HStack(spacing: 8) {
+            attributeViews
+          }
+        }
       }
       if selected {
         HStack(spacing: 8) {
@@ -481,6 +545,13 @@ struct AgentWorkspaceCard: View {
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .gameplayMotion(value: StatusSnapshot(stress: station.progression.stressBand, trust: station.trustBand))
+  }
+
+  @ViewBuilder private var attributeViews: some View {
+    attribute("Stress", station.progression.stressBand.label, "gauge.with.dots.needle.50percent")
+    attribute("Trust", "\(Int(station.trust.rounded()))", "checkmark.shield")
+    attribute("XP", "\(station.progression.xp)", "sparkles")
+    attribute("Focus", station.progression.specialization ?? station.role.rawValue, station.role.symbol)
   }
 
   private var xpProgress: Double {
@@ -501,13 +572,36 @@ struct AgentWorkspaceCard: View {
   private var assignmentSummary: some View {
     VStack(alignment: .leading, spacing: 5) {
       Text("CURRENT ASSIGNMENT").font(.caption2.weight(.black)).foregroundStyle(.secondary)
-      HStack(alignment: .firstTextBaseline, spacing: 8) {
-        Text(headline).font(.subheadline.weight(.semibold)).lineLimit(selected ? 2 : 1)
-        Spacer(minLength: 0)
-        Text(isResting ? "Resting" : effectivePhase.statusLabel).font(.caption2.weight(.bold)).foregroundStyle(accent)
+      Group {
+        if dynamicTypeSize.isAccessibilitySize {
+          VStack(alignment: .leading, spacing: 6) {
+            assignmentHeadline
+            assignmentStatus
+          }
+        } else {
+          HStack(alignment: .firstTextBaseline, spacing: 8) {
+            assignmentHeadline
+            Spacer(minLength: 0)
+            assignmentStatus
+          }
+        }
       }
       if selected && effectivePhase == .working { ProgressView(value: presentation?.progress ?? 0.45).tint(accent) }
     }
+  }
+
+  private var assignmentHeadline: some View {
+    Text(headline)
+      .font(.subheadline.weight(.semibold))
+      .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : (selected ? 2 : 1))
+      .fixedSize(horizontal: false, vertical: true)
+  }
+
+  private var assignmentStatus: some View {
+    Text(isResting ? "Resting" : effectivePhase.statusLabel)
+      .font(.caption2.weight(.bold))
+      .foregroundStyle(accent)
+      .fixedSize(horizontal: false, vertical: true)
   }
 
   private var compactWorkspace: some View {
