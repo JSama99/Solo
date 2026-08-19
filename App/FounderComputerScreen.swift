@@ -27,27 +27,32 @@ struct FounderComputerScreen: View {
 
   var body: some View {
     ScrollViewReader { proxy in
-      ScrollView {
-        LazyVStack(spacing: 16) {
-          hud.founderEntrance(order: 0)
-          FounderReviewStrip(store: store, presentation: presentation, onSelectAgent: beginReviewFocus, onCommit: commit)
-            .gameplayMotion(value: store.sprintPhase)
-            .founderEntrance(order: 1)
-          ForEach(orderedStations) { station in
-            workspaceCard(for: station)
-            .id(station.id)
-            .opacity(isReviewFocused && selectedAgentID != station.agentID ? 0.86 : 1)
-            .founderEntrance(order: rank(station.agentID) + 2)
+      GeometryReader { geometry in
+        let layout = FounderComputerLayout(width: geometry.size.width)
+        ScrollView {
+          Group {
+            if layout.usesSidebar {
+              HStack(alignment: .top, spacing: layout.spacing) {
+                primaryColumn
+                  .frame(maxWidth: .infinity, alignment: .top)
+                sideColumn
+                  .frame(width: layout.sidebarWidth, alignment: .top)
+              }
+            } else {
+              LazyVStack(spacing: layout.spacing) {
+                primaryColumn
+                sideColumn
+              }
+            }
           }
-          evidenceDrawer.founderEntrance(order: 5)
-          commandDeck.founderEntrance(order: 6)
+          .padding(layout.padding)
+          .frame(maxWidth: layout.maxContentWidth, alignment: .top)
+          .frame(maxWidth: .infinity, alignment: .top)
+          .scrollTargetLayout()
         }
-        .padding(16)
-        .frame(maxWidth: .infinity)
-        .scrollTargetLayout()
+        .scrollTargetBehavior(.viewAligned)
+        .safeAreaPadding(.bottom, 96)
       }
-      .scrollTargetBehavior(.viewAligned)
-      .safeAreaPadding(.bottom, 96)
       .onAppear { selectedAgentID = selectedAgentID ?? orderedStations.first?.id }
       .onChange(of: selectedAgentID) { _, id in
         guard let id else { return }
@@ -101,6 +106,28 @@ struct FounderComputerScreen: View {
       Button("Cancel", role: .cancel) { }
     } message: {
       Text(restCandidate?.hasAssignment == true ? "Rest clears the unreviewed assignment. The agent performs no task and recovers stress when the sprint commits." : "The agent performs no task and recovers stress when the sprint commits.")
+    }
+  }
+
+  private var primaryColumn: some View {
+    LazyVStack(spacing: 16) {
+      hud.founderEntrance(order: 0)
+      FounderReviewStrip(store: store, presentation: presentation, onSelectAgent: beginReviewFocus, onCommit: commit)
+        .gameplayMotion(value: store.sprintPhase)
+        .founderEntrance(order: 1)
+      ForEach(orderedStations) { station in
+        workspaceCard(for: station)
+          .id(station.id)
+          .opacity(isReviewFocused && selectedAgentID != station.agentID ? 0.86 : 1)
+          .founderEntrance(order: rank(station.agentID) + 2)
+      }
+    }
+  }
+
+  private var sideColumn: some View {
+    LazyVStack(spacing: 16) {
+      evidenceDrawer.founderEntrance(order: 5)
+      commandDeck.founderEntrance(order: 6)
     }
   }
 
@@ -377,6 +404,16 @@ struct FounderComputerScreen: View {
 
 private struct AssignmentDestination: Identifiable { var agentID: String; var id: String { agentID } }
 private struct RestCandidate: Identifiable { var agentID: String; var name: String; var hasAssignment: Bool; var id: String { agentID } }
+
+private struct FounderComputerLayout {
+  var width: CGFloat
+
+  var usesSidebar: Bool { width >= 900 }
+  var spacing: CGFloat { usesSidebar ? 18 : 16 }
+  var padding: CGFloat { usesSidebar ? 20 : 16 }
+  var sidebarWidth: CGFloat { min(360, max(320, width * 0.30)) }
+  var maxContentWidth: CGFloat { usesSidebar ? 1180 : 720 }
+}
 
 private struct AgentPortrait: View {
   var agentID: String
