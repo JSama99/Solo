@@ -92,6 +92,7 @@
 		F27000000000000000000002 /* LiveWorkspaceSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27000000000000000000012 /* LiveWorkspaceSurface.swift */; };
 		F27000000000000000000003 /* MotionVerificationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27000000000000000000013 /* MotionVerificationScreen.swift */; };
 		F28000000000000000000001 /* AgentPortraitAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = F28000000000000000000011 /* AgentPortraitAsset.swift */; };
+		B28100000000000000000003 /* AgentWorkstationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28100000000000000000013 /* AgentWorkstationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -191,6 +192,7 @@
 		F27000000000000000000012 /* LiveWorkspaceSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkspaceSurface.swift; sourceTree = "<group>"; };
 		F27000000000000000000013 /* MotionVerificationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionVerificationScreen.swift; sourceTree = "<group>"; };
 		F28000000000000000000011 /* AgentPortraitAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentPortraitAsset.swift; sourceTree = "<group>"; };
+		B28100000000000000000013 /* AgentWorkstationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentWorkstationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -219,6 +221,7 @@
 			isa = PBXGroup;
 			children = (
 				2513145C1504A166E8177382 /* GameStoreTests.swift */,
+				B28100000000000000000013 /* AgentWorkstationTests.swift */,
 				B10000000000000000000020 /* FounderPassGateTests.swift */,
 				B10000000000000000000021 /* HindsightTests.swift */,
 				C1000000000000000000000E /* FacilityProgressionTests.swift */,
@@ -413,6 +416,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */,
+				B28100000000000000000003 /* AgentWorkstationTests.swift in Sources */,
 				B20000000000000000000020 /* FounderPassGateTests.swift in Sources */,
 				B20000000000000000000021 /* HindsightTests.swift in Sources */,
 				C2000000000000000000000E /* FacilityProgressionTests.swift in Sources */,
