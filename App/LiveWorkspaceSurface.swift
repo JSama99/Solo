@@ -76,6 +76,9 @@ struct LiveWorkspaceSurface: View {
     .accessibilityElement(children: .combine)
     .accessibilityLabel(Text("Live workspace, \(phase.statusLabel)"))
     .accessibilityValue(taskTitle ?? "No task assigned")
+    // Keep the instrument panel legible at accessibility sizes without changing
+    // its fixed animation canvas; VoiceOver still receives the uncropped status.
+    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
   }
 
   @ViewBuilder

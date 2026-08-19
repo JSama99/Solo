@@ -39,15 +39,13 @@ struct FounderComputerScreen: View {
             .founderEntrance(order: rank(station.agentID) + 2)
           }
           evidenceDrawer.founderEntrance(order: 5)
-          commandDeck.founderEntrance(order: 6)
         }
         .padding(16)
         .frame(maxWidth: .infinity)
         .scrollTargetLayout()
       }
       .scrollTargetBehavior(.viewAligned)
-      .safeAreaPadding(.bottom, 96)
-      .onAppear { selectedAgentID = selectedAgentID ?? orderedStations.first?.id }
+      .safeAreaPadding(.bottom, 16)
       .onChange(of: selectedAgentID) { _, id in
         guard let id else { return }
         withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) { proxy.scrollTo(id, anchor: .center) }
@@ -164,9 +162,14 @@ struct FounderComputerScreen: View {
       onReview: { review(agentID) },
       onRest: { restCandidate = .init(agentID: agentID, name: station.name, hasAssignment: assignedTask != nil) },
       onResolve: { choice in guard let taskID = assignedTask?.id else { return }; resolve(taskID: taskID, choice: choice) },
-      canAssign: canAssign,
-      canReview: canReview(agentID),
-      canRest: canRest(agentID)
+      availability: AgentWorkstationActionAvailability(
+        sprintPhase: store.sprintPhase,
+        task: assignedTask,
+        presentationPhase: presentation.presentation(for: agentID)?.phase,
+        attentionRemaining: store.attentionRemaining,
+        isResting: store.restingAgentIDs.contains(agentID)
+      ),
+      disabledReason: disabledReason
     )
   }
 
@@ -197,73 +200,6 @@ struct FounderComputerScreen: View {
     .gameplayMotion(value: store.sprintPhase)
   }
 
-  private var commandDeck: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      Text("Selected agent").font(.caption.weight(.bold)).foregroundStyle(.secondary)
-      if let agent = selectedAgent {
-        HStack { Text(agent.name).font(.headline); Spacer(); Text(task(for: agent.id)?.title ?? (store.restingAgentIDs.contains(agent.id) ? "Resting" : "No task")).font(.caption).foregroundStyle(.secondary) }
-        HStack(spacing: 10) {
-          command("Assign", "checklist", enabled: canAssign) { assignmentDestination = .init(agentID: agent.id) }
-          command("Review", "eye", enabled: canReview(agent.id)) { review(agent.id) }
-          command(store.restingAgentIDs.contains(agent.id) ? "Resting" : "Rest", "bed.double", enabled: canRest(agent.id)) { restCandidate = .init(agentID: agent.id, name: agent.name, hasAssignment: task(for: agent.id) != nil) }
-        }
-      } else { Text("Select an agent to issue commands.").foregroundStyle(.secondary) }
-      phaseReason
-    }
-    .padding(14).background(SoloTheme.card, in: .rect(cornerRadius: 18))
-    .gameplayMotion(.emphasis, value: selectedAgentID)
-    .gameplayMotion(value: CommandDeckSnapshot(store: store, selectedAgentID: selectedAgentID))
-  }
-
-  /// The selected agent's command-relevant state: which task is theirs, whether
-  /// it has been reviewed, and whether its resolution is locked in.
-  private struct CommandDeckSnapshot: Equatable {
-    var taskID: UUID?, reviewed: Bool, locked: Bool, resting: Bool, phase: SprintPhase
-    @MainActor init(store: GameStore, selectedAgentID: String?) {
-      let task = store.tasks.first { $0.assignedAgentID != nil && $0.assignedAgentID == selectedAgentID }
-      taskID = task?.id
-      reviewed = task?.isReviewed ?? false
-      locked = task?.resolutionLocked ?? false
-      resting = selectedAgentID.map(store.restingAgentIDs.contains) ?? false
-      phase = store.sprintPhase
-    }
-  }
-
-  private func command(_ title: String, _ symbol: String, enabled: Bool, action: @escaping () -> Void) -> some View {
-    Button(title, systemImage: symbol, action: action)
-      .buttonStyle(.borderedProminent).tint(SoloTheme.purple)
-      .frame(minHeight: 44)
-      .disabled(!enabled)
-      .accessibilityHint(enabled ? "Acts on the selected agent." : disabledReason)
-  }
-
-  @ViewBuilder private func resolutionControls(_ task: SoloTask) -> some View {
-    VStack(alignment: .leading, spacing: 12) {
-      Divider()
-      let agentPresentation = task.assignedAgentID.flatMap(presentation.presentation(for:))
-      if task.resolutionLocked,
-         agentPresentation?.phase != .resolving,
-         let resolution = task.resolution {
-        Label("\(resolution.title) locked", systemImage: "lock.fill")
-          .foregroundStyle(SoloTheme.mint)
-          .symbolEffect(.bounce, value: task.resolutionLocked)
-          .transition(.opacity.combined(with: .scale(scale: 0.88)))
-      } else {
-        Text("Founder resolution required").font(.subheadline.weight(.bold))
-        ForEach(TaskResolutionChoice.allCases) { choice in
-          Button(choice.title, systemImage: choice.symbol) { resolve(taskID: task.id, choice: choice) }
-            .buttonStyle(.borderedProminent)
-            .tint(agentPresentation?.resolutionChoice == choice ? SoloTheme.mint : SoloTheme.purple)
-            .scaleEffect(agentPresentation?.resolutionChoice == choice ? 1.055 : 1)
-            .opacity(agentPresentation?.phase == .resolving && agentPresentation?.resolutionChoice != choice ? 0.4 : 1)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityHint(choice.summary)
-        }
-        Text("Rework: 1 Attention, 4 Energy, 1 Runway. Cross-Check: 1 Attention and an independent model family.").font(.caption2).foregroundStyle(.secondary)
-      }
-    }
-  }
-
   private var evidenceDrawer: some View {
     EvidenceDrawerView(evidence: store.evidence, isExpanded: $evidenceExpanded)
   }
@@ -275,34 +211,28 @@ struct FounderComputerScreen: View {
   }
 
   private func beginReviewFocus(_ id: String) {
-    select(id)
+    expand(id)
   }
 
-  private var phaseReason: some View {
-    Group { if store.sprintPhase == .founderEvent { Text("Resolve the founder dilemma to unlock team controls.") } else if let blocker = store.commitBlockerMessage { Text(blocker) } }
-      .font(.caption).foregroundStyle(.secondary)
-  }
-  private var selectedAgent: SoloAgent? { selectedAgentID.flatMap(agent(for:)) }
-  private var canAssign: Bool { store.sprintPhase == .chooseCommitments || store.sprintPhase == .assignTeam }
   private var disabledReason: String { store.sprintPhase == .founderEvent ? "Resolve the founder dilemma first." : "This action is unavailable in the current phase." }
-  private func canReview(_ id: String) -> Bool {
-    guard let task = task(for: id) else { return false }
-    let phase = presentation.presentation(for: id)?.phase
-    let presentationReady = phase == nil || phase == .awaitingReview
-    return presentationReady && store.sprintPhase == .reviewAndResolve && !task.isReviewed && task.result != nil && store.attentionRemaining > 0
-  }
-  private func canRest(_ id: String) -> Bool { (store.sprintPhase == .chooseCommitments || store.sprintPhase == .assignTeam) && !store.restingAgentIDs.contains(id) }
   private func task(for agentID: String) -> SoloTask? { store.tasks.first { $0.assignedAgentID == agentID } }
   private func agent(for id: String) -> SoloAgent? { store.agents.first { $0.id == id } }
   private func rank(_ id: String) -> Int { ["aurora", "stacks", "brio"].firstIndex(of: id) ?? 100 + (store.agents.firstIndex { $0.id == id } ?? 0) }
 
   private func select(_ id: String) {
+    withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) {
+      selectedAgentID = AgentWorkstationConfiguration.toggledSelection(current: selectedAgentID, tapped: id)
+    }
+    announce("\(agent(for: id)?.name ?? "Agent") \(selectedAgentID == id ? "expanded" : "collapsed").")
+  }
+
+  private func expand(_ id: String) {
     withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) { selectedAgentID = id }
-    announce("\(agent(for: id)?.name ?? "Agent") selected.")
   }
 
   private func review(_ id: String) {
     guard let task = task(for: id) else { return }
+    guard activeReviewTaskID != task.id else { return }
     selectedAgentID = id
     withAnimation(SoloMotion.resolved(SoloMotion.focus, reduceMotion: reduceMotion)) {
       activeReviewTaskID = task.id
@@ -316,6 +246,10 @@ struct FounderComputerScreen: View {
   }
 
   private func resolve(taskID: UUID, choice: TaskResolutionChoice) {
+    guard let task = store.tasks.first(where: { $0.id == taskID }),
+          task.isReviewed,
+          !task.resolutionLocked,
+          presentation.presentation(for: task.assignedAgentID ?? "")?.phase != .resolving else { return }
     resolutionFocus = choice
     resolutionTick += 1
     withAnimation(MotionKind.celebration.resolved(reduceMotion: reduceMotion)) {
@@ -360,13 +294,16 @@ private struct AgentPortrait: View {
       if let image {
         Image(uiImage: image)
           .resizable()
-          .scaledToFill()
+          .scaledToFit()
           .accessibilityHidden(true)
       } else {
         Text(initials).font(.headline.weight(.heavy)).foregroundStyle(accent)
       }
     }
-    .frame(width: selected ? 88 : 62, height: selected ? 88 : 62)
+    .frame(
+      width: selected ? AgentWorkstationConfiguration.expandedPortraitSize : AgentWorkstationConfiguration.collapsedPortraitSize,
+      height: selected ? AgentWorkstationConfiguration.expandedPortraitSize : AgentWorkstationConfiguration.collapsedPortraitSize
+    )
     .clipShape(RoundedRectangle(cornerRadius: 18))
     .overlay { RoundedRectangle(cornerRadius: 18).stroke(accent.opacity(selected ? 0.95 : 0.5), lineWidth: selected ? 2 : 1) }
     .shadow(color: accent.opacity(selected ? 0.42 : 0.14), radius: selected ? 10 : 4)
@@ -392,9 +329,9 @@ struct AgentWorkspaceCard: View {
   var onReview: () -> Void
   var onRest: () -> Void
   var onResolve: (TaskResolutionChoice) -> Void
-  var canAssign: Bool
-  var canReview: Bool
-  var canRest: Bool
+  var availability: AgentWorkstationActionAvailability
+  var disabledReason: String
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   var accent: Color { switch station.agentID { case "aurora": SoloTheme.purple; case "stacks": SoloTheme.cyan; case "brio": SoloTheme.coral; default: SoloTheme.mint } }
 
   var body: some View {
@@ -409,12 +346,10 @@ struct AgentWorkspaceCard: View {
       }
     }
     .padding(16)
-    .frame(maxWidth: .infinity, minHeight: selected ? 520 : 210, alignment: .leading)
+    .frame(maxWidth: .infinity, alignment: .leading)
     .background(accent.opacity(selected ? 0.20 : 0.07), in: .rect(cornerRadius: 22))
     .overlay { RoundedRectangle(cornerRadius: 22).stroke(selected ? accent : .white.opacity(0.09), lineWidth: selected ? 2.5 : 1) }
     .shadow(color: selected ? accent.opacity(0.30) : .clear, radius: selected ? 14 : 0, y: selected ? 7 : 0)
-    .contentShape(.rect(cornerRadius: 22))
-    .onTapGesture(perform: action)
     .scaleEffect(cardScale)
     .phaseAnimator([0, 1, 2], trigger: selected) { content, phase in
       content.scaleEffect(!reduceMotion && selected && phase == 1 ? 1.035 : 1)
@@ -424,11 +359,7 @@ struct AgentWorkspaceCard: View {
     .gameplayMotion(.emphasis, value: selected)
     .gameplayMotion(value: WorkSnapshot(taskID: task?.id, hasResult: task?.result != nil, reviewed: task?.isReviewed ?? false, state: station.semanticState, resting: isResting))
     .accessibilityElement(children: .contain)
-    .accessibilityLabel("\(station.name), \(station.role.rawValue) agent")
-    .accessibilityValue(station.accessibilityValue)
-    .accessibilityHint("Select this agent workspace")
-    .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
-    .accessibilityAction { action() }
+    .accessibilityIdentifier("agent-card-\(station.agentID)")
   }
 
   /// The work state this card animates on: a new assignment, a delivered
@@ -443,32 +374,48 @@ struct AgentWorkspaceCard: View {
   }
 
   private var identity: some View {
-    HStack {
-      AgentPortrait(agentID: station.agentID, initials: station.initials, name: station.name, accent: accent, state: station.semanticState, selected: selected, reduceMotion: reduceMotion)
-      VStack(alignment: .leading) {
-        Text(station.name).font(selected ? .title3.weight(.bold) : .headline.weight(.bold))
-        HStack(spacing: 3) {
-          Text(station.role.rawValue + " · Level ")
-          Text(String(station.progression.level)).contentTransition(.numericText(value: Double(station.progression.level)))
+    Button(action: action) {
+      HStack(alignment: .center, spacing: 12) {
+        AgentPortrait(agentID: station.agentID, initials: station.initials, name: station.name, accent: accent, state: station.semanticState, selected: selected, reduceMotion: reduceMotion)
+        VStack(alignment: .leading, spacing: 5) {
+          Text(station.name).font(selected ? .title2.weight(.bold) : .headline.weight(.bold))
+          Text(station.role.workstationRole)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.secondary)
+          HStack(spacing: 3) {
+            Text("Level ")
+            Text(String(station.progression.level)).contentTransition(.numericText(value: Double(station.progression.level)))
+          }
+          .font(.caption2).foregroundStyle(.secondary)
+          Label(isResting ? "Resting" : effectivePhase.statusLabel, systemImage: isResting ? "bed.double.fill" : station.semanticState.glyph)
+            .font(.caption.weight(.bold)).foregroundStyle(accent)
+            .contentTransition(.interpolate)
+            .symbolEffect(.bounce, value: station.semanticState)
         }
-        .font(.caption).foregroundStyle(.secondary)
+        Spacer(minLength: 4)
+        Image(systemName: selected ? "chevron.up" : "chevron.down")
+          .font(.caption.weight(.bold))
+          .foregroundStyle(.secondary)
       }
-      Spacer()
-      Label(isResting ? "Resting" : effectivePhase.statusLabel, systemImage: isResting ? "bed.double.fill" : station.semanticState.glyph)
-        .font(.caption.weight(.bold)).foregroundStyle(accent)
-        .contentTransition(.interpolate)
-        .symbolEffect(.bounce, value: station.semanticState)
+      .contentShape(.rect)
     }
+    .buttonStyle(.plain)
+    .accessibilityLabel("\(station.name), \(station.role.workstationRole)")
+    .accessibilityValue("\(selected ? "Expanded" : "Collapsed"). \(isResting ? "Resting. " : "")\(station.accessibilityValue)")
+    .accessibilityHint(selected ? "Collapses this agent workstation" : "Expands this agent workstation")
+    .accessibilityIdentifier("agent-card-\(station.agentID)-toggle")
     .gameplayMotion(.celebration, value: station.progression.level)
   }
 
   private var attributes: some View {
     VStack(alignment: .leading, spacing: 7) {
-      HStack(spacing: 8) {
-        attribute("Stress", station.progression.stressBand.label, "gauge.with.dots.needle.50percent")
-        attribute("Trust", "\(Int(station.trust.rounded()))", "checkmark.shield")
-        attribute("XP", "\(station.progression.xp)", "sparkles")
-        attribute("Focus", station.progression.specialization ?? station.role.rawValue, station.role.symbol)
+      if selected {
+        sectionHeading("ATTRIBUTES")
+      }
+      LazyVGrid(columns: attributeColumns, alignment: .leading, spacing: 8) {
+        ForEach(AgentWorkstationConfiguration.visibleAttributes(expanded: selected), id: \.self) { item in
+          attribute(item)
+        }
       }
       if selected {
         HStack(spacing: 8) {
@@ -483,24 +430,49 @@ struct AgentWorkspaceCard: View {
     .gameplayMotion(value: StatusSnapshot(stress: station.progression.stressBand, trust: station.trustBand))
   }
 
+  private var attributeColumns: [GridItem] {
+    let count = dynamicTypeSize.isAccessibilitySize ? 1 : 2
+    return Array(repeating: GridItem(.flexible(), alignment: .leading), count: count)
+  }
+
   private var xpProgress: Double {
     let current = AgentLevel.threshold(forLevel: station.progression.level)
     guard let next = AgentLevel.nextThreshold(forXP: station.progression.xp) else { return 1 }
     return min(1, max(0, Double(station.progression.xp - current) / Double(next - current)))
   }
 
-  private func attribute(_ title: String, _ value: String, _ symbol: String) -> some View {
-    Label { VStack(alignment: .leading, spacing: 1) { Text(title.uppercased()).font(.system(size: 9, weight: .bold)).foregroundStyle(.secondary); Text(value).font(.caption2.weight(.semibold)).lineLimit(1) } } icon: {
-      Image(systemName: symbol).font(.caption2).foregroundStyle(accent)
+  private func attribute(_ item: AgentWorkstationConfiguration.Attribute) -> some View {
+    let detail = attributeDetail(item)
+    return Label {
+      VStack(alignment: .leading, spacing: 2) {
+        Text(item.rawValue.uppercased()).font(.caption2.weight(.bold)).foregroundStyle(.secondary)
+        Text(detail.value).font(.caption.weight(.semibold)).fixedSize(horizontal: false, vertical: true)
+      }
+    } icon: {
+      Image(systemName: detail.symbol).font(.caption).foregroundStyle(accent)
     }
-    .padding(.horizontal, 8).padding(.vertical, 7)
+    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+    .padding(.horizontal, 10).padding(.vertical, 8)
     .background(.black.opacity(0.18), in: RoundedRectangle(cornerRadius: 9))
     .contentTransition(.interpolate)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(item.rawValue)
+    .accessibilityValue(detail.value)
+    .accessibilityIdentifier("agent-card-\(station.agentID)-attribute-\(item.rawValue.lowercased())")
+  }
+
+  private func attributeDetail(_ item: AgentWorkstationConfiguration.Attribute) -> (value: String, symbol: String) {
+    switch item {
+    case .stress: (station.progression.stressBand.label, "gauge.with.dots.needle.50percent")
+    case .trust: ("\(Int(station.trust.rounded()))", "checkmark.shield")
+    case .xp: ("\(station.progression.xp)", "sparkles")
+    case .focus: (station.progression.specialization ?? station.role.rawValue, station.role.symbol)
+    }
   }
 
   private var assignmentSummary: some View {
     VStack(alignment: .leading, spacing: 5) {
-      Text("CURRENT ASSIGNMENT").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+      sectionHeading("CURRENT ASSIGNMENT")
       HStack(alignment: .firstTextBaseline, spacing: 8) {
         Text(headline).font(.subheadline.weight(.semibold)).lineLimit(selected ? 2 : 1)
         Spacer(minLength: 0)
@@ -515,17 +487,19 @@ struct AgentWorkspaceCard: View {
       Image(systemName: station.role.symbol).foregroundStyle(accent)
       Text("LIVE WORKSPACE · \(effectivePhase.statusLabel.uppercased())").font(.caption2.monospaced().weight(.bold)).foregroundStyle(accent.opacity(0.85))
       Spacer()
-      Image(systemName: "chevron.down").font(.caption.weight(.bold)).foregroundStyle(.secondary)
     }
     .padding(.top, 2)
   }
 
   private var expandedContent: some View {
     VStack(alignment: .leading, spacing: 14) {
-      LiveWorkspaceSurface(agentID: station.agentID, taskTitle: task?.title, phase: isResting ? .idle : effectivePhase, progress: presentation?.progress ?? (station.semanticState == .working ? 0.45 : 0), reduceMotion: reduceMotion, expanded: true)
+      VStack(alignment: .leading, spacing: 8) {
+        sectionHeading("LIVE WORKSPACE")
+        LiveWorkspaceSurface(agentID: station.agentID, taskTitle: task?.title, phase: isResting ? .idle : effectivePhase, progress: presentation?.progress ?? (station.semanticState == .working ? 0.45 : 0), reduceMotion: reduceMotion, expanded: true)
+      }
       if let task, let result = task.result, canRevealResult {
         VStack(alignment: .leading, spacing: 8) {
-          Text("RESULT / EVIDENCE").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+          sectionHeading("RESULT / EVIDENCE")
           report(result, reviewed: task.isReviewed, revealStep: max(reviewStage, presentation?.reviewRevealStep ?? 5))
         }
         .transition(.opacity.combined(with: .move(edge: .bottom)))
@@ -536,20 +510,35 @@ struct AgentWorkspaceCard: View {
 
   private var actions: some View {
     VStack(alignment: .leading, spacing: 10) {
-      HStack(spacing: 8) {
-        if task == nil && !isResting { cardAction("Assign", "checklist", onAssign, enabled: canAssign) }
-        if let task, !task.isReviewed && effectivePhase == .awaitingReview { cardAction("Review", "eye", onReview, enabled: canReview) }
-        if !isResting && (task == nil || task?.isReviewed == false) { cardAction("Rest", "bed.double", onRest, enabled: canRest) }
-        if task?.resolutionLocked == true { Label("Resolved", systemImage: "lock.fill").font(.caption.weight(.bold)).foregroundStyle(SoloTheme.mint) }
-        Spacer(minLength: 0)
+      sectionHeading("FOUNDER ACTIONS")
+      if effectivePhase == .awaitingReview {
+        cardAction("Review", "eye", onReview, enabled: availability.canReview, prominent: true)
       }
+      cardAction("Assign", "checklist", onAssign, enabled: availability.canAssign, prominent: effectivePhase != .awaitingReview)
+      cardAction(isResting ? "Resting" : "Rest", "bed.double", onRest, enabled: availability.canRest)
       if let task, task.isReviewed { inlineResolution(task) }
     }
     .padding(.top, 2)
   }
 
-  private func cardAction(_ title: String, _ symbol: String, _ operation: @escaping () -> Void, enabled: Bool) -> some View {
-    Button(title, systemImage: symbol, action: operation).buttonStyle(.borderedProminent).tint(accent).controlSize(.small).frame(minHeight: 38).disabled(!enabled)
+  private func cardAction(_ title: String, _ symbol: String, _ operation: @escaping () -> Void, enabled: Bool, prominent: Bool = false) -> some View {
+    Button(action: operation) {
+      Label(title, systemImage: symbol)
+        .font(.subheadline.weight(.semibold))
+        .foregroundStyle(prominent ? Color.white : accent)
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        .padding(.horizontal, 14)
+        .background(prominent ? accent : accent.opacity(0.12), in: .rect(cornerRadius: 12))
+        .overlay {
+          RoundedRectangle(cornerRadius: 12)
+            .stroke(accent.opacity(prominent ? 0 : 0.55), lineWidth: 1)
+        }
+    }
+      .buttonStyle(.plain)
+      .disabled(!enabled)
+      .opacity(enabled ? 1 : 0.45)
+      .accessibilityHint(enabled ? "Acts on \(station.name)." : disabledReason)
+      .accessibilityIdentifier("agent-card-\(station.agentID)-action-\(title.lowercased())")
   }
 
   @ViewBuilder private func inlineResolution(_ task: SoloTask) -> some View {
@@ -562,7 +551,9 @@ struct AgentWorkspaceCard: View {
           Button(choice.title, systemImage: choice.symbol) { onResolve(choice) }
             .buttonStyle(.bordered)
             .tint(resolutionFocus == choice ? SoloTheme.mint : accent)
-            .disabled(effectivePhase == .resolving)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .disabled(!availability.canResolve)
+            .accessibilityHint(availability.canResolve ? choice.summary : "Resolution is unavailable until Founder Review is complete.")
         }
       }
     }
@@ -640,6 +631,25 @@ struct AgentWorkspaceCard: View {
       }
     } icon: {
       Image(systemName: symbol).foregroundStyle(accent)
+    }
+  }
+
+  private func sectionHeading(_ title: String) -> some View {
+    Text(title)
+      .font(.caption2.weight(.black))
+      .tracking(0.6)
+      .foregroundStyle(.secondary)
+      .accessibilityAddTraits(.isHeader)
+  }
+}
+
+private extension AgentRole {
+  var workstationRole: String {
+    switch self {
+    case .research: "Research & Evidence"
+    case .engineering: "Engineering & Execution"
+    case .marketing: "Growth & Campaigns"
+    case .general: "General Operations"
     }
   }
 }
