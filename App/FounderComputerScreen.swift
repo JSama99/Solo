@@ -21,6 +21,8 @@ struct FounderComputerScreen: View {
   @State private var resolutionFocus: TaskResolutionChoice?
   @State private var commitPulse = false
   @State private var evidencePulse = false
+  @State private var hasPresentedRoster = false
+  @State private var commitInProgress = false
   #if DEBUG
   @State private var showsMotionVerification = false
   #endif
@@ -29,18 +31,25 @@ struct FounderComputerScreen: View {
     ScrollViewReader { proxy in
       ScrollView {
         LazyVStack(spacing: 16) {
-          hud.founderEntrance(order: 0)
-          FounderReviewStrip(store: store, presentation: presentation, onSelectAgent: beginReviewFocus, onCommit: commit)
-            .gameplayMotion(value: store.sprintPhase)
-            .founderEntrance(order: 1)
+          hud.founderEntrance(order: 0, alreadyPresented: hasPresentedRoster)
+          FounderWorkstationCard(
+            store: store,
+            presentation: presentation,
+            expanded: selectedAgentID == nil,
+            commitInProgress: commitInProgress,
+            onSelect: selectFounder,
+            onSelectAgent: beginReviewFocus,
+            onCommit: commit
+          )
+          .id("founder")
+          .founderEntrance(order: 1, alreadyPresented: hasPresentedRoster)
           ForEach(orderedStations) { station in
             workspaceCard(for: station)
             .id(station.id)
             .opacity(isReviewFocused && selectedAgentID != station.agentID ? 0.86 : 1)
-            .founderEntrance(order: rank(station.agentID) + 2)
+            .founderEntrance(order: rank(station.agentID) + 2, alreadyPresented: hasPresentedRoster)
           }
-          evidenceDrawer.founderEntrance(order: 5)
-          commandDeck.founderEntrance(order: 6)
+          evidenceDrawer.founderEntrance(order: 5, alreadyPresented: hasPresentedRoster)
         }
         .padding(16)
         .frame(maxWidth: .infinity)
@@ -48,7 +57,13 @@ struct FounderComputerScreen: View {
       }
       .scrollTargetBehavior(.viewAligned)
       .safeAreaPadding(.bottom, 96)
-      .onAppear { selectedAgentID = selectedAgentID ?? orderedStations.first?.id }
+      .onAppear {
+        guard !hasPresentedRoster else { return }
+        Task { @MainActor in
+          try? await Task.sleep(for: .seconds(1))
+          hasPresentedRoster = true
+        }
+      }
       .onChange(of: selectedAgentID) { _, id in
         guard let id else { return }
         withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) { proxy.scrollTo(id, anchor: .center) }
@@ -122,7 +137,7 @@ struct FounderComputerScreen: View {
       guard !reduceMotion else { return }
       Task { @MainActor in
         for stage in 2...5 {
-          try? await Task.sleep(for: .milliseconds(75))
+          try? await Task.sleep(for: .milliseconds(320))
           guard activeReviewTaskID == taskID else { return }
           withAnimation(SoloMotion.arrival) { reviewStage = stage }
         }
@@ -227,79 +242,12 @@ struct FounderComputerScreen: View {
   @ViewBuilder private var hudMetrics: some View {
     HUDMetricView(label: "Runway", value: store.stats.runway, unit: "d", symbol: "calendar")
     HUDMetricView(label: "Energy", value: store.stats.energy, symbol: "battery.75percent")
-    HUDMetricView(label: "Trust", value: store.stats.trust, symbol: "checkmark.shield")
+    HUDMetricView(label: "Momentum", value: store.stats.momentum, symbol: "arrow.up.right")
     HUDMetricView(label: "Attention", value: store.attentionRemaining, maximum: store.attentionMaximum, symbol: "eye")
   }
 
   private var accessibilityMetricColumns: [GridItem] {
     [GridItem(.flexible(), alignment: .leading)]
-  }
-
-  private var commandDeck: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      Text("Selected agent").font(.caption.weight(.bold)).foregroundStyle(.secondary)
-      if let agent = selectedAgent {
-        HStack { Text(agent.name).font(.headline); Spacer(); Text(task(for: agent.id)?.title ?? (store.restingAgentIDs.contains(agent.id) ? "Resting" : "No task")).font(.caption).foregroundStyle(.secondary) }
-        HStack(spacing: 10) {
-          command("Assign", "checklist", enabled: canAssign) { assignmentDestination = .init(agentID: agent.id) }
-          command("Review", "eye", enabled: canReview(agent.id)) { review(agent.id) }
-          command(store.restingAgentIDs.contains(agent.id) ? "Resting" : "Rest", "bed.double", enabled: canRest(agent.id)) { restCandidate = .init(agentID: agent.id, name: agent.name, hasAssignment: task(for: agent.id) != nil) }
-        }
-      } else { Text("Select an agent to issue commands.").foregroundStyle(.secondary) }
-      phaseReason
-    }
-    .padding(14).background(SoloTheme.card, in: .rect(cornerRadius: 18))
-    .gameplayMotion(.emphasis, value: selectedAgentID)
-    .gameplayMotion(value: CommandDeckSnapshot(store: store, selectedAgentID: selectedAgentID))
-  }
-
-  /// The selected agent's command-relevant state: which task is theirs, whether
-  /// it has been reviewed, and whether its resolution is locked in.
-  private struct CommandDeckSnapshot: Equatable {
-    var taskID: UUID?, reviewed: Bool, locked: Bool, resting: Bool, phase: SprintPhase
-    @MainActor init(store: GameStore, selectedAgentID: String?) {
-      let task = store.tasks.first { $0.assignedAgentID != nil && $0.assignedAgentID == selectedAgentID }
-      taskID = task?.id
-      reviewed = task?.isReviewed ?? false
-      locked = task?.resolutionLocked ?? false
-      resting = selectedAgentID.map(store.restingAgentIDs.contains) ?? false
-      phase = store.sprintPhase
-    }
-  }
-
-  private func command(_ title: String, _ symbol: String, enabled: Bool, action: @escaping () -> Void) -> some View {
-    Button(title, systemImage: symbol, action: action)
-      .buttonStyle(.borderedProminent).tint(SoloTheme.purple)
-      .frame(minHeight: 44)
-      .disabled(!enabled)
-      .accessibilityHint(enabled ? "Acts on the selected agent." : disabledReason)
-  }
-
-  @ViewBuilder private func resolutionControls(_ task: SoloTask) -> some View {
-    VStack(alignment: .leading, spacing: 12) {
-      Divider()
-      let agentPresentation = task.assignedAgentID.flatMap(presentation.presentation(for:))
-      if task.resolutionLocked,
-         agentPresentation?.phase != .resolving,
-         let resolution = task.resolution {
-        Label("\(resolution.title) locked", systemImage: "lock.fill")
-          .foregroundStyle(SoloTheme.mint)
-          .symbolEffect(.bounce, value: task.resolutionLocked)
-          .transition(.opacity.combined(with: .scale(scale: 0.88)))
-      } else {
-        Text("Founder resolution required").font(.subheadline.weight(.bold))
-        ForEach(TaskResolutionChoice.allCases) { choice in
-          Button(choice.title, systemImage: choice.symbol) { resolve(taskID: task.id, choice: choice) }
-            .buttonStyle(.borderedProminent)
-            .tint(agentPresentation?.resolutionChoice == choice ? SoloTheme.mint : SoloTheme.purple)
-            .scaleEffect(agentPresentation?.resolutionChoice == choice ? 1.055 : 1)
-            .opacity(agentPresentation?.phase == .resolving && agentPresentation?.resolutionChoice != choice ? 0.4 : 1)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityHint(choice.summary)
-        }
-        Text("Rework: 1 Attention, 4 Energy, 1 Runway. Cross-Check: 1 Attention and an independent model family.").font(.caption2).foregroundStyle(.secondary)
-      }
-    }
   }
 
   private var evidenceDrawer: some View {
@@ -316,13 +264,7 @@ struct FounderComputerScreen: View {
     select(id)
   }
 
-  private var phaseReason: some View {
-    Group { if store.sprintPhase == .founderEvent { Text("Resolve the founder dilemma to unlock team controls.") } else if let blocker = store.commitBlockerMessage { Text(blocker) } }
-      .font(.caption).foregroundStyle(.secondary)
-  }
-  private var selectedAgent: SoloAgent? { selectedAgentID.flatMap(agent(for:)) }
   private var canAssign: Bool { store.sprintPhase == .chooseCommitments || store.sprintPhase == .assignTeam }
-  private var disabledReason: String { store.sprintPhase == .founderEvent ? "Resolve the founder dilemma first." : "This action is unavailable in the current phase." }
   private func canReview(_ id: String) -> Bool {
     guard let task = task(for: id) else { return false }
     let phase = presentation.presentation(for: id)?.phase
@@ -337,6 +279,11 @@ struct FounderComputerScreen: View {
   private func select(_ id: String) {
     withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) { selectedAgentID = id }
     announce("\(agent(for: id)?.name ?? "Agent") selected.")
+  }
+
+  private func selectFounder() {
+    withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) { selectedAgentID = nil }
+    announce("Founder workstation selected.")
   }
 
   private func review(_ id: String) {
@@ -363,8 +310,15 @@ struct FounderComputerScreen: View {
   }
 
   private func commit() {
+    guard !commitInProgress, store.canCommitSprint else { return }
+    commitInProgress = true
     withAnimation(MotionKind.celebration.resolved(reduceMotion: reduceMotion)) {
       presentation.commit(in: store, progression: progression)
+    }
+    announce("Sprint committed. Company metrics updated for sprint \(store.sprint).")
+    Task { @MainActor in
+      try? await Task.sleep(for: .milliseconds(700))
+      commitInProgress = false
     }
   }
 
@@ -404,7 +358,7 @@ private struct AgentPortrait: View {
         Text(initials).font(.headline.weight(.heavy)).foregroundStyle(accent)
       }
     }
-    .frame(width: selected ? 88 : 62, height: selected ? 88 : 62)
+    .frame(width: selected ? 116 : 64, height: selected ? 116 : 64)
     .clipShape(RoundedRectangle(cornerRadius: 18))
     .overlay { RoundedRectangle(cornerRadius: 18).stroke(accent.opacity(selected ? 0.95 : 0.5), lineWidth: selected ? 2 : 1) }
     .shadow(color: accent.opacity(selected ? 0.42 : 0.14), radius: selected ? 10 : 4)
@@ -434,7 +388,7 @@ struct AgentWorkspaceCard: View {
   var canReview: Bool
   var canRest: Bool
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-  var accent: Color { switch station.agentID { case "aurora": SoloTheme.purple; case "stacks": SoloTheme.cyan; case "brio": SoloTheme.coral; default: SoloTheme.mint } }
+  var accent: Color { switch station.agentID { case "aurora": SoloTheme.cyan; case "stacks": SoloTheme.amber; case "brio": SoloTheme.coral; default: SoloTheme.mint } }
 
   var body: some View {
     VStack(alignment: .leading, spacing: selected ? 16 : 12) {
@@ -448,7 +402,7 @@ struct AgentWorkspaceCard: View {
       }
     }
     .padding(16)
-    .frame(maxWidth: .infinity, minHeight: selected ? 520 : 210, alignment: .leading)
+    .frame(maxWidth: .infinity, alignment: .leading)
     .background(accent.opacity(selected ? 0.20 : 0.07), in: .rect(cornerRadius: 22))
     .overlay { RoundedRectangle(cornerRadius: 22).stroke(selected ? accent : .white.opacity(0.09), lineWidth: selected ? 2.5 : 1) }
     .shadow(color: selected ? accent.opacity(0.30) : .clear, radius: selected ? 14 : 0, y: selected ? 7 : 0)
@@ -528,9 +482,13 @@ struct AgentWorkspaceCard: View {
           LazyVGrid(columns: [GridItem(.flexible(), alignment: .leading)], alignment: .leading, spacing: 8) {
             attributeViews
           }
+        } else if selected {
+          LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 8) {
+            attributeViews
+          }
         } else {
           HStack(spacing: 8) {
-            attributeViews
+            compactAttributeViews
           }
         }
       }
@@ -550,8 +508,15 @@ struct AgentWorkspaceCard: View {
   @ViewBuilder private var attributeViews: some View {
     attribute("Stress", station.progression.stressBand.label, "gauge.with.dots.needle.50percent")
     attribute("Trust", "\(Int(station.trust.rounded()))", "checkmark.shield")
-    attribute("XP", "\(station.progression.xp)", "sparkles")
-    attribute("Focus", station.progression.specialization ?? station.role.rawValue, station.role.symbol)
+    if selected {
+      attribute("XP", "\(station.progression.xp)", "sparkles")
+      attribute("Focus", station.progression.specialization ?? station.role.rawValue, station.role.symbol)
+    }
+  }
+
+  @ViewBuilder private var compactAttributeViews: some View {
+    attribute("Stress", station.progression.stressBand.label, "gauge.with.dots.needle.50percent")
+    attribute("Trust", "\(Int(station.trust.rounded()))", "checkmark.shield")
   }
 
   private var xpProgress: Double {
@@ -605,11 +570,18 @@ struct AgentWorkspaceCard: View {
   }
 
   private var compactWorkspace: some View {
-    HStack(spacing: 8) {
-      Image(systemName: station.role.symbol).foregroundStyle(accent)
-      Text("LIVE WORKSPACE · \(effectivePhase.statusLabel.uppercased())").font(.caption2.monospaced().weight(.bold)).foregroundStyle(accent.opacity(0.85))
-      Spacer()
-      Image(systemName: "chevron.down").font(.caption.weight(.bold)).foregroundStyle(.secondary)
+    VStack(alignment: .leading, spacing: 6) {
+      HStack(spacing: 8) {
+        Image(systemName: station.role.symbol).foregroundStyle(accent)
+        Text("LIVE WORKSPACE · \(effectivePhase.statusLabel.uppercased())").font(.caption2.monospaced().weight(.bold)).foregroundStyle(accent.opacity(0.85))
+        Spacer()
+        Image(systemName: "chevron.down").font(.caption.weight(.bold)).foregroundStyle(.secondary)
+      }
+      if effectivePhase == .awaitingReview {
+        Label("Founder attention required", systemImage: "eye.fill")
+          .font(.caption.weight(.bold))
+          .foregroundStyle(SoloTheme.amber)
+      }
     }
     .padding(.top, 2)
   }
@@ -621,6 +593,16 @@ struct AgentWorkspaceCard: View {
         VStack(alignment: .leading, spacing: 8) {
           Text("RESULT / EVIDENCE").font(.caption2.weight(.black)).foregroundStyle(.secondary)
           report(result, reviewed: task.isReviewed, revealStep: max(reviewStage, presentation?.reviewRevealStep ?? 5))
+        }
+        .padding(10)
+        .background(resultBackground(result), in: .rect(cornerRadius: 12))
+        .overlay(alignment: .topTrailing) {
+          if effectivePhase == .reviewing {
+            Label("INSPECTING", systemImage: "magnifyingglass")
+              .font(.caption2.weight(.black))
+              .foregroundStyle(accent)
+              .padding(8)
+          }
         }
         .transition(.opacity.combined(with: .move(edge: .bottom)))
       }
@@ -656,6 +638,8 @@ struct AgentWorkspaceCard: View {
           Button(choice.title, systemImage: choice.symbol) { onResolve(choice) }
             .buttonStyle(.bordered)
             .tint(resolutionFocus == choice ? SoloTheme.mint : accent)
+            .opacity(effectivePhase == .resolving && resolutionFocus != choice ? 0.35 : 1)
+            .scaleEffect(effectivePhase == .resolving && resolutionFocus == choice ? 1.03 : 1)
             .disabled(effectivePhase == .resolving)
         }
       }
@@ -736,29 +720,14 @@ struct AgentWorkspaceCard: View {
       Image(systemName: symbol).foregroundStyle(accent)
     }
   }
-}
 
-private struct StacksWorkspaceActivity: View {
-  var accent: Color
-  var active: Bool
-  @State private var build = false
-  var body: some View {
-    HStack(spacing: 3) { ForEach(0..<5, id: \.self) { index in RoundedRectangle(cornerRadius: 1).fill(accent).frame(width: 5, height: index.isMultiple(of: 2) ? 8 : 13).opacity(build ? (index < 3 ? 1 : 0.3) : 0.25) } }
-      .offset(x: build ? 3 : -3)
-      .onAppear { update() }.onChange(of: active) { _, _ in update() }
+  private func resultBackground(_ result: TaskResult) -> Color {
+    guard task?.isReviewed == true else { return accent.opacity(0.08) }
+    switch result.verificationState {
+    case .confirmed, .verified: return SoloTheme.mint.opacity(0.10)
+    default: return SoloTheme.amber.opacity(0.10)
+    }
   }
-  private func update() { withAnimation(active ? .easeInOut(duration: 0.72).repeatForever(autoreverses: true) : nil) { build = active } }
-}
-
-private struct BrioWorkspaceActivity: View {
-  var accent: Color
-  var active: Bool
-  @State private var signal = false
-  var body: some View {
-    HStack(alignment: .center, spacing: 3) { ForEach(0..<4, id: \.self) { index in Capsule().fill(accent).frame(width: 3, height: signal ? CGFloat(7 + index * 3) : CGFloat(5 + (3 - index) * 2)).opacity(signal ? 1 : 0.32) } }
-      .onAppear { update() }.onChange(of: active) { _, _ in update() }
-  }
-  private func update() { withAnimation(active ? .easeInOut(duration: 0.68).repeatForever(autoreverses: true) : nil) { signal = active } }
 }
 
 private struct TaskAssignmentSheet: View {
@@ -801,73 +770,255 @@ private struct TaskAssignmentSheet: View {
   }
 }
 
-private struct FounderReviewStrip: View {
-  var store: GameStore
-  var presentation: PresentationCoordinator
-  var onSelectAgent: (String) -> Void
-  var onCommit: () -> Void
-  @Environment(\.accessibilityReduceMotion) private var reduceMotion
-  @State private var attentionPulse = false
+struct FounderWorkstationSummary: Equatable {
+  enum Readiness: Equatable {
+    case workInProgress
+    case founderReviewPending
+    case resolutionRequired
+    case blocked(String)
+    case ready
 
-  var body: some View {
-    Group {
-      switch store.sprintPhase {
-      case .founderEvent:
-        if let dilemma = store.activeDilemma {
-          VStack(alignment: .leading, spacing: 8) {
-            Text(dilemma.title).font(.headline)
-            Text(dilemma.setup).font(.caption).foregroundStyle(.secondary)
-            ForEach(dilemma.choices) { choice in
-              Button(choice.title) { store.selectDilemmaChoice(choice.id) }.buttonStyle(.bordered).accessibilityHint(choice.consequencePreview)
-              Text(choice.consequencePreview).font(.caption2).foregroundStyle(.secondary)
-            }
-          }.padding(14)
-        }
-      case .readyToCommit:
-        VStack(alignment: .leading, spacing: 8) {
-          Text("Ready to commit").font(.headline)
-          Button("Commit Sprint", systemImage: "bolt.fill", action: onCommit).buttonStyle(.borderedProminent).disabled(!store.canCommitSprint)
-          if let blocker = store.commitBlockerMessage { Text(blocker).font(.caption).foregroundStyle(.secondary) }
-        }.padding(14)
-      default:
-        if let task = store.tasks.first(where: { $0.assignedAgentID != nil && !$0.isReviewed }) {
-          if let agentID = task.assignedAgentID,
-             let phase = presentation.presentation(for: agentID)?.phase,
-             phase != .awaitingReview {
-            Label("\(phase.statusLabel): \(task.title)", systemImage: phase == .workComplete ? "checkmark.seal.fill" : "waveform.path.ecg")
-              .font(.subheadline.weight(.bold))
-              .foregroundStyle(phase == .workComplete ? SoloTheme.mint : SoloTheme.cyan)
-              .padding(14)
-              .contentTransition(.interpolate)
-          } else {
-            strip("Review \(task.title)", task: task)
-          }
-        }
-        else if let task = store.tasks.first(where: { $0.isReviewed && !$0.resolutionLocked }) { strip("Resolve \(task.title)", task: task) }
-        else { Text("Assign work, then return for Founder Review. Attention \(store.attentionRemaining)/\(store.attentionMaximum)").padding(14) }
+    var message: String {
+      switch self {
+      case .workInProgress: "Agent work is still in progress"
+      case .founderReviewPending: "Founder review pending"
+      case .resolutionRequired: "Resolution required"
+      case .blocked(let message): message
+      case .ready: "Ready to commit this sprint"
       }
     }
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .background(SoloTheme.card, in: .rect(cornerRadius: 18))
-    .scaleEffect(attentionPulse && !reduceMotion ? 1.015 : 1)
-    .overlay { RoundedRectangle(cornerRadius: 18).stroke(SoloTheme.mint.opacity(attentionPulse ? 0.7 : 0), lineWidth: 1.5) }
-    .animation(SoloMotion.resolved(SoloMotion.impact, reduceMotion: reduceMotion), value: attentionPulse)
-    .onChange(of: reviewableTaskID) { _, id in
-      guard id != nil, !reduceMotion else { return }
-      attentionPulse = true
-      Task { @MainActor in try? await Task.sleep(for: .milliseconds(280)); attentionPulse = false }
+  }
+
+  var inProgressCount: Int
+  var reviewCount: Int
+  var resolutionCount: Int
+  var readiness: Readiness
+
+  @MainActor
+  init(store: GameStore, presentation: PresentationCoordinator) {
+    inProgressCount = store.tasks.compactMap(\.assignedAgentID).filter { agentID in
+      guard let phase = presentation.presentation(for: agentID)?.phase else { return false }
+      return phase == .assignmentReceived || phase == .working || phase == .workComplete
+    }.count
+    reviewCount = store.tasks.filter { $0.assignedAgentID != nil && !$0.isReviewed && $0.result != nil }.count
+    resolutionCount = store.tasks.filter { $0.isReviewed && !$0.resolutionLocked }.count
+
+    if inProgressCount > 0 {
+      readiness = .workInProgress
+    } else if resolutionCount > 0 {
+      readiness = .resolutionRequired
+    } else if reviewCount > 0 && store.attentionRemaining > 0 {
+      readiness = .founderReviewPending
+    } else if let blocker = store.commitBlockerMessage {
+      readiness = .blocked(blocker)
+    } else {
+      readiness = .ready
     }
-    .transition(.opacity.combined(with: .scale(scale: 0.98)))
+  }
+}
+
+private struct FounderWorkstationCard: View {
+  var store: GameStore
+  var presentation: PresentationCoordinator
+  var expanded: Bool
+  var commitInProgress: Bool
+  var onSelect: () -> Void
+  var onSelectAgent: (String) -> Void
+  var onCommit: () -> Void
+
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  private let accent = SoloTheme.amber
+
+  private var summary: FounderWorkstationSummary {
+    FounderWorkstationSummary(store: store, presentation: presentation)
   }
 
-  private var reviewableTaskID: UUID? {
-    store.tasks.first(where: { $0.assignedAgentID != nil && !$0.isReviewed && $0.result != nil })?.id
+  var body: some View {
+    VStack(alignment: .leading, spacing: expanded ? 16 : 12) {
+      identity
+      metrics
+      pendingWork
+      if expanded {
+        founderCommand
+        readiness
+        commitAction
+      }
+    }
+    .padding(16)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(accent.opacity(expanded ? 0.14 : 0.06), in: .rect(cornerRadius: 22))
+    .overlay {
+      RoundedRectangle(cornerRadius: 22)
+        .stroke(expanded ? accent.opacity(isReady ? 0.95 : 0.62) : .white.opacity(0.09), lineWidth: expanded ? 2.5 : 1)
+    }
+    .shadow(color: isReady && expanded ? accent.opacity(0.28) : .clear, radius: 16, y: 7)
+    .contentShape(.rect(cornerRadius: 22))
+    .onTapGesture(perform: onSelect)
+    .gameplayMotion(.emphasis, value: expanded)
+    .gameplayMotion(value: summary)
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel("Founder workstation")
+    .accessibilityValue(summary.readiness.message)
+    .accessibilityAddTraits(expanded ? [.isButton, .isSelected] : .isButton)
+    .accessibilityAction { onSelect() }
   }
 
-  private func strip(_ title: String, task: SoloTask) -> some View {
-    Button { if let id = task.assignedAgentID { onSelectAgent(id) } } label: {
-      Label(title, systemImage: "eye").frame(maxWidth: .infinity, alignment: .leading).padding(14)
+  private var identity: some View {
+    HStack(spacing: 12) {
+      ZStack {
+        RoundedRectangle(cornerRadius: 18).fill(accent.opacity(0.16))
+        Image(systemName: "building.2.crop.circle.fill")
+          .font(.system(size: expanded ? 45 : 28, weight: .semibold))
+          .foregroundStyle(accent)
+      }
+      .frame(width: expanded ? 88 : 64, height: expanded ? 88 : 64)
+      .overlay { RoundedRectangle(cornerRadius: 18).stroke(accent.opacity(0.7), lineWidth: 1.5) }
+      VStack(alignment: .leading, spacing: 3) {
+        Text(store.founderName.isEmpty ? "FOUNDER" : store.founderName.uppercased())
+          .font(expanded ? .title3.weight(.bold) : .headline.weight(.bold))
+        Text("Strategic Command · \(store.chapter.name)")
+          .font(.caption)
+          .foregroundStyle(.secondary)
+        Label(store.sprintPhase.title, systemImage: store.sprintPhase.symbol)
+          .font(.caption.weight(.bold))
+          .foregroundStyle(accent)
+      }
+      Spacer(minLength: 0)
+      if !expanded {
+        Image(systemName: "chevron.down").font(.caption.weight(.bold)).foregroundStyle(.secondary)
+      }
+    }
+  }
+
+  private var metrics: some View {
+    LazyVGrid(columns: metricColumns, alignment: .leading, spacing: 8) {
+      founderMetric("Energy", "\(store.stats.energy)", "battery.75percent")
+      founderMetric("Attention", "\(store.attentionRemaining)/\(store.attentionMaximum)", "eye")
+      founderMetric("Runway", "\(store.stats.runway)d", "calendar")
+      founderMetric("Momentum", "\(store.stats.momentum)", "arrow.up.right")
+      if expanded {
+        founderMetric("Company Trust", "\(store.stats.trust)", "checkmark.shield")
+        founderMetric("Revenue", store.stats.revenue.formatted(.currency(code: "USD").precision(.fractionLength(0))), "dollarsign")
+        founderMetric("Capital", store.stats.capital.formatted(.currency(code: "USD").precision(.fractionLength(0))), "banknote")
+      }
+    }
+  }
+
+  private var metricColumns: [GridItem] {
+    dynamicTypeSize.isAccessibilitySize ? [GridItem(.flexible())] : [GridItem(.flexible()), GridItem(.flexible())]
+  }
+
+  private func founderMetric(_ label: String, _ value: String, _ symbol: String) -> some View {
+    Label {
+      VStack(alignment: .leading, spacing: 1) {
+        Text(label.uppercased()).font(.caption2.weight(.bold)).foregroundStyle(.secondary)
+        Text(value).font(.caption.weight(.semibold)).contentTransition(.interpolate)
+      }
+    } icon: {
+      Image(systemName: symbol).foregroundStyle(accent)
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(8)
+    .background(.black.opacity(0.16), in: .rect(cornerRadius: 10))
+  }
+
+  private var pendingWork: some View {
+    VStack(alignment: .leading, spacing: 7) {
+      Text("PENDING WORK").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+      pendingRow("Work in progress", summary.inProgressCount, "waveform.path.ecg")
+      pendingRow("Founder reviews", summary.reviewCount, "eye.fill")
+      pendingRow("Resolution decisions", summary.resolutionCount, "lock.open.fill")
+    }
+  }
+
+  private func pendingRow(_ title: String, _ count: Int, _ symbol: String) -> some View {
+    Label {
+      HStack { Text(title); Spacer(); Text("\(count)").monospacedDigit().fontWeight(.bold) }
+    } icon: { Image(systemName: symbol).foregroundStyle(count > 0 ? accent : SoloTheme.mint) }
+      .font(.caption)
+      .accessibilityLabel("\(title), \(count)")
+  }
+
+  @ViewBuilder private var founderCommand: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      Text("FOUNDER COMMAND").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+      if store.sprintPhase == .founderEvent, let dilemma = store.activeDilemma {
+        Text(dilemma.title).font(.headline)
+        Text(dilemma.setup).font(.caption).foregroundStyle(.secondary)
+        ForEach(dilemma.choices) { choice in
+          Button(choice.title) { store.selectDilemmaChoice(choice.id) }
+            .buttonStyle(.bordered)
+            .tint(accent)
+            .accessibilityHint(choice.consequencePreview)
+          Text(choice.consequencePreview).font(.caption2).foregroundStyle(.secondary)
+        }
+      } else if let task = nextAttentionTask, let agentID = task.assignedAgentID {
+        Button { onSelectAgent(agentID) } label: {
+          Label(commandTitle(for: task), systemImage: task.isReviewed ? "lock.open.fill" : "eye.fill")
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
+            .background(accent.opacity(0.12), in: .rect(cornerRadius: 12))
+        }
+        .buttonStyle(SoloPressStyle())
+      } else {
+        Label("No Founder decisions waiting", systemImage: "checkmark.circle.fill")
+          .font(.subheadline.weight(.semibold))
+          .foregroundStyle(SoloTheme.mint)
+      }
+    }
+  }
+
+  private var readiness: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      Text("SPRINT READINESS").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+      Label(summary.readiness.message, systemImage: readinessSymbol)
+        .font(.headline)
+        .foregroundStyle(isReady ? accent : .primary)
+      readinessCheck("Agent work complete", complete: summary.inProgressCount == 0)
+      readinessCheck("Founder reviews handled or Attention exhausted", complete: summary.reviewCount == 0 || store.attentionRemaining == 0)
+      readinessCheck("Resolution decisions locked", complete: summary.resolutionCount == 0)
+      readinessCheck("Canonical sprint blockers cleared", complete: store.commitBlockerMessage == nil)
+    }
+  }
+
+  private func readinessCheck(_ title: String, complete: Bool) -> some View {
+    Label(title, systemImage: complete ? "checkmark.circle.fill" : "circle")
+      .font(.caption)
+      .foregroundStyle(complete ? SoloTheme.mint : .secondary)
+  }
+
+  private var commitAction: some View {
+    Button(action: onCommit) {
+      Label(commitInProgress ? "COMMITTING SPRINT…" : "COMMIT SPRINT", systemImage: commitInProgress ? "hourglass" : "arrow.forward.square.fill")
+        .font(.headline.weight(.black))
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .background(isReady ? accent.gradient : Color.secondary.opacity(0.18).gradient, in: .rect(cornerRadius: 14))
+        .foregroundStyle(isReady ? Color.black : Color.secondary)
     }
     .buttonStyle(SoloPressStyle())
+    .disabled(!isReady || commitInProgress)
+    .accessibilityHint(isReady ? "Advances immediately through the canonical sprint simulation." : summary.readiness.message)
+  }
+
+  private var nextAttentionTask: SoloTask? {
+    store.tasks.first { $0.isReviewed && !$0.resolutionLocked }
+      ?? store.tasks.first { $0.assignedAgentID != nil && !$0.isReviewed && $0.result != nil }
+  }
+
+  private func commandTitle(for task: SoloTask) -> String {
+    task.isReviewed ? "Resolve \(task.title)" : "Review \(task.title)"
+  }
+
+  private var isReady: Bool { summary.readiness == .ready && store.canCommitSprint }
+  private var readinessSymbol: String {
+    switch summary.readiness {
+    case .workInProgress: "waveform.path.ecg"
+    case .founderReviewPending: "eye.fill"
+    case .resolutionRequired: "lock.open.fill"
+    case .blocked: "exclamationmark.triangle.fill"
+    case .ready: "checkmark.seal.fill"
+    }
   }
 }

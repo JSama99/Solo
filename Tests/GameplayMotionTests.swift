@@ -215,6 +215,52 @@ final class GameplayMotionTests: XCTestCase {
     XCTAssertTrue(try XCTUnwrap(store.tasks.first(where: { $0.id == task.id })).isReviewed)
   }
 
+  func testFounderWorkstationSummaryTracksCanonicalReadinessLifecycle() async throws {
+    let store = makeStore(seed: 9_106)
+    let task = try XCTUnwrap(store.tasks.first)
+    let agent = try XCTUnwrap(store.agents.first)
+    let presentation = PresentationCoordinator(timing: .immediate)
+
+    presentation.assign(agentID: agent.id, to: task.id, in: store)
+    XCTAssertEqual(
+      FounderWorkstationSummary(store: store, presentation: presentation).readiness,
+      .workInProgress
+    )
+
+    for _ in 0..<8 { await Task.yield() }
+    var summary = FounderWorkstationSummary(store: store, presentation: presentation)
+    XCTAssertEqual(summary.reviewCount, 1)
+    XCTAssertEqual(summary.readiness, .founderReviewPending)
+
+    presentation.review(taskID: task.id, in: store)
+    summary = FounderWorkstationSummary(store: store, presentation: presentation)
+    XCTAssertEqual(summary.resolutionCount, 1)
+    XCTAssertEqual(summary.readiness, .resolutionRequired)
+
+    presentation.resolve(taskID: task.id, choice: .approve, in: store)
+    if let choice = store.activeDilemma?.choices.first {
+      store.selectDilemmaChoice(choice.id)
+    }
+    summary = FounderWorkstationSummary(store: store, presentation: presentation)
+    XCTAssertEqual(summary.resolutionCount, 0)
+    XCTAssertEqual(summary.readiness, .ready)
+    XCTAssertTrue(store.canCommitSprint)
+  }
+
+  func testFounderSummaryDerivationDoesNotMutateSimulation() throws {
+    let store = makeStore(seed: 9_107)
+    let presentation = PresentationCoordinator()
+    let tasksBefore = store.tasks
+    let statsBefore = store.stats
+    let evidenceIDsBefore = store.evidence.map(\.id)
+
+    _ = FounderWorkstationSummary(store: store, presentation: presentation)
+
+    XCTAssertEqual(store.tasks, tasksBefore)
+    XCTAssertEqual(store.stats, statsBefore)
+    XCTAssertEqual(store.evidence.map(\.id), evidenceIDsBefore)
+  }
+
   #if DEBUG
   func testDebugMotionPreviewDoesNotMutateGameStore() {
     let store = makeStore(seed: 9_104)
