@@ -47,6 +47,14 @@ final class GameStore {
   var randomNumberGenerator = SeededRandomNumberGenerator(seed: 0)
   var correlatedFailureEvent: CorrelatedFailureEvent?
   var pendingEffects: [ScheduledEffect] = []
+  var latentDefects: [LatentDefect] = []
+  private(set) var poachingOffer: PoachingOffer?
+  private(set) var exposedRivalIDs: Set<String> = []
+  var pendingDivergenceOffer: DivergenceOffer?
+  private(set) var activeDivergence: DivergenceBranch?
+  var divergenceRecords: [DivergenceRecord] = []
+  private(set) var forksUsedThisVenture = 0
+  private(set) var rivalDiscontinuities: [RivalDiscontinuity] = []
   var reportCache: [CachedTaskReport] = []
   var dailyChallengeStore = DailyChallengeStore()
   var achievementStore: AchievementStore?
@@ -109,6 +117,7 @@ final class GameStore {
 
   var hasSave: Bool {
     UserDefaults.standard.data(forKey: Self.saveKey) != nil
+      || UserDefaults.standard.data(forKey: Self.v16SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v15SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v14SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v13SaveKey) != nil
@@ -127,7 +136,7 @@ final class GameStore {
   }
 
   var attentionMaximum: Int {
-    DoctrineProfile.profile(for: doctrine).attentionMaximum
+    DoctrineRules.profile(for: doctrine).attentionMaximum
       + (sprint.isMultiple(of: 3) ? (progressionStore?.bonuses.periodicAttentionBonus ?? 0) : 0)
   }
 
@@ -138,7 +147,16 @@ final class GameStore {
     guard let index = feedPosts.firstIndex(where: { $0.id == postID }), feedPosts[index].resolvedActionID == nil,
           let action = feedPosts[index].actions.first(where: { $0.id == actionID }),
           !action.requiresStatement || statementAvailable else { return }
-    if action.requiresStatement { statementSpent += 1 }
+    if actionID.hasPrefix("counter-poach-") {
+      guard founderAttentionSpent < attentionMaximum, let offer = poachingOffer,
+            actionID == "counter-poach-\(offer.agentID)",
+            let agentIndex = agents.firstIndex(where: { $0.id == offer.agentID }) else { return }
+      founderAttentionSpent += 1
+      agents[agentIndex].relationship = clamped(agents[agentIndex].relationship + 22)
+      poachingOffer = nil
+    } else if action.requiresStatement {
+      statementSpent += 1
+    }
     feedPosts[index].resolvedActionID = actionID
     pendingFeedEffects = pendingFeedEffects + action.effects
     stats.coverage = min(100, max(-100, stats.coverage + action.coverageDelta))
@@ -153,8 +171,126 @@ final class GameStore {
       sprint: sprint,
       careerSeed: RivalEngine.careerSeed(founderName: founderName, productType: productType),
       player: stats,
-      playerFlags: companyFlags
+      playerFlags: companyFlags,
+      revealedDoctrine: currentDoctrineProfile.revealed,
+      exposedRivalIDs: exposedRivalIDs,
+      discontinuities: rivalDiscontinuities
     )
+  }
+
+  var currentDoctrineProfile: DoctrineProfile {
+    DoctrineProfile.derive(evidence: evidence, agents: agents, decisions: decisionHistory, flags: companyFlags)
+  }
+
+  func prepareDivergenceOfferIfEligible() -> Bool {
+    if pendingDivergenceOffer != nil { return true }
+    let isScriptedBoundedFork = careerMode == .bounded && venture == 1 && sprint == 6 && forksUsedThisVenture == 0
+    guard careerMode != .daily,
+          careerMode == .continuous || isScriptedBoundedFork,
+          sprint >= 2,
+          activeDivergence == nil,
+          forksUsedThisVenture < (isScriptedBoundedFork ? 1 : Divergence.maximumForksPerVenture),
+          HindsightEngine.isConsequential(projectedPrecedentOutcome()) else { return false }
+    pendingDivergenceOffer = DivergenceOffer(
+      id: "FORK-V\(venture)-S\(sprint)",
+      venture: venture,
+      sprint: sprint,
+      context: currentPrecedentContext()
+    )
+    return true
+  }
+
+  func chooseDivergence(_ choice: ForkChoice) {
+    guard let offer = pendingDivergenceOffer else { return }
+    let profile = currentDoctrineProfile
+    let activeRivals = ContentLibrary.rivalSimulationCompanies.filter { $0.debutVenture <= venture }
+    let rival = careerMode == .bounded
+      ? activeRivals.first(where: { $0.archetype == .copycat })
+      : GhostPolicy.selectRival(from: activeRivals, profile: profile)
+    guard let rival else {
+      pendingDivergenceOffer = nil
+      return
+    }
+    let policy = GhostPolicy.policy(for: rival.archetype, profile: profile)
+    let ghostChoice = choice.opposite
+    let ghostHorizon = careerMode == .bounded ? 3 : Divergence.horizon
+    let ghost = SimulationEngine.runGhost(
+      tasks: tasks,
+      agents: agents,
+      intent: intent,
+      doctrine: doctrine,
+      careerSeed: RivalEngine.careerSeed(founderName: founderName, productType: productType),
+      forkVenture: venture,
+      forkSprint: sprint,
+      choice: ghostChoice,
+      policy: policy,
+      horizon: ghostHorizon
+    )
+    if choice == .holdUnverified,
+       let heldIndex = tasks.indices
+        .filter({ tasks[$0].assignedAgentID != nil && !tasks[$0].isReviewed })
+        .min(by: { (tasks[$0].result?.evidenceCompleteness ?? 101) < (tasks[$1].result?.evidenceCompleteness ?? 101) }) {
+      assign(agentID: nil, to: tasks[heldIndex].id)
+    }
+    activeDivergence = DivergenceBranch(
+      id: offer.id,
+      venture: venture,
+      sprint: sprint,
+      context: offer.context,
+      takenChoice: choice,
+      takenSummary: choice == .shipAll ? "You shipped every committed report." : "You held the least-evidenced report back.",
+      takenOutcome: projectedPrecedentOutcome(),
+      ghostRival: rival,
+      ghostPolicy: policy,
+      ghostOutcome: ghost,
+      collapsedAtCareerSprint: careerSprintIndex + ghostHorizon
+    )
+    forksUsedThisVenture += 1
+    pendingDivergenceOffer = nil
+    save()
+  }
+
+  private func projectedPrecedentOutcome() -> PrecedentOutcome {
+    var outcome = PrecedentOutcome(
+      trustDelta: 0,
+      runwayDelta: -VentureEra.era(for: venture).runwayBurnPerSprint,
+      momentumDelta: intent == .build ? 3 : intent == .learn ? -1 : 0
+    )
+    for task in tasks where task.assignedAgentID != nil {
+      guard let result = task.result else { continue }
+      if !task.isReviewed { outcome.unverifiedCommitted += 1 }
+      if result.verificationState == .overclaimed { outcome.overclaimsSurfaced += 1 }
+      if result.verificationState == .driftDetected { outcome.driftDetections += 1 }
+      outcome.trustDelta += result.immediateEffects.trust + result.delayedEffects.trust
+      outcome.runwayDelta += result.immediateEffects.runway + result.delayedEffects.runway
+      outcome.momentumDelta += result.immediateEffects.momentum + result.delayedEffects.momentum
+    }
+    return outcome
+  }
+
+  private func collapseDivergenceIfDue() {
+    guard let branch = activeDivergence,
+          careerSprintIndex >= branch.collapsedAtCareerSprint else { return }
+    divergenceRecords.append(DivergenceRecord(
+      id: HindsightEngine.identifier(venture: branch.venture + 20_000, sprint: branch.sprint),
+      venture: branch.venture,
+      sprint: branch.sprint,
+      context: branch.context,
+      takenSummary: branch.takenSummary,
+      takenOutcome: branch.takenOutcome,
+      ghostRivalID: branch.ghostRival.id,
+      ghostRivalName: branch.ghostRival.name,
+      ghostArchetype: branch.ghostRival.archetype,
+      ghostSummary: branch.ghostOutcome.summary,
+      ghostOutcome: branch.ghostOutcome.outcome,
+      collapsedAtSprint: sprint
+    ))
+    if let precedentIndex = precedents.firstIndex(where: {
+      $0.venture == branch.venture && $0.sprint == branch.sprint
+    }) {
+      precedents[precedentIndex].counterfactual = branch.ghostOutcome.outcome
+    }
+    activeDivergence = nil
   }
 
   var nextTalentSlot: Int? { agents.count < 4 ? 4 : agents.count < 5 ? 5 : nil }
@@ -426,12 +562,20 @@ final class GameStore {
     careerOutcome = nil
     report = nil
     pendingEffects = []
+    latentDefects = []
+    poachingOffer = nil
+    exposedRivalIDs = []
+    pendingDivergenceOffer = nil
+    activeDivergence = nil
+    divergenceRecords = []
+    forksUsedThisVenture = 0
+    rivalDiscontinuities = []
     reportCache = []
     techComHeadlines = []
     techComRivals = TechComEngine.rivals(seed: seed ?? 0x534F4C4F)
     talentBoardRefreshes = 0
     randomNumberGenerator = SeededRandomNumberGenerator(seed: seed ?? UInt64.random(in: .min ... .max))
-    let startingAdjustment = DoctrineProfile.profile(for: doctrine).startingStatAdjustment
+    let startingAdjustment = DoctrineRules.profile(for: doctrine).startingStatAdjustment
     stats.trust += startingAdjustment.trust
     stats.momentum += startingAdjustment.momentum
     stats.energy += startingAdjustment.energy
@@ -469,6 +613,10 @@ final class GameStore {
        let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
        envelope.version == Self.saveVersion {
       loadedSave = envelope.career
+    } else if let data = UserDefaults.standard.data(forKey: Self.v16SaveKey),
+              let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
+              envelope.version == 16 {
+      loadedSave = migrateV16(envelope.career)
     } else if let data = UserDefaults.standard.data(forKey: Self.v15SaveKey),
               let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
               envelope.version == 15 {
@@ -650,6 +798,15 @@ final class GameStore {
             for: tasks[taskIndex], agent: agent, intent: intent, doctrine: doctrine,
             correlatedFailureEvent: correlatedFailureEvent, allTasks: tasks, allAgents: agents,
             facilityBonuses: facilityBonuses,
+            coordinate: DrawCoordinate(
+              careerSeed: RivalEngine.careerSeed(founderName: founderName, productType: productType),
+              venture: venture,
+              sprint: sprint,
+              taskInstanceID: taskID.uuidString,
+              agentID: agentID,
+              channel: .quality,
+              divergenceSalt: 0
+            ),
             rng: &randomNumberGenerator
           )
           tasks[taskIndex].result = result
@@ -719,7 +876,7 @@ final class GameStore {
     tasks[taskIndex].resolution = .approve
     tasks[taskIndex].resolutionLocked = false
     founderAttentionSpent += 1
-    let reviewEnergy = DoctrineProfile.profile(for: doctrine).reviewEnergyCost
+    let reviewEnergy = DoctrineRules.profile(for: doctrine).reviewEnergyCost
     stats.energy = clamped(stats.energy - reviewEnergy)
     agents[agentIndex].calibration = min(1, agents[agentIndex].calibration + 0.035)
     agents[agentIndex].drift = max(0, agents[agentIndex].drift - 9)
@@ -829,6 +986,9 @@ final class GameStore {
     let dueEffects = pendingEffects.filter { $0.dueCareerSprint <= careerSprintIndex }
     pendingEffects.removeAll { $0.dueCareerSprint <= careerSprintIndex }
     var effects = dueEffects.reduce(SimulationEffects()) { $0 + $1.effects } + pendingFeedEffects
+    let surfacedDefects = latentDefects.filter { $0.surfacesAtCareerSprint <= careerSprintIndex }
+    latentDefects.removeAll { $0.surfacesAtCareerSprint <= careerSprintIndex }
+    effects = surfacedDefects.reduce(effects) { $0 + $1.effects }
     pendingFeedEffects = SimulationEffects()
     for post in feedPosts where post.kind == .pressInquiry && post.resolvedActionID == nil {
       effects.trust -= 3
@@ -862,6 +1022,15 @@ final class GameStore {
     case .sell:
       effects.revenue += 180
     }
+    era.force.modify(
+      &effects,
+      context: EraContext(
+        unverifiedCount: assignedIndices.filter { !tasks[$0].isReviewed }.count,
+        averageDrift: averageDrift,
+        profile: currentDoctrineProfile,
+        flags: companyFlags
+      )
+    )
 
     var strongOutcomes = 0
     var riskyOutcomes = 0
@@ -888,6 +1057,17 @@ final class GameStore {
           )
         )
       }
+      if let defect = SimulationEngine.latentDefect(
+        careerSeed: RivalEngine.careerSeed(founderName: founderName, productType: productType),
+        venture: venture,
+        sprint: sprint,
+        careerSprint: careerSprintIndex,
+        task: tasks[index],
+        agent: agents[agentIndex],
+        result: result
+      ), !latentDefects.contains(where: { $0.id == defect.id }) {
+        latentDefects.append(defect)
+      }
       if tasks[index].isReviewed && result.isStrongForSimulation { strongOutcomes += 1 }
       if result.evidenceCompleteness < 45 || result.correlatedFailureIdentifier != nil {
         riskyOutcomes += 1
@@ -901,7 +1081,7 @@ final class GameStore {
       if !tasks[index].isReviewed {
         result.markUnverified()
         tasks[index].result = result
-        let driftIncrease = DoctrineProfile.profile(for: doctrine).neglectDriftIncrease
+        let driftIncrease = DoctrineRules.profile(for: doctrine).neglectDriftIncrease
         agents[agentIndex].drift = min(100, agents[agentIndex].drift + driftIncrease)
         agents[agentIndex].trust = max(0, agents[agentIndex].trust - (result.isRiskyForSimulation ? 5 : 2))
         recordEvidence(task: tasks[index], agent: agents[agentIndex], result: result)
@@ -956,6 +1136,7 @@ final class GameStore {
       effects: effects,
       reviewedCount: reviewed
     )
+    collapseDivergenceIfDue()
 
     let runLength = careerMode == .daily ? DailyChallenge.sprintsPerRun : Self.sprintsPerVenture
     if sprint == runLength { evaluateVentureObjectiveAtCompletion() }
@@ -1015,6 +1196,8 @@ final class GameStore {
     venture += 1
     recallsShownThisVenture = 0
     activeRecall = nil
+    forksUsedThisVenture = 0
+    rivalDiscontinuities = []
     stats.trackRecord += max(8, (stats.momentum + stats.trust) / 8)
     let earnedRunwayRecovery = max(4, min(10, (stats.trust + stats.momentum) / 24))
     let earnedEnergyRecovery = max(6, min(14, averageRelationship / 8))
@@ -1083,7 +1266,9 @@ final class GameStore {
       crossesEraBoundary: nextEra != era,
       obligations: activeObligations,
       companyFlags: companyFlags.sorted { $0.name < $1.name },
-      averageRelationship: averageRelationship
+      averageRelationship: averageRelationship,
+      doctrineProfile: currentDoctrineProfile,
+      declaredDoctrine: doctrine
     )
     report = nil
     stage = .ventureCheckpoint
@@ -1161,7 +1346,6 @@ final class GameStore {
   /// Surface a matching precedent for the live situation, if one clears the
   /// floor. Consumes no RNG and mutates no simulation value.
   func refreshHindsightRecall() {
-    guard hasFounderPass else { activeRecall = nil; return }
     let recall = HindsightEngine.recall(
       from: precedents,
       matching: currentPrecedentContext(),
@@ -1235,6 +1419,13 @@ final class GameStore {
     careerOutcome = nil
     report = nil
     pendingEffects = []
+    latentDefects = []
+    poachingOffer = nil
+    exposedRivalIDs = []
+    pendingDivergenceOffer = nil
+    activeDivergence = nil
+    divergenceRecords = []
+    forksUsedThisVenture = 0
     reportCache = []
     taskBacklog = []
     founderAttentionSpent = 0
@@ -1265,6 +1456,13 @@ final class GameStore {
     founderAttentionSpent = 0
     restingAgentIDs = []
     defer { refreshHindsightRecall() }
+    if let offer = poachingOffer, offer.dueCareerSprint <= careerSprintIndex {
+      if agents.count > 3 {
+        agents.removeAll { $0.id == offer.agentID }
+        workforceNotifications.append("\(offer.agentName) joined \(offer.rivalName) after the warning went unanswered.")
+      }
+      poachingOffer = nil
+    }
     let profile = ThesisProfile.profile(for: thesis)
     correlatedFailureEvent = SimulationEngine.generateCorrelatedFailureEvent(
       venture: venture, sprint: sprint, agents: agents, rng: &randomNumberGenerator
@@ -1287,7 +1485,118 @@ final class GameStore {
     selectedDilemmaChoiceID = nil
     currentObjective = makeObjective()
     feedPosts = TechComFeedEngine.posts(venture: venture, sprint: sprint, stats: stats, standings: rivalStandings)
+    evaluateRivalDiscontinuities()
+    for event in rivalDiscontinuities where event.venture == venture && event.sprint == sprint {
+      feedPosts.insert(FeedPost(
+        id: event.id,
+        kind: .rivalMove,
+        headline: event.headline,
+        body: "A traceable market discontinuity changed the active rival field.",
+        venture: venture,
+        sprint: sprint
+      ), at: 0)
+    }
+    for defect in latentDefects where defect.surfacesAtCareerSprint == careerSprintIndex {
+      feedPosts.insert(FeedPost(
+        id: "latent-\(defect.id)",
+        kind: .trendSignal,
+        headline: "A delayed defect surfaced",
+        body: defect.receipt,
+        venture: venture,
+        sprint: sprint
+      ), at: 0)
+    }
+    if poachingOffer == nil, agents.count > 3,
+       let candidate = agents
+        .filter({ $0.relationship < 35 && $0.progression.verifiedTasks >= 5 })
+        .sorted(by: { $0.id < $1.id }).first,
+       let rival = rivalStandings.filter({ !$0.isPlayer && $0.strength >= 4 }).sorted(by: { $0.id < $1.id }).first {
+      let offer = PoachingOffer(
+        id: "POACH-\(candidate.id)-\(careerSprintIndex)",
+        agentID: candidate.id,
+        agentName: candidate.name,
+        rivalName: rival.name,
+        dueCareerSprint: careerSprintIndex + 1
+      )
+      poachingOffer = offer
+      feedPosts.insert(FeedPost(
+        id: offer.id,
+        kind: .talentListing,
+        headline: "\(rival.name) is hiring",
+        body: "\(candidate.name) has an offer after sustained low founder relationship investment. One sprint remains to counter.",
+        venture: venture,
+        sprint: sprint,
+        actions: [FeedAction(
+          id: "counter-poach-\(candidate.id)",
+          label: "Invest 1 Attention",
+          detail: "Rebuild the founder relationship before the offer closes.",
+          requiresStatement: false,
+          effects: SimulationEffects()
+        )]
+      ), at: 0)
+    } else if let offer = poachingOffer {
+      feedPosts.insert(FeedPost(
+        id: offer.id,
+        kind: .talentListing,
+        headline: "\(offer.rivalName) is hiring",
+        body: "\(offer.agentName) has an active offer. Counter it before the next sprint.",
+        venture: venture,
+        sprint: sprint,
+        actions: [FeedAction(id: "counter-poach-\(offer.agentID)", label: "Invest 1 Attention", detail: "Rebuild the founder relationship.", requiresStatement: false, effects: SimulationEffects())]
+      ), at: 0)
+    }
     syncAssignments()
+  }
+
+  private func evaluateRivalDiscontinuities() {
+    let standings = rivalStandings.filter { !$0.isPlayer }
+    func already(_ kind: RivalDiscontinuityKind, _ id: String) -> Bool {
+      rivalDiscontinuities.contains { $0.kind == kind && ($0.primaryRivalID == id || $0.secondaryRivalID == id) }
+    }
+    if sprint == 12,
+       let incumbent = standings.first(where: { $0.archetype == .incumbent }),
+       let upstart = standings.first(where: { $0.archetype == .upstart }),
+       incumbent.strength > upstart.strength * 1.9,
+       !already(.acquisition, upstart.id) {
+      rivalDiscontinuities.append(RivalDiscontinuity(
+        id: "acquisition-\(incumbent.id)-\(upstart.id)",
+        kind: .acquisition,
+        primaryRivalID: incumbent.id,
+        secondaryRivalID: upstart.id,
+        venture: venture,
+        sprint: sprint,
+        headline: "\(incumbent.name) acquired \(upstart.name); the two fields merged."
+      ))
+      return
+    }
+    if venture >= 4, sprint == 6,
+       let copycat = standings.first(where: { $0.archetype == .copycat && $0.marketShare < 0.08 }),
+       !already(.pivot, copycat.id) {
+      rivalDiscontinuities.append(RivalDiscontinuity(
+        id: "pivot-\(copycat.id)",
+        kind: .pivot,
+        primaryRivalID: copycat.id,
+        secondaryRivalID: nil,
+        venture: venture,
+        sprint: sprint,
+        headline: "\(copycat.name) pivoted toward SOLO’s \(intent.name.lowercased()) posture."
+      ))
+      return
+    }
+    if sprint == 12,
+       let collapsing = standings
+        .filter({ $0.marketShare < 0.025 && !already(.collapse, $0.id) })
+        .sorted(by: { $0.id < $1.id }).first {
+      rivalDiscontinuities.append(RivalDiscontinuity(
+        id: "collapse-\(collapsing.id)",
+        kind: .collapse,
+        primaryRivalID: collapsing.id,
+        secondaryRivalID: nil,
+        venture: venture,
+        sprint: sprint,
+        headline: "\(collapsing.name) exited after sustained negative market reaction."
+      ))
+    }
   }
 
   private func cachedReport(taskID: UUID, agentID: String) -> TaskResult? {
@@ -1599,6 +1908,14 @@ final class GameStore {
     randomNumberGenerator = save.randomNumberGenerator
     correlatedFailureEvent = save.correlatedFailureEvent
     pendingEffects = save.pendingEffects
+    latentDefects = save.latentDefects
+    poachingOffer = save.poachingOffer
+    exposedRivalIDs = save.exposedRivalIDs
+    pendingDivergenceOffer = nil
+    activeDivergence = save.activeDivergence
+    divergenceRecords = save.divergenceRecords
+    forksUsedThisVenture = save.forksUsedThisVenture
+    rivalDiscontinuities = save.rivalDiscontinuities
     reportCache = save.reportCache
     precedents = save.precedents
     awaitingFounderPass = save.awaitingFounderPass
@@ -1730,6 +2047,8 @@ final class GameStore {
   }
 
   private func migrateV15(_ legacy: CareerSave) -> CareerSave { legacy }
+
+  private func migrateV16(_ legacy: CareerSave) -> CareerSave { legacy }
 
   private func migrateV6(_ legacy: CareerSave) -> CareerSave {
     legacy
@@ -1900,7 +2219,11 @@ final class GameStore {
     guard !candidates.isEmpty else { return nil }
     if dilemmaDeckChapter != chapter || dilemmaDeckTemplateIDs.isEmpty {
       dilemmaDeckChapter = chapter
-      dilemmaDeckTemplateIDs = deterministicallyShuffled(candidates.map(\.id))
+      let shuffled = deterministicallyShuffled(candidates)
+      let gap = currentDoctrineProfile.gap(from: doctrine)
+      dilemmaDeckTemplateIDs = (gap >= 0.30
+        ? shuffled.sorted { dilemmaPressureScore($0) > dilemmaPressureScore($1) }
+        : shuffled).map(\.id)
     }
     let templateID = dilemmaDeckTemplateIDs.removeFirst()
     guard var dilemma = candidates.first(where: { $0.id == templateID }) else { return nil }
@@ -1923,7 +2246,9 @@ final class GameStore {
     let fresh = valid.filter { !recent.contains($0.kind) }
     if !fresh.isEmpty { valid = fresh }
     if valid.isEmpty { valid = ContentLibrary.objectivePool.filter { $0.kind == .protectFounder } }
-    let index = randomNumberGenerator.integer(in: 0 ... max(0, valid.count - 1))
+    valid.sort { objectivePressureScore($0.kind) > objectivePressureScore($1.kind) }
+    let favoredCount = min(valid.count, 2)
+    let index = randomNumberGenerator.integer(in: 0 ... max(0, favoredCount - 1))
     var objective = valid[index]
     if objective.kind == .repairTrust,
        let target = agents.filter({ $0.drift >= 35 && $0.drift < 50 }).max(by: { $0.drift < $1.drift }) {
@@ -1935,6 +2260,27 @@ final class GameStore {
     recentObjectiveKinds.append(objective.kind)
     if recentObjectiveKinds.count > 3 { recentObjectiveKinds.removeFirst(recentObjectiveKinds.count - 3) }
     return objective
+  }
+
+  private func objectivePressureScore(_ kind: SprintObjectiveKind) -> Int {
+    switch (currentDoctrineProfile.revealed, kind) {
+    case (.pure, .evidenceFirst), (.pure, .repairTrust): 4
+    case (.trust, .calculatedRisk), (.trust, .protectFounder): 4
+    case (.guided, .roleDiscipline), (.guided, .diversifiedModels): 4
+    default: 1
+    }
+  }
+
+  private func dilemmaPressureScore(_ dilemma: FounderDilemma) -> Int {
+    let effects = dilemma.choices.map(\.effects)
+    switch currentDoctrineProfile.revealed {
+    case .pure:
+      return effects.map { abs($0.trust) }.max() ?? 0
+    case .guided:
+      return dilemma.choices.map { $0.relationshipDeltas.values.map(abs).reduce(0, +) + abs($0.effects.energy) }.max() ?? 0
+    case .trust:
+      return effects.map { abs($0.revenue) / 100 + abs($0.momentum) }.max() ?? 0
+    }
   }
 
   private func hasRoleFitDraftSolution() -> Bool {
@@ -2003,6 +2349,28 @@ final class GameStore {
     guard attentionRemaining > 0, let index = techComRivals.firstIndex(where: { $0.id == id }), !techComRivals[index].isVerified else { return false }
     techComRivals[index].isVerified = true
     founderAttentionSpent += 1
+    if techComRivals[index].overclaimAmount >= TechComRival.overclaimThreshold,
+       ContentLibrary.rivalSimulationCompanies.first(where: { $0.id == id })?.archetype == .hypeMachine {
+      exposedRivalIDs.insert(id)
+      if !rivalDiscontinuities.contains(where: { $0.kind == .exposure && $0.primaryRivalID == id }) {
+        rivalDiscontinuities.append(RivalDiscontinuity(
+          id: "exposure-\(id)",
+          kind: .exposure,
+          primaryRivalID: id,
+          secondaryRivalID: nil,
+          venture: venture,
+          sprint: sprint,
+          headline: "\(techComRivals[index].name) was exposed after its claim was verified."
+        ))
+      }
+      techComHeadlines.insert(TechComHeadline(
+        id: HindsightEngine.identifier(venture: venture + 10_000, sprint: sprint),
+        category: .rival,
+        text: "\(techComRivals[index].name)’s verified overclaim triggered a market exposure; its strength fell and share redistributed.",
+        venture: venture,
+        sprint: sprint
+      ), at: 0)
+    }
     save()
     return true
   }
@@ -2059,7 +2427,16 @@ final class GameStore {
       awaitingThesisSelection: awaitingThesisSelection,
       pendingChapterMilestone: pendingChapterMilestone,
       techComHeadlines: techComHeadlines,
-      techComRivals: techComRivals
+      techComRivals: techComRivals,
+      latentDefects: latentDefects,
+      poachingOffer: poachingOffer,
+      exposedRivalIDs: exposedRivalIDs,
+      activeDivergence: activeDivergence,
+      divergenceRecords: divergenceRecords,
+      forksUsedThisVenture: forksUsedThisVenture,
+      doctrineProfile: currentDoctrineProfile,
+      unicornIdentity: careerOutcome?.unicornIdentity,
+      rivalDiscontinuities: rivalDiscontinuities
     )
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
@@ -2136,11 +2513,11 @@ final class GameStore {
   }
 
   private func acquisitionOutcome() -> CareerOutcome {
-    CareerOutcome(
+    identifiedVictory(
       kind: .victory,
       title: "The company was acquired",
       summary: "You accepted the offer in Venture \(venture). The run ended with an exit, unresolved obligations, and a record of the company you chose to build.",
-      score: careerScore
+      forcedIdentity: .boughtOut
     )
   }
 
@@ -2154,29 +2531,54 @@ final class GameStore {
     let summary = careerMode == .bounded
       ? "You completed all 24 sprints and built a repeatable way to lead an AI-native company."
       : "You chose to stop after \(completedSprints) sprints across \(venture) ventures, on your own terms."
-    return CareerOutcome(
+    return identifiedVictory(
       kind: .victory,
       title: title,
-      summary: summary,
-      score: careerScore
+      summary: summary
     )
   }
 
   private func empireVictoryOutcome() -> CareerOutcome {
-    CareerOutcome(
+    identifiedVictory(
       kind: .victory,
       title: "A dynasty, built deliberately",
-      summary: "You reached Venture \(VentureEra.empireVentureCap) and built an empire that survived its own scale.",
-      score: careerScore
+      summary: "You reached Venture \(VentureEra.empireVentureCap) and built an empire that survived its own scale."
     )
   }
 
   private func dailyVictoryOutcome() -> CareerOutcome {
-    CareerOutcome(
+    identifiedVictory(
       kind: .victory,
       title: "Daily Challenge complete",
-      summary: "Shared seed \(DailyChallenge.dayKey()). Your score is ready to compare.",
-      score: careerScore
+      summary: "Shared seed \(DailyChallenge.dayKey()). Your score is ready to compare."
+    )
+  }
+
+  private func identifiedVictory(
+    kind: CareerOutcomeKind,
+    title: String,
+    summary: String,
+    forcedIdentity: UnicornIdentity? = nil
+  ) -> CareerOutcome {
+    let profile = DoctrineProfile.derive(
+      evidence: evidence,
+      agents: agents,
+      decisions: decisionHistory,
+      flags: companyFlags
+    )
+    let identity = forcedIdentity ?? UnicornIdentity.derive(
+      flags: companyFlags,
+      profile: profile,
+      revenue: stats.revenue,
+      unsurfacedDefects: latentDefects.count
+    )
+    return CareerOutcome(
+      kind: kind,
+      title: title,
+      summary: summary,
+      score: careerScore,
+      unicornIdentity: identity,
+      doctrineProfile: profile
     )
   }
 
@@ -2199,11 +2601,12 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  static let saveVersion = 16
+  static let saveVersion = 17
   /// The key the current save format is written to. Not private so tests can
   /// assert against the live key instead of hard-coding a version that goes
   /// stale the next time the format changes.
-  static let saveKey = "solo-unicorn-run-native-save-v16"
+  static let saveKey = "solo-unicorn-run-native-save-v17"
+  private static let v16SaveKey = "solo-unicorn-run-native-save-v16"
   private static let v15SaveKey = "solo-unicorn-run-native-save-v15"
   private static let v14SaveKey = "solo-unicorn-run-native-save-v14"
   private static let v13SaveKey = "solo-unicorn-run-native-save-v13"
@@ -2220,12 +2623,12 @@ final class GameStore {
   private static let v2SaveKey = "solo-unicorn-run-native-save-v2"
   private static let legacySaveKey = "solo-unicorn-run-native-save-v1"
   static let saveCareerPurgeKeys = [
-    v15SaveKey, v14SaveKey, v13SaveKey, v12SaveKey, v11SaveKey,
+    v16SaveKey, v15SaveKey, v14SaveKey, v13SaveKey, v12SaveKey, v11SaveKey,
     v10SaveKey, v9SaveKey, v8SaveKey, v7SaveKey, v6SaveKey,
     v5SaveKey, v4SaveKey, v3SaveKey, v2SaveKey, legacySaveKey
   ]
   static let resetCareerPurgeKeys = [
-    v15SaveKey, v14SaveKey, v13SaveKey, v12SaveKey, v11SaveKey,
+    v16SaveKey, v15SaveKey, v14SaveKey, v13SaveKey, v12SaveKey, v11SaveKey,
     v10SaveKey, v9SaveKey, v8SaveKey, v7SaveKey, v6SaveKey,
     v5SaveKey, v4SaveKey, v3SaveKey, v2SaveKey, legacySaveKey
   ]

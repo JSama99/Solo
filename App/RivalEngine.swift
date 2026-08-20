@@ -31,6 +31,20 @@ struct RivalStanding: Identifiable, Hashable {
   var isPlayer: Bool
 }
 
+enum RivalDiscontinuityKind: String, Codable, Hashable {
+  case exposure, acquisition, pivot, collapse
+}
+
+struct RivalDiscontinuity: Codable, Hashable, Identifiable {
+  var id: String
+  var kind: RivalDiscontinuityKind
+  var primaryRivalID: String
+  var secondaryRivalID: String?
+  var venture: Int
+  var sprint: Int
+  var headline: String
+}
+
 enum RivalEngine {
   static func careerSeed(founderName: String, productType: ProductType) -> UInt64 {
     var hash: UInt64 = 0xcbf29ce484222325
@@ -38,7 +52,7 @@ enum RivalEngine {
     return hash
   }
 
-  static func strength(of rival: RivalCompany, venture: Int, sprint: Int, careerSeed: UInt64, player: FounderStats, playerFlags: Set<CompanyFlag>) -> Double {
+  static func strength(of rival: RivalCompany, venture: Int, sprint: Int, careerSeed: UInt64, player: FounderStats, playerFlags: Set<CompanyFlag>, revealedDoctrine: FounderDoctrine? = nil, exposedRivalIDs: Set<String> = []) -> Double {
     guard venture >= rival.debutVenture else { return 0 }
     let age = Double((venture - rival.debutVenture) * 12 + sprint)
     let wobble = self.wobble(rival, venture: venture, sprint: sprint, seed: careerSeed)
@@ -58,15 +72,31 @@ enum RivalEngine {
     case .incumbent: reaction = -Double(player.momentum) * 0.006
     case .upstart: reaction = 0.8
     }
-    return max(0, rival.baseStrength * (1 + growth) + reaction)
+    let doctrineReaction: Double
+    switch (rival.archetype, revealedDoctrine) {
+    case (.hypeMachine, .trust): doctrineReaction = 1.1
+    case (.quietBuilder, .pure): doctrineReaction = 0.9
+    case (.copycat, .guided): doctrineReaction = 0.7
+    default: doctrineReaction = 0
+    }
+    let exposureMultiplier = exposedRivalIDs.contains(rival.id) ? 0.35 : 1
+    return max(0, (rival.baseStrength * (1 + growth) + reaction + doctrineReaction) * exposureMultiplier)
   }
 
   static func playerStrength(_ stats: FounderStats) -> Double {
     max(0.1, Double(stats.revenue) / 900 + Double(stats.momentum) * 0.045 + Double(stats.trust) * 0.030)
   }
 
-  static func standings(companies: [RivalCompany], venture: Int, sprint: Int, careerSeed: UInt64, player: FounderStats, playerFlags: Set<CompanyFlag>) -> [RivalStanding] {
-    let rivalStrengths = companies.map { (company: $0, strength: strength(of: $0, venture: venture, sprint: sprint, careerSeed: careerSeed, player: player, playerFlags: playerFlags)) }.filter { $0.strength > 0 }
+  static func standings(companies: [RivalCompany], venture: Int, sprint: Int, careerSeed: UInt64, player: FounderStats, playerFlags: Set<CompanyFlag>, revealedDoctrine: FounderDoctrine? = nil, exposedRivalIDs: Set<String> = [], discontinuities: [RivalDiscontinuity] = []) -> [RivalStanding] {
+    let exited = Set(discontinuities.filter { $0.kind == .collapse || $0.kind == .acquisition }.compactMap { $0.kind == .collapse ? $0.primaryRivalID : $0.secondaryRivalID })
+    let acquired = Set(discontinuities.filter { $0.kind == .acquisition }.map(\.primaryRivalID))
+    let pivoted = Set(discontinuities.filter { $0.kind == .pivot }.map(\.primaryRivalID))
+    let rivalStrengths = companies.filter { !exited.contains($0.id) }.map { company -> (company: RivalCompany, strength: Double) in
+      var value = strength(of: company, venture: venture, sprint: sprint, careerSeed: careerSeed, player: player, playerFlags: playerFlags, revealedDoctrine: revealedDoctrine, exposedRivalIDs: exposedRivalIDs)
+      if acquired.contains(company.id) { value *= 1.35 }
+      if pivoted.contains(company.id) { value *= 1.20 }
+      return (company, value)
+    }.filter { $0.strength > 0 }
     let playerStrength = playerStrength(player)
     let total = playerStrength + rivalStrengths.reduce(0) { $0 + $1.strength }
     let player = RivalStanding(id: "solo", name: "SOLO", archetype: nil, strength: playerStrength, marketShare: playerStrength / total, isPlayer: true)
