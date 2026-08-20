@@ -47,6 +47,7 @@ struct TechComScreen: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityIdentifier("techcom-build-30-2")
       }
       .navigationTitle("Tech.com")
       .navigationBarTitleDisplayMode(.inline)
