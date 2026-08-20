@@ -42,10 +42,25 @@ enum SoloMotion {
   static let arrival = Animation.spring(duration: 0.42, bounce: 0.18)
   static let impact = Animation.spring(duration: 0.28, bounce: 0.25)
   static let settle = Animation.smooth(duration: 0.24)
-  static let reviewStep = 0.075
-
   static func resolved(_ animation: Animation, reduceMotion: Bool) -> Animation? {
     reduceMotion ? nil : animation
+  }
+}
+
+/// Shared press feedback for custom-drawn cards and rows. This consolidates
+/// three independent reinventions and finally gives `SoloMotion.press` a
+/// caller, preventing a fourth press treatment from drifting into the app.
+struct SoloPressStyle: ButtonStyle {
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  var scale: CGFloat = 0.97
+
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
+      .scaleEffect(configuration.isPressed && !reduceMotion ? scale : 1)
+      .animation(
+        SoloMotion.resolved(SoloMotion.press, reduceMotion: reduceMotion),
+        value: configuration.isPressed
+      )
   }
 }
 
@@ -82,14 +97,15 @@ private struct MilestoneRevealModifier: ViewModifier {
 private struct FounderEntranceModifier: ViewModifier {
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   var order: Int
+  var alreadyPresented: Bool
   @State private var visible = false
 
   func body(content: Content) -> some View {
     content
-      .opacity(visible ? 1 : 0)
-      .offset(y: visible || reduceMotion ? 0 : 12)
+      .opacity(visible || alreadyPresented ? 1 : 0)
+      .offset(y: visible || alreadyPresented || reduceMotion ? 0 : 12)
       .onAppear {
-        guard !visible else { return }
+        guard !visible, !alreadyPresented else { return }
         let animation = reduceMotion ? nil : Animation.smooth(duration: 0.4).delay(Double(order) * 0.07)
         withAnimation(animation) { visible = true }
       }
@@ -109,7 +125,7 @@ extension View {
     modifier(MilestoneRevealModifier(order: order))
   }
 
-  func founderEntrance(order: Int) -> some View {
-    modifier(FounderEntranceModifier(order: order))
+  func founderEntrance(order: Int, alreadyPresented: Bool = false) -> some View {
+    modifier(FounderEntranceModifier(order: order, alreadyPresented: alreadyPresented))
   }
 }

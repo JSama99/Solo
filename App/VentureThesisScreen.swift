@@ -63,7 +63,7 @@ private struct ThesisOptionRow: View {
         in: .rect(cornerRadius: 18)
       )
     }
-    .buttonStyle(.plain)
+    .buttonStyle(SoloPressStyle())
     .gameplayMotion(.emphasis, value: selected)
     .accessibilityElement(children: .combine)
     .accessibilityLabel("\(thesis.name). \(thesis.summary)")

@@ -187,7 +187,7 @@ private struct ModeSelectScreen: View {
             } label: {
               CareerModeCard(mode: mode, isSelected: false)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(SoloPressStyle())
             .accessibilityHint(mode == .daily ? "Starts today’s shared Daily Challenge" : "Continues to founder setup")
           }
         }
@@ -279,7 +279,7 @@ private struct FounderSetupScreen: View {
                 } label: {
                   CareerModeCard(mode: mode, isSelected: store.selectedCareerMode == mode)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(SoloPressStyle())
                 .accessibilityAddTraits(store.selectedCareerMode == mode ? .isSelected : [])
               }
             }
@@ -298,7 +298,7 @@ private struct FounderSetupScreen: View {
               } label: {
                 ProductTypeCard(productType: productType, isSelected: store.selectedProductType == productType)
               }
-              .buttonStyle(.plain)
+              .buttonStyle(SoloPressStyle())
               .accessibilityAddTraits(store.selectedProductType == productType ? .isSelected : [])
             }
           }
@@ -315,7 +315,7 @@ private struct FounderSetupScreen: View {
                   isSelected: store.selectedDoctrine == doctrine
                 )
               }
-              .buttonStyle(.plain)
+              .buttonStyle(SoloPressStyle())
               .accessibilityAddTraits(store.selectedDoctrine == doctrine ? .isSelected : [])
             }
           }
@@ -467,6 +467,17 @@ private struct GameDashboard: View {
       }
     }
     .tint(SoloTheme.cyan)
+    .sheet(item: Binding(
+      get: { store.pendingDivergenceOffer },
+      set: { if $0 == nil { store.pendingDivergenceOffer = nil } }
+    )) { offer in
+      ForkPromptView(offer: offer) { choice in
+        store.chooseDivergence(choice)
+        presentation.commit(in: store, progression: progression)
+      }
+      .presentationDetents([.medium, .large])
+      .interactiveDismissDisabled()
+    }
     .sheet(item: Binding(
       get: { store.report },
       set: { newValue in
@@ -657,28 +668,28 @@ private struct RecordsScreen: View {
           } label: {
             RecordLink(title: "Evidence Ledger", subtitle: "Verified work and unresolved uncertainty", symbol: "checkmark.seal.fill", count: store.evidence.count)
           }
-          .buttonStyle(.plain)
+          .buttonStyle(SoloPressStyle())
 
           NavigationLink {
             AgentOperationsScreen(store: store)
           } label: {
             RecordLink(title: "Agent Operations", subtitle: "Trust, reliability, and model-family exposure", symbol: "cpu.fill", count: store.agents.count)
           }
-          .buttonStyle(.plain)
+          .buttonStyle(SoloPressStyle())
 
           NavigationLink {
-            HindsightRecordsScreen(precedents: store.precedents)
+            HindsightRecordsScreen(precedents: store.precedents, divergences: store.divergenceRecords)
           } label: {
             RecordLink(title: "Hindsight", subtitle: "Recorded contexts and observed outcomes", symbol: "brain.head.profile", count: store.precedents.count)
           }
-          .buttonStyle(.plain)
+          .buttonStyle(SoloPressStyle())
 
           NavigationLink {
             AchievementsScreen(store: store)
           } label: {
             RecordLink(title: "Achievements", subtitle: "Founder milestones across four families", symbol: "medal.star.fill", count: achievements.unlockedCount)
           }
-          .buttonStyle(.plain)
+          .buttonStyle(SoloPressStyle())
 
           NavigationLink {
             HeadquartersProgressScreen(store: store)
@@ -690,7 +701,7 @@ private struct RecordsScreen: View {
               count: progression.ownedFacilities.count
             )
           }
-          .buttonStyle(.plain)
+          .buttonStyle(SoloPressStyle())
 
           NavigationLink {
             CompanyStoryScreen(
@@ -706,24 +717,24 @@ private struct RecordsScreen: View {
               count: store.decisionHistory.count
             )
           }
-          .buttonStyle(.plain)
+          .buttonStyle(SoloPressStyle())
 
           NavigationLink {
             SubscriptionScreen()
           } label: {
             RecordLink(title: "Solo Pro", subtitle: "Plans, purchases, and subscription management", symbol: "sparkles", count: 3)
           }
-          .buttonStyle(.plain)
+          .buttonStyle(SoloPressStyle())
 
           NavigationLink { SettingsScreen() } label: {
             RecordLink(title: "Settings", subtitle: "Cash feedback and your music", symbol: "gearshape.fill", count: 2)
           }
-          .buttonStyle(.plain)
+          .buttonStyle(SoloPressStyle())
 
           NavigationLink { HowToPlayScreen() } label: {
             RecordLink(title: "How to Play", subtitle: "Sprint rules, systems, and reference", symbol: "questionmark.circle.fill", count: nil)
           }
-          .buttonStyle(.plain)
+          .buttonStyle(SoloPressStyle())
 
           Button(role: .destructive) {
             store.resetCareer()
@@ -890,7 +901,7 @@ private struct AgentOperationsScreen: View {
         ForEach(store.agents) { agent in
           let model = AgentDetailViewModel.derive(agent: agent, task: store.tasks.first(where: { $0.assignedAgentID == agent.id }), founderStats: store.stats)
           Button { selectedAgent = model } label: { AgentRosterCard(agent: model) }
-            .buttonStyle(.plain)
+            .buttonStyle(SoloPressStyle())
         }
       }
       .padding(16)
@@ -1010,40 +1021,79 @@ private struct CareerOutcomeScreen: View {
             Image(systemName: outcome.kind.symbol)
               .font(.system(size: 72, weight: .bold))
               .foregroundStyle(outcome.kind == .victory ? SoloTheme.mint : SoloTheme.amber)
+              .symbolEffect(.bounce, value: outcome.kind)
+              .milestoneReveal(order: 0)
               .accessibilityHidden(true)
 
-            VStack(spacing: 8) {
-              Text(outcome.kind == .victory ? "CAREER COMPLETE" : "RUN ENDED")
-                .font(.caption.weight(.black))
-                .tracking(2)
-                .foregroundStyle(SoloTheme.cyan)
-              Text(outcome.title)
-                .font(.largeTitle.bold())
-                .multilineTextAlignment(.center)
-              Text(outcome.summary)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            Text(outcome.kind == .victory ? "CAREER COMPLETE" : "RUN ENDED")
+              .font(.caption.weight(.black))
+              .tracking(2)
+              .foregroundStyle(SoloTheme.cyan)
+              .milestoneReveal(order: 1)
+            Text(outcome.title)
+              .font(.largeTitle.bold())
+              .multilineTextAlignment(.center)
+              .milestoneReveal(order: 2)
+            Text(outcome.summary)
+              .foregroundStyle(.secondary)
+              .multilineTextAlignment(.center)
+              .milestoneReveal(order: 3)
+
+            if let identity = outcome.unicornIdentity, let profile = outcome.doctrineProfile {
+              VStack(alignment: .leading, spacing: 8) {
+                Label(identity.name, systemImage: "sparkles")
+                  .font(.title2.bold())
+                  .foregroundStyle(SoloTheme.mint)
+                Text(identity.summary)
+                  .font(.callout)
+                  .foregroundStyle(.secondary)
+                Text("Identity grade \(identity.identityGrade(profile: profile, flags: store.companyFlags)) • non-competitive")
+                  .font(.caption.weight(.bold))
+                  .foregroundStyle(SoloTheme.amber)
+                Divider()
+                Text("You declared \(store.doctrine.name).")
+                  .font(.headline)
+                Text("Across the record, you verified \(profile.verificationRate.formatted(.percent.precision(.fractionLength(0)))) of reports and shipped \(profile.unverifiedShipRate.formatted(.percent.precision(.fractionLength(0)))) unverified. Your behavior most resembles \(profile.revealed.name).")
+                  .font(.callout)
+                Text("Doctrine gap: \(profile.gap(from: store.doctrine).formatted(.percent.precision(.fractionLength(0))))")
+                  .font(.caption.weight(.semibold))
+                  .foregroundStyle(.secondary)
+              }
+              .soloCard()
+              .milestoneReveal(order: 4)
             }
 
             VStack(spacing: 12) {
-              ResultRow(label: "Final score", value: outcome.score.formatted())
+              HStack {
+                Text("Final score").foregroundStyle(.secondary)
+                Spacer()
+                Text(outcome.score.formatted())
+                  .font(.headline.monospacedDigit())
+                  .contentTransition(.numericText(value: Double(outcome.score)))
+                  .gameplayMotion(.celebration, value: outcome.score)
+              }
+              .padding(.vertical, 4)
               ResultRow(label: "Revenue", value: store.stats.revenue.formatted(.currency(code: "USD").precision(.fractionLength(0))))
               ResultRow(label: "Momentum", value: "\(store.stats.momentum)")
               ResultRow(label: "Trust", value: "\(store.stats.trust)")
               ResultRow(label: "Evidence recorded", value: "\(store.evidence.count)")
+              ResultRow(label: "Latent defects still unsurfaced", value: "\(store.latentDefects.count)")
             }
             .soloCard()
+            .milestoneReveal(order: 4)
           }
 
           Button("Start Another Career", systemImage: "arrow.counterclockwise") {
             store.beginSetup()
           }
           .buttonStyle(SoloPrimaryButtonStyle())
+          .milestoneReveal(order: 5)
 
           Button("Return to Title", systemImage: "house") {
             store.stage = .title
           }
           .buttonStyle(SoloSecondaryButtonStyle())
+          .milestoneReveal(order: 6)
           }
           .padding(20)
           .frame(maxWidth: .infinity)
@@ -1077,12 +1127,14 @@ struct SoloPrimaryButtonStyle: ButtonStyle {
       .padding(16)
       .background(SoloTheme.cyan.gradient, in: .rect(cornerRadius: 15))
       .foregroundStyle(.black)
-      .scaleEffect(configuration.isPressed ? 0.97 : 1)
+      .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1)
       .animation(reduceMotion ? nil : .snappy, value: configuration.isPressed)
   }
 }
 
 struct SoloSecondaryButtonStyle: ButtonStyle {
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
   func makeBody(configuration: Configuration) -> some View {
     configuration.label
       .font(.headline)
@@ -1091,7 +1143,8 @@ struct SoloSecondaryButtonStyle: ButtonStyle {
       .background(SoloTheme.purple.opacity(0.22), in: .rect(cornerRadius: 15))
       .overlay { RoundedRectangle(cornerRadius: 15).stroke(SoloTheme.purple) }
       .foregroundStyle(.white)
-      .scaleEffect(configuration.isPressed ? 0.97 : 1)
+      .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1)
+      .animation(reduceMotion ? nil : .snappy, value: configuration.isPressed)
   }
 }
 
@@ -1140,7 +1193,7 @@ private struct VentureLockBanner: View {
       .background(SoloTheme.card)
       .foregroundStyle(SoloTheme.amber)
     }
-    .buttonStyle(.plain)
+    .buttonStyle(SoloPressStyle())
     .accessibilityLabel("Venture 1 complete. Unlock Venture 2 to continue this career.")
   }
 }
@@ -1165,7 +1218,7 @@ private struct HindsightRecallCard: View {
         } label: {
           Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(SoloPressStyle())
         .accessibilityLabel("Dismiss hindsight recall")
       }
       Text(recall.precedent.decisionSummary).font(.caption)

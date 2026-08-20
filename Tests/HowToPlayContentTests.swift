@@ -7,7 +7,7 @@ final class HowToPlayContentTests: XCTestCase {
   }
   func testDoctrineDescriptionsUseLiveProfiles() {
     for doctrine in FounderDoctrine.allCases {
-      let profile = DoctrineProfile.profile(for: doctrine)
+      let profile = DoctrineRules.profile(for: doctrine)
       let text = HowToPlayContent.doctrineDescription(doctrine)
       XCTAssertTrue(text.contains("\(profile.attentionMaximum)"))
       XCTAssertTrue(text.contains("\(profile.reviewEnergyCost)"))

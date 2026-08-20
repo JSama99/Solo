@@ -43,6 +43,21 @@ struct VentureCheckpointScreen: View {
             .milestoneReveal(order: 1)
           }
 
+          if let profile = checkpoint.doctrineProfile, let declared = checkpoint.declaredDoctrine {
+            VStack(alignment: .leading, spacing: 8) {
+              Label("Doctrine record", systemImage: "person.text.rectangle")
+                .font(.headline)
+                .foregroundStyle(SoloTheme.cyan)
+              Text("Declared \(declared.name) • behavior resembles \(profile.revealed.name)")
+                .font(.title3.bold())
+              Text("Verified \(profile.verificationRate.formatted(.percent.precision(.fractionLength(0)))) • shipped unverified \(profile.unverifiedShipRate.formatted(.percent.precision(.fractionLength(0)))) • doctrine gap \(profile.gap(from: declared).formatted(.percent.precision(.fractionLength(0))))")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+            .soloCard()
+            .milestoneReveal(order: 2)
+          }
+
           VStack(alignment: .leading, spacing: 8) {
             Label("Next: Venture \(checkpoint.venture + 1)", systemImage: "arrow.forward.circle.fill").font(.headline)
             Text("\(checkpoint.nextEraName ?? VentureEra.era(for: checkpoint.venture + 1).name) era").font(.title3.bold())

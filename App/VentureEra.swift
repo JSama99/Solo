@@ -1,5 +1,38 @@
 import Foundation
 
+struct EraContext {
+  var unverifiedCount: Int
+  var averageDrift: Int
+  var profile: DoctrineProfile
+  var flags: Set<CompanyFlag>
+}
+
+protocol EraForce {
+  func modify(_ effects: inout SimulationEffects, context: EraContext)
+}
+
+struct MechanicalEraForce: EraForce {
+  var era: VentureEra
+
+  func modify(_ effects: inout SimulationEffects, context: EraContext) {
+    switch era {
+    case .garage:
+      break
+    case .traction:
+      if context.unverifiedCount >= 2 { effects.momentum -= 1 }
+    case .scale:
+      if context.averageDrift >= 35 { effects.runway -= 2 }
+    case .marketLeader:
+      if context.unverifiedCount > 0 { effects.trust -= context.unverifiedCount * 2 }
+    case .empire:
+      if context.profile.restDiscipline < 0.5 { effects.energy -= 2 }
+    case .dynasty:
+      if context.flags.contains(.publicTransparency) { effects.trust += 1 }
+      if context.flags.contains(.featureDebt) { effects.runway -= 2 }
+    }
+  }
+}
+
 enum VentureEra: Int, CaseIterable, Identifiable, Codable {
   case garage, traction, scale, marketLeader, empire, dynasty
 
@@ -41,4 +74,5 @@ enum VentureEra: Int, CaseIterable, Identifiable, Codable {
   var energyCostPerSprint: Int { 2 + rawValue / 2 }
   var correlatedFailureBaseProbability: Double { 0.24 + Double(rawValue) * 0.03 }
   var correlatedFailureExtraPenalty: Int { rawValue * 3 }
+  var force: any EraForce { MechanicalEraForce(era: self) }
 }

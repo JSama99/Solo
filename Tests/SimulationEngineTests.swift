@@ -11,21 +11,21 @@ final class SimulationEngineTests: XCTestCase {
   // ── DoctrineProfile: must reproduce Build 4's exact original values ──
 
   func testDoctrineProfileReproducesBuild4Values() {
-    let pure = DoctrineProfile.profile(for: .pure)
+    let pure = DoctrineRules.profile(for: .pure)
     XCTAssertEqual(pure.attentionMaximum, 2)
     XCTAssertEqual(pure.reviewEnergyCost, 1)
     XCTAssertEqual(pure.neglectDriftIncrease, 9.0)
     XCTAssertEqual(pure.actualQualityBonus, 7)
     XCTAssertEqual(pure.startingStatAdjustment, SimulationEffects())
 
-    let guided = DoctrineProfile.profile(for: .guided)
+    let guided = DoctrineRules.profile(for: .guided)
     XCTAssertEqual(guided.attentionMaximum, 3)
     XCTAssertEqual(guided.reviewEnergyCost, 2)
     XCTAssertEqual(guided.neglectDriftIncrease, 6.5)
     XCTAssertEqual(guided.actualQualityBonus, 0)
     XCTAssertEqual(guided.startingStatAdjustment, SimulationEffects(energy: 5))
 
-    let trust = DoctrineProfile.profile(for: .trust)
+    let trust = DoctrineRules.profile(for: .trust)
     XCTAssertEqual(trust.attentionMaximum, 2)
     XCTAssertEqual(trust.reviewEnergyCost, 1)
     XCTAssertEqual(trust.neglectDriftIncrease, 6.5)
@@ -35,7 +35,7 @@ final class SimulationEngineTests: XCTestCase {
 
   func testDoctrineProfileCoversEveryDoctrine() {
     for doctrine in FounderDoctrine.allCases {
-      _ = DoctrineProfile.profile(for: doctrine)
+      _ = DoctrineRules.profile(for: doctrine)
     }
   }
 
@@ -154,6 +154,66 @@ final class SimulationEngineTests: XCTestCase {
       averageRelationship: 30, unresolvedObligations: 5, completedVentures: 2
     )
     XCTAssertGreaterThan(strong, fragile)
+  }
+
+  func testVerifiedEvidenceContributionSaturatesAtComponentCap() {
+    let atCap = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 143, completedObjectives: 0,
+      averageRelationship: 0, unresolvedObligations: 0, completedVentures: 0
+    )
+    let excessive = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 2_000, completedObjectives: 0,
+      averageRelationship: 0, unresolvedObligations: 0, completedVentures: 0
+    )
+    XCTAssertEqual(excessive, atCap)
+  }
+
+  func testObjectiveContributionSaturatesAtComponentCap() {
+    let atCap = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 0, completedObjectives: 42,
+      averageRelationship: 0, unresolvedObligations: 0, completedVentures: 0
+    )
+    let excessive = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 0, completedObjectives: 2_000,
+      averageRelationship: 0, unresolvedObligations: 0, completedVentures: 0
+    )
+    XCTAssertEqual(excessive, atCap)
+  }
+
+  func testMaximalBoundedAccumulationScoreIsUnchanged() {
+    XCTAssertEqual(SimulationEngine.careerScore(stats: FounderStats()), 2_665)
+    XCTAssertEqual(
+      SimulationEngine.careerScore(
+        stats: FounderStats(), verifiedEvidence: 72, completedObjectives: 24,
+        averageRelationship: 0, unresolvedObligations: 0, completedVentures: 0
+      ),
+      8_065
+    )
+  }
+
+  func testVentureProgressionStaysUncapped() {
+    let twenty = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 0, completedObjectives: 0,
+      averageRelationship: 0, unresolvedObligations: 0, completedVentures: 20
+    )
+    let sixty = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 0, completedObjectives: 0,
+      averageRelationship: 0, unresolvedObligations: 0, completedVentures: 60
+    )
+    XCTAssertGreaterThan(sixty, twenty)
+    XCTAssertEqual(sixty - twenty, 40 * 250)
+  }
+
+  func testEmpireAccumulationDoesNotDwarfAWellPlayedRun() {
+    let accumulated = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 2_160, completedObjectives: 720,
+      averageRelationship: 0, unresolvedObligations: 0, completedVentures: 60
+    )
+    let wellPlayed = SimulationEngine.careerScore(
+      stats: FounderStats(), verifiedEvidence: 72, completedObjectives: 24,
+      averageRelationship: 100, unresolvedObligations: 0, completedVentures: 60
+    )
+    XCTAssertLessThan(Double(accumulated) / Double(wellPlayed), 2.5)
   }
 
   // ── careerScore: the actual fix, verified numerically ───────────────

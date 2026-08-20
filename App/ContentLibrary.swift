@@ -17,9 +17,9 @@ enum ContentLibrary {
     }
 
     static let rivalCompanies = [
-      RivalCompanyDefinition(id: "northstar", name: "Northstar Systems"),
-      RivalCompanyDefinition(id: "relay", name: "Relay Works"),
-      RivalCompanyDefinition(id: "lattice", name: "Lattice Labs")
+      RivalCompanyDefinition(id: "northwind", name: "Northwind Labs"),
+      RivalCompanyDefinition(id: "pallas", name: "Pallas AI"),
+      RivalCompanyDefinition(id: "flashpoint", name: "Flashpoint")
     ]
 
     static let rivalSimulationCompanies: [RivalCompany] = [

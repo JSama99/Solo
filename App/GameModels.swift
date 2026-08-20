@@ -1040,11 +1040,120 @@ enum CareerOutcomeKind: String, Codable {
   }
 }
 
+enum UnicornIdentity: String, Codable, CaseIterable, Identifiable {
+  case trustMachine
+  case hypeRocket
+  case quietCompounder
+  case ghostShip
+  case humanScale
+  case boughtOut
+  case houseOfCards
+
+  var id: Self { self }
+
+  var name: String {
+    switch self {
+    case .trustMachine: "Trust Machine"
+    case .hypeRocket: "Hype Rocket"
+    case .quietCompounder: "Quiet Compounder"
+    case .ghostShip: "Ghost Ship"
+    case .humanScale: "Human Scale"
+    case .boughtOut: "Bought Out"
+    case .houseOfCards: "House of Cards"
+    }
+  }
+
+  var summary: String {
+    switch self {
+    case .trustMachine: "Verification and public evidence became the company’s operating system."
+    case .hypeRocket: "Narrative velocity carried the company farther than its verification cadence."
+    case .quietCompounder: "Focused execution, independence, and recovery compounded over time."
+    case .ghostShip: "An agent-heavy company produced at scale with little founder relationship investment."
+    case .humanScale: "Customer care and protected founder capacity defined the company’s growth."
+    case .boughtOut: "The company’s final identity was the acquisition the founder accepted."
+    case .houseOfCards: "Revenue arrived alongside feature debt and unresolved latent exposure."
+    }
+  }
+
+  static func derive(
+    flags: Set<CompanyFlag>,
+    profile: DoctrineProfile,
+    revenue: Int,
+    unsurfacedDefects: Int = 0
+  ) -> UnicornIdentity {
+    if flags.contains(.acquisitionAccepted) { return .boughtOut }
+    var scores: [(UnicornIdentity, Int)] = [
+      (.trustMachine, (flags.contains(.evidenceLedClaims) ? 3 : 0) + (flags.contains(.publicTransparency) ? 3 : 0) + Int(profile.verificationRate * 4)),
+      (.hypeRocket, (flags.contains(.hypeFirst) ? 4 : 0) + (flags.contains(.simplifiedNarrative) ? 3 : 0) + Int(profile.unverifiedShipRate * 4)),
+      (.quietCompounder, (flags.contains(.bootstrapIndependent) ? 3 : 0) + (flags.contains(.focusedExecution) ? 3 : 0) + Int(profile.restDiscipline * 4)),
+      (.ghostShip, (flags.contains(.agentOnlyCompany) ? 5 : 0) + Int((1 - profile.relationshipInvestment) * 4)),
+      (.humanScale, (flags.contains(.humanCustomerSuccess) ? 4 : 0) + (flags.contains(.protectedFounderHealth) ? 4 : 0) + Int(profile.relationshipInvestment * 3)),
+      (.houseOfCards, (flags.contains(.featureDebt) ? 4 : 0) + (revenue >= 10_000 ? 2 : 0) + min(4, unsurfacedDefects))
+    ]
+    scores.sort { lhs, rhs in
+      lhs.1 == rhs.1 ? Self.allCases.firstIndex(of: lhs.0)! < Self.allCases.firstIndex(of: rhs.0)! : lhs.1 > rhs.1
+    }
+    return scores.first?.0 ?? .quietCompounder
+  }
+
+  func identityGrade(profile: DoctrineProfile, flags: Set<CompanyFlag>) -> String {
+    let score: Double
+    switch self {
+    case .trustMachine: score = (profile.verificationRate + profile.evidenceThreshold) / 2
+    case .hypeRocket: score = profile.unverifiedShipRate
+    case .quietCompounder: score = (profile.roleFitDiscipline + profile.restDiscipline) / 2
+    case .ghostShip: score = (profile.unverifiedShipRate + (1 - profile.relationshipInvestment)) / 2
+    case .humanScale: score = (profile.restDiscipline + profile.relationshipInvestment) / 2
+    case .boughtOut: score = flags.contains(.acquisitionAccepted) ? 1 : 0
+    case .houseOfCards: score = (profile.unverifiedShipRate + (flags.contains(.featureDebt) ? 1 : 0)) / 2
+    }
+    switch score {
+    case 0.85...: return "A"
+    case 0.70...: return "B"
+    case 0.55...: return "C"
+    case 0.40...: return "D"
+    default: return "E"
+    }
+  }
+}
+
 struct CareerOutcome: Codable {
   var kind: CareerOutcomeKind
   var title: String
   var summary: String
   var score: Int
+  var unicornIdentity: UnicornIdentity? = nil
+  var doctrineProfile: DoctrineProfile? = nil
+
+  private enum CodingKeys: String, CodingKey {
+    case kind, title, summary, score, unicornIdentity, doctrineProfile
+  }
+
+  init(
+    kind: CareerOutcomeKind,
+    title: String,
+    summary: String,
+    score: Int,
+    unicornIdentity: UnicornIdentity? = nil,
+    doctrineProfile: DoctrineProfile? = nil
+  ) {
+    self.kind = kind
+    self.title = title
+    self.summary = summary
+    self.score = score
+    self.unicornIdentity = unicornIdentity
+    self.doctrineProfile = doctrineProfile
+  }
+
+  init(from decoder: Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    kind = try values.decode(CareerOutcomeKind.self, forKey: .kind)
+    title = try values.decode(String.self, forKey: .title)
+    summary = try values.decode(String.self, forKey: .summary)
+    score = try values.decode(Int.self, forKey: .score)
+    unicornIdentity = try values.decodeIfPresent(UnicornIdentity.self, forKey: .unicornIdentity)
+    doctrineProfile = try values.decodeIfPresent(DoctrineProfile.self, forKey: .doctrineProfile)
+  }
 }
 
 /// A non-terminal "venture complete" moment in continuous mode. Bounded mode
@@ -1071,11 +1180,13 @@ struct VentureCheckpoint: Codable, Hashable {
   var obligations: [CompanyObligation] = []
   var companyFlags: [CompanyFlag] = []
   var averageRelationship = 0
+  var doctrineProfile: DoctrineProfile? = nil
+  var declaredDoctrine: FounderDoctrine? = nil
 
-  private enum CodingKeys: String, CodingKey { case venture, trackRecordEarned, revenue, trust, momentum, precedentsBanked, grade, objectiveTitle, nextObjectiveTitle, nextEraName, nextEraForce, crossesEraBoundary, obligations, companyFlags, averageRelationship }
+  private enum CodingKeys: String, CodingKey { case venture, trackRecordEarned, revenue, trust, momentum, precedentsBanked, grade, objectiveTitle, nextObjectiveTitle, nextEraName, nextEraForce, crossesEraBoundary, obligations, companyFlags, averageRelationship, doctrineProfile, declaredDoctrine }
 
-  init(venture: Int, trackRecordEarned: Int, revenue: Int, trust: Int, momentum: Int, precedentsBanked: Int, grade: VentureGrade? = nil, objectiveTitle: String? = nil, nextObjectiveTitle: String? = nil, nextEraName: String? = nil, nextEraForce: String? = nil, crossesEraBoundary: Bool = false, obligations: [CompanyObligation] = [], companyFlags: [CompanyFlag] = [], averageRelationship: Int = 0) {
-    self.venture = venture; self.trackRecordEarned = trackRecordEarned; self.revenue = revenue; self.trust = trust; self.momentum = momentum; self.precedentsBanked = precedentsBanked; self.grade = grade; self.objectiveTitle = objectiveTitle; self.nextObjectiveTitle = nextObjectiveTitle; self.nextEraName = nextEraName; self.nextEraForce = nextEraForce; self.crossesEraBoundary = crossesEraBoundary; self.obligations = obligations; self.companyFlags = companyFlags; self.averageRelationship = averageRelationship
+  init(venture: Int, trackRecordEarned: Int, revenue: Int, trust: Int, momentum: Int, precedentsBanked: Int, grade: VentureGrade? = nil, objectiveTitle: String? = nil, nextObjectiveTitle: String? = nil, nextEraName: String? = nil, nextEraForce: String? = nil, crossesEraBoundary: Bool = false, obligations: [CompanyObligation] = [], companyFlags: [CompanyFlag] = [], averageRelationship: Int = 0, doctrineProfile: DoctrineProfile? = nil, declaredDoctrine: FounderDoctrine? = nil) {
+    self.venture = venture; self.trackRecordEarned = trackRecordEarned; self.revenue = revenue; self.trust = trust; self.momentum = momentum; self.precedentsBanked = precedentsBanked; self.grade = grade; self.objectiveTitle = objectiveTitle; self.nextObjectiveTitle = nextObjectiveTitle; self.nextEraName = nextEraName; self.nextEraForce = nextEraForce; self.crossesEraBoundary = crossesEraBoundary; self.obligations = obligations; self.companyFlags = companyFlags; self.averageRelationship = averageRelationship; self.doctrineProfile = doctrineProfile; self.declaredDoctrine = declaredDoctrine
   }
 
   init(from decoder: Decoder) throws {
@@ -1095,6 +1206,8 @@ struct VentureCheckpoint: Codable, Hashable {
     obligations = try values.decodeIfPresent([CompanyObligation].self, forKey: .obligations) ?? []
     companyFlags = try values.decodeIfPresent([CompanyFlag].self, forKey: .companyFlags) ?? []
     averageRelationship = try values.decodeIfPresent(Int.self, forKey: .averageRelationship) ?? 0
+    doctrineProfile = try values.decodeIfPresent(DoctrineProfile.self, forKey: .doctrineProfile)
+    declaredDoctrine = try values.decodeIfPresent(FounderDoctrine.self, forKey: .declaredDoctrine)
   }
 
   var headline: String {
@@ -1151,6 +1264,15 @@ struct CareerSave: Codable {
   var pendingChapterMilestone: ChapterMilestone?
   var techComHeadlines: [TechComHeadline]
   var techComRivals: [TechComRival]
+  var latentDefects: [LatentDefect]
+  var poachingOffer: PoachingOffer?
+  var exposedRivalIDs: Set<String>
+  var activeDivergence: DivergenceBranch?
+  var divergenceRecords: [DivergenceRecord]
+  var forksUsedThisVenture: Int
+  var doctrineProfile: DoctrineProfile?
+  var unicornIdentity: UnicornIdentity?
+  var rivalDiscontinuities: [RivalDiscontinuity]
 
   private enum CodingKeys: String, CodingKey {
     case founderName, doctrine, productType, talentBoardRefreshes, sprint, venture, intent, stats, agents, tasks
@@ -1160,7 +1282,9 @@ struct CareerSave: Codable {
     case careerMode, pendingVentureCheckpoint
     case recentTaskTitles, taskDeckTitles, dilemmaDeckTemplateIDs, dilemmaDeckChapter
     case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, completedVentureObjectives, ventureObjective, thesis, thesisHistory, awaitingThesisSelection, pendingChapterMilestone
-    case techComHeadlines, techComRivals
+    case techComHeadlines, techComRivals, latentDefects, poachingOffer, exposedRivalIDs
+    case activeDivergence, divergenceRecords, forksUsedThisVenture, doctrineProfile, unicornIdentity
+    case rivalDiscontinuities
   }
 
   init(
@@ -1206,7 +1330,16 @@ struct CareerSave: Codable {
     awaitingThesisSelection: Bool = false,
     pendingChapterMilestone: ChapterMilestone? = nil,
     techComHeadlines: [TechComHeadline] = [],
-    techComRivals: [TechComRival] = []
+    techComRivals: [TechComRival] = [],
+    latentDefects: [LatentDefect] = [],
+    poachingOffer: PoachingOffer? = nil,
+    exposedRivalIDs: Set<String> = [],
+    activeDivergence: DivergenceBranch? = nil,
+    divergenceRecords: [DivergenceRecord] = [],
+    forksUsedThisVenture: Int = 0,
+    doctrineProfile: DoctrineProfile? = nil,
+    unicornIdentity: UnicornIdentity? = nil,
+    rivalDiscontinuities: [RivalDiscontinuity] = []
   ) {
     self.founderName = founderName
     self.doctrine = doctrine
@@ -1251,6 +1384,15 @@ struct CareerSave: Codable {
     self.pendingChapterMilestone = pendingChapterMilestone
     self.techComHeadlines = techComHeadlines
     self.techComRivals = techComRivals
+    self.latentDefects = latentDefects
+    self.poachingOffer = poachingOffer
+    self.exposedRivalIDs = exposedRivalIDs
+    self.activeDivergence = activeDivergence
+    self.divergenceRecords = divergenceRecords
+    self.forksUsedThisVenture = forksUsedThisVenture
+    self.doctrineProfile = doctrineProfile
+    self.unicornIdentity = unicornIdentity
+    self.rivalDiscontinuities = rivalDiscontinuities
   }
 
   init(from decoder: Decoder) throws {
@@ -1310,6 +1452,15 @@ struct CareerSave: Codable {
     pendingChapterMilestone = try container.decodeIfPresent(ChapterMilestone.self, forKey: .pendingChapterMilestone)
     techComHeadlines = try container.decodeIfPresent([TechComHeadline].self, forKey: .techComHeadlines) ?? []
     techComRivals = try container.decodeIfPresent([TechComRival].self, forKey: .techComRivals) ?? []
+    latentDefects = try container.decodeIfPresent([LatentDefect].self, forKey: .latentDefects) ?? []
+    poachingOffer = try container.decodeIfPresent(PoachingOffer.self, forKey: .poachingOffer)
+    exposedRivalIDs = try container.decodeIfPresent(Set<String>.self, forKey: .exposedRivalIDs) ?? []
+    activeDivergence = try container.decodeIfPresent(DivergenceBranch.self, forKey: .activeDivergence)
+    divergenceRecords = try container.decodeIfPresent([DivergenceRecord].self, forKey: .divergenceRecords) ?? []
+    forksUsedThisVenture = try container.decodeIfPresent(Int.self, forKey: .forksUsedThisVenture) ?? 0
+    doctrineProfile = try container.decodeIfPresent(DoctrineProfile.self, forKey: .doctrineProfile)
+    unicornIdentity = try container.decodeIfPresent(UnicornIdentity.self, forKey: .unicornIdentity)
+    rivalDiscontinuities = try container.decodeIfPresent([RivalDiscontinuity].self, forKey: .rivalDiscontinuities) ?? []
   }
 }
 

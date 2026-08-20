@@ -47,7 +47,7 @@ final class PresentationCoordinator {
     var progressTick: Duration = .milliseconds(100)
     var workComplete: Duration = .milliseconds(450)
     var reviewFocus: Duration = .milliseconds(250)
-    var reviewStagger: Duration = .milliseconds(120)
+    var reviewStagger: Duration = .milliseconds(320)
     var resolution: Duration = .milliseconds(550)
 
     static var immediate: Self {
@@ -168,6 +168,7 @@ final class PresentationCoordinator {
   }
 
   func commit(in store: GameStore, progression: FounderProgressionStore) {
+    if store.prepareDivergenceOfferIfEligible() { return }
     let tasksBefore = store.tasks
     let statsBefore = store.stats
     let evidenceBefore = store.evidence.count
