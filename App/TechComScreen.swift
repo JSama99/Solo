@@ -34,6 +34,8 @@ struct TechComScreen: View {
 
           TechComRivalBoard(store: store)
 
+          TechComRivalMovesFeed(headlines: rivalHeadlines)
+
           TechComTalentBoard(store: store)
 
           TechComRankingBoard(
@@ -62,8 +64,40 @@ struct TechComScreen: View {
     store.techComHeadlines.filter { $0.category == .trend }
   }
 
+  private var rivalHeadlines: [TechComHeadline] {
+    store.techComHeadlines.filter { $0.category == .rival }
+  }
+
   private var playerMarketPosition: Int? {
     guard let index = store.rivalStandings.firstIndex(where: \.isPlayer) else { return nil }
     return index + 1
+  }
+}
+
+private struct TechComRivalMovesFeed: View {
+  var headlines: [TechComHeadline]
+
+  var body: some View {
+    TechComEditorialSurface(
+      eyebrow: "COMPETITIVE INTELLIGENCE",
+      title: "Rival Moves",
+      symbol: "bolt.fill",
+      accent: SoloTheme.amber
+    ) {
+      if headlines.isEmpty {
+        Text("No rival has made a notable move yet — check back after your next sprint.")
+          .font(.caption)
+          .foregroundStyle(.secondary)
+      } else {
+        VStack(spacing: 0) {
+          ForEach(Array(headlines.enumerated()), id: \.element.id) { index, headline in
+            TechComStoryRow(headline: headline, isLead: index == 0)
+            if headline.id != headlines.last?.id {
+              Divider().opacity(0.55)
+            }
+          }
+        }
+      }
+    }
   }
 }
