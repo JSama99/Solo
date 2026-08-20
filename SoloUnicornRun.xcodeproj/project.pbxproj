@@ -77,6 +77,8 @@
 		FB6CDD52B76B96B369913C6B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */; };
 		E30000000000000000000001 /* TechComEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000011 /* TechComEngine.swift */; };
 		E30000000000000000000002 /* TechComScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000012 /* TechComScreen.swift */; };
+		E32000000000000000000001 /* TechComComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E31000000000000000000001 /* TechComComponents.swift */; };
+		E32000000000000000000002 /* TechComPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E31000000000000000000002 /* TechComPresentation.swift */; };
 		E30000000000000000000003 /* TechComEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000013 /* TechComEngineTests.swift */; };
 		E30000000000000000000004 /* TechComPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000014 /* TechComPresentationTests.swift */; };
 		E30000000000000000000005 /* RevenueCelebrationFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000015 /* RevenueCelebrationFeedback.swift */; };
@@ -193,6 +195,8 @@
 		B10000000000000000000003 /* SubscriptionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionScreen.swift; sourceTree = "<group>"; };
 		E10000000000000000000011 /* TechComEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComEngine.swift; sourceTree = "<group>"; };
 		E10000000000000000000012 /* TechComScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComScreen.swift; sourceTree = "<group>"; };
+		E31000000000000000000001 /* TechComComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComComponents.swift; sourceTree = "<group>"; };
+		E31000000000000000000002 /* TechComPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComPresentation.swift; sourceTree = "<group>"; };
 		E10000000000000000000013 /* TechComEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComEngineTests.swift; sourceTree = "<group>"; };
 		E10000000000000000000014 /* TechComPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComPresentationTests.swift; sourceTree = "<group>"; };
 		E10000000000000000000015 /* RevenueCelebrationFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCelebrationFeedback.swift; sourceTree = "<group>"; };
@@ -316,6 +320,8 @@
 				C1000000000000000000000D /* VisibleSimulationProjection.swift */,
 				E10000000000000000000011 /* TechComEngine.swift */,
 				E10000000000000000000012 /* TechComScreen.swift */,
+				E31000000000000000000001 /* TechComComponents.swift */,
+				E31000000000000000000002 /* TechComPresentation.swift */,
 				E10000000000000000000015 /* RevenueCelebrationFeedback.swift */,
 				E10000000000000000000016 /* AppSettingsStore.swift */,
 				E10000000000000000000017 /* SettingsScreen.swift */,
@@ -516,6 +522,8 @@
 				C2000000000000000000000D /* VisibleSimulationProjection.swift in Sources */,
 				E30000000000000000000001 /* TechComEngine.swift in Sources */,
 				E30000000000000000000002 /* TechComScreen.swift in Sources */,
+				E32000000000000000000001 /* TechComComponents.swift in Sources */,
+				E32000000000000000000002 /* TechComPresentation.swift in Sources */,
 				E30000000000000000000005 /* RevenueCelebrationFeedback.swift in Sources */,
 				E30000000000000000000006 /* AppSettingsStore.swift in Sources */,
 				E30000000000000000000007 /* SettingsScreen.swift in Sources */,

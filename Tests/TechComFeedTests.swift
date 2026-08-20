@@ -20,4 +20,20 @@ final class TechComFeedTests: XCTestCase {
     XCTAssertFalse(store.statementAvailable)
     XCTAssertEqual(store.stats.coverage, 12)
   }
+
+  func testResolvedFeedActionCannotExecuteTwice() {
+    let store = GameStore()
+    store.startCareer(seed: 18)
+    store.confirmVentureThesisIfNeeded()
+    let post = store.feedPosts.first { $0.kind == .pressInquiry }!
+
+    store.resolveFeed(postID: post.id, actionID: "statement")
+    let coverage = store.stats.coverage
+    let spent = store.statementSpent
+    store.resolveFeed(postID: post.id, actionID: "silence")
+
+    XCTAssertEqual(store.stats.coverage, coverage)
+    XCTAssertEqual(store.statementSpent, spent)
+    XCTAssertEqual(store.feedPosts.first { $0.id == post.id }?.resolvedActionID, "statement")
+  }
 }

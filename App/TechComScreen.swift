@@ -5,76 +5,47 @@ struct TechComScreen: View {
   @State private var metric: TechComRankingMetric = .trackRecord
 
   private var snapshot: TechComSnapshot {
-    TechComSnapshot(founderName: store.founderName, venture: store.venture, sprint: store.sprint, stats: store.stats, agents: store.agents, tasks: store.tasks, dilemmaChoice: store.selectedDilemmaChoice)
+    TechComSnapshot(
+      founderName: store.founderName,
+      venture: store.venture,
+      sprint: store.sprint,
+      stats: store.stats,
+      agents: store.agents,
+      tasks: store.tasks,
+      dilemmaChoice: store.selectedDilemmaChoice
+    )
   }
 
   var body: some View {
     NavigationStack {
       ScrollView {
-        VStack(alignment: .leading, spacing: 16) {
-          Text("Tech.com").font(.largeTitle.bold())
-          Text("The signal behind the startup noise.").foregroundStyle(.secondary)
-          section("Your Company", symbol: "building.2.fill") {
-            headlines(category: .ownCompany, empty: "Your company moves will appear here as the sprint unfolds.")
-          }
-          section("Decision Feed", symbol: "megaphone.fill") {
-            Text("Statement \(store.statementAvailable ? "available" : "spent") • Coverage \(store.stats.coverage >= 0 ? "+" : "")\(store.stats.coverage)")
-              .font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.cyan)
-              .contentTransition(.numericText(value: Double(store.stats.coverage)))
-              .gameplayMotion(.state, value: store.stats.coverage)
-              .gameplayMotion(.state, value: store.statementAvailable)
-            ForEach(store.feedPosts) { post in
-              VStack(alignment: .leading, spacing: 5) {
-                Text(post.headline).font(.subheadline.weight(.bold))
-                Text(post.body).font(.caption).foregroundStyle(.secondary)
-                if let resolved = post.resolvedActionID, let action = post.actions.first(where: { $0.id == resolved }) {
-                  Label(action.label, systemImage: "checkmark.seal.fill")
-                    .font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.mint)
-                    .transition(.scale(scale: 0.94).combined(with: .opacity))
-                }
-                else { ForEach(post.actions) { action in Button(action.label) { store.resolveFeed(postID: post.id, actionID: action.id) }.buttonStyle(.bordered).disabled(action.requiresStatement && !store.statementAvailable) }.transition(.opacity) }
-              }
-              .gameplayMotion(.emphasis, value: post.resolvedActionID)
-              if post.id != store.feedPosts.last?.id { Divider() }
-            }
-          }
-          section("Trends", symbol: "waveform.path.ecg") {
-            headlines(category: .trend, empty: "Industry watch is gathering signal.")
-          }
-          section("Rivals", symbol: "person.3.fill") {
-            ForEach(store.techComRivals) { rival in
-              rivalRow(rival)
-            }
-          }
-          section("Talent Board", symbol: "person.crop.circle.badge.plus") {
-            talentBoard
-          }
-          section("Rankings", symbol: "list.number") {
-            Picker("Ranking metric", selection: $metric) {
-              ForEach(TechComRankingMetric.allCases) { Text($0.rawValue).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            ForEach(Array(TechComEngine.rankings(snapshot: snapshot, rivals: store.techComRivals, metric: metric).enumerated()), id: \.element.id) { offset, entry in
-              HStack { Text("\(offset + 1)").foregroundStyle(.secondary).frame(width: 20); Text(entry.name).fontWeight(entry.isPlayer ? .bold : .regular); Spacer(); Text(value(entry.value)).foregroundStyle(entry.isPlayer ? SoloTheme.cyan : .primary).contentTransition(.numericText(value: Double(entry.value))) }
-                .font(.subheadline)
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("Rank \(offset + 1), \(entry.name), \(value(entry.value))")
-            }
-            .gameplayMotion(.state, value: metric)
-          }
-          section("Market Share", symbol: "chart.pie.fill") {
-            ForEach(store.rivalStandings) { standing in
-              HStack {
-                Text(standing.name).fontWeight(standing.isPlayer ? .bold : .regular)
-                Spacer()
-                Text(standing.archetype?.label ?? "Your company").foregroundStyle(.secondary)
-                Text(standing.marketShare, format: .percent.precision(.fractionLength(0))).foregroundStyle(standing.isPlayer ? SoloTheme.cyan : .primary)
-              }
-              .font(.caption)
-            }
-          }
+        LazyVStack(alignment: .leading, spacing: 18) {
+          TechComMasthead(
+            venture: store.venture,
+            sprint: store.sprint,
+            marketPosition: playerMarketPosition
+          )
+
+          TechComCompanyFeed(headlines: ownCompanyHeadlines)
+
+          TechComDecisionFeed(store: store)
+
+          TechComTrendSignal(headlines: trendHeadlines)
+
+          TechComRivalBoard(store: store)
+
+          TechComTalentBoard(store: store)
+
+          TechComRankingBoard(
+            metric: $metric,
+            snapshot: snapshot,
+            rivals: store.techComRivals
+          )
+
+          TechComMarketShareBoard(standings: store.rivalStandings)
         }
-        .padding()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
       }
       .navigationTitle("Tech.com")
@@ -82,58 +53,16 @@ struct TechComScreen: View {
     }
   }
 
-  @ViewBuilder private func section<Content: View>(_ title: String, symbol: String, @ViewBuilder content: () -> Content) -> some View {
-    VStack(alignment: .leading, spacing: 10) {
-      Label(title, systemImage: symbol).font(.headline).foregroundStyle(SoloTheme.cyan)
-      content()
-    }
-    .soloCard()
+  private var ownCompanyHeadlines: [TechComHeadline] {
+    store.techComHeadlines.filter { $0.category == .ownCompany }
   }
 
-  @ViewBuilder private func headlines(category: TechComHeadlineCategory, empty: String) -> some View {
-    let items = store.techComHeadlines.filter { $0.category == category }
-    if items.isEmpty { Text(empty).font(.caption).foregroundStyle(.secondary) }
-    else { ForEach(items) { item in Text(item.text).font(.subheadline).accessibilityLabel(item.text); if item.id != items.last?.id { Divider() } } }
+  private var trendHeadlines: [TechComHeadline] {
+    store.techComHeadlines.filter { $0.category == .trend }
   }
 
-  private func rivalRow(_ rival: TechComRival) -> some View {
-    VStack(alignment: .leading, spacing: 7) {
-      HStack { Text(rival.name).font(.subheadline.weight(.bold)); Spacer(); Text(rival.verificationState.label).font(.caption.weight(.semibold)).foregroundStyle(rival.isVerified ? SoloTheme.mint : SoloTheme.amber) }
-      Text("Claimed: record \(rival.claimedTrackRecord) • $\(rival.claimedRevenue) • momentum \(rival.claimedMomentum)").font(.caption).foregroundStyle(SoloTheme.cyan)
-      if rival.isVerified { VStack(alignment: .leading, spacing: 3) { Label("Verified: record \(rival.actualTrackRecord) • $\(rival.actualRevenue) • momentum \(rival.actualMomentum)", systemImage: "checkmark.seal.fill").foregroundStyle(SoloTheme.mint); if rival.overclaimAmount > 0 { Text("Track-record overclaim +\(rival.overclaimAmount)").foregroundStyle(SoloTheme.amber) } }.font(.caption.weight(.semibold)).transition(.move(edge: .top).combined(with: .opacity)) }
-      else { Button("Verify claim • 1 Attention", systemImage: "eye.fill") { _ = store.verifyTechComRival(id: rival.id) }.buttonStyle(.bordered).tint(SoloTheme.purple).disabled(store.attentionRemaining == 0).accessibilityHint("Reveals all claimed rival metrics").transition(.opacity) }
-    }
-    .padding(.vertical, 4)
-    .gameplayMotion(.emphasis, value: rival.isVerified)
+  private var playerMarketPosition: Int? {
+    guard let index = store.rivalStandings.firstIndex(where: \.isPlayer) else { return nil }
+    return index + 1
   }
-
-  @ViewBuilder private var talentBoard: some View {
-    if let gate = store.talentBoardGateMessage {
-      Text(gate).font(.caption).foregroundStyle(.secondary)
-    } else {
-      Text("Hire your \(store.nextTalentSlot == 4 ? "fourth" : "fifth") AI teammate. Different model families reduce shared exposure.")
-        .font(.caption).foregroundStyle(.secondary)
-      ForEach(store.talentBoardCandidates) { candidate in
-        VStack(alignment: .leading, spacing: 6) {
-          HStack {
-            Label(candidate.name, systemImage: candidate.role.symbol).font(.subheadline.weight(.bold))
-            Spacer()
-            Text("$\(store.talentPrice(candidate))").font(.caption.weight(.bold)).foregroundStyle(SoloTheme.cyan)
-          }
-          Text("\(candidate.role.rawValue) • \(candidate.modelFamily)").font(.caption).foregroundStyle(.secondary)
-          Text(candidate.pitch).font(.caption)
-          Button("Hire \(candidate.name)", systemImage: "person.badge.plus") { store.hire(candidate) }
-            .buttonStyle(.borderedProminent).tint(SoloTheme.purple).disabled(store.stats.capital < store.talentPrice(candidate))
-        }
-        .padding(.vertical, 4)
-        if candidate.id != store.talentBoardCandidates.last?.id { Divider() }
-      }
-      if store.agents.count >= 4 {
-        Button("Refresh listings • $\(TalentBoard.refreshCost)", systemImage: "arrow.clockwise") { store.refreshTalentBoard() }
-          .buttonStyle(.bordered).disabled(store.stats.capital < TalentBoard.refreshCost)
-      }
-    }
-  }
-
-  private func value(_ value: Int) -> String { metric == .revenue ? "$\(value)" : "\(value)" }
 }
