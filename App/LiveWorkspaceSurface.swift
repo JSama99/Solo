@@ -10,8 +10,8 @@ struct LiveWorkspaceSurface: View {
 
   private var accent: Color {
     switch agentID {
-    case "aurora": SoloTheme.purple
-    case "stacks": SoloTheme.cyan
+    case "aurora": SoloTheme.cyan
+    case "stacks": SoloTheme.amber
     case "brio": SoloTheme.coral
     default: SoloTheme.mint
     }
@@ -19,6 +19,9 @@ struct LiveWorkspaceSurface: View {
 
   private var isWorking: Bool { phase == .working }
   private var isComplete: Bool { phase == .workComplete }
+  private var needsAttention: Bool { phase == .awaitingReview }
+  private var isReviewing: Bool { phase == .reviewing }
+  private var isSettled: Bool { phase == .reviewed || phase == .resolved }
 
   var body: some View {
     TimelineView(.animation(minimumInterval: 1 / 24, paused: reduceMotion)) { context in
@@ -51,15 +54,24 @@ struct LiveWorkspaceSurface: View {
           if isComplete {
             completionOverlay
           }
+          if needsAttention {
+            attentionOverlay
+          }
+          if isReviewing {
+            inspectionOverlay
+          }
+          if isSettled {
+            settledOverlay
+          }
         }
         .frame(height: expanded ? 136 : 108)
         .overlay {
           RoundedRectangle(cornerRadius: 12)
-            .stroke(accent.opacity(isWorking || isComplete ? 0.72 : 0.2), lineWidth: isComplete ? 2.5 : 1)
+            .stroke(needsAttention ? SoloTheme.amber.opacity(0.72) : accent.opacity(isWorking || isComplete || isSettled ? 0.72 : 0.2), lineWidth: isComplete || isSettled ? 2.5 : 1)
         }
         .shadow(color: accent.opacity(isComplete ? 0.65 : (isWorking ? 0.25 : 0)), radius: isComplete ? 16 : 8)
 
-        if isWorking || isComplete {
+        if isWorking || isComplete || needsAttention {
           HStack(spacing: 8) {
             ProgressView(value: progress)
               .tint(accent)
@@ -114,6 +126,35 @@ struct LiveWorkspaceSurface: View {
       .background(SoloTheme.mint.gradient, in: Capsule())
       .symbolEffect(.bounce)
       .transition(.scale(scale: 0.72).combined(with: .opacity))
+  }
+
+  private var attentionOverlay: some View {
+    Label("FOUNDER ATTENTION REQUIRED", systemImage: "eye.fill")
+      .font(.caption.weight(.black))
+      .foregroundStyle(.white)
+      .padding(.horizontal, 14)
+      .padding(.vertical, 9)
+      .background(SoloTheme.amber.gradient, in: Capsule())
+      .transition(.opacity.combined(with: .scale(scale: 0.92)))
+  }
+
+  private var inspectionOverlay: some View {
+    RoundedRectangle(cornerRadius: 12)
+      .stroke(accent.opacity(0.9), lineWidth: 2)
+      .overlay {
+        LinearGradient(colors: [.clear, accent.opacity(0.28), .clear], startPoint: .top, endPoint: .bottom)
+          .clipShape(RoundedRectangle(cornerRadius: 12))
+      }
+      .accessibilityHidden(true)
+  }
+
+  private var settledOverlay: some View {
+    Label(phase == .resolved ? "DECISION LOCKED" : "REVIEW COMPLETE", systemImage: phase == .resolved ? "lock.fill" : "checkmark.seal.fill")
+      .font(.caption.weight(.black))
+      .foregroundStyle(phase == .resolved ? SoloTheme.mint : accent)
+      .padding(9)
+      .background(.black.opacity(0.72), in: Capsule())
+      .transition(.opacity)
   }
 
   private var statusSymbol: String {
