@@ -12,7 +12,7 @@ struct HowToPlayContent {
     .init(id: "progression", title: "Progression", symbol: "chart.line.uptrend.xyaxis", body: "Sprints advance ventures. Every era raises runway and energy pressure while correlated-failure risk grows. Headquarters purchases use capital for persistent operating improvements.")
   ] }
   static func phaseDescription(_ phase: SprintPhase) -> String { switch phase { case .founderEvent: "Resolve the founder dilemma at the desk."; case .chooseCommitments: "Choose the sprint’s three commitments and optional backlog swap."; case .assignTeam: "Assign agents to committed tasks at their stations."; case .reviewAndResolve: "Review reports, spend Attention, then lock a founder resolution."; case .readyToCommit: "All required decisions are locked; commit the sprint at the desk." } }
-  static func doctrineDescription(_ doctrine: FounderDoctrine) -> String { let p = DoctrineProfile.profile(for: doctrine); return "\(doctrine.name): \(p.attentionMaximum) Attention, reviews cost \(p.reviewEnergyCost) Energy, neglect adds \(p.neglectDriftIncrease.formatted()) Drift, quality bonus \(p.actualQualityBonus), starting effects \(p.startingStatAdjustment.conciseLossLabel)." }
+  static func doctrineDescription(_ doctrine: FounderDoctrine) -> String { let p = DoctrineRules.profile(for: doctrine); return "\(doctrine.name): \(p.attentionMaximum) Attention, reviews cost \(p.reviewEnergyCost) Energy, neglect adds \(p.neglectDriftIncrease.formatted()) Drift, quality bonus \(p.actualQualityBonus), starting effects \(p.startingStatAdjustment.conciseLossLabel)." }
 }
 
 struct HowToPlayScreen: View {

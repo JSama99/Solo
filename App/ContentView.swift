@@ -1028,6 +1028,27 @@ private struct CareerOutcomeScreen: View {
               .multilineTextAlignment(.center)
               .milestoneReveal(order: 3)
 
+            if let identity = outcome.unicornIdentity, let profile = outcome.doctrineProfile {
+              VStack(alignment: .leading, spacing: 8) {
+                Label(identity.name, systemImage: "sparkles")
+                  .font(.title2.bold())
+                  .foregroundStyle(SoloTheme.mint)
+                Text(identity.summary)
+                  .font(.callout)
+                  .foregroundStyle(.secondary)
+                Divider()
+                Text("You declared \(store.doctrine.name).")
+                  .font(.headline)
+                Text("Across the record, you verified \(profile.verificationRate.formatted(.percent.precision(.fractionLength(0)))) of reports and shipped \(profile.unverifiedShipRate.formatted(.percent.precision(.fractionLength(0)))) unverified. Your behavior most resembles \(profile.revealed.name).")
+                  .font(.callout)
+                Text("Doctrine gap: \(profile.gap(from: store.doctrine).formatted(.percent.precision(.fractionLength(0))))")
+                  .font(.caption.weight(.semibold))
+                  .foregroundStyle(.secondary)
+              }
+              .soloCard()
+              .milestoneReveal(order: 4)
+            }
+
             VStack(spacing: 12) {
               HStack {
                 Text("Final score").foregroundStyle(.secondary)

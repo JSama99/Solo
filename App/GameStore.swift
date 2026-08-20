@@ -127,7 +127,7 @@ final class GameStore {
   }
 
   var attentionMaximum: Int {
-    DoctrineProfile.profile(for: doctrine).attentionMaximum
+    DoctrineRules.profile(for: doctrine).attentionMaximum
       + (sprint.isMultiple(of: 3) ? (progressionStore?.bonuses.periodicAttentionBonus ?? 0) : 0)
   }
 
@@ -431,7 +431,7 @@ final class GameStore {
     techComRivals = TechComEngine.rivals(seed: seed ?? 0x534F4C4F)
     talentBoardRefreshes = 0
     randomNumberGenerator = SeededRandomNumberGenerator(seed: seed ?? UInt64.random(in: .min ... .max))
-    let startingAdjustment = DoctrineProfile.profile(for: doctrine).startingStatAdjustment
+    let startingAdjustment = DoctrineRules.profile(for: doctrine).startingStatAdjustment
     stats.trust += startingAdjustment.trust
     stats.momentum += startingAdjustment.momentum
     stats.energy += startingAdjustment.energy
@@ -719,7 +719,7 @@ final class GameStore {
     tasks[taskIndex].resolution = .approve
     tasks[taskIndex].resolutionLocked = false
     founderAttentionSpent += 1
-    let reviewEnergy = DoctrineProfile.profile(for: doctrine).reviewEnergyCost
+    let reviewEnergy = DoctrineRules.profile(for: doctrine).reviewEnergyCost
     stats.energy = clamped(stats.energy - reviewEnergy)
     agents[agentIndex].calibration = min(1, agents[agentIndex].calibration + 0.035)
     agents[agentIndex].drift = max(0, agents[agentIndex].drift - 9)
@@ -901,7 +901,7 @@ final class GameStore {
       if !tasks[index].isReviewed {
         result.markUnverified()
         tasks[index].result = result
-        let driftIncrease = DoctrineProfile.profile(for: doctrine).neglectDriftIncrease
+        let driftIncrease = DoctrineRules.profile(for: doctrine).neglectDriftIncrease
         agents[agentIndex].drift = min(100, agents[agentIndex].drift + driftIncrease)
         agents[agentIndex].trust = max(0, agents[agentIndex].trust - (result.isRiskyForSimulation ? 5 : 2))
         recordEvidence(task: tasks[index], agent: agents[agentIndex], result: result)
@@ -2136,11 +2136,11 @@ final class GameStore {
   }
 
   private func acquisitionOutcome() -> CareerOutcome {
-    CareerOutcome(
+    identifiedVictory(
       kind: .victory,
       title: "The company was acquired",
       summary: "You accepted the offer in Venture \(venture). The run ended with an exit, unresolved obligations, and a record of the company you chose to build.",
-      score: careerScore
+      forcedIdentity: .boughtOut
     )
   }
 
@@ -2154,29 +2154,53 @@ final class GameStore {
     let summary = careerMode == .bounded
       ? "You completed all 24 sprints and built a repeatable way to lead an AI-native company."
       : "You chose to stop after \(completedSprints) sprints across \(venture) ventures, on your own terms."
-    return CareerOutcome(
+    return identifiedVictory(
       kind: .victory,
       title: title,
-      summary: summary,
-      score: careerScore
+      summary: summary
     )
   }
 
   private func empireVictoryOutcome() -> CareerOutcome {
-    CareerOutcome(
+    identifiedVictory(
       kind: .victory,
       title: "A dynasty, built deliberately",
-      summary: "You reached Venture \(VentureEra.empireVentureCap) and built an empire that survived its own scale.",
-      score: careerScore
+      summary: "You reached Venture \(VentureEra.empireVentureCap) and built an empire that survived its own scale."
     )
   }
 
   private func dailyVictoryOutcome() -> CareerOutcome {
-    CareerOutcome(
+    identifiedVictory(
       kind: .victory,
       title: "Daily Challenge complete",
-      summary: "Shared seed \(DailyChallenge.dayKey()). Your score is ready to compare.",
-      score: careerScore
+      summary: "Shared seed \(DailyChallenge.dayKey()). Your score is ready to compare."
+    )
+  }
+
+  private func identifiedVictory(
+    kind: CareerOutcomeKind,
+    title: String,
+    summary: String,
+    forcedIdentity: UnicornIdentity? = nil
+  ) -> CareerOutcome {
+    let profile = DoctrineProfile.derive(
+      evidence: evidence,
+      agents: agents,
+      decisions: decisionHistory,
+      flags: companyFlags
+    )
+    let identity = forcedIdentity ?? UnicornIdentity.derive(
+      flags: companyFlags,
+      profile: profile,
+      revenue: stats.revenue
+    )
+    return CareerOutcome(
+      kind: kind,
+      title: title,
+      summary: summary,
+      score: careerScore,
+      unicornIdentity: identity,
+      doctrineProfile: profile
     )
   }
 

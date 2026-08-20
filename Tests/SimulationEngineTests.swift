@@ -11,21 +11,21 @@ final class SimulationEngineTests: XCTestCase {
   // ── DoctrineProfile: must reproduce Build 4's exact original values ──
 
   func testDoctrineProfileReproducesBuild4Values() {
-    let pure = DoctrineProfile.profile(for: .pure)
+    let pure = DoctrineRules.profile(for: .pure)
     XCTAssertEqual(pure.attentionMaximum, 2)
     XCTAssertEqual(pure.reviewEnergyCost, 1)
     XCTAssertEqual(pure.neglectDriftIncrease, 9.0)
     XCTAssertEqual(pure.actualQualityBonus, 7)
     XCTAssertEqual(pure.startingStatAdjustment, SimulationEffects())
 
-    let guided = DoctrineProfile.profile(for: .guided)
+    let guided = DoctrineRules.profile(for: .guided)
     XCTAssertEqual(guided.attentionMaximum, 3)
     XCTAssertEqual(guided.reviewEnergyCost, 2)
     XCTAssertEqual(guided.neglectDriftIncrease, 6.5)
     XCTAssertEqual(guided.actualQualityBonus, 0)
     XCTAssertEqual(guided.startingStatAdjustment, SimulationEffects(energy: 5))
 
-    let trust = DoctrineProfile.profile(for: .trust)
+    let trust = DoctrineRules.profile(for: .trust)
     XCTAssertEqual(trust.attentionMaximum, 2)
     XCTAssertEqual(trust.reviewEnergyCost, 1)
     XCTAssertEqual(trust.neglectDriftIncrease, 6.5)
@@ -35,7 +35,7 @@ final class SimulationEngineTests: XCTestCase {
 
   func testDoctrineProfileCoversEveryDoctrine() {
     for doctrine in FounderDoctrine.allCases {
-      _ = DoctrineProfile.profile(for: doctrine)
+      _ = DoctrineRules.profile(for: doctrine)
     }
   }
 

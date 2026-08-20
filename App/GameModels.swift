@@ -1040,11 +1040,100 @@ enum CareerOutcomeKind: String, Codable {
   }
 }
 
+enum UnicornIdentity: String, Codable, CaseIterable, Identifiable {
+  case trustMachine
+  case hypeRocket
+  case quietCompounder
+  case ghostShip
+  case humanScale
+  case boughtOut
+  case houseOfCards
+
+  var id: Self { self }
+
+  var name: String {
+    switch self {
+    case .trustMachine: "Trust Machine"
+    case .hypeRocket: "Hype Rocket"
+    case .quietCompounder: "Quiet Compounder"
+    case .ghostShip: "Ghost Ship"
+    case .humanScale: "Human Scale"
+    case .boughtOut: "Bought Out"
+    case .houseOfCards: "House of Cards"
+    }
+  }
+
+  var summary: String {
+    switch self {
+    case .trustMachine: "Verification and public evidence became the company’s operating system."
+    case .hypeRocket: "Narrative velocity carried the company farther than its verification cadence."
+    case .quietCompounder: "Focused execution, independence, and recovery compounded over time."
+    case .ghostShip: "An agent-heavy company produced at scale with little founder relationship investment."
+    case .humanScale: "Customer care and protected founder capacity defined the company’s growth."
+    case .boughtOut: "The company’s final identity was the acquisition the founder accepted."
+    case .houseOfCards: "Revenue arrived alongside feature debt and unresolved latent exposure."
+    }
+  }
+
+  static func derive(
+    flags: Set<CompanyFlag>,
+    profile: DoctrineProfile,
+    revenue: Int,
+    unsurfacedDefects: Int = 0
+  ) -> UnicornIdentity {
+    if flags.contains(.acquisitionAccepted) { return .boughtOut }
+    var scores: [(UnicornIdentity, Int)] = [
+      (.trustMachine, (flags.contains(.evidenceLedClaims) ? 3 : 0) + (flags.contains(.publicTransparency) ? 3 : 0) + Int(profile.verificationRate * 4)),
+      (.hypeRocket, (flags.contains(.hypeFirst) ? 4 : 0) + (flags.contains(.simplifiedNarrative) ? 3 : 0) + Int(profile.unverifiedShipRate * 4)),
+      (.quietCompounder, (flags.contains(.bootstrapIndependent) ? 3 : 0) + (flags.contains(.focusedExecution) ? 3 : 0) + Int(profile.restDiscipline * 4)),
+      (.ghostShip, (flags.contains(.agentOnlyCompany) ? 5 : 0) + Int((1 - profile.relationshipInvestment) * 4)),
+      (.humanScale, (flags.contains(.humanCustomerSuccess) ? 4 : 0) + (flags.contains(.protectedFounderHealth) ? 4 : 0) + Int(profile.relationshipInvestment * 3)),
+      (.houseOfCards, (flags.contains(.featureDebt) ? 4 : 0) + (revenue >= 10_000 ? 2 : 0) + min(4, unsurfacedDefects))
+    ]
+    scores.sort { lhs, rhs in
+      lhs.1 == rhs.1 ? Self.allCases.firstIndex(of: lhs.0)! < Self.allCases.firstIndex(of: rhs.0)! : lhs.1 > rhs.1
+    }
+    return scores.first?.0 ?? .quietCompounder
+  }
+}
+
 struct CareerOutcome: Codable {
   var kind: CareerOutcomeKind
   var title: String
   var summary: String
   var score: Int
+  var unicornIdentity: UnicornIdentity? = nil
+  var doctrineProfile: DoctrineProfile? = nil
+
+  private enum CodingKeys: String, CodingKey {
+    case kind, title, summary, score, unicornIdentity, doctrineProfile
+  }
+
+  init(
+    kind: CareerOutcomeKind,
+    title: String,
+    summary: String,
+    score: Int,
+    unicornIdentity: UnicornIdentity? = nil,
+    doctrineProfile: DoctrineProfile? = nil
+  ) {
+    self.kind = kind
+    self.title = title
+    self.summary = summary
+    self.score = score
+    self.unicornIdentity = unicornIdentity
+    self.doctrineProfile = doctrineProfile
+  }
+
+  init(from decoder: Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    kind = try values.decode(CareerOutcomeKind.self, forKey: .kind)
+    title = try values.decode(String.self, forKey: .title)
+    summary = try values.decode(String.self, forKey: .summary)
+    score = try values.decode(Int.self, forKey: .score)
+    unicornIdentity = try values.decodeIfPresent(UnicornIdentity.self, forKey: .unicornIdentity)
+    doctrineProfile = try values.decodeIfPresent(DoctrineProfile.self, forKey: .doctrineProfile)
+  }
 }
 
 /// A non-terminal "venture complete" moment in continuous mode. Bounded mode

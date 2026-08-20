@@ -102,7 +102,7 @@ enum SimulationEngine {
       + agent.trust * 0.18
       - agent.drift * 0.35
       + Double(roleAdjustment + intentAdjustment + relationshipAdjustment + personalityAdjustment
-        + DoctrineProfile.profile(for: doctrine).actualQualityBonus + facilityQualityBonus + stressAdjustment + perkQualityBonus + actualNoise)
+        + DoctrineRules.profile(for: doctrine).actualQualityBonus + facilityQualityBonus + stressAdjustment + perkQualityBonus + actualNoise)
       - Double(correlation?.qualityPenalty ?? 0)
     let actualQuality = clampedPercent(Int(rawActual.rounded()))
 
