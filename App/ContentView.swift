@@ -1047,6 +1047,9 @@ private struct CareerOutcomeScreen: View {
                 Text(identity.summary)
                   .font(.callout)
                   .foregroundStyle(.secondary)
+                Text("Identity grade \(identity.identityGrade(profile: profile, flags: store.companyFlags)) • non-competitive")
+                  .font(.caption.weight(.bold))
+                  .foregroundStyle(SoloTheme.amber)
                 Divider()
                 Text("You declared \(store.doctrine.name).")
                   .font(.headline)
@@ -1074,6 +1077,7 @@ private struct CareerOutcomeScreen: View {
               ResultRow(label: "Momentum", value: "\(store.stats.momentum)")
               ResultRow(label: "Trust", value: "\(store.stats.trust)")
               ResultRow(label: "Evidence recorded", value: "\(store.evidence.count)")
+              ResultRow(label: "Latent defects still unsurfaced", value: "\(store.latentDefects.count)")
             }
             .soloCard()
             .milestoneReveal(order: 4)

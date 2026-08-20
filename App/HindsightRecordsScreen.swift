@@ -196,6 +196,9 @@ private struct PrecedentRecordRow: View {
             detail("Decision", value: precedent.decisionSummary)
             detail("Recorded context", value: precedent.context.summary)
             detail("Observed outcome", value: precedent.outcome.summary)
+            if let counterfactual = precedent.counterfactual {
+              detail("Rival branch", value: counterfactual.summary)
+            }
           }
           .transition(reduceMotion ? .identity : .move(edge: .top))
         }

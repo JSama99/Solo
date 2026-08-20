@@ -1,6 +1,7 @@
 import XCTest
 @testable import Solo_Unicorn_Run
 
+@MainActor
 final class DivergenceSystemTests: XCTestCase {
   func testPressureIsMonotonicClampedAndHandlesInvalidHorizon() {
     XCTAssertEqual(Divergence.pressure(sprintsSinceFork: -2), 0)
@@ -63,6 +64,58 @@ final class DivergenceSystemTests: XCTestCase {
     let propertyNames = Set(Mirror(reflecting: emptyBranch()).children.compactMap(\.label))
     XCTAssertFalse(propertyNames.contains("save"))
     XCTAssertFalse(propertyNames.contains("careerSave"))
+  }
+
+  func testV16ShapeDecodesNewFieldsWithDefaultsAndPreservesReportCache() throws {
+    let task = SoloTask(id: UUID(uuidString: "00000000-0000-0000-0000-000000000099")!, title: "Legacy", detail: "Fixture", role: .engineering, impact: .momentum(2))
+    let result = TaskResult(actualQuality: 50, reportedQuality: 61, evidenceCompleteness: 40, correlatedFailureIdentifier: nil, immediateEffects: SimulationEffects(), delayedEffects: SimulationEffects(), confidenceLowerBound: 40, confidenceUpperBound: 70, knownOperationalRisk: "Fixture")
+    let cached = CachedTaskReport(venture: 1, sprint: 2, taskID: task.id, agentID: "stacks", intent: .build, result: result)
+    let save = CareerSave(founderName: "Legacy", doctrine: .guided, sprint: 2, venture: 1, intent: .build, stats: FounderStats(), agents: ContentLibrary.initialAgents, tasks: [task], evidence: [], outcome: nil, randomNumberGenerator: SeededRandomNumberGenerator(seed: 5), correlatedFailureEvent: nil, pendingEffects: [], reportCache: [cached])
+    let data = try JSONEncoder().encode(save)
+    var object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    ["activeDivergence", "divergenceRecords", "forksUsedThisVenture", "latentDefects", "doctrineProfile", "unicornIdentity", "rivalDiscontinuities"].forEach { object.removeValue(forKey: $0) }
+    let migrated = try JSONDecoder().decode(CareerSave.self, from: JSONSerialization.data(withJSONObject: object))
+    XCTAssertEqual(migrated.reportCache, [cached])
+    XCTAssertNil(migrated.activeDivergence)
+    XCTAssertEqual(migrated.divergenceRecords, [])
+    XCTAssertEqual(migrated.latentDefects, [])
+    XCTAssertEqual(migrated.rivalDiscontinuities, [])
+  }
+
+  func testEraForcesChangeRulesWithoutRandomness() {
+    let context = EraContext(unverifiedCount: 2, averageDrift: 60, profile: .neutral, flags: [.featureDebt])
+    var garage = SimulationEffects()
+    VentureEra.garage.force.modify(&garage, context: context)
+    XCTAssertEqual(garage, SimulationEffects())
+    var scrutiny = SimulationEffects()
+    VentureEra.marketLeader.force.modify(&scrutiny, context: context)
+    XCTAssertEqual(scrutiny.trust, -4)
+    var dynasty = SimulationEffects()
+    VentureEra.dynasty.force.modify(&dynasty, context: context)
+    XCTAssertEqual(dynasty.runway, -2)
+  }
+
+  func testRivalDiscontinuitiesMechanicallyChangeField() {
+    let companies = [
+      RivalCompany(id: "inc", name: "Inc", archetype: .incumbent, debutVenture: 1, baseStrength: 2),
+      RivalCompany(id: "up", name: "Up", archetype: .upstart, debutVenture: 1, baseStrength: 1)
+    ]
+    let acquisition = RivalDiscontinuity(id: "a", kind: .acquisition, primaryRivalID: "inc", secondaryRivalID: "up", venture: 2, sprint: 12, headline: "Facts")
+    let standings = RivalEngine.standings(companies: companies, venture: 2, sprint: 12, careerSeed: 7, player: FounderStats(), playerFlags: [], discontinuities: [acquisition])
+    XCTAssertFalse(standings.contains { $0.id == "up" })
+    XCTAssertTrue(standings.contains { $0.id == "inc" })
+  }
+
+  func testGhostRunStaysOffRenderBudget() {
+    let tasks = Array(ContentLibrary.taskPool.prefix(3))
+    let profile = DoctrineProfile.neutral
+    let clock = ContinuousClock()
+    let start = clock.now
+    for _ in 0..<100 {
+      _ = SimulationEngine.runGhost(tasks: tasks, agents: ContentLibrary.initialAgents, intent: .build, doctrine: .guided, careerSeed: 8, forkVenture: 2, forkSprint: 4, choice: .shipAll, policy: GhostPolicy.policy(for: .copycat, profile: profile), horizon: 4)
+    }
+    let elapsed = start.duration(to: clock.now)
+    XCTAssertLessThan(elapsed, .seconds(1), "100 ghost runs should remain comfortably outside a frame-scale concern")
   }
 
   private func coordinate(task: String, agent: String, salt: UInt64) -> DrawCoordinate {

@@ -87,6 +87,7 @@ struct Precedent: Codable, Hashable, Identifiable {
   var context: PrecedentContext
   var decisionSummary: String
   var outcome: PrecedentOutcome
+  var counterfactual: PrecedentOutcome? = nil
 
   var recallTitle: String { "Venture \(venture), Sprint \(sprint)" }
 }

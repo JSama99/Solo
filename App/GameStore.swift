@@ -54,6 +54,7 @@ final class GameStore {
   private(set) var activeDivergence: DivergenceBranch?
   var divergenceRecords: [DivergenceRecord] = []
   private(set) var forksUsedThisVenture = 0
+  private(set) var rivalDiscontinuities: [RivalDiscontinuity] = []
   var reportCache: [CachedTaskReport] = []
   var dailyChallengeStore = DailyChallengeStore()
   var achievementStore: AchievementStore?
@@ -172,7 +173,8 @@ final class GameStore {
       player: stats,
       playerFlags: companyFlags,
       revealedDoctrine: currentDoctrineProfile.revealed,
-      exposedRivalIDs: exposedRivalIDs
+      exposedRivalIDs: exposedRivalIDs,
+      discontinuities: rivalDiscontinuities
     )
   }
 
@@ -283,6 +285,11 @@ final class GameStore {
       ghostOutcome: branch.ghostOutcome.outcome,
       collapsedAtSprint: sprint
     ))
+    if let precedentIndex = precedents.firstIndex(where: {
+      $0.venture == branch.venture && $0.sprint == branch.sprint
+    }) {
+      precedents[precedentIndex].counterfactual = branch.ghostOutcome.outcome
+    }
     activeDivergence = nil
   }
 
@@ -562,6 +569,7 @@ final class GameStore {
     activeDivergence = nil
     divergenceRecords = []
     forksUsedThisVenture = 0
+    rivalDiscontinuities = []
     reportCache = []
     techComHeadlines = []
     techComRivals = TechComEngine.rivals(seed: seed ?? 0x534F4C4F)
@@ -1014,6 +1022,15 @@ final class GameStore {
     case .sell:
       effects.revenue += 180
     }
+    era.force.modify(
+      &effects,
+      context: EraContext(
+        unverifiedCount: assignedIndices.filter { !tasks[$0].isReviewed }.count,
+        averageDrift: averageDrift,
+        profile: currentDoctrineProfile,
+        flags: companyFlags
+      )
+    )
 
     var strongOutcomes = 0
     var riskyOutcomes = 0
@@ -1180,6 +1197,7 @@ final class GameStore {
     recallsShownThisVenture = 0
     activeRecall = nil
     forksUsedThisVenture = 0
+    rivalDiscontinuities = []
     stats.trackRecord += max(8, (stats.momentum + stats.trust) / 8)
     let earnedRunwayRecovery = max(4, min(10, (stats.trust + stats.momentum) / 24))
     let earnedEnergyRecovery = max(6, min(14, averageRelationship / 8))
@@ -1248,7 +1266,9 @@ final class GameStore {
       crossesEraBoundary: nextEra != era,
       obligations: activeObligations,
       companyFlags: companyFlags.sorted { $0.name < $1.name },
-      averageRelationship: averageRelationship
+      averageRelationship: averageRelationship,
+      doctrineProfile: currentDoctrineProfile,
+      declaredDoctrine: doctrine
     )
     report = nil
     stage = .ventureCheckpoint
@@ -1465,6 +1485,17 @@ final class GameStore {
     selectedDilemmaChoiceID = nil
     currentObjective = makeObjective()
     feedPosts = TechComFeedEngine.posts(venture: venture, sprint: sprint, stats: stats, standings: rivalStandings)
+    evaluateRivalDiscontinuities()
+    for event in rivalDiscontinuities where event.venture == venture && event.sprint == sprint {
+      feedPosts.insert(FeedPost(
+        id: event.id,
+        kind: .rivalMove,
+        headline: event.headline,
+        body: "A traceable market discontinuity changed the active rival field.",
+        venture: venture,
+        sprint: sprint
+      ), at: 0)
+    }
     for defect in latentDefects where defect.surfacesAtCareerSprint == careerSprintIndex {
       feedPosts.insert(FeedPost(
         id: "latent-\(defect.id)",
@@ -1515,6 +1546,57 @@ final class GameStore {
       ), at: 0)
     }
     syncAssignments()
+  }
+
+  private func evaluateRivalDiscontinuities() {
+    let standings = rivalStandings.filter { !$0.isPlayer }
+    func already(_ kind: RivalDiscontinuityKind, _ id: String) -> Bool {
+      rivalDiscontinuities.contains { $0.kind == kind && ($0.primaryRivalID == id || $0.secondaryRivalID == id) }
+    }
+    if sprint == 12,
+       let incumbent = standings.first(where: { $0.archetype == .incumbent }),
+       let upstart = standings.first(where: { $0.archetype == .upstart }),
+       incumbent.strength > upstart.strength * 1.9,
+       !already(.acquisition, upstart.id) {
+      rivalDiscontinuities.append(RivalDiscontinuity(
+        id: "acquisition-\(incumbent.id)-\(upstart.id)",
+        kind: .acquisition,
+        primaryRivalID: incumbent.id,
+        secondaryRivalID: upstart.id,
+        venture: venture,
+        sprint: sprint,
+        headline: "\(incumbent.name) acquired \(upstart.name); the two fields merged."
+      ))
+      return
+    }
+    if venture >= 4, sprint == 6,
+       let copycat = standings.first(where: { $0.archetype == .copycat && $0.marketShare < 0.08 }),
+       !already(.pivot, copycat.id) {
+      rivalDiscontinuities.append(RivalDiscontinuity(
+        id: "pivot-\(copycat.id)",
+        kind: .pivot,
+        primaryRivalID: copycat.id,
+        secondaryRivalID: nil,
+        venture: venture,
+        sprint: sprint,
+        headline: "\(copycat.name) pivoted toward SOLO’s \(intent.name.lowercased()) posture."
+      ))
+      return
+    }
+    if sprint == 12,
+       let collapsing = standings
+        .filter({ $0.marketShare < 0.025 && !already(.collapse, $0.id) })
+        .sorted(by: { $0.id < $1.id }).first {
+      rivalDiscontinuities.append(RivalDiscontinuity(
+        id: "collapse-\(collapsing.id)",
+        kind: .collapse,
+        primaryRivalID: collapsing.id,
+        secondaryRivalID: nil,
+        venture: venture,
+        sprint: sprint,
+        headline: "\(collapsing.name) exited after sustained negative market reaction."
+      ))
+    }
   }
 
   private func cachedReport(taskID: UUID, agentID: String) -> TaskResult? {
@@ -1833,6 +1915,7 @@ final class GameStore {
     activeDivergence = save.activeDivergence
     divergenceRecords = save.divergenceRecords
     forksUsedThisVenture = save.forksUsedThisVenture
+    rivalDiscontinuities = save.rivalDiscontinuities
     reportCache = save.reportCache
     precedents = save.precedents
     awaitingFounderPass = save.awaitingFounderPass
@@ -2136,7 +2219,11 @@ final class GameStore {
     guard !candidates.isEmpty else { return nil }
     if dilemmaDeckChapter != chapter || dilemmaDeckTemplateIDs.isEmpty {
       dilemmaDeckChapter = chapter
-      dilemmaDeckTemplateIDs = deterministicallyShuffled(candidates.map(\.id))
+      let shuffled = deterministicallyShuffled(candidates)
+      let gap = currentDoctrineProfile.gap(from: doctrine)
+      dilemmaDeckTemplateIDs = (gap >= 0.30
+        ? shuffled.sorted { dilemmaPressureScore($0) > dilemmaPressureScore($1) }
+        : shuffled).map(\.id)
     }
     let templateID = dilemmaDeckTemplateIDs.removeFirst()
     guard var dilemma = candidates.first(where: { $0.id == templateID }) else { return nil }
@@ -2159,7 +2246,9 @@ final class GameStore {
     let fresh = valid.filter { !recent.contains($0.kind) }
     if !fresh.isEmpty { valid = fresh }
     if valid.isEmpty { valid = ContentLibrary.objectivePool.filter { $0.kind == .protectFounder } }
-    let index = randomNumberGenerator.integer(in: 0 ... max(0, valid.count - 1))
+    valid.sort { objectivePressureScore($0.kind) > objectivePressureScore($1.kind) }
+    let favoredCount = min(valid.count, 2)
+    let index = randomNumberGenerator.integer(in: 0 ... max(0, favoredCount - 1))
     var objective = valid[index]
     if objective.kind == .repairTrust,
        let target = agents.filter({ $0.drift >= 35 && $0.drift < 50 }).max(by: { $0.drift < $1.drift }) {
@@ -2171,6 +2260,27 @@ final class GameStore {
     recentObjectiveKinds.append(objective.kind)
     if recentObjectiveKinds.count > 3 { recentObjectiveKinds.removeFirst(recentObjectiveKinds.count - 3) }
     return objective
+  }
+
+  private func objectivePressureScore(_ kind: SprintObjectiveKind) -> Int {
+    switch (currentDoctrineProfile.revealed, kind) {
+    case (.pure, .evidenceFirst), (.pure, .repairTrust): 4
+    case (.trust, .calculatedRisk), (.trust, .protectFounder): 4
+    case (.guided, .roleDiscipline), (.guided, .diversifiedModels): 4
+    default: 1
+    }
+  }
+
+  private func dilemmaPressureScore(_ dilemma: FounderDilemma) -> Int {
+    let effects = dilemma.choices.map(\.effects)
+    switch currentDoctrineProfile.revealed {
+    case .pure:
+      return effects.map { abs($0.trust) }.max() ?? 0
+    case .guided:
+      return dilemma.choices.map { $0.relationshipDeltas.values.map(abs).reduce(0, +) + abs($0.effects.energy) }.max() ?? 0
+    case .trust:
+      return effects.map { abs($0.revenue) / 100 + abs($0.momentum) }.max() ?? 0
+    }
   }
 
   private func hasRoleFitDraftSolution() -> Bool {
@@ -2242,6 +2352,17 @@ final class GameStore {
     if techComRivals[index].overclaimAmount >= TechComRival.overclaimThreshold,
        ContentLibrary.rivalSimulationCompanies.first(where: { $0.id == id })?.archetype == .hypeMachine {
       exposedRivalIDs.insert(id)
+      if !rivalDiscontinuities.contains(where: { $0.kind == .exposure && $0.primaryRivalID == id }) {
+        rivalDiscontinuities.append(RivalDiscontinuity(
+          id: "exposure-\(id)",
+          kind: .exposure,
+          primaryRivalID: id,
+          secondaryRivalID: nil,
+          venture: venture,
+          sprint: sprint,
+          headline: "\(techComRivals[index].name) was exposed after its claim was verified."
+        ))
+      }
       techComHeadlines.insert(TechComHeadline(
         id: HindsightEngine.identifier(venture: venture + 10_000, sprint: sprint),
         category: .rival,
@@ -2314,7 +2435,8 @@ final class GameStore {
       divergenceRecords: divergenceRecords,
       forksUsedThisVenture: forksUsedThisVenture,
       doctrineProfile: currentDoctrineProfile,
-      unicornIdentity: careerOutcome?.unicornIdentity
+      unicornIdentity: careerOutcome?.unicornIdentity,
+      rivalDiscontinuities: rivalDiscontinuities
     )
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
@@ -2447,7 +2569,8 @@ final class GameStore {
     let identity = forcedIdentity ?? UnicornIdentity.derive(
       flags: companyFlags,
       profile: profile,
-      revenue: stats.revenue
+      revenue: stats.revenue,
+      unsurfacedDefects: latentDefects.count
     )
     return CareerOutcome(
       kind: kind,
