@@ -489,12 +489,14 @@ private struct GameDashboard: View {
         }
       }
     )) { report in
-      SprintReportSheet(report: report, visibleReport: presentation.visibleSprintResult) {
-        store.finishReport()
-        presentation.clearSprintPresentation()
+      if let result = presentation.visibleSprintResult {
+        SprintOutcomeScreen(report: report, result: result) {
+          store.finishReport()
+          presentation.clearSprintPresentation()
+        }
+        .presentationDetents([.large])
+        .interactiveDismissDisabled()
       }
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
     }
   }
 }
@@ -674,13 +676,6 @@ private struct RecordsScreen: View {
             AgentOperationsScreen(store: store)
           } label: {
             RecordLink(title: "Agent Operations", subtitle: "Trust, reliability, and model-family exposure", symbol: "cpu.fill", count: store.agents.count)
-          }
-          .buttonStyle(SoloPressStyle())
-
-          NavigationLink {
-            HindsightRecordsScreen(precedents: store.precedents, divergences: store.divergenceRecords)
-          } label: {
-            RecordLink(title: "Hindsight", subtitle: "Recorded contexts and observed outcomes", symbol: "brain.head.profile", count: store.precedents.count)
           }
           .buttonStyle(SoloPressStyle())
 
@@ -915,93 +910,6 @@ private struct AgentOperationsScreen: View {
         onSelectPerk: { store.selectAgentPerk($0, for: agent.agentID) }
       )
     }
-  }
-}
-
-private struct SprintReportSheet: View {
-  var report: SprintReport
-  var visibleReport: VisibleSprintResult?
-  var onContinue: () -> Void
-
-  @Environment(\.accessibilityReduceMotion) private var reduceMotion
-  @State private var revealedStep = 0
-  @State private var deliveredRevenueFeedback = false
-  @Environment(AppSettingsStore.self) private var settings
-
-  var body: some View {
-    NavigationStack {
-      ScrollView {
-        VStack(alignment: .leading, spacing: 18) {
-        Text("SPRINT \(report.sprint) RESULTS")
-          .font(.caption.weight(.black))
-          .tracking(2)
-          .foregroundStyle(SoloTheme.cyan)
-        Text(visibleReport?.headline ?? "The sprint is resolved").font(.title.bold())
-        VStack(spacing: 10) {
-          if revealedStep >= 1 {
-            ResultRow(label: "Revenue", value: report.revenueDelta.formatted(.currency(code: "USD").precision(.fractionLength(0))))
-            ResultRow(label: "Capital", value: signed(visibleReport?.capitalDelta ?? report.revenueDelta / 4))
-          }
-          if revealedStep >= 2 {
-            ResultRow(label: "Momentum", value: signed(report.momentumDelta))
-            ResultRow(label: "Trust", value: signed(report.trustDelta))
-            ResultRow(label: "Energy", value: signed(report.energyDelta))
-            ResultRow(label: "Runway", value: signed(report.runwayDelta))
-          }
-          if revealedStep >= 3 {
-            ResultRow(label: "Reviews completed", value: "\(visibleReport?.reviewsCompleted ?? report.reviewed)")
-            ResultRow(label: "Verified strong outcomes", value: "\(visibleReport?.verifiedStrongOutcomes ?? 0)")
-          }
-          if revealedStep >= 4 {
-            ResultRow(label: "Known risk flags", value: "\(visibleReport?.visibleRiskFlags ?? 0)")
-            ResultRow(label: "Evidence recorded", value: "\(visibleReport?.evidenceRecorded ?? 0)")
-            ResultRow(label: "Ignored opportunities", value: "\(report.skippedTasks)")
-            if let objectiveTitle = report.objectiveTitle {
-              ResultRow(label: objectiveTitle, value: report.objectiveCompleted ? "Completed" : "Missed")
-            }
-          }
-        }
-        if let dilemmaSummary = report.dilemmaSummary {
-          VStack(alignment: .leading, spacing: 4) {
-            Text("FOUNDER DECISION").font(.caption2.weight(.black)).foregroundStyle(SoloTheme.amber)
-            Text(dilemmaSummary).font(.subheadline)
-          }
-          .soloCard()
-        }
-        Button("Continue", systemImage: "arrow.right") { onContinue() }
-          .buttonStyle(SoloPrimaryButtonStyle())
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-      }
-      .toolbar {
-        ToolbarItem(placement: .topBarTrailing) {
-          Button("Close", systemImage: "xmark") { onContinue() }
-            .labelStyle(.iconOnly)
-        }
-      }
-      .onAppear {
-        guard report.revenueDelta > 0, !deliveredRevenueFeedback else { return }
-        deliveredRevenueFeedback = true
-        RevenueCelebrationFeedback.play(isEnabled: settings.soundEffectsEnabled)
-      }
-      .task {
-        if reduceMotion {
-          revealedStep = 4
-        } else {
-          for step in 1...4 {
-            try? await Task.sleep(for: .milliseconds(180))
-            withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) {
-              revealedStep = step
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private func signed(_ value: Int) -> String {
-    value > 0 ? "+\(value)" : "\(value)"
   }
 }
 
