@@ -20,4 +20,28 @@ final class TechComPresentationTests: XCTestCase {
     XCTAssertEqual(try JSONDecoder().decode([TechComRival].self, from: data), [rival])
     XCTAssertEqual(try JSONDecoder().decode(TechComHeadline.self, from: JSONEncoder().encode(headline)), headline)
   }
+
+  func testRivalPresentationNeverDisclosesActualValuesBeforeVerification() {
+    var rival = TechComRival(id: "northwind", name: "Northwind Labs", claimedTrackRecord: 70, actualTrackRecord: 42, claimedRevenue: 2_000, actualRevenue: 1_300, claimedMomentum: 61, actualMomentum: 48)
+    XCTAssertTrue(TechComPresentation.rivalMetrics(for: rival).allSatisfy { $0.actualValue == nil })
+
+    rival.isVerified = true
+    XCTAssertEqual(TechComPresentation.rivalMetrics(for: rival).compactMap(\.actualValue), [42, 1_300, 48])
+  }
+
+  func testMarketBarFractionUsesCanonicalShareAndClampsOnlyForLayout() {
+    XCTAssertEqual(TechComPresentation.marketBarFraction(0.375), 0.375, accuracy: 0.0001)
+    XCTAssertEqual(TechComPresentation.marketBarFraction(-0.2), 0)
+    XCTAssertEqual(TechComPresentation.marketBarFraction(1.2), 1)
+  }
+
+  func testRankingGapUsesCanonicalOrderedValues() {
+    let entries = [
+      TechComRankingEntry(id: "a", name: "A", value: 50, isPlayer: false),
+      TechComRankingEntry(id: "solo", name: "SOLO", value: 42, isPlayer: true),
+      TechComRankingEntry(id: "b", name: "B", value: 20, isPlayer: false)
+    ]
+    XCTAssertEqual(TechComPresentation.gapToNextRank(entries: entries, playerIndex: 1), 8)
+    XCTAssertNil(TechComPresentation.gapToNextRank(entries: entries, playerIndex: 0))
+  }
 }

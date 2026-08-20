@@ -137,6 +137,7 @@ final class PresentationMappingTests: XCTestCase {
       tasks: [task],
       statsBefore: FounderStats(),
       statsAfter: FounderStats(),
+      agents: [agent],
       evidenceBefore: 0,
       evidenceAfter: 1,
       transition: .nextSprint
@@ -144,6 +145,50 @@ final class PresentationMappingTests: XCTestCase {
     XCTAssertEqual(visible.verifiedStrongOutcomes, 0)
     XCTAssertEqual(visible.visibleRiskFlags, 0)
     XCTAssertNotEqual(visible.headline, canonical.headline)
+    XCTAssertEqual(visible.assignments.count, 1)
+    XCTAssertNil(visible.assignments[0].result.actualQuality)
+    XCTAssertEqual(visible.assignments[0].result.confidenceRangeLabel, hiddenCorrelation.confidenceRangeLabel)
+  }
+
+  func testVisibleSprintSnapshotsMatchCanonicalBeforeAndAfterStats() {
+    var before = FounderStats()
+    before.runway = 40
+    before.revenue = 700
+    before.trackRecord = 11
+    var after = before
+    after.runway = 35
+    after.revenue = 920
+    after.trackRecord = 14
+    let report = SprintReport(
+      sprint: 3,
+      headline: "Recorded",
+      revenueDelta: 220,
+      momentumDelta: 0,
+      trustDelta: 0,
+      energyDelta: 0,
+      runwayDelta: -5,
+      reviewed: 0,
+      strongOutcomes: 0,
+      riskyOutcomes: 0
+    )
+
+    let visible = VisibleSimulationProjection.sprintResult(
+      canonicalReport: report,
+      venture: 1,
+      tasks: [],
+      statsBefore: before,
+      statsAfter: after,
+      evidenceBefore: 0,
+      evidenceAfter: 0,
+      transition: .nextSprint
+    )
+
+    XCTAssertEqual(visible.before.runway, 40)
+    XCTAssertEqual(visible.after.runway, 35)
+    XCTAssertEqual(visible.before.revenue, 700)
+    XCTAssertEqual(visible.after.revenue, 920)
+    XCTAssertEqual(visible.before.trackRecord, 11)
+    XCTAssertEqual(visible.after.trackRecord, 14)
   }
 
   func testReducedMotionPolicy() {
