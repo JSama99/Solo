@@ -261,6 +261,37 @@ final class GameplayMotionTests: XCTestCase {
     XCTAssertEqual(store.evidence.map(\.id), evidenceIDsBefore)
   }
 
+  func testPresentationCoordinatorRejectsDuplicateCommitWhileOutcomeIsActive() async throws {
+    let store = makeStore(seed: 9_108)
+    let presentation = PresentationCoordinator(timing: .immediate)
+    let task = try XCTUnwrap(store.tasks.first)
+    let agent = try XCTUnwrap(store.agents.first)
+    presentation.assign(agentID: agent.id, to: task.id, in: store)
+    for _ in 0..<8 { await Task.yield() }
+    presentation.review(taskID: task.id, in: store)
+    presentation.resolve(taskID: task.id, choice: .approve, in: store)
+    if let choice = store.activeDilemma?.choices.first {
+      store.selectDilemmaChoice(choice.id)
+    }
+    XCTAssertTrue(store.canCommitSprint)
+
+    let progression = FounderProgressionStore(
+      defaults: UserDefaults(suiteName: "presentation-commit-once")!,
+      saveKey: "progress"
+    )
+    presentation.commit(in: store, progression: progression)
+    let sprintAfterFirstCommit = store.sprint
+    let reportID = try XCTUnwrap(store.report?.id)
+    let eventID = presentation.latestEvent?.id
+
+    presentation.commit(in: store, progression: progression)
+
+    XCTAssertEqual(store.sprint, sprintAfterFirstCommit)
+    XCTAssertEqual(store.report?.id, reportID)
+    XCTAssertEqual(presentation.latestEvent?.id, eventID)
+    XCTAssertEqual(presentation.visibleSprintResult?.id, reportID)
+  }
+
   #if DEBUG
   func testDebugMotionPreviewDoesNotMutateGameStore() {
     let store = makeStore(seed: 9_104)

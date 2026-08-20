@@ -50,6 +50,11 @@ struct FounderComputerScreen: View {
             .founderEntrance(order: rank(station.agentID) + 2, alreadyPresented: hasPresentedRoster)
           }
           evidenceDrawer.founderEntrance(order: 5, alreadyPresented: hasPresentedRoster)
+          HindsightArchiveCard(
+            precedents: store.precedents,
+            divergences: store.divergenceRecords
+          )
+          .founderEntrance(order: 6, alreadyPresented: hasPresentedRoster)
         }
         .padding(16)
         .frame(maxWidth: .infinity)

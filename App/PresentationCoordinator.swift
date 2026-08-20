@@ -168,12 +168,15 @@ final class PresentationCoordinator {
   }
 
   func commit(in store: GameStore, progression: FounderProgressionStore) {
+    guard visibleSprintResult == nil, store.report == nil else { return }
     if store.prepareDivergenceOfferIfEligible() { return }
     let tasksBefore = store.tasks
     let statsBefore = store.stats
-    let evidenceBefore = store.evidence.count
     let ventureBefore = store.venture
     let sprintBefore = store.sprint
+    let sprintEvidenceCount = store.evidence.filter {
+      $0.venture == ventureBefore && $0.sprint == sprintBefore
+    }.count
     let snapshot = TechComSnapshot(founderName: store.founderName, venture: ventureBefore, sprint: sprintBefore, stats: statsBefore, agents: store.agents, tasks: tasksBefore, dilemmaChoice: store.selectedDilemmaChoice)
     store.commitSprint()
     guard let canonicalReport = store.report else { return }
@@ -191,8 +194,9 @@ final class PresentationCoordinator {
       tasks: tasksBefore,
       statsBefore: statsBefore,
       statsAfter: store.stats,
-      evidenceBefore: evidenceBefore,
-      evidenceAfter: store.evidence.count,
+      agents: store.agents,
+      evidenceBefore: 0,
+      evidenceAfter: sprintEvidenceCount,
       transition: transition
     )
     visibleSprintResult = visible

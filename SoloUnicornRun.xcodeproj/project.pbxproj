@@ -53,6 +53,8 @@
 		D20000000000000000000026 /* AchievementsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000026 /* AchievementsScreen.swift */; };
 		D20000000000000000000027 /* HindsightRecordsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000027 /* HindsightRecordsScreen.swift */; };
 		D20000000000000000000028 /* PrecedentRecordsSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000028 /* PrecedentRecordsSupport.swift */; };
+		A30000000000000000000001 /* SprintOutcomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31000000000000000000001 /* SprintOutcomeScreen.swift */; };
+		A30000000000000000000002 /* HindsightArchiveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31000000000000000000002 /* HindsightArchiveCard.swift */; };
 		D2000000000000000000002A /* AchievementScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000000000000000000002A /* AchievementScreenTests.swift */; };
 		D2000000000000000000002B /* AgentDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000000000000000000002B /* AgentDetailTests.swift */; };
 		D2000000000000000000002C /* ModeSelectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000000000000000000002C /* ModeSelectTests.swift */; };
@@ -169,6 +171,8 @@
 		D10000000000000000000026 /* AchievementsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsScreen.swift; sourceTree = "<group>"; };
 		D10000000000000000000027 /* HindsightRecordsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HindsightRecordsScreen.swift; sourceTree = "<group>"; };
 		D10000000000000000000028 /* PrecedentRecordsSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecedentRecordsSupport.swift; sourceTree = "<group>"; };
+		A31000000000000000000001 /* SprintOutcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SprintOutcomeScreen.swift; sourceTree = "<group>"; };
+		A31000000000000000000002 /* HindsightArchiveCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HindsightArchiveCard.swift; sourceTree = "<group>"; };
 		D1000000000000000000002A /* AchievementScreenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementScreenTests.swift; sourceTree = "<group>"; };
 		D1000000000000000000002B /* AgentDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentDetailTests.swift; sourceTree = "<group>"; };
 		D1000000000000000000002C /* ModeSelectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModeSelectTests.swift; sourceTree = "<group>"; };
@@ -270,6 +274,8 @@
 				C10000000000000000000010 /* AgentStationState.swift */,
 				F1999948F297FBA3D5958727 /* App.swift */,
 				D10000000000000000000022 /* AgentStationState.swift */, D10000000000000000000023 /* AgentDetailPresentation.swift */, D10000000000000000000024 /* AgentDetailViewModel.swift */, D10000000000000000000025 /* AgentRosterCard.swift */, D10000000000000000000026 /* AchievementsScreen.swift */, D10000000000000000000027 /* HindsightRecordsScreen.swift */, D10000000000000000000028 /* PrecedentRecordsSupport.swift */,
+				A31000000000000000000002 /* HindsightArchiveCard.swift */,
+				A31000000000000000000001 /* SprintOutcomeScreen.swift */,
 				17558F294800127BE04C0EBD /* Assets.xcassets */,
 				C10000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift */,
 				D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */,
@@ -468,6 +474,8 @@
 				F28000000000000000000001 /* AgentPortraitAsset.swift in Sources */,
 				C20000000000000000000014 /* AchievementStore.swift in Sources */,
 				D20000000000000000000022 /* AgentStationState.swift in Sources */, D20000000000000000000023 /* AgentDetailPresentation.swift in Sources */, D20000000000000000000024 /* AgentDetailViewModel.swift in Sources */, D20000000000000000000025 /* AgentRosterCard.swift in Sources */, D20000000000000000000026 /* AchievementsScreen.swift in Sources */, D20000000000000000000027 /* HindsightRecordsScreen.swift in Sources */, D20000000000000000000028 /* PrecedentRecordsSupport.swift in Sources */,
+				A30000000000000000000002 /* HindsightArchiveCard.swift in Sources */,
+				A30000000000000000000001 /* SprintOutcomeScreen.swift in Sources */,
 				B2BFB1EE90AB231E41812DEF /* App.swift in Sources */,
 				C20000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift in Sources */,
 				FB6CDD52B76B96B369913C6B /* ContentView.swift in Sources */,
