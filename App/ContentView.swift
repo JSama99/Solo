@@ -468,6 +468,17 @@ private struct GameDashboard: View {
     }
     .tint(SoloTheme.cyan)
     .sheet(item: Binding(
+      get: { store.pendingDivergenceOffer },
+      set: { if $0 == nil { store.pendingDivergenceOffer = nil } }
+    )) { offer in
+      ForkPromptView(offer: offer) { choice in
+        store.chooseDivergence(choice)
+        presentation.commit(in: store, progression: progression)
+      }
+      .presentationDetents([.medium, .large])
+      .interactiveDismissDisabled()
+    }
+    .sheet(item: Binding(
       get: { store.report },
       set: { newValue in
         if let newValue {
@@ -667,7 +678,7 @@ private struct RecordsScreen: View {
           .buttonStyle(SoloPressStyle())
 
           NavigationLink {
-            HindsightRecordsScreen(precedents: store.precedents)
+            HindsightRecordsScreen(precedents: store.precedents, divergences: store.divergenceRecords)
           } label: {
             RecordLink(title: "Hindsight", subtitle: "Recorded contexts and observed outcomes", symbol: "brain.head.profile", count: store.precedents.count)
           }

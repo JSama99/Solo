@@ -168,6 +168,7 @@ final class PresentationCoordinator {
   }
 
   func commit(in store: GameStore, progression: FounderProgressionStore) {
+    if store.prepareDivergenceOfferIfEligible() { return }
     let tasksBefore = store.tasks
     let statsBefore = store.stats
     let evidenceBefore = store.evidence.count

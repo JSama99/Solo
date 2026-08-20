@@ -81,6 +81,8 @@ enum SimulationEngine {
     allTasks: [SoloTask],
     allAgents: [SoloAgent],
     facilityBonuses: FacilityBonuses = .none,
+    coordinate: DrawCoordinate? = nil,
+    sprintsSinceFork: Int = 0,
     rng: inout SeededRandomNumberGenerator
   ) -> TaskResult {
     let exactFit = agent.role == task.role
@@ -96,7 +98,13 @@ enum SimulationEngine {
     let correlation = correlatedFailureEvent?.modelFamily == agent.modelFamily
       ? correlatedFailureEvent
       : nil
-    let actualNoise = rng.integer(in: -12 ... 12)
+    let actualNoise = coordinateInteger(
+      in: -12 ... 12,
+      coordinate: coordinate?.replacing(channel: .quality),
+      nonce: 0xA11CE,
+      sprintsSinceFork: sprintsSinceFork,
+      rng: &rng
+    )
     let relationshipAdjustment = min(8, max(-8, (agent.relationship - 55) / 5))
     let personalityAdjustment: Int
     switch agent.id {
@@ -140,7 +148,13 @@ enum SimulationEngine {
 
     let reportSpread = max(2, Int(((1 - agent.calibration) * 18 + agent.drift * 0.22).rounded()))
     let reportedQuality = clampedPercent(
-      actualQuality + rng.integer(in: -reportSpread ... reportSpread)
+      actualQuality + coordinateInteger(
+        in: -reportSpread ... reportSpread,
+        coordinate: coordinate?.replacing(channel: .quality),
+        nonce: 0xBEEF,
+        sprintsSinceFork: sprintsSinceFork,
+        rng: &rng
+      )
     )
     var evidenceAdjustment = agent.relationship >= 75 ? 6 : (agent.relationship < 35 ? -8 : 0)
     if agent.id == "aurora" && (task.role == .research || task.category == .trust) { evidenceAdjustment += 5 }
@@ -152,7 +166,13 @@ enum SimulationEngine {
     let evidenceCompleteness = clampedPercent(
       Int((agent.calibration * 70 + Double(agent.reliability) * 0.25 - agent.drift * 0.25).rounded())
         + evidenceAdjustment + facilityEvidenceBonus + perkEvidenceBonus
-        + rng.integer(in: -10 ... 10)
+        + coordinateInteger(
+          in: -10 ... 10,
+          coordinate: coordinate?.replacing(channel: .evidence),
+          nonce: 0xE11D,
+          sprintsSinceFork: sprintsSinceFork,
+          rng: &rng
+        )
     )
     let confidenceWidth = max(
       4,
@@ -183,6 +203,20 @@ enum SimulationEngine {
         allTasks: allTasks, allAgents: allAgents
       )
     )
+  }
+
+  private static func coordinateInteger(
+    in range: ClosedRange<Int>,
+    coordinate: DrawCoordinate?,
+    nonce: UInt64,
+    sprintsSinceFork: Int,
+    rng: inout SeededRandomNumberGenerator
+  ) -> Int {
+    guard let coordinate else { return rng.integer(in: range) }
+    let resolved = Divergence.drawCoordinate(coordinate, sprintsSinceFork: sprintsSinceFork)
+    let value = SeededRandomNumberGenerator.mixed(resolved.key ^ nonce)
+    let width = UInt64(range.upperBound - range.lowerBound + 1)
+    return range.lowerBound + Int(value % width)
   }
 
   static func immediateEffects(for impact: TaskImpact, actualQuality: Int) -> SimulationEffects {

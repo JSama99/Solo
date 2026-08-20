@@ -1243,6 +1243,11 @@ struct CareerSave: Codable {
   var latentDefects: [LatentDefect]
   var poachingOffer: PoachingOffer?
   var exposedRivalIDs: Set<String>
+  var activeDivergence: DivergenceBranch?
+  var divergenceRecords: [DivergenceRecord]
+  var forksUsedThisVenture: Int
+  var doctrineProfile: DoctrineProfile?
+  var unicornIdentity: UnicornIdentity?
 
   private enum CodingKeys: String, CodingKey {
     case founderName, doctrine, productType, talentBoardRefreshes, sprint, venture, intent, stats, agents, tasks
@@ -1253,6 +1258,7 @@ struct CareerSave: Codable {
     case recentTaskTitles, taskDeckTitles, dilemmaDeckTemplateIDs, dilemmaDeckChapter
     case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, completedVentureObjectives, ventureObjective, thesis, thesisHistory, awaitingThesisSelection, pendingChapterMilestone
     case techComHeadlines, techComRivals, latentDefects, poachingOffer, exposedRivalIDs
+    case activeDivergence, divergenceRecords, forksUsedThisVenture, doctrineProfile, unicornIdentity
   }
 
   init(
@@ -1301,7 +1307,12 @@ struct CareerSave: Codable {
     techComRivals: [TechComRival] = [],
     latentDefects: [LatentDefect] = [],
     poachingOffer: PoachingOffer? = nil,
-    exposedRivalIDs: Set<String> = []
+    exposedRivalIDs: Set<String> = [],
+    activeDivergence: DivergenceBranch? = nil,
+    divergenceRecords: [DivergenceRecord] = [],
+    forksUsedThisVenture: Int = 0,
+    doctrineProfile: DoctrineProfile? = nil,
+    unicornIdentity: UnicornIdentity? = nil
   ) {
     self.founderName = founderName
     self.doctrine = doctrine
@@ -1349,6 +1360,11 @@ struct CareerSave: Codable {
     self.latentDefects = latentDefects
     self.poachingOffer = poachingOffer
     self.exposedRivalIDs = exposedRivalIDs
+    self.activeDivergence = activeDivergence
+    self.divergenceRecords = divergenceRecords
+    self.forksUsedThisVenture = forksUsedThisVenture
+    self.doctrineProfile = doctrineProfile
+    self.unicornIdentity = unicornIdentity
   }
 
   init(from decoder: Decoder) throws {
@@ -1411,6 +1427,11 @@ struct CareerSave: Codable {
     latentDefects = try container.decodeIfPresent([LatentDefect].self, forKey: .latentDefects) ?? []
     poachingOffer = try container.decodeIfPresent(PoachingOffer.self, forKey: .poachingOffer)
     exposedRivalIDs = try container.decodeIfPresent(Set<String>.self, forKey: .exposedRivalIDs) ?? []
+    activeDivergence = try container.decodeIfPresent(DivergenceBranch.self, forKey: .activeDivergence)
+    divergenceRecords = try container.decodeIfPresent([DivergenceRecord].self, forKey: .divergenceRecords) ?? []
+    forksUsedThisVenture = try container.decodeIfPresent(Int.self, forKey: .forksUsedThisVenture) ?? 0
+    doctrineProfile = try container.decodeIfPresent(DoctrineProfile.self, forKey: .doctrineProfile)
+    unicornIdentity = try container.decodeIfPresent(UnicornIdentity.self, forKey: .unicornIdentity)
   }
 }
 

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HindsightRecordsScreen: View {
   var precedents: [Precedent]
+  var divergences: [DivergenceRecord] = []
 
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var filter: PrecedentRecordsFilter = .all
@@ -21,7 +22,14 @@ struct HindsightRecordsScreen: View {
         .pickerStyle(.segmented)
         .padding(.bottom, 4)
 
-        if filteredPrecedents.isEmpty {
+        if filter == .all {
+          ForEach(divergences.sorted { $0.collapsedAtSprint > $1.collapsedAtSprint }) { record in
+            DivergenceRecordRow(record: record)
+              .transition(arrivalTransition)
+          }
+        }
+
+        if filteredPrecedents.isEmpty && (filter != .all || divergences.isEmpty) {
           ContentUnavailableView(
             "No matching precedents",
             systemImage: "brain.head.profile",
@@ -101,6 +109,39 @@ struct HindsightRecordsScreen: View {
         highlightedID = nil
       }
     }
+  }
+}
+
+private struct DivergenceRecordRow: View {
+  var record: DivergenceRecord
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      Label("Venture \(record.venture), Sprint \(record.sprint) — Divergence", systemImage: "arrow.triangle.branch")
+        .font(.subheadline.bold())
+        .foregroundStyle(SoloTheme.cyan)
+      Text(record.context.summary)
+        .font(.caption)
+        .foregroundStyle(.secondary)
+      HStack(alignment: .top, spacing: 10) {
+        branch(title: "SOLO", decision: record.takenSummary, outcome: record.takenOutcome.summary)
+        branch(title: record.ghostRivalName, decision: record.ghostSummary, outcome: record.ghostOutcome.summary)
+      }
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(13)
+    .background(SoloTheme.card, in: .rect(cornerRadius: 16))
+    .overlay { RoundedRectangle(cornerRadius: 16).stroke(SoloTheme.cyan.opacity(0.35), lineWidth: 1) }
+    .accessibilityElement(children: .combine)
+  }
+
+  private func branch(title: String, decision: String, outcome: String) -> some View {
+    VStack(alignment: .leading, spacing: 5) {
+      Text(title).font(.caption.weight(.black))
+      Text(decision).font(.caption2).foregroundStyle(.secondary)
+      Text(outcome).font(.caption)
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
   }
 }
 
