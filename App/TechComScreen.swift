@@ -19,7 +19,7 @@ struct TechComScreen: View {
   var body: some View {
     NavigationStack {
       ScrollView {
-        LazyVStack(alignment: .leading, spacing: 18) {
+        LazyVStack(alignment: .leading, spacing: 16) {
           TechComMasthead(
             venture: store.venture,
             sprint: store.sprint,
@@ -45,9 +45,10 @@ struct TechComScreen: View {
           TechComMarketShareBoard(standings: store.rivalStandings)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.top, 8)
+        .padding(.bottom, 96)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityIdentifier("techcom-build-30-2")
+        .accessibilityIdentifier("techcom-build-30-3")
       }
       .navigationTitle("Tech.com")
       .navigationBarTitleDisplayMode(.inline)

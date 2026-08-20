@@ -9,7 +9,7 @@ struct TechComMasthead: View {
   @State private var live = false
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 14) {
+    VStack(alignment: .leading, spacing: 10) {
       HStack(alignment: .center, spacing: 8) {
         HStack(spacing: 6) {
           Circle()
@@ -50,14 +50,15 @@ struct TechComMasthead: View {
         }
       }
       .font(.caption.weight(.bold))
-      .padding(.top, 10)
+      .padding(.top, 7)
       .overlay(alignment: .top) {
         Rectangle()
           .fill(SoloTheme.cyan.opacity(contrast == .increased ? 0.8 : 0.35))
           .frame(height: contrast == .increased ? 2 : 1)
       }
     }
-    .padding(18)
+    .padding(.horizontal, 16)
+    .padding(.vertical, 15)
     .background {
       ZStack(alignment: .topTrailing) {
         RoundedRectangle(cornerRadius: 22)
@@ -87,6 +88,8 @@ struct TechComMasthead: View {
 
 struct TechComCompanyFeed: View {
   var headlines: [TechComHeadline]
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @State private var idlePulse = false
 
   var body: some View {
     TechComEditorialSurface(
@@ -96,9 +99,38 @@ struct TechComCompanyFeed: View {
       accent: SoloTheme.cyan
     ) {
       if headlines.isEmpty {
-        Text("Your company moves will appear here as the sprint unfolds.")
-          .font(.caption)
-          .foregroundStyle(.secondary)
+        HStack(alignment: .top, spacing: 11) {
+          ZStack {
+            Circle()
+              .stroke(SoloTheme.cyan.opacity(0.24), lineWidth: 1)
+              .frame(width: 28, height: 28)
+              .scaleEffect(idlePulse && !reduceMotion ? 1.12 : 1)
+            Image(systemName: "waveform")
+              .font(.caption2.weight(.bold))
+              .foregroundStyle(SoloTheme.cyan)
+          }
+          VStack(alignment: .leading, spacing: 3) {
+            Text("LIVE FEED STANDING BY")
+              .font(.caption2.weight(.black))
+              .foregroundStyle(SoloTheme.cyan)
+            Text("Waiting for company activity")
+              .font(.subheadline.weight(.semibold))
+            Text("Your company moves will appear here as the sprint unfolds.")
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
+          .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.vertical, 4)
+        .transition(.opacity)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Live feed standing by. Waiting for company activity. Your company moves will appear here as the sprint unfolds.")
+        .task {
+          guard !reduceMotion else { return }
+          withAnimation(.smooth(duration: 0.45).repeatCount(2, autoreverses: true)) {
+            idlePulse = true
+          }
+        }
       } else {
         VStack(spacing: 0) {
           ForEach(Array(headlines.enumerated()), id: \.element.id) { index, headline in
@@ -159,9 +191,10 @@ struct TechComStoryRow: View {
 
 struct TechComDecisionFeed: View {
   var store: GameStore
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: 10) {
       TechComSectionHeader(
         eyebrow: "PUBLIC NARRATIVE",
         title: "Decision Feed",
@@ -169,14 +202,19 @@ struct TechComDecisionFeed: View {
         accent: SoloTheme.coral
       )
 
-      HStack(spacing: 8) {
-        Label(
-          "Statement \(store.statementAvailable ? "available" : "spent")",
-          systemImage: store.statementAvailable ? "quote.bubble.fill" : "quote.bubble"
-        )
-        Spacer()
-        Text("Coverage \(store.stats.coverage >= 0 ? "+" : "")\(store.stats.coverage)")
-          .contentTransition(.numericText(value: Double(store.stats.coverage)))
+      Group {
+        if dynamicTypeSize.isAccessibilitySize {
+          VStack(alignment: .leading, spacing: 5) {
+            statementStatus
+            coverageStatus
+          }
+        } else {
+          HStack(spacing: 8) {
+            statementStatus
+            Spacer()
+            coverageStatus
+          }
+        }
       }
       .font(.caption.weight(.bold))
       .foregroundStyle(store.statementAvailable ? SoloTheme.cyan : .secondary)
@@ -187,15 +225,30 @@ struct TechComDecisionFeed: View {
       }
     }
   }
+
+  private var statementStatus: some View {
+    Label(
+      "Statement \(store.statementAvailable ? "available" : "spent")",
+      systemImage: store.statementAvailable ? "quote.bubble.fill" : "quote.bubble"
+    )
+    .fixedSize(horizontal: false, vertical: true)
+  }
+
+  private var coverageStatus: some View {
+    Text("Coverage \(store.stats.coverage >= 0 ? "+" : "")\(store.stats.coverage)")
+      .contentTransition(.numericText(value: Double(store.stats.coverage)))
+      .fixedSize(horizontal: false, vertical: true)
+  }
 }
 
 struct TechComDecisionCard: View {
   var store: GameStore
   var post: FeedPost
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @State private var processingActionID: String?
   @State private var coverageBefore: Int?
-  @State private var resolutionVisible = true
+  @State private var resolutionStage: DecisionResolutionStage = .idle
   @State private var feedbackTrigger = 0
 
   private var accent: Color {
@@ -226,7 +279,7 @@ struct TechComDecisionCard: View {
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: dynamicTypeSize.isAccessibilitySize ? 12 : 9) {
       Label(label, systemImage: symbol)
         .font(.caption2.weight(.black))
         .foregroundStyle(accent)
@@ -238,7 +291,9 @@ struct TechComDecisionCard: View {
         .font(.subheadline)
         .foregroundStyle(.secondary)
 
-      if let processingActionID, let action = post.actions.first(where: { $0.id == processingActionID }), !resolutionVisible {
+      if let processingActionID,
+         let action = post.actions.first(where: { $0.id == processingActionID }),
+         resolutionStage == .publishing {
         Label(
           post.kind == .pressInquiry ? "PUBLISHING RESPONSE…" : "PROCESSING DECISION…",
           systemImage: "ellipsis"
@@ -248,6 +303,7 @@ struct TechComDecisionCard: View {
         .transition(.opacity)
         .accessibilityLabel("Processing \(action.label)")
       } else if let resolvedID = post.resolvedActionID,
+                resolutionStage == .result || processingActionID == nil,
                 let action = post.actions.first(where: { $0.id == resolvedID }) {
         VStack(alignment: .leading, spacing: 7) {
           Label(
@@ -265,10 +321,10 @@ struct TechComDecisionCard: View {
               .contentTransition(.numericText())
           }
         }
-        .transition(.move(edge: .top).combined(with: .opacity))
+        .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
         .accessibilityElement(children: .combine)
       } else if !post.actions.isEmpty {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: dynamicTypeSize.isAccessibilitySize ? 8 : 6) {
           Text("YOUR RESPONSE")
             .font(.caption2.weight(.black))
             .foregroundStyle(.secondary)
@@ -286,7 +342,9 @@ struct TechComDecisionCard: View {
                   .font(.caption.bold())
                   .foregroundStyle(accent)
               }
-              .padding(12)
+              .padding(.horizontal, 11)
+              .padding(.vertical, dynamicTypeSize.isAccessibilitySize ? 12 : 9)
+              .frame(minHeight: 44)
               .frame(maxWidth: .infinity, alignment: .leading)
               .background(accent.opacity(0.09), in: .rect(cornerRadius: 12))
               .overlay {
@@ -296,13 +354,20 @@ struct TechComDecisionCard: View {
             }
             .buttonStyle(SoloPressStyle(scale: 0.985))
             .disabled(action.requiresStatement && !store.statementAvailable)
+            .opacity(processingActionID == nil || processingActionID == action.id ? 1 : 0.38)
+            .overlay {
+              if resolutionStage == .focused, processingActionID == action.id {
+                RoundedRectangle(cornerRadius: 12)
+                  .stroke(accent.opacity(0.72), lineWidth: 2)
+              }
+            }
             .accessibilityHint(action.detail)
           }
         }
         .transition(.opacity)
       }
     }
-    .padding(16)
+    .padding(dynamicTypeSize.isAccessibilitySize ? 16 : 14)
     .frame(maxWidth: .infinity, alignment: .leading)
     .background(SoloTheme.card, in: .rect(cornerRadius: 18))
     .overlay(alignment: .leading) {
@@ -311,7 +376,7 @@ struct TechComDecisionCard: View {
         .frame(width: 3)
     }
     .gameplayMotion(.emphasis, value: post.resolvedActionID)
-    .sensoryFeedback(.selection, trigger: feedbackTrigger)
+    .sensoryFeedback(.success, trigger: feedbackTrigger)
     .accessibilityElement(children: .contain)
   }
 
@@ -319,13 +384,18 @@ struct TechComDecisionCard: View {
     guard post.resolvedActionID == nil, processingActionID == nil else { return }
     coverageBefore = store.stats.coverage
     processingActionID = action.id
-    resolutionVisible = reduceMotion
-    feedbackTrigger += 1
+    resolutionStage = reduceMotion ? .result : .focused
     store.resolveFeed(postID: post.id, actionID: action.id)
-    guard !reduceMotion else { return }
+    guard !reduceMotion else {
+      feedbackTrigger += 1
+      return
+    }
     Task { @MainActor in
-      try? await Task.sleep(for: .milliseconds(260))
-      withAnimation(SoloMotion.settle) { resolutionVisible = true }
+      try? await Task.sleep(for: .milliseconds(90))
+      withAnimation(SoloMotion.focus) { resolutionStage = .publishing }
+      try? await Task.sleep(for: .milliseconds(240))
+      withAnimation(SoloMotion.settle) { resolutionStage = .result }
+      feedbackTrigger += 1
     }
   }
 
@@ -334,11 +404,18 @@ struct TechComDecisionCard: View {
   }
 }
 
+private enum DecisionResolutionStage {
+  case idle
+  case focused
+  case publishing
+  case result
+}
+
 struct TechComTrendSignal: View {
   var headlines: [TechComHeadline]
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: 10) {
       TechComSectionHeader(
         eyebrow: "SIGNAL WATCH",
         title: "Trends",
@@ -382,7 +459,7 @@ struct TechComRivalBoard: View {
   var store: GameStore
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: 10) {
       TechComSectionHeader(
         eyebrow: "COMPETITIVE FIELD",
         title: "Rivals",
@@ -403,6 +480,8 @@ struct TechComRivalCard: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @State private var inspecting = false
   @State private var verificationVisible = true
+  @State private var verificationSuccessTrigger = 0
+  @State private var overclaimTrigger = 0
 
   private var archetype: RivalArchetype? {
     TechComPresentation.archetype(for: rival.id)
@@ -417,7 +496,7 @@ struct TechComRivalCard: View {
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 14) {
+    VStack(alignment: .leading, spacing: dynamicTypeSize.isAccessibilitySize ? 14 : 11) {
       if dynamicTypeSize.isAccessibilitySize {
         VStack(alignment: .leading, spacing: 10) {
           rivalIdentity
@@ -434,7 +513,7 @@ struct TechComRivalCard: View {
         TechComVerificationScan(name: rival.name)
           .transition(.opacity)
       } else {
-        VStack(spacing: 9) {
+        VStack(spacing: dynamicTypeSize.isAccessibilitySize ? 9 : 7) {
           ForEach(TechComPresentation.rivalMetrics(for: rival)) { metric in
             TechComRivalMetricRow(metric: metric)
           }
@@ -466,7 +545,7 @@ struct TechComRivalCard: View {
         }
       }
     }
-    .padding(16)
+    .padding(dynamicTypeSize.isAccessibilitySize ? 16 : 14)
     .frame(maxWidth: .infinity, alignment: .leading)
     .background(identityColor.opacity(0.055), in: .rect(cornerRadius: 18))
     .overlay {
@@ -474,18 +553,22 @@ struct TechComRivalCard: View {
         .stroke(identityColor.opacity(0.22), lineWidth: 1)
     }
     .gameplayMotion(.impact, value: rival.isVerified)
+    .sensoryFeedback(.success, trigger: verificationSuccessTrigger)
+    .sensoryFeedback(.warning, trigger: overclaimTrigger)
     .accessibilityElement(children: .contain)
   }
 
   private var identityColor: Color {
-    switch archetype {
-    case .incumbent: .indigo
-    case .upstart: SoloTheme.cyan
-    case .hypeMachine: SoloTheme.coral
-    case .quietBuilder: SoloTheme.mint
-    case .copycat: SoloTheme.purple
-    case nil: SoloTheme.cyan
-    }
+    companyIdentity.accent.color
+  }
+
+  private var companyIdentity: TechComCompanyIdentity {
+    TechComPresentation.companyIdentity(
+      id: rival.id,
+      name: rival.name,
+      archetype: archetype,
+      isPlayer: false
+    )
   }
 
   private var statusSymbol: String {
@@ -499,10 +582,13 @@ struct TechComRivalCard: View {
 
   private var rivalIdentity: some View {
     HStack(alignment: .top, spacing: 12) {
-      Text(TechComPresentation.monogram(for: rival.name))
+      Text(companyIdentity.monogram)
         .font(.subheadline.weight(.black))
         .foregroundStyle(identityColor)
-        .frame(minWidth: 42, minHeight: 42)
+        .frame(
+          minWidth: dynamicTypeSize.isAccessibilitySize ? 42 : 38,
+          minHeight: dynamicTypeSize.isAccessibilitySize ? 42 : 38
+        )
         .background(identityColor.opacity(0.14), in: .rect(cornerRadius: 12))
         .overlay {
           RoundedRectangle(cornerRadius: 12)
@@ -512,6 +598,8 @@ struct TechComRivalCard: View {
       VStack(alignment: .leading, spacing: 3) {
         Text(rival.name.uppercased())
           .font(.headline.weight(.black))
+          .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+          .minimumScaleFactor(0.85)
         if let archetype {
           Text(archetype.label.uppercased())
             .font(.caption2.weight(.bold))
@@ -533,10 +621,26 @@ struct TechComRivalCard: View {
     guard !rival.isVerified, !inspecting else { return }
     inspecting = true
     verificationVisible = reduceMotion
-    guard store.verifyTechComRival(id: rival.id), !reduceMotion else { return }
+    guard store.verifyTechComRival(id: rival.id) else {
+      inspecting = false
+      return
+    }
+    guard !reduceMotion else {
+      completeVerificationFeedback()
+      return
+    }
     Task { @MainActor in
-      try? await Task.sleep(for: .milliseconds(420))
-      withAnimation(SoloMotion.impact) { verificationVisible = true }
+      try? await Task.sleep(for: .milliseconds(380))
+      withAnimation(SoloMotion.settle) { verificationVisible = true }
+      completeVerificationFeedback()
+    }
+  }
+
+  private func completeVerificationFeedback() {
+    if rival.verificationState == .overclaimed {
+      overclaimTrigger += 1
+    } else {
+      verificationSuccessTrigger += 1
     }
   }
 }
@@ -590,15 +694,15 @@ struct TechComVerificationScan: View {
   @State private var scanOffset: CGFloat = -1
 
   var body: some View {
-    VStack(spacing: 10) {
+    VStack(spacing: 8) {
       ZStack {
         RoundedRectangle(cornerRadius: 12)
           .fill(SoloTheme.purple.opacity(0.08))
-          .frame(height: 58)
+          .frame(height: 50)
         Rectangle()
           .fill(SoloTheme.purple.opacity(0.75))
           .frame(height: 2)
-          .offset(y: reduceMotion ? 0 : scanOffset * 24)
+          .offset(y: reduceMotion ? 0 : scanOffset * 20)
       }
       .clipShape(.rect(cornerRadius: 12))
       Label("CHECKING CLAIMS…", systemImage: "viewfinder")
@@ -609,7 +713,7 @@ struct TechComVerificationScan: View {
     .accessibilityLabel("Checking \(name) claims")
     .onAppear {
       guard !reduceMotion else { return }
-      withAnimation(.smooth(duration: 0.38)) { scanOffset = 1 }
+      withAnimation(.smooth(duration: 0.34)) { scanOffset = 1 }
     }
   }
 }
@@ -618,7 +722,7 @@ struct TechComTalentBoard: View {
   var store: GameStore
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: 10) {
       TechComSectionHeader(
         eyebrow: "FOUNDER NETWORK",
         title: "Talent Board",
@@ -681,28 +785,29 @@ struct TechComLockedTalentPreview: View {
 
   var body: some View {
     ZStack {
-      VStack(spacing: 9) {
+      VStack(spacing: 6) {
         ForEach(0..<3, id: \.self) { index in
           HStack(spacing: 10) {
             Circle()
               .fill(Color.secondary.opacity(0.12))
-              .frame(width: 34, height: 34)
-            VStack(alignment: .leading, spacing: 5) {
+              .frame(width: 30, height: 30)
+            VStack(alignment: .leading, spacing: 4) {
               Capsule().fill(Color.secondary.opacity(0.12)).frame(width: index == 1 ? 105 : 84, height: 7)
               Capsule().fill(Color.secondary.opacity(0.08)).frame(width: 145, height: 6)
             }
             Spacer()
             Image(systemName: "lock.fill").foregroundStyle(.tertiary)
           }
-          .padding(11)
+          .padding(.horizontal, 10)
+          .padding(.vertical, 8)
           .background(Color.white.opacity(0.025), in: .rect(cornerRadius: 12))
         }
       }
       .accessibilityHidden(true)
 
-      VStack(spacing: 8) {
+      VStack(spacing: 6) {
         Image(systemName: "lock.shield.fill")
-          .font(.title2)
+          .font(.title3)
           .foregroundStyle(SoloTheme.purple)
         Text("TALENT DOSSIERS LOCKED")
           .font(.caption.weight(.black))
@@ -711,10 +816,10 @@ struct TechComLockedTalentPreview: View {
           .foregroundStyle(.secondary)
           .multilineTextAlignment(.center)
       }
-      .padding(16)
+      .padding(12)
       .background(.ultraThinMaterial, in: .rect(cornerRadius: 15))
     }
-    .padding(14)
+    .padding(11)
     .background(SoloTheme.purple.opacity(0.055), in: .rect(cornerRadius: 18))
     .overlay {
       RoundedRectangle(cornerRadius: 18)
@@ -730,13 +835,18 @@ struct TechComRankingBoard: View {
   var snapshot: TechComSnapshot
   var rivals: [TechComRival]
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @State private var observedMetric: TechComRankingMetric?
+  @State private var movementByID: [String: String] = [:]
+  @State private var emphasizedID: String?
+  @State private var movementGeneration = 0
+  @State private var rankImprovementTrigger = 0
 
   private var entries: [TechComRankingEntry] {
     TechComEngine.rankings(snapshot: snapshot, rivals: rivals, metric: metric)
   }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: 10) {
       TechComSectionHeader(
         eyebrow: "COMPETITIVE LADDER",
         title: "Rankings",
@@ -756,21 +866,36 @@ struct TechComRankingBoard: View {
             rankingRow(entry, rank: index + 1, index: index)
           }
         }
-        .animation(reduceMotion ? nil : MotionKind.state.animation, value: entries.map(\.id))
+        .animation(reduceMotion ? nil : .smooth(duration: 0.30), value: entries.map(\.id))
       }
       .padding(14)
       .background(SoloTheme.card, in: .rect(cornerRadius: 18))
     }
+    .onAppear { observedMetric = metric }
+    .onChange(of: entries) { oldEntries, newEntries in
+      handleRankingChange(from: oldEntries, to: newEntries)
+    }
+    .sensoryFeedback(.success, trigger: rankImprovementTrigger)
   }
 
   private func rankingRow(_ entry: TechComRankingEntry, rank: Int, index: Int) -> some View {
-    HStack(spacing: 11) {
+    let identity = TechComPresentation.companyIdentity(
+      id: entry.id,
+      name: entry.name,
+      archetype: TechComPresentation.archetype(for: entry.id),
+      isPlayer: entry.isPlayer
+    )
+    return HStack(spacing: 11) {
       Text("\(rank)")
         .font(.headline.monospacedDigit().weight(.black))
         .foregroundStyle(entry.isPlayer ? SoloTheme.cyan : .secondary)
         .frame(width: 24)
       VStack(alignment: .leading, spacing: 2) {
         HStack {
+          Circle()
+            .fill(identity.accent.color)
+            .frame(width: entry.isPlayer ? 8 : 6, height: entry.isPlayer ? 8 : 6)
+            .accessibilityHidden(true)
           Text(entry.name)
             .font(.subheadline.weight(entry.isPlayer ? .black : .semibold))
           if entry.isPlayer {
@@ -785,6 +910,13 @@ struct TechComRankingBoard: View {
             .font(.caption2.weight(.semibold))
             .foregroundStyle(.secondary)
         }
+        if let movement = movementByID[entry.id] {
+          Text(movement)
+            .font(.caption2.monospacedDigit().weight(.black))
+            .foregroundStyle(entry.isPlayer ? SoloTheme.cyan : identity.accent.color)
+            .transition(.opacity)
+            .accessibilityLabel("Rank changed \(movement)")
+        }
       }
       Spacer()
       Text(formatted(entry.value))
@@ -795,6 +927,12 @@ struct TechComRankingBoard: View {
     .padding(.horizontal, 10)
     .padding(.vertical, 9)
     .background(entry.isPlayer ? SoloTheme.cyan.opacity(0.10) : Color.clear, in: .rect(cornerRadius: 12))
+    .overlay {
+      if emphasizedID == entry.id {
+        RoundedRectangle(cornerRadius: 12)
+          .stroke(identity.accent.color.opacity(0.55), lineWidth: 1)
+      }
+    }
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(rankingAccessibility(entry, rank: rank, index: index))
   }
@@ -810,13 +948,52 @@ struct TechComRankingBoard: View {
   private func formatted(_ value: Int) -> String {
     metric == .revenue ? "$\(value.formatted())" : value.formatted()
   }
+
+  private func handleRankingChange(
+    from oldEntries: [TechComRankingEntry],
+    to newEntries: [TechComRankingEntry]
+  ) {
+    guard observedMetric == metric else {
+      observedMetric = metric
+      movementByID = [:]
+      emphasizedID = nil
+      return
+    }
+    let oldRanks = Dictionary(uniqueKeysWithValues: oldEntries.enumerated().map { ($0.element.id, $0.offset + 1) })
+    let newRanks = Dictionary(uniqueKeysWithValues: newEntries.enumerated().map { ($0.element.id, $0.offset + 1) })
+    let changes = newEntries.compactMap { entry -> (String, Int, Int)? in
+      guard let oldRank = oldRanks[entry.id], let newRank = newRanks[entry.id], oldRank != newRank else { return nil }
+      return (entry.id, oldRank, newRank)
+    }
+    guard !changes.isEmpty else { return }
+
+    movementByID = Dictionary(uniqueKeysWithValues: changes.map { change in
+      (change.0, "#\(change.1) → #\(change.2)")
+    })
+    let soloChange = changes.first { $0.0 == "solo" }
+    emphasizedID = soloChange?.0 ?? changes.first?.0
+    if let soloChange, soloChange.2 < soloChange.1 {
+      rankImprovementTrigger += 1
+    }
+    movementGeneration += 1
+    let generation = movementGeneration
+    Task { @MainActor in
+      try? await Task.sleep(for: .milliseconds(900))
+      guard generation == movementGeneration else { return }
+      withAnimation(reduceMotion ? nil : .smooth(duration: 0.18)) {
+        movementByID = [:]
+        emphasizedID = nil
+      }
+    }
+  }
 }
 
 struct TechComMarketShareBoard: View {
   var standings: [RivalStanding]
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
+    VStack(alignment: .leading, spacing: 10) {
       TechComSectionHeader(
         eyebrow: "CATEGORY CONTROL",
         title: "Market Share",
@@ -830,6 +1007,7 @@ struct TechComMarketShareBoard: View {
       }
       .padding(16)
       .background(SoloTheme.card, in: .rect(cornerRadius: 18))
+      .animation(reduceMotion ? nil : .smooth(duration: 0.30), value: standings.map(\.id))
     }
   }
 }
@@ -838,10 +1016,27 @@ struct TechComMarketShareRow: View {
   var standing: RivalStanding
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-  @State private var displayedShare = 0.0
+  @Environment(\.colorSchemeContrast) private var contrast
+  @State private var displayedShare: Double
+
+  init(standing: RivalStanding) {
+    self.standing = standing
+    _displayedShare = State(
+      initialValue: TechComPresentation.marketBarFraction(standing.marketShare)
+    )
+  }
+
+  private var identity: TechComCompanyIdentity {
+    TechComPresentation.companyIdentity(
+      id: standing.id,
+      name: standing.name,
+      archetype: standing.archetype,
+      isPlayer: standing.isPlayer
+    )
+  }
 
   private var accent: Color {
-    standing.isPlayer ? SoloTheme.cyan : SoloTheme.mint
+    identity.accent.color
   }
 
   var body: some View {
@@ -849,6 +1044,7 @@ struct TechComMarketShareRow: View {
       if dynamicTypeSize.isAccessibilitySize {
         VStack(alignment: .leading, spacing: 2) {
           HStack(alignment: .firstTextBaseline) {
+            identityMarker
             companyName
             Spacer(minLength: 8)
             marketPercentage
@@ -857,6 +1053,7 @@ struct TechComMarketShareRow: View {
         }
       } else {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
+          identityMarker
           companyName
           companyType.lineLimit(1)
           Spacer(minLength: 8)
@@ -866,7 +1063,7 @@ struct TechComMarketShareRow: View {
 
       GeometryReader { proxy in
         ZStack(alignment: .leading) {
-          Capsule().fill(Color.secondary.opacity(0.12))
+          Capsule().fill(Color.secondary.opacity(contrast == .increased ? 0.25 : 0.12))
           Capsule()
             .fill(accent.gradient)
             .frame(width: proxy.size.width * displayedShare)
@@ -880,17 +1077,19 @@ struct TechComMarketShareRow: View {
         + standing.marketShare.formatted(.percent.precision(.fractionLength(0)))
         + " market share"
     )
-    .onAppear { updateShare(initial: true) }
-    .onChange(of: standing.marketShare) { _, _ in updateShare(initial: false) }
+    .transaction { transaction in
+      if reduceMotion { transaction.animation = nil }
+    }
+    .onChange(of: standing.marketShare) { _, _ in updateShare() }
   }
 
-  private func updateShare(initial: Bool) {
+  private func updateShare() {
     let share = TechComPresentation.marketBarFraction(standing.marketShare)
     guard !reduceMotion else {
       displayedShare = share
       return
     }
-    withAnimation(initial ? SoloMotion.arrival : MotionKind.state.animation) {
+    withAnimation(.smooth(duration: 0.32)) {
       displayedShare = share
     }
   }
@@ -898,6 +1097,19 @@ struct TechComMarketShareRow: View {
   private var companyName: some View {
     Text(standing.name)
       .font(.subheadline.weight(standing.isPlayer ? .black : .semibold))
+  }
+
+  private var identityMarker: some View {
+    Text(identity.monogram)
+      .font(.system(size: 8, weight: .black, design: .rounded))
+      .foregroundStyle(accent)
+      .frame(width: 20, height: 20)
+      .background(accent.opacity(0.12), in: .rect(cornerRadius: 6))
+      .overlay {
+        RoundedRectangle(cornerRadius: 6)
+          .stroke(accent.opacity(contrast == .increased ? 0.8 : 0.35), lineWidth: 1)
+      }
+      .accessibilityHidden(true)
   }
 
   private var companyType: some View {
@@ -911,6 +1123,20 @@ struct TechComMarketShareRow: View {
       .font(.subheadline.monospacedDigit().weight(.black))
       .foregroundStyle(standing.isPlayer ? SoloTheme.cyan : .primary)
       .contentTransition(.numericText(value: standing.marketShare))
+  }
+}
+
+private extension TechComCompanyAccent {
+  var color: Color {
+    switch self {
+    case .solo: SoloTheme.cyan
+    case .incumbent: .indigo
+    case .upstart: SoloTheme.cyan
+    case .hypeMachine: SoloTheme.coral
+    case .quietBuilder: SoloTheme.mint
+    case .copycat: SoloTheme.purple
+    case .neutral: .secondary
+    }
   }
 }
 

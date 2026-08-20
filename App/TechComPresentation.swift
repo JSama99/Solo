@@ -8,6 +8,21 @@ struct TechComRivalMetric: Equatable, Identifiable {
   var isCurrency: Bool
 }
 
+enum TechComCompanyAccent: String, Equatable {
+  case solo
+  case incumbent
+  case upstart
+  case hypeMachine
+  case quietBuilder
+  case copycat
+  case neutral
+}
+
+struct TechComCompanyIdentity: Equatable {
+  var monogram: String
+  var accent: TechComCompanyAccent
+}
+
 enum TechComPresentation {
   static func rivalMetrics(for rival: TechComRival) -> [TechComRivalMetric] {
     [
@@ -39,6 +54,26 @@ enum TechComPresentation {
   static func monogram(for name: String) -> String {
     let words = name.split(separator: " ")
     return words.prefix(2).compactMap(\.first).map(String.init).joined().uppercased()
+  }
+
+  static func companyIdentity(
+    id: String,
+    name: String,
+    archetype: RivalArchetype?,
+    isPlayer: Bool
+  ) -> TechComCompanyIdentity {
+    if isPlayer || id == "solo" {
+      return TechComCompanyIdentity(monogram: "SO", accent: .solo)
+    }
+    let accent: TechComCompanyAccent = switch archetype ?? self.archetype(for: id) {
+    case .incumbent: .incumbent
+    case .upstart: .upstart
+    case .hypeMachine: .hypeMachine
+    case .quietBuilder: .quietBuilder
+    case .copycat: .copycat
+    case nil: .neutral
+    }
+    return TechComCompanyIdentity(monogram: monogram(for: name), accent: accent)
   }
 
   static func marketBarFraction(_ marketShare: Double) -> Double {
