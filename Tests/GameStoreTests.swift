@@ -11,6 +11,22 @@ final class GameStoreTests: XCTestCase {
     super.tearDown()
   }
 
+  func testResetAndSavePurgeIdenticalLegacyKeySets() {
+    XCTAssertEqual(GameStore.resetCareerPurgeKeys, GameStore.saveCareerPurgeKeys)
+    XCTAssertEqual(GameStore.resetCareerPurgeKeys.count, 15)
+
+    for key in GameStore.resetCareerPurgeKeys {
+      UserDefaults.standard.set(Data([0x1]), forKey: key)
+    }
+    UserDefaults.standard.set(Data([0x1]), forKey: GameStore.saveKey)
+
+    let store = GameStore()
+    XCTAssertTrue(store.hasSave)
+    store.resetCareer()
+
+    XCTAssertFalse(store.hasSave)
+  }
+
   func testUnassignedSprintDoesNotAdvance() {
     let store = makeStore()
 

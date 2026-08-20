@@ -1229,14 +1229,9 @@ final class GameStore {
 
   func resetCareer() {
     UserDefaults.standard.removeObject(forKey: Self.saveKey)
-    UserDefaults.standard.removeObject(forKey: Self.v8SaveKey)
-    UserDefaults.standard.removeObject(forKey: Self.v7SaveKey)
-    UserDefaults.standard.removeObject(forKey: Self.v6SaveKey)
-    UserDefaults.standard.removeObject(forKey: Self.v5SaveKey)
-    UserDefaults.standard.removeObject(forKey: Self.v4SaveKey)
-    UserDefaults.standard.removeObject(forKey: Self.v3SaveKey)
-    UserDefaults.standard.removeObject(forKey: Self.v2SaveKey)
-    UserDefaults.standard.removeObject(forKey: Self.legacySaveKey)
+    for key in Self.resetCareerPurgeKeys {
+      UserDefaults.standard.removeObject(forKey: key)
+    }
     careerOutcome = nil
     report = nil
     pendingEffects = []
@@ -2069,21 +2064,9 @@ final class GameStore {
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
       UserDefaults.standard.set(data, forKey: Self.saveKey)
-      UserDefaults.standard.removeObject(forKey: Self.v15SaveKey)
-      UserDefaults.standard.removeObject(forKey: Self.v14SaveKey)
-      UserDefaults.standard.removeObject(forKey: Self.v13SaveKey)
-      UserDefaults.standard.removeObject(forKey: Self.v12SaveKey)
-      UserDefaults.standard.removeObject(forKey: Self.v11SaveKey)
-      UserDefaults.standard.removeObject(forKey: Self.v10SaveKey)
-      UserDefaults.standard.removeObject(forKey: Self.v9SaveKey)
-      UserDefaults.standard.removeObject(forKey: Self.v8SaveKey)
-      UserDefaults.standard.removeObject(forKey: Self.v7SaveKey)
-      UserDefaults.standard.removeObject(forKey: Self.v6SaveKey)
-      UserDefaults.standard.removeObject(forKey: Self.v5SaveKey)
-      UserDefaults.standard.removeObject(forKey: Self.v4SaveKey)
-      UserDefaults.standard.removeObject(forKey: Self.v3SaveKey)
-      UserDefaults.standard.removeObject(forKey: Self.v2SaveKey)
-      UserDefaults.standard.removeObject(forKey: Self.legacySaveKey)
+      for key in Self.saveCareerPurgeKeys {
+        UserDefaults.standard.removeObject(forKey: key)
+      }
     }
   }
 
@@ -2236,6 +2219,16 @@ final class GameStore {
   private static let v3SaveKey = "solo-unicorn-run-native-save-v3"
   private static let v2SaveKey = "solo-unicorn-run-native-save-v2"
   private static let legacySaveKey = "solo-unicorn-run-native-save-v1"
+  static let saveCareerPurgeKeys = [
+    v15SaveKey, v14SaveKey, v13SaveKey, v12SaveKey, v11SaveKey,
+    v10SaveKey, v9SaveKey, v8SaveKey, v7SaveKey, v6SaveKey,
+    v5SaveKey, v4SaveKey, v3SaveKey, v2SaveKey, legacySaveKey
+  ]
+  static let resetCareerPurgeKeys = [
+    v15SaveKey, v14SaveKey, v13SaveKey, v12SaveKey, v11SaveKey,
+    v10SaveKey, v9SaveKey, v8SaveKey, v7SaveKey, v6SaveKey,
+    v5SaveKey, v4SaveKey, v3SaveKey, v2SaveKey, legacySaveKey
+  ]
   private static let maximumVentures = 2
   private static let sprintsPerVenture = 12
 

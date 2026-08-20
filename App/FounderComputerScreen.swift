@@ -761,46 +761,6 @@ private struct BrioWorkspaceActivity: View {
   private func update() { withAnimation(active ? .easeInOut(duration: 0.68).repeatForever(autoreverses: true) : nil) { signal = active } }
 }
 
-private struct HUDMetric: View {
-  var label: String
-  var value: Int
-  var maximum: Int? = nil
-  var unit: String = ""
-  var symbol: String
-  var reduceMotion: Bool
-  @State private var pulse = false
-
-  var body: some View {
-    Label {
-      VStack(alignment: .leading, spacing: 1) {
-        HStack(spacing: 0) { Text("\(value)").contentTransition(.numericText(value: Double(value))); if let maximum { Text("/\(maximum)") } else if !unit.isEmpty { Text(unit) } }
-          .font(.subheadline.weight(.bold))
-        Text(label).font(.caption2).foregroundStyle(.secondary)
-      }
-    } icon: { Image(systemName: symbol).foregroundStyle(SoloTheme.cyan).symbolEffect(.bounce, value: pulse) }
-      .frame(maxWidth: .infinity, alignment: .leading)
-      .scaleEffect(pulse && !reduceMotion ? 1.08 : 1)
-      .animation(SoloMotion.resolved(SoloMotion.impact, reduceMotion: reduceMotion), value: pulse)
-      .onChange(of: value) { _, _ in
-        guard !reduceMotion else { return }
-        pulse.toggle()
-        Task { @MainActor in try? await Task.sleep(for: .milliseconds(300)); pulse.toggle() }
-      }
-      .accessibilityElement(children: .combine)
-      .accessibilityLabel(maximum.map { "\(label), \(value) of \($0)" } ?? "\(label), \(value)\(unit)")
-  }
-}
-
-private struct WorkspacePressButtonStyle: ButtonStyle {
-  var reduceMotion: Bool
-
-  func makeBody(configuration: Configuration) -> some View {
-    configuration.label
-      .scaleEffect(configuration.isPressed && !reduceMotion ? 0.96 : 1)
-      .animation(reduceMotion ? nil : .smooth(duration: 0.08), value: configuration.isPressed)
-  }
-}
-
 private struct TaskAssignmentSheet: View {
   var store: GameStore
   var presentation: PresentationCoordinator
@@ -908,6 +868,6 @@ private struct FounderReviewStrip: View {
     Button { if let id = task.assignedAgentID { onSelectAgent(id) } } label: {
       Label(title, systemImage: "eye").frame(maxWidth: .infinity, alignment: .leading).padding(14)
     }
-    .buttonStyle(.plain)
+    .buttonStyle(SoloPressStyle())
   }
 }

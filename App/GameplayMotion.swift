@@ -49,6 +49,23 @@ enum SoloMotion {
   }
 }
 
+/// Shared press feedback for custom-drawn cards and rows. This consolidates
+/// three independent reinventions and finally gives `SoloMotion.press` a
+/// caller, preventing a fourth press treatment from drifting into the app.
+struct SoloPressStyle: ButtonStyle {
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  var scale: CGFloat = 0.97
+
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
+      .scaleEffect(configuration.isPressed && !reduceMotion ? scale : 1)
+      .animation(
+        SoloMotion.resolved(SoloMotion.press, reduceMotion: reduceMotion),
+        value: configuration.isPressed
+      )
+  }
+}
+
 private struct GameplayMotionModifier<Value: Equatable>: ViewModifier {
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   var kind: MotionKind
