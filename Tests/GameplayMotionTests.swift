@@ -290,6 +290,16 @@ final class GameplayMotionTests: XCTestCase {
     XCTAssertEqual(store.report?.id, reportID)
     XCTAssertEqual(presentation.latestEvent?.id, eventID)
     XCTAssertEqual(presentation.visibleSprintResult?.id, reportID)
+
+    let assignmentsAfterCommit = store.tasks.map(\.assignedAgentID)
+    let attentionAfterCommit = store.founderAttentionSpent
+    presentation.completeSprintOutcome(id: reportID, in: store)
+    presentation.completeSprintOutcome(id: reportID, in: store)
+
+    XCTAssertNil(store.report)
+    XCTAssertNil(presentation.visibleSprintResult)
+    XCTAssertEqual(store.tasks.map(\.assignedAgentID), assignmentsAfterCommit)
+    XCTAssertEqual(store.founderAttentionSpent, attentionAfterCommit)
   }
 
   #if DEBUG

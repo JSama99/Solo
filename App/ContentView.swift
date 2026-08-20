@@ -484,15 +484,17 @@ private struct GameDashboard: View {
         if let newValue {
           store.report = newValue
         } else {
-          store.finishReport()
-          presentation.clearSprintPresentation()
+          if let result = presentation.visibleSprintResult {
+            presentation.completeSprintOutcome(id: result.id, in: store)
+          } else {
+            store.finishReport()
+          }
         }
       }
     )) { report in
       if let result = presentation.visibleSprintResult {
         SprintOutcomeScreen(report: report, result: result) {
-          store.finishReport()
-          presentation.clearSprintPresentation()
+          presentation.completeSprintOutcome(id: result.id, in: store)
         }
         .presentationDetents([.large])
         .interactiveDismissDisabled()

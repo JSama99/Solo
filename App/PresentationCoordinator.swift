@@ -80,6 +80,8 @@ final class PresentationCoordinator {
   private var bufferedVenture = 0
   private var bufferedSprint = 0
   private(set) var visibleSprintResult: VisibleSprintResult?
+  private(set) var visibleSprintReport: SprintReport?
+  private var completedOutcomeID: UUID?
   private(set) var agentPresentations: [String: AgentPresentation] = [:]
   private(set) var debugPresentation: AgentPresentation?
   private var sequences: [String: Task<Void, Never>] = [:]
@@ -178,16 +180,8 @@ final class PresentationCoordinator {
       $0.venture == ventureBefore && $0.sprint == sprintBefore
     }.count
     let snapshot = TechComSnapshot(founderName: store.founderName, venture: ventureBefore, sprint: sprintBefore, stats: statsBefore, agents: store.agents, tasks: tasksBefore, dilemmaChoice: store.selectedDilemmaChoice)
-    store.commitSprint()
-    guard let canonicalReport = store.report else { return }
-    let transition: VisibleSprintResult.Transition
-    if let outcome = store.careerOutcome {
-      transition = .careerEnded(outcome.kind)
-    } else if ventureBefore == 1 && sprintBefore == 12 {
-      transition = .ventureCompleted
-    } else {
-      transition = .nextSprint
-    }
+    guard let canonicalReport = store.commitSprint() else { return }
+    let transition = Self.transition(afterCommitting: store)
     let visible = VisibleSimulationProjection.sprintResult(
       canonicalReport: canonicalReport,
       venture: ventureBefore,
@@ -200,6 +194,12 @@ final class PresentationCoordinator {
       transition: transition
     )
     visibleSprintResult = visible
+    visibleSprintReport = canonicalReport
+    completedOutcomeID = nil
+    // Preserve the existing report-driven sheet lifecycle even when a
+    // canonical terminal handoff cleared its transient report while recording
+    // the post-sprint stage.
+    if store.report == nil { store.report = canonicalReport }
     latestEvent = .sprint(id: UUID(), result: visible)
     buffer(latestEvent!, venture: ventureBefore, sprint: sprintBefore)
     store.recordTechComHeadlines(events: eventHistory, snapshot: snapshot)
@@ -212,7 +212,28 @@ final class PresentationCoordinator {
 
   func clearSprintPresentation() {
     visibleSprintResult = nil
+    visibleSprintReport = nil
     cancelAllAgentPresentations()
+  }
+
+  /// The reveal has exactly one idempotent handoff. Its destination was frozen
+  /// from canonical post-commit state and never depends on reveal animation.
+  func completeSprintOutcome(id: UUID, in store: GameStore) {
+    guard visibleSprintResult?.id == id, completedOutcomeID != id else { return }
+    completedOutcomeID = id
+    store.finishReport()
+    clearSprintPresentation()
+  }
+
+  static func transition(afterCommitting store: GameStore) -> VisibleSprintResult.Transition {
+    if let outcome = store.careerOutcome { return .careerEnded(outcome.kind) }
+    switch store.stage {
+    case .chapterMilestone: return .chapterMilestone
+    case .ventureThesis: return .ventureThesis
+    case .ventureCheckpoint: return .ventureCheckpoint
+    case .ventureUnlock: return .ventureUnlock
+    default: return .nextSprint
+    }
   }
 
   func clearLatestEvent(id: UUID) {

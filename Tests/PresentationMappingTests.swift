@@ -204,7 +204,36 @@ final class PresentationMappingTests: XCTestCase {
   }
 
   func testVentureTransitionPresentation() {
-    XCTAssertNotEqual(VisibleSprintResult.Transition.ventureCompleted, .nextSprint)
+    XCTAssertNotEqual(VisibleSprintResult.Transition.ventureThesis, .nextSprint)
+  }
+
+  func testPostCommitRoutesAreDerivedFromCanonicalStage() {
+    let store = GameStore()
+    let routes: [(GameStore.Stage, VisibleSprintResult.Transition)] = [
+      (.game, .nextSprint),
+      (.chapterMilestone, .chapterMilestone),
+      (.ventureThesis, .ventureThesis),
+      (.ventureCheckpoint, .ventureCheckpoint),
+      (.ventureUnlock, .ventureUnlock)
+    ]
+
+    for (stage, expected) in routes {
+      store.stage = stage
+      XCTAssertEqual(PresentationCoordinator.transition(afterCommitting: store), expected)
+    }
+  }
+
+  func testPostCommitRoutePrioritizesCareerOutcome() {
+    let store = GameStore()
+    store.stage = .game
+    store.careerOutcome = CareerOutcome(
+      kind: .victory,
+      title: "Career complete",
+      summary: "Recorded",
+      score: 1
+    )
+
+    XCTAssertEqual(PresentationCoordinator.transition(afterCommitting: store), .careerEnded(.victory))
   }
 
   func testDistinctCareerEndingPresentation() {

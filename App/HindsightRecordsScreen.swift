@@ -6,7 +6,6 @@ struct HindsightRecordsScreen: View {
 
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var filter: PrecedentRecordsFilter = .all
-  @State private var expansion = PrecedentExpansionState()
   @State private var knownIDs: Set<UUID> = []
   @State private var highlightedID: UUID?
   @State private var highlightDismissTask: Task<Void, Never>?
@@ -41,12 +40,9 @@ struct HindsightRecordsScreen: View {
           ForEach(filteredPrecedents) { precedent in
             PrecedentRecordRow(
               precedent: precedent,
-              isExpanded: expansion.isExpanded(precedent.id),
               isHighlighted: highlightedID == precedent.id,
               reduceMotion: reduceMotion
-            ) {
-              toggle(precedent.id)
-            }
+            )
             .transition(arrivalTransition)
           }
         }
@@ -57,6 +53,9 @@ struct HindsightRecordsScreen: View {
       .transition(.opacity)
     }
     .navigationTitle("Hindsight")
+    .navigationDestination(for: Precedent.self) { precedent in
+      HistoricalOutcomeScreen(precedent: precedent)
+    }
     .animation(reduceMotion ? nil : .smooth(duration: 0.2), value: filter)
     .onAppear {
       knownIDs = Set(precedents.map(\.id))
@@ -85,12 +84,6 @@ struct HindsightRecordsScreen: View {
         .combined(with: .opacity),
       removal: .opacity
     )
-  }
-
-  private func toggle(_ id: UUID) {
-    withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) {
-      expansion.toggle(id)
-    }
   }
 
   private func highlightNewestInsertion(in IDs: [UUID]) {
@@ -147,14 +140,12 @@ private struct DivergenceRecordRow: View {
 
 private struct PrecedentRecordRow: View {
   var precedent: Precedent
-  var isExpanded: Bool
   var isHighlighted: Bool
   var reduceMotion: Bool
-  var onToggle: () -> Void
   @State private var impactPulse = false
 
   var body: some View {
-    Button(action: onToggle) {
+    NavigationLink(value: precedent) {
       VStack(alignment: .leading, spacing: 8) {
         HStack(alignment: .top, spacing: 10) {
           Image(systemName: precedent.isFlagged ? "exclamationmark.triangle.fill" : "brain.head.profile")
@@ -176,32 +167,21 @@ private struct PrecedentRecordRow: View {
             Text(precedent.context.summary)
               .font(.caption)
               .foregroundStyle(.secondary)
-              .lineLimit(isExpanded ? nil : 1)
+              .lineLimit(2)
           }
           Spacer(minLength: 4)
           Image(systemName: "chevron.down")
             .font(.caption.weight(.bold))
-            .rotationEffect(.degrees(isExpanded && !reduceMotion ? 180 : 0))
-            .animation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion), value: isExpanded)
+            .rotationEffect(.degrees(-90))
             .accessibilityHidden(true)
         }
         Text(precedent.outcome.summary)
           .font(.caption)
           .foregroundStyle(precedent.isFlagged ? SoloTheme.amber : .secondary)
-          .lineLimit(isExpanded ? nil : 2)
-
-        if isExpanded {
-          VStack(alignment: .leading, spacing: 8) {
-            Divider()
-            detail("Decision", value: precedent.decisionSummary)
-            detail("Recorded context", value: precedent.context.summary)
-            detail("Observed outcome", value: precedent.outcome.summary)
-            if let counterfactual = precedent.counterfactual {
-              detail("Rival branch", value: counterfactual.summary)
-            }
-          }
-          .transition(reduceMotion ? .identity : .move(edge: .top))
-        }
+          .lineLimit(2)
+        Label("Review historical outcome", systemImage: "clock.arrow.circlepath")
+          .font(.caption.weight(.semibold))
+          .foregroundStyle(SoloTheme.purple)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(13)
@@ -229,17 +209,70 @@ private struct PrecedentRecordRow: View {
       withAnimation(SoloMotion.settle) { impactPulse = false }
     }
     .accessibilityElement(children: .combine)
-    .accessibilityLabel("\(precedent.recallTitle). \(precedent.outcome.summary)")
-    .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
-    .accessibilityHint(isExpanded ? "Double tap to hide recorded detail" : "Double tap to show recorded detail")
+    .accessibilityLabel("Historical sprint outcome. \(precedent.recallTitle). \(precedent.outcome.summary)")
+    .accessibilityHint("Opens a read-only Hindsight review")
+  }
+}
+
+private struct HistoricalOutcomeScreen: View {
+  var precedent: Precedent
+
+  var body: some View {
+    ScrollView {
+      VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 8) {
+          Label("HISTORICAL REVIEW", systemImage: "clock.arrow.circlepath")
+            .font(.caption.weight(.black))
+            .tracking(1.4)
+            .foregroundStyle(SoloTheme.purple)
+          Text(precedent.recallTitle)
+            .font(.largeTitle.bold())
+          Text("Read-only company memory. Viewing this record does not change the current sprint.")
+            .font(.callout)
+            .foregroundStyle(.secondary)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Historical sprint outcome. \(precedent.recallTitle). Read only company memory.")
+
+        historicalSection("Operating consequence", symbol: precedent.isFlagged ? "exclamationmark.triangle.fill" : "checkmark.seal.fill") {
+          Text(precedent.outcome.summary)
+        }
+        historicalSection("Founder decision", symbol: "person.crop.rectangle.stack.fill") {
+          Text(precedent.decisionSummary)
+        }
+        historicalSection("Recorded context", symbol: "scope") {
+          Text(precedent.context.summary)
+        }
+        if let counterfactual = precedent.counterfactual {
+          historicalSection("Recorded rival branch", symbol: "arrow.triangle.branch") {
+            Text(counterfactual.summary)
+          }
+        }
+        historicalSection("Unavailable detail", symbol: "eye.slash") {
+          Text("Exact transient reveal timing, full metric snapshots, and unverified hidden truth were not persisted and are not reconstructed.")
+            .foregroundStyle(.secondary)
+        }
+      }
+      .padding(20)
+      .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    .navigationTitle("Historical Outcome")
+    .navigationBarTitleDisplayMode(.inline)
   }
 
-  private func detail(_ title: String, value: String) -> some View {
-    VStack(alignment: .leading, spacing: 2) {
-      Text(title)
-        .font(.caption2.weight(.bold))
-        .foregroundStyle(.secondary)
-      Text(value).font(.caption)
+  private func historicalSection<Content: View>(
+    _ title: String,
+    symbol: String,
+    @ViewBuilder content: () -> Content
+  ) -> some View {
+    VStack(alignment: .leading, spacing: 8) {
+      Label(title, systemImage: symbol)
+        .font(.headline)
+      content()
+        .font(.callout)
     }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(16)
+    .background(SoloTheme.card, in: .rect(cornerRadius: 16))
   }
 }

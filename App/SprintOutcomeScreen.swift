@@ -10,6 +10,9 @@ struct SprintOutcomeScreen: View {
   @Environment(AppSettingsStore.self) private var settings
   @State private var revealedStep = 0
   @State private var deliveredRevenueFeedback = false
+  @State private var didActivateNextAction = false
+  @State private var didAnnounceOutcome = false
+  @AccessibilityFocusState private var headerFocused: Bool
 
   var body: some View {
     NavigationStack {
@@ -17,12 +20,13 @@ struct SprintOutcomeScreen: View {
         VStack(alignment: .leading, spacing: 20) {
           completionHeader
           if revealedStep >= 1 { operatingResult }
+          if revealedStep >= 1 { consequentialChanges }
           if revealedStep >= 2 { metricChanges }
           if revealedStep >= 3 { assignmentResults }
           if revealedStep >= 4 {
             evidenceAndRisk
-            nextAction
           }
+          nextAction
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -30,7 +34,11 @@ struct SprintOutcomeScreen: View {
       .navigationTitle("Sprint Complete")
       .navigationBarTitleDisplayMode(.inline)
       .interactiveDismissDisabled()
-      .onAppear(perform: deliverRevenueFeedback)
+      .onAppear {
+        deliverRevenueFeedback()
+        announceOutcome()
+        headerFocused = true
+      }
       .task(id: result.id, reveal)
     }
   }
@@ -53,6 +61,8 @@ struct SprintOutcomeScreen: View {
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .accessibilityElement(children: .combine)
+    .accessibilityLabel("Live sprint outcome. Venture \(result.venture), Sprint \(result.sprint). \(result.headline)")
+    .accessibilityFocused($headerFocused)
   }
 
   private var operatingResult: some View {
@@ -79,6 +89,28 @@ struct SprintOutcomeScreen: View {
         metric("Revenue", before: result.before.revenue, after: result.after.revenue, currency: true, symbol: "dollarsign")
         metric("Capital", before: result.before.capital, after: result.after.capital, currency: true, symbol: "banknote")
         metric("Track Record", before: result.before.trackRecord, after: result.after.trackRecord, symbol: "trophy.fill")
+      }
+    }
+  }
+
+  private var consequentialChanges: some View {
+    outcomeCard {
+      Text("MOST CONSEQUENTIAL CHANGES")
+        .font(.caption.weight(.black))
+        .foregroundStyle(SoloTheme.amber)
+      ForEach(Array(rankedChanges.prefix(3))) { change in
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+          Label(change.title, systemImage: change.symbol)
+            .font(.subheadline.weight(.semibold))
+          Spacer(minLength: 8)
+          Text("\(change.before) → \(change.after)")
+            .font(.subheadline.bold().monospacedDigit())
+          Text(change.direction)
+            .font(.caption.weight(.bold))
+            .foregroundStyle(change.delta < 0 ? SoloTheme.amber : SoloTheme.mint)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(change.title), before \(change.before), after \(change.after), \(change.spokenDirection)")
       }
     }
   }
@@ -132,7 +164,11 @@ struct SprintOutcomeScreen: View {
     VStack(alignment: .leading, spacing: 12) {
       Text("NEXT").font(.caption.weight(.black)).foregroundStyle(.secondary)
       Label(nextMessage, systemImage: nextSymbol).font(.headline)
-      Button(nextButtonTitle, systemImage: nextButtonSymbol, action: onContinue)
+      Button(nextButtonTitle, systemImage: nextButtonSymbol) {
+        guard !didActivateNextAction else { return }
+        didActivateNextAction = true
+        onContinue()
+      }
         .buttonStyle(SoloPrimaryButtonStyle())
         .accessibilityHint(nextMessage)
     }
@@ -191,7 +227,10 @@ struct SprintOutcomeScreen: View {
   private var nextMessage: String {
     switch result.transition {
     case .nextSprint: "Sprint \(result.sprint) is recorded. Continue to plan Sprint \(result.sprint + 1)."
-    case .ventureCompleted: "Venture \(result.venture) is complete. Continue to the existing venture handoff."
+    case .chapterMilestone: "The chapter milestone is ready for review."
+    case .ventureThesis: "Venture \(result.venture) is complete. Choose the thesis for Venture \(result.venture + 1)."
+    case .ventureCheckpoint: "Venture \(result.venture) is complete. Review the checkpoint before deciding whether to continue."
+    case .ventureUnlock: "Venture \(result.venture) is complete. Review Founder Pass access for the next venture."
     case .careerEnded: "The career outcome is ready. Continue to view the final company record."
     }
   }
@@ -199,7 +238,10 @@ struct SprintOutcomeScreen: View {
   private var nextButtonTitle: String {
     switch result.transition {
     case .nextSprint: "PLAN NEXT SPRINT"
-    case .ventureCompleted: "CONTINUE VENTURE HANDOFF"
+    case .chapterMilestone: "VIEW CHAPTER MILESTONE"
+    case .ventureThesis: "CHOOSE NEXT VENTURE THESIS"
+    case .ventureCheckpoint: "REVIEW VENTURE CHECKPOINT"
+    case .ventureUnlock: "REVIEW FOUNDER PASS"
     case .careerEnded: "VIEW CAREER OUTCOME"
     }
   }
@@ -207,7 +249,10 @@ struct SprintOutcomeScreen: View {
   private var nextSymbol: String {
     switch result.transition {
     case .nextSprint: "arrow.right.square.fill"
-    case .ventureCompleted: "flag.checkered"
+    case .chapterMilestone: "map.fill"
+    case .ventureThesis: "flag.checkered"
+    case .ventureCheckpoint: "signpost.right.and.left.fill"
+    case .ventureUnlock: "lock.open.fill"
     case .careerEnded: "trophy.fill"
     }
   }
@@ -239,8 +284,42 @@ struct SprintOutcomeScreen: View {
       guard !Task.isCancelled else { return }
       withAnimation(.smooth(duration: 0.22)) { revealedStep = step }
     }
-    AccessibilityNotification.Announcement("Sprint \(result.sprint) outcome recorded. \(result.headline)").post()
   }
+
+  private func announceOutcome() {
+    guard !didAnnounceOutcome else { return }
+    didAnnounceOutcome = true
+    AccessibilityNotification.Announcement(
+      "Live sprint outcome. Venture \(result.venture), Sprint \(result.sprint). \(result.headline). \(nextButtonTitle)."
+    ).post()
+  }
+
+  private var rankedChanges: [OutcomeMetricChange] {
+    [
+      OutcomeMetricChange(title: "Runway", before: result.before.runway, after: result.after.runway, symbol: "calendar"),
+      OutcomeMetricChange(title: "Energy", before: result.before.energy, after: result.after.energy, symbol: "battery.75percent"),
+      OutcomeMetricChange(title: "Momentum", before: result.before.momentum, after: result.after.momentum, symbol: "arrow.up.right"),
+      OutcomeMetricChange(title: "Company Trust", before: result.before.trust, after: result.after.trust, symbol: "checkmark.shield"),
+      OutcomeMetricChange(title: "Revenue", before: result.before.revenue, after: result.after.revenue, symbol: "dollarsign"),
+      OutcomeMetricChange(title: "Capital", before: result.before.capital, after: result.after.capital, symbol: "banknote"),
+      OutcomeMetricChange(title: "Track Record", before: result.before.trackRecord, after: result.after.trackRecord, symbol: "trophy.fill")
+    ]
+    .sorted { lhs, rhs in
+      if abs(lhs.delta) == abs(rhs.delta) { return lhs.title < rhs.title }
+      return abs(lhs.delta) > abs(rhs.delta)
+    }
+  }
+}
+
+private struct OutcomeMetricChange: Identifiable {
+  var title: String
+  var before: Int
+  var after: Int
+  var symbol: String
+  var id: String { title }
+  var delta: Int { after - before }
+  var direction: String { delta > 0 ? "+\(delta)" : delta < 0 ? "−\(abs(delta))" : "No change" }
+  var spokenDirection: String { delta > 0 ? "increased by \(delta)" : delta < 0 ? "decreased by \(abs(delta))" : "unchanged" }
 }
 
 private struct AssignmentOutcomeCard: View {

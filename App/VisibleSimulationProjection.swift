@@ -29,7 +29,10 @@ struct VisibleTaskResult: Equatable {
 struct VisibleSprintResult: Identifiable, Equatable {
   enum Transition: Equatable {
     case nextSprint
-    case ventureCompleted
+    case chapterMilestone
+    case ventureThesis
+    case ventureCheckpoint
+    case ventureUnlock
     case careerEnded(CareerOutcomeKind)
   }
 

@@ -971,12 +971,17 @@ final class GameStore {
     save()
   }
 
-  func commitSprint() {
+  /// Resolves the sprint once and returns the canonical report created by that
+  /// resolution. Some terminal handoffs intentionally clear `report` while
+  /// changing `stage`; returning the same report lets presentation finish
+  /// before that already-recorded destination becomes visible.
+  @discardableResult
+  func commitSprint() -> SprintReport? {
     sanitizeState()
     let assignedIndices = tasks.indices.filter { tasks[$0].assignedAgentID != nil }
     if let blocker = commitBlockerMessage {
       alertMessage = blocker
-      return
+      return nil
     }
 
     let dilemmaChoice = selectedDilemmaChoice
@@ -1130,6 +1135,7 @@ final class GameStore {
       dilemmaSummary: dilemmaChoice.map { "\($0.title): \($0.consequencePreview)" },
       skippedTasks: uncommittedTasks.count
     )
+    let committedReport = report
 
     recordPrecedentIfConsequential(
       assignedIndices: assignedIndices,
@@ -1156,7 +1162,7 @@ final class GameStore {
           report = nil
           stage = .ventureUnlock
           saveCareer()
-          return
+          return committedReport
         }
         advanceToNextVenture()
       case .continuous:
@@ -1177,6 +1183,7 @@ final class GameStore {
       achievementStore?.closeRun(context: achievementContext)
     }
     saveCareer()
+    return committedReport
   }
 
   /// Called when the Founder Pass becomes active while a career is held at the
