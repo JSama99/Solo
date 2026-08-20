@@ -236,6 +236,33 @@ struct ScheduledEffect: Codable, Hashable {
   var effects: SimulationEffects
 }
 
+struct LatentDefect: Codable, Hashable, Identifiable {
+  var id: String
+  var originVenture: Int
+  var originSprint: Int
+  var originTaskTitle: String
+  var originAgentName: String
+  var originEvidenceCompleteness: Int
+  var surfacesAtCareerSprint: Int
+  var severity: Int
+
+  var receipt: String {
+    "\(originTaskTitle) (Venture \(originVenture), Sprint \(originSprint), \(originAgentName) — shipped at \(originEvidenceCompleteness)% evidence) failed in production."
+  }
+
+  var effects: SimulationEffects {
+    SimulationEffects(momentum: -max(1, severity / 4), trust: -max(2, severity / 3), runway: -max(1, severity / 5))
+  }
+}
+
+struct PoachingOffer: Codable, Hashable, Identifiable {
+  var id: String
+  var agentID: String
+  var agentName: String
+  var rivalName: String
+  var dueCareerSprint: Int
+}
+
 struct CachedTaskReport: Codable, Hashable {
   var venture: Int
   var sprint: Int

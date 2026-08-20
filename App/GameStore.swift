@@ -47,6 +47,9 @@ final class GameStore {
   var randomNumberGenerator = SeededRandomNumberGenerator(seed: 0)
   var correlatedFailureEvent: CorrelatedFailureEvent?
   var pendingEffects: [ScheduledEffect] = []
+  var latentDefects: [LatentDefect] = []
+  private(set) var poachingOffer: PoachingOffer?
+  private(set) var exposedRivalIDs: Set<String> = []
   var reportCache: [CachedTaskReport] = []
   var dailyChallengeStore = DailyChallengeStore()
   var achievementStore: AchievementStore?
@@ -138,7 +141,16 @@ final class GameStore {
     guard let index = feedPosts.firstIndex(where: { $0.id == postID }), feedPosts[index].resolvedActionID == nil,
           let action = feedPosts[index].actions.first(where: { $0.id == actionID }),
           !action.requiresStatement || statementAvailable else { return }
-    if action.requiresStatement { statementSpent += 1 }
+    if actionID.hasPrefix("counter-poach-") {
+      guard founderAttentionSpent < attentionMaximum, let offer = poachingOffer,
+            actionID == "counter-poach-\(offer.agentID)",
+            let agentIndex = agents.firstIndex(where: { $0.id == offer.agentID }) else { return }
+      founderAttentionSpent += 1
+      agents[agentIndex].relationship = clamped(agents[agentIndex].relationship + 22)
+      poachingOffer = nil
+    } else if action.requiresStatement {
+      statementSpent += 1
+    }
     feedPosts[index].resolvedActionID = actionID
     pendingFeedEffects = pendingFeedEffects + action.effects
     stats.coverage = min(100, max(-100, stats.coverage + action.coverageDelta))
@@ -153,8 +165,14 @@ final class GameStore {
       sprint: sprint,
       careerSeed: RivalEngine.careerSeed(founderName: founderName, productType: productType),
       player: stats,
-      playerFlags: companyFlags
+      playerFlags: companyFlags,
+      revealedDoctrine: currentDoctrineProfile.revealed,
+      exposedRivalIDs: exposedRivalIDs
     )
+  }
+
+  var currentDoctrineProfile: DoctrineProfile {
+    DoctrineProfile.derive(evidence: evidence, agents: agents, decisions: decisionHistory, flags: companyFlags)
   }
 
   var nextTalentSlot: Int? { agents.count < 4 ? 4 : agents.count < 5 ? 5 : nil }
@@ -426,6 +444,9 @@ final class GameStore {
     careerOutcome = nil
     report = nil
     pendingEffects = []
+    latentDefects = []
+    poachingOffer = nil
+    exposedRivalIDs = []
     reportCache = []
     techComHeadlines = []
     techComRivals = TechComEngine.rivals(seed: seed ?? 0x534F4C4F)
@@ -829,6 +850,9 @@ final class GameStore {
     let dueEffects = pendingEffects.filter { $0.dueCareerSprint <= careerSprintIndex }
     pendingEffects.removeAll { $0.dueCareerSprint <= careerSprintIndex }
     var effects = dueEffects.reduce(SimulationEffects()) { $0 + $1.effects } + pendingFeedEffects
+    let surfacedDefects = latentDefects.filter { $0.surfacesAtCareerSprint <= careerSprintIndex }
+    latentDefects.removeAll { $0.surfacesAtCareerSprint <= careerSprintIndex }
+    effects = surfacedDefects.reduce(effects) { $0 + $1.effects }
     pendingFeedEffects = SimulationEffects()
     for post in feedPosts where post.kind == .pressInquiry && post.resolvedActionID == nil {
       effects.trust -= 3
@@ -887,6 +911,17 @@ final class GameStore {
             effects: result.delayedEffects
           )
         )
+      }
+      if let defect = SimulationEngine.latentDefect(
+        careerSeed: RivalEngine.careerSeed(founderName: founderName, productType: productType),
+        venture: venture,
+        sprint: sprint,
+        careerSprint: careerSprintIndex,
+        task: tasks[index],
+        agent: agents[agentIndex],
+        result: result
+      ), !latentDefects.contains(where: { $0.id == defect.id }) {
+        latentDefects.append(defect)
       }
       if tasks[index].isReviewed && result.isStrongForSimulation { strongOutcomes += 1 }
       if result.evidenceCompleteness < 45 || result.correlatedFailureIdentifier != nil {
@@ -1161,7 +1196,6 @@ final class GameStore {
   /// Surface a matching precedent for the live situation, if one clears the
   /// floor. Consumes no RNG and mutates no simulation value.
   func refreshHindsightRecall() {
-    guard hasFounderPass else { activeRecall = nil; return }
     let recall = HindsightEngine.recall(
       from: precedents,
       matching: currentPrecedentContext(),
@@ -1235,6 +1269,9 @@ final class GameStore {
     careerOutcome = nil
     report = nil
     pendingEffects = []
+    latentDefects = []
+    poachingOffer = nil
+    exposedRivalIDs = []
     reportCache = []
     taskBacklog = []
     founderAttentionSpent = 0
@@ -1265,6 +1302,13 @@ final class GameStore {
     founderAttentionSpent = 0
     restingAgentIDs = []
     defer { refreshHindsightRecall() }
+    if let offer = poachingOffer, offer.dueCareerSprint <= careerSprintIndex {
+      if agents.count > 3 {
+        agents.removeAll { $0.id == offer.agentID }
+        workforceNotifications.append("\(offer.agentName) joined \(offer.rivalName) after the warning went unanswered.")
+      }
+      poachingOffer = nil
+    }
     let profile = ThesisProfile.profile(for: thesis)
     correlatedFailureEvent = SimulationEngine.generateCorrelatedFailureEvent(
       venture: venture, sprint: sprint, agents: agents, rng: &randomNumberGenerator
@@ -1287,6 +1331,55 @@ final class GameStore {
     selectedDilemmaChoiceID = nil
     currentObjective = makeObjective()
     feedPosts = TechComFeedEngine.posts(venture: venture, sprint: sprint, stats: stats, standings: rivalStandings)
+    for defect in latentDefects where defect.surfacesAtCareerSprint == careerSprintIndex {
+      feedPosts.insert(FeedPost(
+        id: "latent-\(defect.id)",
+        kind: .trendSignal,
+        headline: "A delayed defect surfaced",
+        body: defect.receipt,
+        venture: venture,
+        sprint: sprint
+      ), at: 0)
+    }
+    if poachingOffer == nil, agents.count > 3,
+       let candidate = agents
+        .filter({ $0.relationship < 35 && $0.progression.verifiedTasks >= 5 })
+        .sorted(by: { $0.id < $1.id }).first,
+       let rival = rivalStandings.filter({ !$0.isPlayer && $0.strength >= 4 }).sorted(by: { $0.id < $1.id }).first {
+      let offer = PoachingOffer(
+        id: "POACH-\(candidate.id)-\(careerSprintIndex)",
+        agentID: candidate.id,
+        agentName: candidate.name,
+        rivalName: rival.name,
+        dueCareerSprint: careerSprintIndex + 1
+      )
+      poachingOffer = offer
+      feedPosts.insert(FeedPost(
+        id: offer.id,
+        kind: .talentListing,
+        headline: "\(rival.name) is hiring",
+        body: "\(candidate.name) has an offer after sustained low founder relationship investment. One sprint remains to counter.",
+        venture: venture,
+        sprint: sprint,
+        actions: [FeedAction(
+          id: "counter-poach-\(candidate.id)",
+          label: "Invest 1 Attention",
+          detail: "Rebuild the founder relationship before the offer closes.",
+          requiresStatement: false,
+          effects: SimulationEffects()
+        )]
+      ), at: 0)
+    } else if let offer = poachingOffer {
+      feedPosts.insert(FeedPost(
+        id: offer.id,
+        kind: .talentListing,
+        headline: "\(offer.rivalName) is hiring",
+        body: "\(offer.agentName) has an active offer. Counter it before the next sprint.",
+        venture: venture,
+        sprint: sprint,
+        actions: [FeedAction(id: "counter-poach-\(offer.agentID)", label: "Invest 1 Attention", detail: "Rebuild the founder relationship.", requiresStatement: false, effects: SimulationEffects())]
+      ), at: 0)
+    }
     syncAssignments()
   }
 
@@ -1599,6 +1692,9 @@ final class GameStore {
     randomNumberGenerator = save.randomNumberGenerator
     correlatedFailureEvent = save.correlatedFailureEvent
     pendingEffects = save.pendingEffects
+    latentDefects = save.latentDefects
+    poachingOffer = save.poachingOffer
+    exposedRivalIDs = save.exposedRivalIDs
     reportCache = save.reportCache
     precedents = save.precedents
     awaitingFounderPass = save.awaitingFounderPass
@@ -2003,6 +2099,17 @@ final class GameStore {
     guard attentionRemaining > 0, let index = techComRivals.firstIndex(where: { $0.id == id }), !techComRivals[index].isVerified else { return false }
     techComRivals[index].isVerified = true
     founderAttentionSpent += 1
+    if techComRivals[index].overclaimAmount >= TechComRival.overclaimThreshold,
+       ContentLibrary.rivalSimulationCompanies.first(where: { $0.id == id })?.archetype == .hypeMachine {
+      exposedRivalIDs.insert(id)
+      techComHeadlines.insert(TechComHeadline(
+        id: HindsightEngine.identifier(venture: venture + 10_000, sprint: sprint),
+        category: .rival,
+        text: "\(techComRivals[index].name)’s verified overclaim triggered a market exposure; its strength fell and share redistributed.",
+        venture: venture,
+        sprint: sprint
+      ), at: 0)
+    }
     save()
     return true
   }
@@ -2059,7 +2166,10 @@ final class GameStore {
       awaitingThesisSelection: awaitingThesisSelection,
       pendingChapterMilestone: pendingChapterMilestone,
       techComHeadlines: techComHeadlines,
-      techComRivals: techComRivals
+      techComRivals: techComRivals,
+      latentDefects: latentDefects,
+      poachingOffer: poachingOffer,
+      exposedRivalIDs: exposedRivalIDs
     )
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {

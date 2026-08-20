@@ -1240,6 +1240,9 @@ struct CareerSave: Codable {
   var pendingChapterMilestone: ChapterMilestone?
   var techComHeadlines: [TechComHeadline]
   var techComRivals: [TechComRival]
+  var latentDefects: [LatentDefect]
+  var poachingOffer: PoachingOffer?
+  var exposedRivalIDs: Set<String>
 
   private enum CodingKeys: String, CodingKey {
     case founderName, doctrine, productType, talentBoardRefreshes, sprint, venture, intent, stats, agents, tasks
@@ -1249,7 +1252,7 @@ struct CareerSave: Codable {
     case careerMode, pendingVentureCheckpoint
     case recentTaskTitles, taskDeckTitles, dilemmaDeckTemplateIDs, dilemmaDeckChapter
     case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, completedVentureObjectives, ventureObjective, thesis, thesisHistory, awaitingThesisSelection, pendingChapterMilestone
-    case techComHeadlines, techComRivals
+    case techComHeadlines, techComRivals, latentDefects, poachingOffer, exposedRivalIDs
   }
 
   init(
@@ -1295,7 +1298,10 @@ struct CareerSave: Codable {
     awaitingThesisSelection: Bool = false,
     pendingChapterMilestone: ChapterMilestone? = nil,
     techComHeadlines: [TechComHeadline] = [],
-    techComRivals: [TechComRival] = []
+    techComRivals: [TechComRival] = [],
+    latentDefects: [LatentDefect] = [],
+    poachingOffer: PoachingOffer? = nil,
+    exposedRivalIDs: Set<String> = []
   ) {
     self.founderName = founderName
     self.doctrine = doctrine
@@ -1340,6 +1346,9 @@ struct CareerSave: Codable {
     self.pendingChapterMilestone = pendingChapterMilestone
     self.techComHeadlines = techComHeadlines
     self.techComRivals = techComRivals
+    self.latentDefects = latentDefects
+    self.poachingOffer = poachingOffer
+    self.exposedRivalIDs = exposedRivalIDs
   }
 
   init(from decoder: Decoder) throws {
@@ -1399,6 +1408,9 @@ struct CareerSave: Codable {
     pendingChapterMilestone = try container.decodeIfPresent(ChapterMilestone.self, forKey: .pendingChapterMilestone)
     techComHeadlines = try container.decodeIfPresent([TechComHeadline].self, forKey: .techComHeadlines) ?? []
     techComRivals = try container.decodeIfPresent([TechComRival].self, forKey: .techComRivals) ?? []
+    latentDefects = try container.decodeIfPresent([LatentDefect].self, forKey: .latentDefects) ?? []
+    poachingOffer = try container.decodeIfPresent(PoachingOffer.self, forKey: .poachingOffer)
+    exposedRivalIDs = try container.decodeIfPresent(Set<String>.self, forKey: .exposedRivalIDs) ?? []
   }
 }
 

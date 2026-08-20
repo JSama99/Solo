@@ -16,6 +16,38 @@ import Foundation
 /// where the code lives, not what it computes or when it draws randomness.
 enum SimulationEngine {
 
+  static func latentDefect(
+    careerSeed: UInt64,
+    venture: Int,
+    sprint: Int,
+    careerSprint: Int,
+    task: SoloTask,
+    agent: SoloAgent,
+    result: TaskResult
+  ) -> LatentDefect? {
+    guard result.evidenceCompleteness < 70 else { return nil }
+    var key = careerSeed ^ UInt64(venture * 10_000 + sprint * 100)
+    for byte in "\(task.id.uuidString)|\(agent.id)|correlation".utf8 {
+      key ^= UInt64(byte)
+      key &*= 0x100000001B3
+    }
+    let roll = Double(SeededRandomNumberGenerator.mixed(key) >> 11) / Double(1 << 53)
+    let probability = min(0.72, max(0, Double(70 - result.evidenceCompleteness) / 100))
+    guard roll < probability else { return nil }
+    let delay = 2 + Int(SeededRandomNumberGenerator.mixed(key ^ 0x444546454354) % 3)
+    let severity = max(6, (70 - result.evidenceCompleteness) / 2 + Int(SeededRandomNumberGenerator.mixed(key ^ 0x5345564552495459) % 7))
+    return LatentDefect(
+      id: "DEF-V\(venture)-S\(sprint)-\(String(SeededRandomNumberGenerator.mixed(key), radix: 16))",
+      originVenture: venture,
+      originSprint: sprint,
+      originTaskTitle: task.title,
+      originAgentName: agent.name,
+      originEvidenceCompleteness: result.evidenceCompleteness,
+      surfacesAtCareerSprint: careerSprint + delay,
+      severity: severity
+    )
+  }
+
   /// Whether a correlated-failure event fires this sprint, and which model
   /// family it targets. 24% chance, matching Build 4 exactly.
   static func generateCorrelatedFailureEvent(
