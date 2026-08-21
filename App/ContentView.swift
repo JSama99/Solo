@@ -109,6 +109,7 @@ private struct TitleScreen: View {
                 .zIndex(1)
               TitleAgentBadge(agentID: "brio", name: "Brio", accent: SoloTheme.coral)
             }
+            .dynamicTypeSize(...DynamicTypeSize.large)
           }
           VStack(spacing: 8) {
             Text("SOLO:")
