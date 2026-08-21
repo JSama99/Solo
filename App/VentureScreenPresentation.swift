@@ -226,3 +226,70 @@ struct VentureScreenPresentation: Equatable {
     }
   }
 }
+
+/// A presentation-only checkpoint used to determine which company changes deserve
+/// motion. It is intentionally neither Codable nor persisted: simulation state is
+/// always owned by `GameStore`.
+struct VentureMotionSnapshot: Equatable {
+  var venture: Int
+  var sprint: Int
+  var evidence: Int
+  var trackRecord: Int
+  var chapter: Int
+  var objectiveProgress: Double
+  var objectiveComplete: Bool
+  var consequenceIDs: Set<String>
+  var upgradeIDs: Set<String>
+  var thesisName: String
+  var doctrineName: String
+
+  init(_ presentation: VentureScreenPresentation) {
+    venture = presentation.venture
+    sprint = presentation.sprint
+    evidence = presentation.evidence
+    trackRecord = presentation.trackRecord
+    chapter = presentation.chapterNumber
+    objectiveProgress = presentation.objective.progress
+    objectiveComplete = presentation.objective.isComplete
+    consequenceIDs = Set(presentation.consequences.map(\.id))
+    upgradeIDs = Set(presentation.upgrades.map(\.id))
+    thesisName = presentation.thesisName
+    doctrineName = presentation.doctrine.name
+  }
+}
+
+/// Semantic changes between two Venture presentations. Views consume these
+/// events, but they never feed back into gameplay or save data.
+struct VentureMotionEvents: Equatable {
+  struct SprintAdvance: Equatable {
+    var from: Int
+    var to: Int
+  }
+
+  var sprintAdvance: SprintAdvance?
+  var evidenceGain: Int
+  var trackRecordDelta: Int
+  var objectiveProgressIncreased: Bool
+  var objectiveCompleted: Bool
+  var chapterAdvanced: Bool
+  var newConsequenceIDs: Set<String>
+  var newUpgradeIDs: Set<String>
+  var thesisChanged: Bool
+  var doctrineChanged: Bool
+
+  init(previous: VentureMotionSnapshot, current: VentureMotionSnapshot) {
+    let isSameVenture = previous.venture == current.venture
+    sprintAdvance = isSameVenture && current.sprint > previous.sprint
+      ? SprintAdvance(from: previous.sprint, to: current.sprint)
+      : nil
+    evidenceGain = max(0, current.evidence - previous.evidence)
+    trackRecordDelta = current.trackRecord - previous.trackRecord
+    objectiveProgressIncreased = isSameVenture && current.objectiveProgress > previous.objectiveProgress
+    objectiveCompleted = isSameVenture && !previous.objectiveComplete && current.objectiveComplete
+    chapterAdvanced = isSameVenture && current.chapter > previous.chapter
+    newConsequenceIDs = current.consequenceIDs.subtracting(previous.consequenceIDs)
+    newUpgradeIDs = current.upgradeIDs.subtracting(previous.upgradeIDs)
+    thesisChanged = previous.thesisName != current.thesisName
+    doctrineChanged = previous.doctrineName != current.doctrineName
+  }
+}

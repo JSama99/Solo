@@ -81,6 +81,50 @@ final class VentureScreenPresentationTests: XCTestCase {
     XCTAssertEqual(presentation.upgrades.map(\.symbol), [GarageUpgrade.strategyWall.symbol, GarageUpgrade.evidenceShelf.symbol])
   }
 
+  func testMotionEventsDeriveOnlyForwardCompanyChanges() {
+    let previous = VentureMotionSnapshot(makePresentation(
+      sprint: 4,
+      chapter: .firstCustomers,
+      objectiveProgress: 0.62,
+      flags: [],
+      upgrades: []
+    ))
+    let current = VentureMotionSnapshot(makePresentation(
+      sprint: 5,
+      chapter: .firstCustomers,
+      objectiveProgress: 0.74,
+      flags: [.evidenceLedClaims],
+      upgrades: [.evidenceShelf]
+    ))
+
+    let events = VentureMotionEvents(previous: previous, current: current)
+    XCTAssertEqual(events.sprintAdvance, .init(from: 4, to: 5))
+    XCTAssertTrue(events.objectiveProgressIncreased)
+    XCTAssertFalse(events.objectiveCompleted)
+    XCTAssertEqual(events.newConsequenceIDs, ["flag-evidenceLedClaims"])
+    XCTAssertEqual(events.newUpgradeIDs, [GarageUpgrade.evidenceShelf.rawValue])
+  }
+
+  func testMotionEventsDetectObjectiveCompletionEdgeOnce() {
+    let active = VentureMotionSnapshot(makePresentation(objectiveProgress: 0.99))
+    let complete = VentureMotionSnapshot(makePresentation(objectiveProgress: 1))
+
+    XCTAssertTrue(VentureMotionEvents(previous: active, current: complete).objectiveCompleted)
+    XCTAssertFalse(VentureMotionEvents(previous: complete, current: complete).objectiveCompleted)
+  }
+
+  func testMotionEventsDoNotTreatNewVentureResetAsSprintOrObjectiveProgress() {
+    var previous = VentureMotionSnapshot(makePresentation(sprint: 12, objectiveProgress: 1))
+    var current = VentureMotionSnapshot(makePresentation(sprint: 1, objectiveProgress: 0.1))
+    previous.venture = 1
+    current.venture = 2
+
+    let events = VentureMotionEvents(previous: previous, current: current)
+    XCTAssertNil(events.sprintAdvance)
+    XCTAssertFalse(events.objectiveProgressIncreased)
+    XCTAssertFalse(events.objectiveCompleted)
+  }
+
   private func makePresentation(
     sprint: Int = 4,
     chapter: VentureChapter = .firstCustomers,

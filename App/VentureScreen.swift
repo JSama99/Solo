@@ -6,8 +6,21 @@ struct VentureScreen: View {
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var revealStage = 0
   @State private var didCaptureInitialState = false
-  @State private var knownConsequenceIDs = Set<String>()
+  @State private var isVisible = false
+  @State private var motionSnapshot: VentureMotionSnapshot?
   @State private var newConsequenceIDs = Set<String>()
+  @State private var newUpgradeIDs = Set<String>()
+  @State private var displayedSprint = 1
+  @State private var sprintPhase: SprintMotionPhase = .idle
+  @State private var sprintCycle = 0
+  @State private var evidenceFeedback = 0
+  @State private var trackRecordFeedback = 0
+  @State private var objectiveMotionFeedback = 0
+  @State private var chapterMotionFeedback = 0
+  @State private var thesisFeedback = 0
+  @State private var doctrineFeedback = 0
+  @State private var sprintFeedback = 0
+  @State private var consequenceFeedback = 0
   @State private var chapterFeedback = 0
   @State private var objectiveFeedback = 0
   @State private var pressurePhase: PressurePhase = .idle
@@ -22,18 +35,36 @@ struct VentureScreen: View {
     NavigationStack {
       ScrollView {
         VStack(spacing: 24) {
-          VentureStatusInstrument(presentation: state)
+          VentureStatusInstrument(
+            presentation: state,
+            displayedSprint: displayedSprint,
+            sprintPhase: sprintPhase,
+            evidenceFeedback: evidenceFeedback,
+            trackRecordFeedback: trackRecordFeedback,
+            reduceMotion: reduceMotion
+          )
             .ventureReveal(stage: revealStage, threshold: 1, reduceMotion: reduceMotion)
 
-          VentureChapterCard(presentation: state, reduceMotion: reduceMotion)
-            .id(state.chapterNumber)
-            .transition(chapterTransition)
+          VentureChapterCard(
+            presentation: state,
+            changeTrigger: chapterMotionFeedback,
+            reduceMotion: reduceMotion
+          )
             .ventureReveal(stage: revealStage, threshold: 2, reduceMotion: reduceMotion)
 
-          VentureObjectiveCard(objective: state.objective, reduceMotion: reduceMotion)
+          VentureObjectiveCard(
+            objective: state.objective,
+            changeTrigger: objectiveMotionFeedback,
+            reduceMotion: reduceMotion
+          )
             .ventureReveal(stage: revealStage, threshold: 3, reduceMotion: reduceMotion)
 
-          StrategicThesisCard(name: state.thesisName, detail: state.thesisDetail)
+          StrategicThesisCard(
+            name: state.thesisName,
+            detail: state.thesisDetail,
+            changeTrigger: thesisFeedback,
+            reduceMotion: reduceMotion
+          )
             .ventureReveal(stage: revealStage, threshold: 4, reduceMotion: reduceMotion)
 
           OperatingPressureCard(pressure: state.pressure, phase: pressurePhase)
@@ -46,10 +77,18 @@ struct VentureScreen: View {
           )
           .ventureReveal(stage: revealStage, threshold: 5, reduceMotion: reduceMotion)
 
-          GarageInfrastructureSection(upgrades: state.upgrades)
+          GarageInfrastructureSection(
+            upgrades: state.upgrades,
+            newlyInstalledIDs: newUpgradeIDs,
+            reduceMotion: reduceMotion
+          )
             .ventureReveal(stage: revealStage, threshold: 5, reduceMotion: reduceMotion)
 
-          FounderDoctrineCard(doctrine: state.doctrine)
+          FounderDoctrineCard(
+            doctrine: state.doctrine,
+            changeTrigger: doctrineFeedback,
+            reduceMotion: reduceMotion
+          )
             .ventureReveal(stage: revealStage, threshold: 6, reduceMotion: reduceMotion)
 
           CareerObjectiveCard(text: state.careerObjective)
@@ -63,49 +102,93 @@ struct VentureScreen: View {
       .scrollIndicators(.hidden)
       .navigationTitle("Venture \(state.venture)")
       .navigationBarTitleDisplayMode(.inline)
-      .onAppear { captureInitialState(state) }
+      .onAppear { handleAppearance(state) }
+      .onDisappear { isVisible = false }
       .task { await revealScreenIfNeeded() }
-      .onChange(of: state.chapterNumber) { oldValue, newValue in
-        guard didCaptureInitialState, oldValue != newValue else { return }
-        chapterFeedback += 1
-      }
-      .onChange(of: state.objective.isComplete) { wasComplete, isComplete in
-        guard didCaptureInitialState, !wasComplete, isComplete else { return }
-        objectiveFeedback += 1
-      }
-      .onChange(of: state.sprint) { oldValue, newValue in
-        guard didCaptureInitialState, oldValue != newValue else { return }
-        runPressureSequence()
-      }
-      .onChange(of: Set(state.consequences.map(\.id))) { _, currentIDs in
-        guard didCaptureInitialState else { return }
-        let additions = currentIDs.subtracting(knownConsequenceIDs)
-        knownConsequenceIDs = currentIDs
-        guard !additions.isEmpty else { return }
-        newConsequenceIDs = additions
-        Task { @MainActor in
-          try? await Task.sleep(for: .milliseconds(900))
-          newConsequenceIDs.subtract(additions)
-        }
-      }
-      .sensoryFeedback(.success, trigger: chapterFeedback)
-      .sensoryFeedback(.success, trigger: objectiveFeedback)
+      .onChange(of: state) { _, current in processChange(current) }
+      .sensoryFeedback(.impact(weight: .medium), trigger: sprintFeedback)
+      .sensoryFeedback(.impact(weight: .medium), trigger: consequenceFeedback)
+      .sensoryFeedback(.impact(weight: .heavy, intensity: 0.78), trigger: chapterFeedback)
+      .sensoryFeedback(.impact(weight: .heavy, intensity: 0.68), trigger: objectiveFeedback)
     }
-  }
-
-  private var chapterTransition: AnyTransition {
-    reduceMotion
-      ? .opacity
-      : .asymmetric(
-        insertion: .opacity.combined(with: .offset(y: 14)),
-        removal: .opacity.combined(with: .offset(y: -8))
-      )
   }
 
   private func captureInitialState(_ state: VentureScreenPresentation) {
     guard !didCaptureInitialState else { return }
-    knownConsequenceIDs = Set(state.consequences.map(\.id))
+    motionSnapshot = VentureMotionSnapshot(state)
+    displayedSprint = state.sprint
     didCaptureInitialState = true
+  }
+
+  private func handleAppearance(_ state: VentureScreenPresentation) {
+    isVisible = true
+    if didCaptureInitialState {
+      processChange(state)
+    } else {
+      captureInitialState(state)
+    }
+  }
+
+  private func processChange(_ state: VentureScreenPresentation) {
+    guard isVisible else { return }
+    let current = VentureMotionSnapshot(state)
+    guard didCaptureInitialState, let previous = motionSnapshot else {
+      motionSnapshot = current
+      displayedSprint = state.sprint
+      return
+    }
+    motionSnapshot = current
+    let events = VentureMotionEvents(previous: previous, current: current)
+
+    if let advance = events.sprintAdvance {
+      runSprintSequence(advance)
+      runPressureSequence()
+    } else if previous.venture != current.venture || previous.sprint != current.sprint {
+      displayedSprint = current.sprint
+    }
+    if events.evidenceGain > 0 { evidenceFeedback += 1 }
+    if events.trackRecordDelta != 0 { trackRecordFeedback += 1 }
+    if previous.objectiveProgress != current.objectiveProgress { objectiveMotionFeedback += 1 }
+    if events.chapterAdvanced { chapterMotionFeedback += 1 }
+    if events.thesisChanged { thesisFeedback += 1 }
+    if events.doctrineChanged { doctrineFeedback += 1 }
+    presentNewConsequences(events.newConsequenceIDs)
+    presentNewUpgrades(events.newUpgradeIDs)
+
+    // One haptic per causal batch; the most important company event wins.
+    if events.chapterAdvanced {
+      Task { @MainActor in
+        try? await Task.sleep(for: .milliseconds(reduceMotion ? 120 : 350))
+        chapterFeedback += 1
+      }
+    } else if events.objectiveCompleted {
+      Task { @MainActor in
+        try? await Task.sleep(for: .milliseconds(reduceMotion ? 160 : 730))
+        objectiveFeedback += 1
+      }
+    } else if !events.newConsequenceIDs.isEmpty {
+      consequenceFeedback += 1
+    } else if events.sprintAdvance != nil {
+      sprintFeedback += 1
+    }
+  }
+
+  private func presentNewConsequences(_ additions: Set<String>) {
+    guard !additions.isEmpty else { return }
+    newConsequenceIDs.formUnion(additions)
+    Task { @MainActor in
+      try? await Task.sleep(for: .milliseconds(1_050))
+      newConsequenceIDs.subtract(additions)
+    }
+  }
+
+  private func presentNewUpgrades(_ additions: Set<String>) {
+    guard !additions.isEmpty else { return }
+    newUpgradeIDs.formUnion(additions)
+    Task { @MainActor in
+      try? await Task.sleep(for: .milliseconds(900))
+      newUpgradeIDs.subtract(additions)
+    }
   }
 
   @MainActor
@@ -116,8 +199,38 @@ struct VentureScreen: View {
       return
     }
     for stage in 1...6 {
-      withAnimation(.smooth(duration: 0.42)) { revealStage = stage }
-      try? await Task.sleep(for: .milliseconds(85))
+      withAnimation(VentureMotion.standard) { revealStage = stage }
+      try? await Task.sleep(for: VentureMotion.stagger)
+    }
+  }
+
+  private func runSprintSequence(_ advance: VentureMotionEvents.SprintAdvance) {
+    sprintCycle += 1
+    let cycle = sprintCycle
+    displayedSprint = advance.from
+    if reduceMotion {
+      sprintPhase = .activating
+      displayedSprint = advance.to
+      Task { @MainActor in
+        try? await Task.sleep(for: .milliseconds(240))
+        if sprintCycle == cycle { sprintPhase = .idle }
+      }
+      return
+    }
+    withAnimation(VentureMotion.fast) { sprintPhase = .resolving }
+    Task { @MainActor in
+      try? await Task.sleep(for: .milliseconds(150))
+      guard sprintCycle == cycle else { return }
+      withAnimation(VentureMotion.marker) {
+        sprintPhase = .advancing
+        displayedSprint = advance.to
+      }
+      try? await Task.sleep(for: .milliseconds(360))
+      guard sprintCycle == cycle else { return }
+      withAnimation(VentureMotion.fast) { sprintPhase = .activating }
+      try? await Task.sleep(for: .milliseconds(180))
+      guard sprintCycle == cycle else { return }
+      withAnimation(VentureMotion.fast) { sprintPhase = .idle }
     }
   }
 
@@ -134,17 +247,24 @@ struct VentureScreen: View {
     }
     withAnimation(.smooth(duration: 0.2)) { pressurePhase = .runway }
     Task { @MainActor in
-      try? await Task.sleep(for: .milliseconds(260))
+      try? await Task.sleep(for: .milliseconds(130))
       guard pressureCycle == cycle else { return }
       withAnimation(.smooth(duration: 0.2)) { pressurePhase = .energy }
-      try? await Task.sleep(for: .milliseconds(300))
+      try? await Task.sleep(for: .milliseconds(260))
       guard pressureCycle == cycle else { return }
       withAnimation(.smooth(duration: 0.25)) { pressurePhase = .idle }
     }
   }
 }
 
-private enum PressurePhase {
+private enum SprintMotionPhase: Equatable {
+  case idle
+  case resolving
+  case advancing
+  case activating
+}
+
+private enum PressurePhase: Equatable {
   case idle
   case runway
   case energy
@@ -153,6 +273,11 @@ private enum PressurePhase {
 
 private struct VentureStatusInstrument: View {
   var presentation: VentureScreenPresentation
+  var displayedSprint: Int
+  var sprintPhase: SprintMotionPhase
+  var evidenceFeedback: Int
+  var trackRecordFeedback: Int
+  var reduceMotion: Bool
   @Environment(\.colorSchemeContrast) private var contrast
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -172,24 +297,26 @@ private struct VentureStatusInstrument: View {
           .font(.caption.weight(.black))
           .tracking(2.4)
           .foregroundStyle(SoloTheme.amber)
-        Text(presentation.sprint, format: .number.precision(.integerLength(2)))
+        Text(displayedSprint, format: .number.precision(.integerLength(2)))
           .font(.system(size: 66, weight: .black, design: .rounded))
           .monospacedDigit()
           .foregroundStyle(.white)
-          .contentTransition(.numericText(value: Double(presentation.sprint)))
+          .contentTransition(.numericText(value: Double(displayedSprint)))
+          .animation(reduceMotion ? .easeOut(duration: 0.14) : VentureMotion.marker, value: displayedSprint)
         Text("OF \(presentation.totalSprints)")
           .font(.subheadline.weight(.bold))
           .tracking(1.5)
           .foregroundStyle(.secondary)
       }
       .accessibilityElement(children: .ignore)
-      .accessibilityLabel("Sprint \(presentation.sprint) of \(presentation.totalSprints)")
-      .accessibilityValue("\(presentation.completedSprints) sprints completed")
+      .accessibilityLabel("Sprint \(displayedSprint) of \(presentation.totalSprints)")
+      .accessibilityValue("\(max(0, displayedSprint - 1)) sprints completed")
 
       SprintProgressTrack(
-        segments: presentation.sprintSegments,
-        currentSprint: presentation.sprint,
-        totalSprints: presentation.totalSprints
+        currentSprint: displayedSprint,
+        totalSprints: presentation.totalSprints,
+        phase: sprintPhase,
+        reduceMotion: reduceMotion
       )
 
       Group {
@@ -258,7 +385,9 @@ private struct VentureStatusInstrument: View {
       title: "EVIDENCE",
       value: presentation.evidence,
       symbol: "checkmark.seal.fill",
-      color: SoloTheme.mint
+      color: SoloTheme.mint,
+      feedbackTrigger: evidenceFeedback,
+      feedbackKind: .evidence
     )
     if !dynamicTypeSize.isAccessibilitySize {
       Divider().overlay(.white.opacity(0.12)).frame(height: 42)
@@ -267,7 +396,9 @@ private struct VentureStatusInstrument: View {
       title: "TRACK RECORD",
       value: presentation.trackRecord,
       symbol: "chart.line.uptrend.xyaxis",
-      color: SoloTheme.cyan
+      color: SoloTheme.cyan,
+      feedbackTrigger: trackRecordFeedback,
+      feedbackKind: .trackRecord
     )
   }
 
@@ -282,75 +413,142 @@ private struct VentureStatusInstrument: View {
 }
 
 private struct InstrumentMetric: View {
+  enum FeedbackKind: Equatable {
+    case evidence
+    case trackRecord
+  }
+
   var title: String
   var value: Int
   var symbol: String
   var color: Color
+  var feedbackTrigger: Int
+  var feedbackKind: FeedbackKind
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @State private var displayedValue: Int
+  @State private var feedbackActive = false
+
+  init(
+    title: String,
+    value: Int,
+    symbol: String,
+    color: Color,
+    feedbackTrigger: Int,
+    feedbackKind: FeedbackKind
+  ) {
+    self.title = title
+    self.value = value
+    self.symbol = symbol
+    self.color = color
+    self.feedbackTrigger = feedbackTrigger
+    self.feedbackKind = feedbackKind
+    _displayedValue = State(initialValue: value)
+  }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 5) {
       Label(title, systemImage: symbol)
         .font(.caption2.weight(.bold))
         .foregroundStyle(.secondary)
-      Text(value, format: .number.precision(.integerLength(2)))
+      Text(displayedValue, format: .number.precision(.integerLength(2)))
         .font(.title2.weight(.black).monospacedDigit())
         .foregroundStyle(color)
-        .contentTransition(.numericText(value: Double(value)))
+        .contentTransition(.numericText(value: Double(displayedValue)))
+        .animation(reduceMotion ? .easeOut(duration: 0.14) : VentureMotion.standard, value: displayedValue)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(.vertical, 3)
+    .padding(.horizontal, 5)
+    .background(color.opacity(feedbackActive ? 0.14 : 0), in: .rect(cornerRadius: 9))
+    .overlay(alignment: .topTrailing) {
+      if feedbackActive && feedbackKind == .evidence {
+        Image(systemName: "checkmark.seal.fill")
+          .font(.caption)
+          .foregroundStyle(color)
+          .offset(y: reduceMotion ? 0 : -8)
+          .transition(.opacity)
+          .accessibilityHidden(true)
+      }
+    }
+    .onChange(of: feedbackTrigger) { _, _ in runFeedback() }
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(title.capitalized)
-    .accessibilityValue("\(value)")
+    .accessibilityValue("\(displayedValue)")
+  }
+
+  private func runFeedback() {
+    withAnimation(reduceMotion ? .easeOut(duration: 0.12) : VentureMotion.fast) {
+      displayedValue = value
+      feedbackActive = true
+    }
+    Task { @MainActor in
+      try? await Task.sleep(for: .milliseconds(feedbackKind == .evidence ? 360 : 260))
+      withAnimation(.easeOut(duration: 0.18)) { feedbackActive = false }
+    }
   }
 }
 
 private struct SprintProgressTrack: View {
-  var segments: [VentureScreenPresentation.SprintSegment]
   var currentSprint: Int
   var totalSprints: Int
+  var phase: SprintMotionPhase
+  var reduceMotion: Bool
 
   var body: some View {
-    HStack(spacing: 5) {
-      ForEach(segments) { segment in
-        Capsule()
-          .fill(color(for: segment.state))
-          .frame(maxWidth: .infinity)
-          .frame(height: segment.state == .current ? 9 : 5)
-          .overlay {
-            if segment.state == .current {
-              Capsule().stroke(.white.opacity(0.7), lineWidth: 1)
-            }
+    GeometryReader { proxy in
+      let spacing: CGFloat = 5
+      let width = max(1, (proxy.size.width - spacing * CGFloat(max(0, totalSprints - 1))) / CGFloat(max(1, totalSprints)))
+      ZStack(alignment: .leading) {
+        HStack(spacing: spacing) {
+          ForEach(1...max(1, totalSprints), id: \.self) { sprint in
+            Capsule()
+              .fill(sprint < currentSprint ? SoloTheme.cyan.opacity(0.72) : .white.opacity(0.14))
+              .frame(maxWidth: .infinity)
+              .frame(height: sprint < currentSprint ? 5 : 4)
           }
-          .animation(.smooth(duration: 0.35), value: segment.state)
-          .accessibilityHidden(true)
+        }
+        Capsule()
+          .fill(SoloTheme.amber)
+          .frame(width: width, height: phase == .activating && !reduceMotion ? 10 : 8)
+          .overlay { Capsule().stroke(.white.opacity(0.72), lineWidth: 1) }
+          .shadow(color: SoloTheme.amber.opacity(phase == .idle ? 0.22 : 0.58), radius: phase == .idle ? 3 : 7)
+          .scaleEffect(x: phase == .resolving ? 1.06 : 1, y: phase == .activating ? 1.12 : 1)
+          .offset(x: CGFloat(max(0, currentSprint - 1)) * (width + spacing))
+          .animation(reduceMotion ? .easeOut(duration: 0.14) : VentureMotion.marker, value: currentSprint)
+          .animation(reduceMotion ? nil : VentureMotion.fast, value: phase)
       }
     }
-    .frame(height: 10)
+    .frame(height: 12)
     .accessibilityElement(children: .ignore)
     .accessibilityLabel("Sprint timeline")
     .accessibilityValue("Sprint \(currentSprint) of \(totalSprints); \(max(0, currentSprint - 1)) completed")
-  }
-
-  private func color(for state: VentureScreenPresentation.SprintSegment.State) -> Color {
-    switch state {
-    case .completed: SoloTheme.cyan
-    case .current: SoloTheme.amber
-    case .upcoming: .white.opacity(0.16)
-    }
   }
 }
 
 private struct VentureChapterCard: View {
   var presentation: VentureScreenPresentation
+  var changeTrigger: Int
   var reduceMotion: Bool
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @State private var displayedPresentation: VentureScreenPresentation
+  @State private var revealPhase: ChapterRevealPhase = .settled
+  @State private var transitionCycle = 0
+
+  init(presentation: VentureScreenPresentation, changeTrigger: Int, reduceMotion: Bool) {
+    self.presentation = presentation
+    self.changeTrigger = changeTrigger
+    self.reduceMotion = reduceMotion
+    _displayedPresentation = State(initialValue: presentation)
+  }
 
   var body: some View {
     ZStack(alignment: .trailing) {
-      ChapterSignalMotif(chapter: presentation.chapterNumber)
+      ChapterSignalMotif(chapter: displayedPresentation.chapterNumber)
+        .opacity(revealPhase == .closing ? 0.35 : 1)
+        .scaleEffect(revealPhase == .closing && !reduceMotion ? 0.97 : 1)
         .accessibilityHidden(true)
 
-      Text("\(presentation.chapterNumber)")
+      Text("\(displayedPresentation.chapterNumber)")
         .font(.system(size: 132, weight: .black, design: .rounded))
         .foregroundStyle(SoloTheme.amber.opacity(0.075))
         .offset(x: 8, y: 8)
@@ -364,13 +562,16 @@ private struct VentureChapterCard: View {
             HStack { chapterHeader }
           }
         }
-        Text(presentation.chapterTitle)
+        .opacity(showsChapterLabel ? 1 : 0)
+        Text(displayedPresentation.chapterTitle)
           .font(.title.bold())
           .contentTransition(.interpolate)
-        Text(presentation.chapterDetail)
+          .opacity(showsTitle ? 1 : 0)
+        Text(displayedPresentation.chapterDetail)
           .font(.callout)
           .foregroundStyle(.secondary)
           .fixedSize(horizontal: false, vertical: true)
+          .opacity(showsDetail ? 1 : 0)
         Text("IN PROGRESS")
           .font(.caption2.weight(.black))
           .tracking(1)
@@ -378,18 +579,81 @@ private struct VentureChapterCard: View {
           .padding(.horizontal, 9)
           .padding(.vertical, 5)
           .background(SoloTheme.amber.opacity(0.12), in: .capsule)
+          .opacity(showsDetail ? 1 : 0)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
     }
     .padding(20)
     .frame(minHeight: 190)
     .ventureHeroSurface(accent: SoloTheme.amber)
+    .opacity(revealPhase == .closing ? 0.72 : 1)
+    .offset(y: reduceMotion ? 0 : verticalOffset)
+    .animation(reduceMotion ? .easeOut(duration: 0.16) : VentureMotion.standard, value: revealPhase)
+    .onChange(of: presentation) { _, newValue in
+      guard newValue.chapterNumber == displayedPresentation.chapterNumber else { return }
+      guard revealPhase == .settled else { return }
+        displayedPresentation = newValue
+    }
+    .onChange(of: changeTrigger) { _, _ in runChapterTransition(to: presentation) }
     .accessibilityElement(children: .combine)
-    .accessibilityLabel("Chapter \(presentation.chapterNumber), \(presentation.chapterTitle). \(presentation.chapterDetail). \(presentation.chapterProgressLabel)")
+    .accessibilityLabel("Chapter \(displayedPresentation.chapterNumber), \(displayedPresentation.chapterTitle). \(displayedPresentation.chapterDetail). \(displayedPresentation.chapterProgressLabel)")
+  }
+
+  private var showsChapterLabel: Bool {
+    revealPhase != .closing
+  }
+
+  private var showsTitle: Bool {
+    revealPhase == .title || revealPhase == .detail || revealPhase == .settled
+  }
+
+  private var showsDetail: Bool {
+    revealPhase == .detail || revealPhase == .settled
+  }
+
+  private var verticalOffset: CGFloat {
+    switch revealPhase {
+    case .settled: 0
+    case .closing: -7
+    case .chapter: 10
+    case .title: 5
+    case .detail: 1
+    }
+  }
+
+  private func runChapterTransition(to newValue: VentureScreenPresentation) {
+    transitionCycle += 1
+    let cycle = transitionCycle
+    if reduceMotion {
+      withAnimation(.easeOut(duration: 0.12)) { revealPhase = .closing }
+      Task { @MainActor in
+        try? await Task.sleep(for: .milliseconds(120))
+        guard transitionCycle == cycle else { return }
+        displayedPresentation = newValue
+        withAnimation(.easeOut(duration: 0.16)) { revealPhase = .settled }
+      }
+      return
+    }
+    withAnimation(VentureMotion.fast) { revealPhase = .closing }
+    Task { @MainActor in
+      try? await Task.sleep(for: .milliseconds(180))
+      guard transitionCycle == cycle else { return }
+      displayedPresentation = newValue
+      withAnimation(VentureMotion.fast) { revealPhase = .chapter }
+      try? await Task.sleep(for: .milliseconds(170))
+      guard transitionCycle == cycle else { return }
+      withAnimation(VentureMotion.standard) { revealPhase = .title }
+      try? await Task.sleep(for: .milliseconds(170))
+      guard transitionCycle == cycle else { return }
+      withAnimation(VentureMotion.standard) { revealPhase = .detail }
+      try? await Task.sleep(for: .milliseconds(280))
+      guard transitionCycle == cycle else { return }
+      revealPhase = .settled
+    }
   }
 
   private var chapterSymbol: String {
-    switch presentation.chapterNumber {
+    switch displayedPresentation.chapterNumber {
     case 1: "hammer.fill"
     case 2: "person.2.wave.2.fill"
     case 3: "megaphone.fill"
@@ -399,17 +663,25 @@ private struct VentureChapterCard: View {
 
   @ViewBuilder
   private var chapterHeader: some View {
-    Label("CHAPTER \(presentation.chapterNumber)", systemImage: chapterSymbol)
+    Label("CHAPTER \(displayedPresentation.chapterNumber)", systemImage: chapterSymbol)
       .font(.caption.weight(.black))
       .tracking(1.2)
       .foregroundStyle(SoloTheme.amber)
       .fixedSize(horizontal: false, vertical: true)
     if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 4) }
-    Text(presentation.chapterProgressLabel)
+    Text(displayedPresentation.chapterProgressLabel)
       .font(.caption2.weight(.semibold))
       .foregroundStyle(.secondary)
       .fixedSize(horizontal: false, vertical: true)
   }
+}
+
+private enum ChapterRevealPhase: Equatable {
+  case settled
+  case closing
+  case chapter
+  case title
+  case detail
 }
 
 private struct ChapterSignalMotif: View {
@@ -434,10 +706,21 @@ private struct ChapterSignalMotif: View {
 
 private struct VentureObjectiveCard: View {
   var objective: VentureScreenPresentation.Objective
+  var changeTrigger: Int
   var reduceMotion: Bool
-  @State private var displayedProgress = 0.0
-  @State private var completionSweep = false
+  @State private var displayedProgress: Double
+  @State private var completionStage: ObjectiveCompletionStage
+  @State private var sweepProgress = 0.0
+  @State private var completionCycle = 0
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+  init(objective: VentureScreenPresentation.Objective, changeTrigger: Int, reduceMotion: Bool) {
+    self.objective = objective
+    self.changeTrigger = changeTrigger
+    self.reduceMotion = reduceMotion
+    _displayedProgress = State(initialValue: objective.progress)
+    _completionStage = State(initialValue: objective.isComplete ? .resolved : .active)
+  }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 14) {
@@ -457,7 +740,10 @@ private struct VentureObjectiveCard: View {
           .fixedSize(horizontal: false, vertical: true)
       }
 
-      ObjectiveProgressTrack(progress: displayedProgress, sweep: completionSweep && !reduceMotion)
+      ObjectiveProgressTrack(
+        progress: displayedProgress,
+        sweepProgress: completionStage == .sweeping && !reduceMotion ? sweepProgress : nil
+      )
 
       Group {
         if dynamicTypeSize.isAccessibilitySize {
@@ -469,18 +755,20 @@ private struct VentureObjectiveCard: View {
     }
     .padding(20)
     .ventureHeroSurface(accent: SoloTheme.mint)
-    .onAppear { displayedProgress = objective.progress }
-    .onChange(of: objective.progress) { oldValue, newValue in
+    .onChange(of: changeTrigger) { _, _ in
+      let oldValue = displayedProgress
+      let newValue = objective.progress
       guard oldValue != newValue else { return }
-      withAnimation(reduceMotion ? .linear(duration: 0.15) : .smooth(duration: 0.55)) {
+      if newValue < oldValue {
+        displayedProgress = newValue
+        completionStage = objective.isComplete ? .resolved : .active
+        return
+      }
+      withAnimation(reduceMotion ? .easeOut(duration: 0.15) : VentureMotion.progress) {
         displayedProgress = newValue
       }
-      guard newValue >= 1, oldValue < 1, !reduceMotion else { return }
-      completionSweep = true
-      Task { @MainActor in
-        try? await Task.sleep(for: .milliseconds(650))
-        completionSweep = false
-      }
+      guard newValue >= 1, oldValue < 1 else { return }
+      runCompletionSequence()
     }
     .accessibilityElement(children: .combine)
     .accessibilityLabel("Venture objective, \(objective.title). \(objective.detail)")
@@ -489,44 +777,94 @@ private struct VentureObjectiveCard: View {
 
   @ViewBuilder
   private var objectiveHeader: some View {
-        Label("VENTURE OBJECTIVE", systemImage: objective.isComplete ? "checkmark.seal.fill" : "target")
+        Label("VENTURE OBJECTIVE", systemImage: completionStage == .resolved ? "checkmark.seal.fill" : "target")
           .font(.caption.weight(.black))
           .tracking(1.1)
           .foregroundStyle(SoloTheme.mint)
-          .symbolEffect(.bounce, value: objective.isComplete)
+          .contentTransition(reduceMotion ? .opacity : .symbolEffect(.replace))
+          .fixedSize(horizontal: false, vertical: true)
         if !dynamicTypeSize.isAccessibilitySize { Spacer() }
-        Text("\(objective.percentage)%")
+        Text("\(displayedPercentage)%")
           .font(.title3.weight(.black).monospacedDigit())
-          .foregroundStyle(objective.isComplete ? SoloTheme.mint : .primary)
-          .contentTransition(.numericText(value: Double(objective.percentage)))
+          .foregroundStyle(completionStage == .resolved ? SoloTheme.mint : .primary)
+          .contentTransition(.numericText(value: Double(displayedPercentage)))
   }
 
   @ViewBuilder
   private var objectiveFooter: some View {
-        if objective.isComplete {
+        if completionStage == .resolved {
           Text("OBJECTIVE COMPLETE")
             .font(.caption.weight(.black))
             .tracking(0.9)
             .foregroundStyle(SoloTheme.mint)
             .transition(.opacity)
         } else {
-          Text("\(objective.percentage)% COMPLETE")
+          Text("\(displayedPercentage)% COMPLETE")
             .font(.caption.weight(.bold))
             .foregroundStyle(.secondary)
         }
         if !dynamicTypeSize.isAccessibilitySize { Spacer() }
-        Label(objective.reward, systemImage: "gift.fill")
+        Label(
+          completionStage == .resolved ? "\(objective.reward) · APPLIED" : objective.reward,
+          systemImage: "gift.fill"
+        )
           .font(.caption.weight(.bold))
-          .foregroundStyle(objective.isComplete ? .black : SoloTheme.mint)
+          .fixedSize(horizontal: false, vertical: true)
+          .foregroundStyle(rewardEmphasized ? .black : SoloTheme.mint)
           .padding(.horizontal, 10)
           .padding(.vertical, 7)
-          .background(objective.isComplete ? SoloTheme.mint : SoloTheme.mint.opacity(0.1), in: .capsule)
+          .background(rewardEmphasized ? SoloTheme.mint : SoloTheme.mint.opacity(0.1), in: .capsule)
+          .scaleEffect(completionStage == .reward && !reduceMotion ? 1.045 : 1)
+          .animation(reduceMotion ? .easeOut(duration: 0.14) : VentureMotion.fast, value: completionStage)
   }
+
+  private var displayedPercentage: Int {
+    Int((displayedProgress * 100).rounded())
+  }
+
+  private var rewardEmphasized: Bool {
+    completionStage == .reward || completionStage == .resolved
+  }
+
+  private func runCompletionSequence() {
+    completionCycle += 1
+    let cycle = completionCycle
+    if reduceMotion {
+      Task { @MainActor in
+        try? await Task.sleep(for: .milliseconds(160))
+        guard completionCycle == cycle else { return }
+        withAnimation(.easeOut(duration: 0.18)) { completionStage = .resolved }
+      }
+      return
+    }
+    completionStage = .finishing
+    Task { @MainActor in
+      try? await Task.sleep(for: .milliseconds(430))
+      guard completionCycle == cycle else { return }
+      sweepProgress = 0
+      completionStage = .sweeping
+      withAnimation(.easeOut(duration: 0.28)) { sweepProgress = 1 }
+      try? await Task.sleep(for: .milliseconds(300))
+      guard completionCycle == cycle else { return }
+      withAnimation(VentureMotion.fast) { completionStage = .reward }
+      try? await Task.sleep(for: .milliseconds(210))
+      guard completionCycle == cycle else { return }
+      withAnimation(VentureMotion.fast) { completionStage = .resolved }
+    }
+  }
+}
+
+private enum ObjectiveCompletionStage: Equatable {
+  case active
+  case finishing
+  case sweeping
+  case reward
+  case resolved
 }
 
 private struct ObjectiveProgressTrack: View {
   var progress: Double
-  var sweep: Bool
+  var sweepProgress: Double?
 
   var body: some View {
     GeometryReader { proxy in
@@ -535,13 +873,13 @@ private struct ObjectiveProgressTrack: View {
         Capsule()
           .fill(LinearGradient(colors: [SoloTheme.cyan, SoloTheme.mint], startPoint: .leading, endPoint: .trailing))
           .frame(width: max(8, proxy.size.width * progress))
-        if sweep {
+        if let sweepProgress {
           Capsule()
             .fill(.white.opacity(0.75))
             .frame(width: 32)
             .blur(radius: 5)
-            .offset(x: proxy.size.width - 32)
-            .transition(.offset(x: -proxy.size.width))
+            .offset(x: (proxy.size.width - 32) * sweepProgress)
+            .accessibilityHidden(true)
         }
       }
     }
@@ -553,6 +891,20 @@ private struct ObjectiveProgressTrack: View {
 private struct StrategicThesisCard: View {
   var name: String
   var detail: String
+  var changeTrigger: Int
+  var reduceMotion: Bool
+  @State private var changeActive = false
+  @State private var displayedName: String
+  @State private var displayedDetail: String
+
+  init(name: String, detail: String, changeTrigger: Int, reduceMotion: Bool) {
+    self.name = name
+    self.detail = detail
+    self.changeTrigger = changeTrigger
+    self.reduceMotion = reduceMotion
+    _displayedName = State(initialValue: name)
+    _displayedDetail = State(initialValue: detail)
+  }
 
   var body: some View {
     HStack(alignment: .top, spacing: 16) {
@@ -561,6 +913,7 @@ private struct StrategicThesisCard: View {
         Image(systemName: "compass.drawing")
           .font(.title2)
           .foregroundStyle(SoloTheme.cyan)
+          .rotationEffect(.degrees(changeActive && !reduceMotion ? 10 : 0))
       }
       .frame(width: 48, height: 48)
       .accessibilityHidden(true)
@@ -570,15 +923,30 @@ private struct StrategicThesisCard: View {
           .font(.caption.weight(.black))
           .tracking(1)
           .foregroundStyle(SoloTheme.cyan)
-        Text(name).font(.title3.bold())
-        Text(detail).font(.callout).foregroundStyle(.secondary)
+        Text(displayedName).font(.title3.bold())
+          .contentTransition(.interpolate)
+          .fixedSize(horizontal: false, vertical: true)
+        Text(displayedDetail).font(.callout).foregroundStyle(.secondary)
+          .contentTransition(.opacity)
+          .fixedSize(horizontal: false, vertical: true)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
     }
     .padding(18)
     .ventureSystemSurface(accent: SoloTheme.cyan)
+    .onChange(of: changeTrigger) { _, _ in
+      withAnimation(reduceMotion ? .easeOut(duration: 0.14) : VentureMotion.fast) {
+        displayedName = name
+        displayedDetail = detail
+        changeActive = true
+      }
+      Task { @MainActor in
+        try? await Task.sleep(for: .milliseconds(280))
+        withAnimation(VentureMotion.fast) { changeActive = false }
+      }
+    }
     .accessibilityElement(children: .combine)
-    .accessibilityLabel("Active thesis: \(name). \(detail)")
+    .accessibilityLabel("Active thesis: \(displayedName). \(displayedDetail)")
   }
 }
 
@@ -600,6 +968,7 @@ private struct OperatingPressureCard: View {
       Text(pressure.detail)
         .font(.callout)
         .foregroundStyle(.secondary)
+        .fixedSize(horizontal: false, vertical: true)
 
       ViewThatFits(in: .horizontal) {
         HStack(spacing: 10) { pressureCosts }
@@ -609,6 +978,7 @@ private struct OperatingPressureCard: View {
       Text(pressure.milestoneStatus)
         .font(.caption)
         .foregroundStyle(.secondary)
+        .fixedSize(horizontal: false, vertical: true)
     }
     .padding(18)
     .ventureSystemSurface(accent: SoloTheme.amber)
@@ -642,6 +1012,7 @@ private struct OperatingPressureCard: View {
     Text(pressure.eraName.uppercased())
       .font(.caption2.weight(.bold))
       .foregroundStyle(.secondary)
+      .fixedSize(horizontal: false, vertical: true)
   }
 }
 
@@ -650,6 +1021,7 @@ private struct PressureCost: View {
   var value: Int
   var symbol: String
   var emphasized: Bool
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   var body: some View {
     HStack(spacing: 10) {
@@ -671,7 +1043,7 @@ private struct PressureCost: View {
       RoundedRectangle(cornerRadius: 12)
         .stroke(emphasized ? SoloTheme.amber.opacity(0.65) : .white.opacity(0.06), lineWidth: 1)
     }
-    .scaleEffect(emphasized ? 1.015 : 1)
+    .scaleEffect(emphasized && !reduceMotion ? 1.015 : 1)
     .accessibilityElement(children: .ignore)
     .accessibilityLabel("\(title.capitalized) operating cost")
     .accessibilityValue("Minus \(value) each sprint")
@@ -716,6 +1088,7 @@ private struct CompanyConsequenceView: View {
   var consequence: VentureScreenPresentation.Consequence
   var isNew: Bool
   var reduceMotion: Bool
+  @State private var revealStage = 3
 
   var body: some View {
     HStack(alignment: .top, spacing: 12) {
@@ -723,14 +1096,16 @@ private struct CompanyConsequenceView: View {
         .font(.headline)
         .foregroundStyle(consequence.kind == .companyStandard ? SoloTheme.cyan : SoloTheme.amber)
         .frame(width: 28, height: 28)
-        .symbolEffect(.bounce, value: isNew)
+        .opacity(revealStage >= 1 ? 1 : 0)
+        .contentTransition(.symbolEffect(.replace))
       VStack(alignment: .leading, spacing: 4) {
-        Text(consequence.title).font(.subheadline.bold())
-        Text(consequence.detail).font(.caption).foregroundStyle(.secondary)
+        Text(consequence.title).font(.subheadline.bold()).opacity(revealStage >= 2 ? 1 : 0)
+        Text(consequence.detail).font(.caption).foregroundStyle(.secondary).opacity(revealStage >= 3 ? 1 : 0)
         Text(consequence.status.uppercased())
           .font(.caption2.weight(.black))
           .tracking(0.6)
           .foregroundStyle(consequence.kind == .companyStandard ? SoloTheme.cyan : SoloTheme.amber)
+          .opacity(revealStage >= 3 ? 1 : 0)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -740,16 +1115,38 @@ private struct CompanyConsequenceView: View {
       Capsule()
         .fill(consequence.kind == .companyStandard ? SoloTheme.cyan : SoloTheme.amber)
         .frame(width: 2)
-        .opacity(isNew ? 1 : 0.3)
+        .opacity(isNew && revealStage >= 2 ? 1 : 0.3)
     }
     .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.97, anchor: .leading)))
+    .onChange(of: isNew, initial: true) { _, newValue in
+      guard newValue else { revealStage = 3; return }
+      runUnlockSequence()
+    }
     .accessibilityElement(children: .combine)
     .accessibilityLabel("Company consequence: \(consequence.title). \(consequence.detail). \(consequence.status)")
+  }
+
+  private func runUnlockSequence() {
+    if reduceMotion {
+      revealStage = 0
+      withAnimation(.easeOut(duration: 0.2)) { revealStage = 3 }
+      return
+    }
+    revealStage = 0
+    Task { @MainActor in
+      withAnimation(VentureMotion.fast) { revealStage = 1 }
+      try? await Task.sleep(for: .milliseconds(150))
+      withAnimation(VentureMotion.fast) { revealStage = 2 }
+      try? await Task.sleep(for: .milliseconds(180))
+      withAnimation(VentureMotion.standard) { revealStage = 3 }
+    }
   }
 }
 
 private struct GarageInfrastructureSection: View {
   var upgrades: [VentureScreenPresentation.Upgrade]
+  var newlyInstalledIDs: Set<String>
+  var reduceMotion: Bool
 
   var body: some View {
     VStack(alignment: .leading, spacing: 14) {
@@ -767,24 +1164,11 @@ private struct GarageInfrastructureSection: View {
       } else {
         VStack(spacing: 8) {
           ForEach(upgrades) { upgrade in
-            HStack(spacing: 12) {
-              Image(systemName: upgrade.symbol)
-                .foregroundStyle(SoloTheme.cyan)
-                .frame(width: 26)
-              VStack(alignment: .leading, spacing: 2) {
-                Text(upgrade.name.uppercased()).font(.subheadline.weight(.bold))
-                Text("INSTALLED · ACTIVE")
-                  .font(.caption2.weight(.black))
-                  .tracking(0.6)
-                  .foregroundStyle(SoloTheme.cyan)
-              }
-              Spacer()
-              Image(systemName: "checkmark.circle.fill").foregroundStyle(SoloTheme.cyan)
-            }
-            .padding(12)
-            .background(SoloTheme.cyan.opacity(0.055), in: .rect(cornerRadius: 11))
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel("\(upgrade.name), installed and active")
+            GarageUpgradeRow(
+              upgrade: upgrade,
+              isNew: newlyInstalledIDs.contains(upgrade.id),
+              reduceMotion: reduceMotion
+            )
           }
         }
       }
@@ -793,24 +1177,88 @@ private struct GarageInfrastructureSection: View {
   }
 }
 
+private struct GarageUpgradeRow: View {
+  var upgrade: VentureScreenPresentation.Upgrade
+  var isNew: Bool
+  var reduceMotion: Bool
+  @State private var installed = true
+
+  var body: some View {
+    HStack(spacing: 12) {
+      Image(systemName: upgrade.symbol)
+        .foregroundStyle(SoloTheme.cyan)
+        .frame(width: 26)
+        .opacity(installed ? 1 : 0)
+        .scaleEffect(installed || reduceMotion ? 1 : 0.92)
+      VStack(alignment: .leading, spacing: 2) {
+        Text(upgrade.name.uppercased()).font(.subheadline.weight(.bold))
+        Text("INSTALLED · ACTIVE")
+          .font(.caption2.weight(.black))
+          .tracking(0.6)
+          .foregroundStyle(SoloTheme.cyan)
+      }
+      Spacer()
+      Image(systemName: "checkmark.circle.fill")
+        .foregroundStyle(SoloTheme.cyan)
+        .opacity(installed ? 1 : 0)
+    }
+    .padding(12)
+    .background(SoloTheme.cyan.opacity(installed && isNew ? 0.12 : 0.055), in: .rect(cornerRadius: 11))
+    .overlay(alignment: .bottom) {
+      Capsule()
+        .fill(SoloTheme.cyan.opacity(isNew ? 0.8 : 0.24))
+        .frame(height: 2)
+        .scaleEffect(x: installed ? 1 : 0, anchor: .leading)
+        .accessibilityHidden(true)
+    }
+    .onChange(of: isNew, initial: true) { _, newValue in
+      guard newValue else { installed = true; return }
+      installed = false
+      withAnimation(reduceMotion ? .easeOut(duration: 0.18) : VentureMotion.standard) { installed = true }
+    }
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel("\(upgrade.name), installed and active")
+  }
+}
+
 private struct FounderDoctrineCard: View {
   var doctrine: VentureScreenPresentation.Doctrine
+  var changeTrigger: Int
+  var reduceMotion: Bool
+  @State private var identityActive = false
+  @State private var displayedDoctrine: VentureScreenPresentation.Doctrine
+
+  init(
+    doctrine: VentureScreenPresentation.Doctrine,
+    changeTrigger: Int,
+    reduceMotion: Bool
+  ) {
+    self.doctrine = doctrine
+    self.changeTrigger = changeTrigger
+    self.reduceMotion = reduceMotion
+    _displayedDoctrine = State(initialValue: doctrine)
+  }
 
   var body: some View {
     ZStack(alignment: .topTrailing) {
-      DoctrineNetworkMotif().accessibilityHidden(true)
+      DoctrineNetworkMotif(connected: identityActive && !reduceMotion).accessibilityHidden(true)
       VStack(alignment: .leading, spacing: 10) {
         Label("FOUNDER DOCTRINE", systemImage: "network")
           .font(.caption.weight(.black))
           .tracking(1.1)
           .foregroundStyle(SoloTheme.purple)
-        Text(doctrine.name)
+          .fixedSize(horizontal: false, vertical: true)
+        Text(displayedDoctrine.name)
           .font(.title.bold())
-        Text(doctrine.summary)
+          .opacity(identityActive ? 1 : 0.96)
+          .contentTransition(.interpolate)
+          .fixedSize(horizontal: false, vertical: true)
+        Text(displayedDoctrine.summary)
           .font(.callout)
           .foregroundStyle(.secondary)
+          .fixedSize(horizontal: false, vertical: true)
         Divider().overlay(.white.opacity(0.1))
-        Label(doctrine.consequenceStatement, systemImage: "point.topleft.down.curvedto.point.bottomright.up")
+        Label(displayedDoctrine.consequenceStatement, systemImage: "point.topleft.down.curvedto.point.bottomright.up")
           .font(.subheadline.weight(.medium))
           .foregroundStyle(.primary.opacity(0.9))
           .fixedSize(horizontal: false, vertical: true)
@@ -827,20 +1275,35 @@ private struct FounderDoctrineCard: View {
     }
     .clipShape(.rect(cornerRadius: 20))
     .overlay { RoundedRectangle(cornerRadius: 20).stroke(SoloTheme.purple.opacity(0.3), lineWidth: 1) }
+    .onChange(of: changeTrigger) { _, _ in
+      identityActive = false
+      withAnimation(reduceMotion ? .easeOut(duration: 0.18) : VentureMotion.milestone) {
+        displayedDoctrine = doctrine
+        identityActive = true
+      }
+      Task { @MainActor in
+        try? await Task.sleep(for: .milliseconds(760))
+        withAnimation(VentureMotion.fast) { identityActive = false }
+      }
+    }
     .accessibilityElement(children: .combine)
-    .accessibilityLabel("Founder doctrine: \(doctrine.name). \(doctrine.summary). \(doctrine.consequenceStatement)")
+    .accessibilityLabel("Founder doctrine: \(displayedDoctrine.name). \(displayedDoctrine.summary). \(displayedDoctrine.consequenceStatement)")
   }
 }
 
 private struct DoctrineNetworkMotif: View {
+  var connected: Bool
+
   var body: some View {
     ZStack {
       ForEach(0..<3, id: \.self) { index in
         Circle()
           .stroke(SoloTheme.purple.opacity(0.08 + Double(index) * 0.03), lineWidth: 1)
           .frame(width: CGFloat(48 + index * 34), height: CGFloat(48 + index * 34))
+          .scaleEffect(connected ? 1 : 0.96)
+          .opacity(connected ? 1 : 0.72)
       }
-      Circle().fill(SoloTheme.cyan.opacity(0.25)).frame(width: 7, height: 7)
+      Circle().fill(SoloTheme.cyan.opacity(connected ? 0.55 : 0.25)).frame(width: 7, height: 7)
     }
     .frame(width: 130, height: 130)
     .offset(x: 34, y: -34)

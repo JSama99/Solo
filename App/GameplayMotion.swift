@@ -47,6 +47,17 @@ enum SoloMotion {
   }
 }
 
+/// Venture-specific choreography timings. These tokens describe the causal
+/// sequence without introducing an animation framework or simulation timing.
+enum VentureMotion {
+  static let fast = Animation.easeOut(duration: 0.16)
+  static let standard = Animation.smooth(duration: 0.38)
+  static let progress = Animation.easeInOut(duration: 0.48)
+  static let marker = Animation.spring(duration: 0.36, bounce: 0.12)
+  static let milestone = Animation.smooth(duration: 0.72)
+  static let stagger = Duration.milliseconds(70)
+}
+
 /// Shared press feedback for custom-drawn cards and rows. This consolidates
 /// three independent reinventions and finally gives `SoloMotion.press` a
 /// caller, preventing a fourth press treatment from drifting into the app.
