@@ -986,6 +986,7 @@ struct SprintReport: Identifiable {
   var objectiveCompleted: Bool
   var dilemmaSummary: String?
   var skippedTasks: Int
+  var rivalMoveSummary: String?
 
   init(
     id: UUID = UUID(),
@@ -1003,7 +1004,8 @@ struct SprintReport: Identifiable {
     objectiveTitle: String? = nil,
     objectiveCompleted: Bool = false,
     dilemmaSummary: String? = nil,
-    skippedTasks: Int = 0
+    skippedTasks: Int = 0,
+    rivalMoveSummary: String? = nil
   ) {
     self.id = id
     self.sprint = sprint
@@ -1021,6 +1023,7 @@ struct SprintReport: Identifiable {
     self.objectiveCompleted = objectiveCompleted
     self.dilemmaSummary = dilemmaSummary
     self.skippedTasks = skippedTasks
+    self.rivalMoveSummary = rivalMoveSummary
   }
 }
 
