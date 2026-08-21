@@ -99,14 +99,16 @@ private struct TitleScreen: View {
         VStack(spacing: 28) {
           Spacer(minLength: 52)
           ZStack {
-            Circle()
-              .fill(SoloTheme.purple.opacity(0.2))
-              .frame(width: 180, height: 180)
-              .blur(radius: 16)
-            Image(systemName: "sparkles")
-              .font(.system(size: 78, weight: .black))
-              .foregroundStyle(SoloTheme.cyan)
-              .shadow(color: SoloTheme.cyan.opacity(0.7), radius: 18)
+            Capsule()
+              .fill(SoloTheme.purple.opacity(0.18))
+              .frame(width: 280, height: 128)
+              .blur(radius: 18)
+            HStack(spacing: -8) {
+              TitleAgentBadge(agentID: "aurora", name: "Aurora", accent: SoloTheme.cyan)
+              TitleAgentBadge(agentID: "stacks", name: "Stacks", accent: SoloTheme.amber)
+                .zIndex(1)
+              TitleAgentBadge(agentID: "brio", name: "Brio", accent: SoloTheme.coral)
+            }
           }
           VStack(spacing: 8) {
             Text("SOLO:")
@@ -160,6 +162,31 @@ private struct TitleScreen: View {
       }
       .background(SoloTheme.background)
     }
+  }
+}
+
+private struct TitleAgentBadge: View {
+  var agentID: String
+  var name: String
+  var accent: Color
+
+  var body: some View {
+    VStack(spacing: 4) {
+      Image(AgentPortraitAsset.name(for: agentID) ?? "")
+        .resizable()
+        .scaledToFill()
+        .frame(width: agentID == "stacks" ? 94 : 82, height: agentID == "stacks" ? 94 : 82)
+        .background(.black)
+        .clipShape(.rect(cornerRadius: 18))
+        .overlay { RoundedRectangle(cornerRadius: 18).stroke(accent.opacity(0.85), lineWidth: 2) }
+        .shadow(color: accent.opacity(0.38), radius: 10)
+        .accessibilityHidden(true)
+      Text(name)
+        .font(.caption2.weight(.black))
+        .foregroundStyle(accent)
+    }
+    .accessibilityElement(children: .combine)
+    .accessibilityLabel("\(name), AI agent")
   }
 }
 

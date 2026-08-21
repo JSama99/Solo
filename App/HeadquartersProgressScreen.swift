@@ -3,6 +3,7 @@ import SwiftUI
 struct HeadquartersProgressScreen: View {
   var store: GameStore
   @Environment(FounderProgressionStore.self) private var progression
+  @Environment(AppSettingsStore.self) private var settings
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var pendingPurchase: TreasuryPurchase?
 
@@ -121,12 +122,16 @@ struct HeadquartersProgressScreen: View {
   }
 
   private func complete(_ purchase: TreasuryPurchase) {
+    var purchased = false
     withAnimation(MotionKind.celebration.resolved(reduceMotion: reduceMotion)) {
       switch purchase {
-      case .facility(let facility, _): _ = store.purchaseFacility(facility)
-      case .upgrade(let upgrade, _): _ = store.purchaseFacilityUpgrade(upgrade)
+      case .facility(let facility, _):
+        if case .purchased = store.purchaseFacility(facility) { purchased = true }
+      case .upgrade(let upgrade, _):
+        if case .purchased = store.purchaseFacilityUpgrade(upgrade) { purchased = true }
       }
     }
+    if purchased { settings.playFeedback(.infrastructureInstall) }
   }
 
   private func message(for result: FounderProgressionStore.PurchaseResult) -> String {

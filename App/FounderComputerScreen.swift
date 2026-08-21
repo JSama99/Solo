@@ -6,6 +6,7 @@ struct FounderComputerScreen: View {
   var presentation: PresentationCoordinator
 
   @Environment(FounderProgressionStore.self) private var progression
+  @Environment(AppSettingsStore.self) private var settings
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @State private var selectedAgentID: String?
@@ -32,6 +33,17 @@ struct FounderComputerScreen: View {
       ScrollView {
         LazyVStack(spacing: 16) {
           hud.founderEntrance(order: 0, alreadyPresented: hasPresentedRoster)
+          CompanyCommandViewport(
+            agents: livingAgentProjections,
+            atmosphere: companyAtmosphere,
+            infrastructure: infrastructureVisuals,
+            sprintPhase: store.sprintPhase,
+            reduceMotion: reduceMotion,
+            onSelectAgent: select,
+            onSelectFounder: selectFounder,
+            onSkipPresentation: skipPresentation
+          )
+          .founderEntrance(order: 1, alreadyPresented: hasPresentedRoster)
           FounderWorkstationCard(
             store: store,
             presentation: presentation,
@@ -42,12 +54,12 @@ struct FounderComputerScreen: View {
             onCommit: commit
           )
           .id("founder")
-          .founderEntrance(order: 1, alreadyPresented: hasPresentedRoster)
+          .founderEntrance(order: 2, alreadyPresented: hasPresentedRoster)
           ForEach(orderedStations) { station in
             workspaceCard(for: station)
             .id(station.id)
             .opacity(isReviewFocused && selectedAgentID != station.agentID ? 0.86 : 1)
-            .founderEntrance(order: rank(station.agentID) + 2, alreadyPresented: hasPresentedRoster)
+            .founderEntrance(order: rank(station.agentID) + 3, alreadyPresented: hasPresentedRoster)
           }
           evidenceDrawer.founderEntrance(order: 5, alreadyPresented: hasPresentedRoster)
           HindsightArchiveCard(
@@ -128,24 +140,32 @@ struct FounderComputerScreen: View {
     guard let event = presentation.latestEvent else { return }
     switch event {
     case .assignment(_, _, let agentID, _):
+      settings.playFeedback(.dispatch)
       selectedAgentID = agentID
       assignmentArrivalAgentID = agentID
       Task { @MainActor in
         try? await Task.sleep(for: .milliseconds(520))
         assignmentArrivalAgentID = nil
       }
-    case .review(_, let taskID, let agentID, _, let evidenceChanged):
+      if reduceMotion { presentation.skipPresentation(for: agentID) }
+    case .review(_, let taskID, let agentID, let result, let evidenceChanged):
+      settings.playFeedback(.review)
       selectedAgentID = agentID
       activeReviewTaskID = taskID
       reviewStage = reduceMotion ? 5 : 1
       if evidenceChanged { evidencePulse.toggle() }
-      guard !reduceMotion else { return }
+      if reduceMotion {
+        presentation.skipPresentation(for: agentID)
+        playVerificationFeedback(result)
+        return
+      }
       Task { @MainActor in
         for stage in 2...5 {
           try? await Task.sleep(for: .milliseconds(320))
           guard activeReviewTaskID == taskID else { return }
           withAnimation(SoloMotion.arrival) { reviewStage = stage }
         }
+        playVerificationFeedback(result)
       }
     case .sprint:
       commitPulse.toggle()
@@ -161,6 +181,37 @@ struct FounderComputerScreen: View {
         presentationPhase: presentation.presentation(for: agent.id)?.phase
       )
     }.sorted { rank($0.agentID) < rank($1.agentID) }
+  }
+
+  private var livingAgentProjections: [LivingAgentProjection] {
+    orderedStations.compactMap { station in
+      guard let agent = agent(for: station.agentID) else { return nil }
+      return LivingAgentProjection.derive(
+        agent: agent,
+        task: task(for: station.agentID),
+        presentation: presentation.presentation(for: station.agentID),
+        isResting: store.restingAgentIDs.contains(station.agentID),
+        isSelected: selectedAgentID == station.agentID,
+        founderStats: store.stats
+      )
+    }
+  }
+
+  private var companyAtmosphere: CompanyAtmosphere {
+    CompanyAtmosphere.derive(
+      stats: store.stats,
+      facility: progression.currentFacility,
+      venture: store.venture
+    )
+  }
+
+  private var infrastructureVisuals: [InfrastructureVisual] {
+    InfrastructureVisual.map(
+      purchased: progression.purchasedUpgrades,
+      facility: progression.currentFacility,
+      agents: livingAgentProjections,
+      sprint: store.sprint
+    )
   }
 
   @ViewBuilder
@@ -291,6 +342,13 @@ struct FounderComputerScreen: View {
     announce("Founder workstation selected.")
   }
 
+  private func skipPresentation() {
+    presentation.skipAllPresentations()
+    assignmentArrivalAgentID = nil
+    reviewStage = 5
+    announce("Work presentation skipped. Final visible state shown.")
+  }
+
   private func review(_ id: String) {
     guard let task = task(for: id) else { return }
     selectedAgentID = id
@@ -312,6 +370,7 @@ struct FounderComputerScreen: View {
       presentation.resolve(taskID: taskID, choice: choice, in: store)
     }
     announce("\(choice.title) selected.")
+    settings.playFeedback(.resolutionLock)
   }
 
   private func commit() {
@@ -321,9 +380,21 @@ struct FounderComputerScreen: View {
       presentation.commit(in: store, progression: progression)
     }
     announce("Sprint committed. Company metrics updated for sprint \(store.sprint).")
+    settings.playFeedback(.sprintCommit)
     Task { @MainActor in
       try? await Task.sleep(for: .milliseconds(700))
       commitInProgress = false
+    }
+  }
+
+  private func playVerificationFeedback(_ result: VisibleTaskResult) {
+    switch result.verificationState {
+    case .verified, .confirmed:
+      settings.playFeedback(.verificationSuccess)
+    case .overclaimed, .driftDetected, .evidenceIncomplete:
+      settings.playFeedback(.verificationWarning)
+    case .reported, .unverified:
+      break
     }
   }
 
@@ -393,6 +464,7 @@ struct AgentWorkspaceCard: View {
   var canReview: Bool
   var canRest: Bool
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @Environment(AppSettingsStore.self) private var settings
   var accent: Color { switch station.agentID { case "aurora": SoloTheme.cyan; case "stacks": SoloTheme.amber; case "brio": SoloTheme.coral; default: SoloTheme.mint } }
 
   var body: some View {
@@ -427,6 +499,10 @@ struct AgentWorkspaceCard: View {
     .accessibilityHint("Select this agent workspace")
     .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
     .accessibilityAction { action() }
+    .sensoryFeedback(.success, trigger: effectivePhase == .workComplete)
+    .onChange(of: effectivePhase) { _, phase in
+      if phase == .workComplete { settings.playFeedback(.workComplete) }
+    }
   }
 
   /// The work state this card animates on: a new assignment, a delivered
