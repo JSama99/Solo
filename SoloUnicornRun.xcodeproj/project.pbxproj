@@ -102,6 +102,9 @@
 		F27000000000000000000003 /* MotionVerificationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27000000000000000000013 /* MotionVerificationScreen.swift */; };
 		F28000000000000000000001 /* AgentPortraitAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = F28000000000000000000011 /* AgentPortraitAsset.swift */; };
 		B28000000000000000000001 /* OutcomeBackdropMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */; };
+		F31000000000000000000001 /* VentureScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F31000000000000000000011 /* VentureScreen.swift */; };
+		F31000000000000000000002 /* VentureScreenPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F31000000000000000000012 /* VentureScreenPresentation.swift */; };
+		F31000000000000000000003 /* VentureScreenPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F31000000000000000000013 /* VentureScreenPresentationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -211,6 +214,9 @@
 		F27000000000000000000013 /* MotionVerificationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionVerificationScreen.swift; sourceTree = "<group>"; };
 		F28000000000000000000011 /* AgentPortraitAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentPortraitAsset.swift; sourceTree = "<group>"; };
 		B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutcomeBackdropMotionTests.swift; sourceTree = "<group>"; };
+		F31000000000000000000011 /* VentureScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureScreen.swift; sourceTree = "<group>"; };
+		F31000000000000000000012 /* VentureScreenPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureScreenPresentation.swift; sourceTree = "<group>"; };
+		F31000000000000000000013 /* VentureScreenPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureScreenPresentationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -263,6 +269,7 @@
 				E10000000000000000000020 /* GameStoreTestSupport.swift */,
 				F26000000000000000000002 /* RevenueCatImportBoundaryTests.swift */,
 				B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */,
+				F31000000000000000000013 /* VentureScreenPresentationTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -283,6 +290,8 @@
 				17558F294800127BE04C0EBD /* Assets.xcassets */,
 				C10000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift */,
 				D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */,
+				F31000000000000000000011 /* VentureScreen.swift */,
+				F31000000000000000000012 /* VentureScreenPresentation.swift */,
 				C10000000000000000000015 /* EmpireTaskExpansion.swift */,
 				C10000000000000000000003 /* EnvironmentPresentation.swift */,
 				C10000000000000000000004 /* FacilityProgressionConfiguration.swift */,
@@ -467,6 +476,7 @@
 				E30000000000000000000010 /* GameStoreTestSupport.swift in Sources */,
 				F26000000000000000000001 /* RevenueCatImportBoundaryTests.swift in Sources */,
 				B28000000000000000000001 /* OutcomeBackdropMotionTests.swift in Sources */,
+				F31000000000000000000003 /* VentureScreenPresentationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -485,6 +495,8 @@
 				B2BFB1EE90AB231E41812DEF /* App.swift in Sources */,
 				C20000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift in Sources */,
 				FB6CDD52B76B96B369913C6B /* ContentView.swift in Sources */,
+				F31000000000000000000001 /* VentureScreen.swift in Sources */,
+				F31000000000000000000002 /* VentureScreenPresentation.swift in Sources */,
 				C20000000000000000000003 /* EnvironmentPresentation.swift in Sources */,
 				C20000000000000000000004 /* FacilityProgressionConfiguration.swift in Sources */,
 				C20000000000000000000005 /* FacilityTier.swift in Sources */,
