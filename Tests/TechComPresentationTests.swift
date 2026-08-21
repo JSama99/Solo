@@ -35,6 +35,48 @@ final class TechComPresentationTests: XCTestCase {
     XCTAssertEqual(TechComPresentation.marketBarFraction(1.2), 1)
   }
 
+  func testCompanyIdentityMappingIsStableAcrossCompetitiveSurfaces() {
+    XCTAssertEqual(
+      TechComPresentation.companyIdentity(
+        id: "solo",
+        name: "SOLO",
+        archetype: nil,
+        isPlayer: true
+      ),
+      TechComCompanyIdentity(monogram: "SO", accent: .solo)
+    )
+    XCTAssertEqual(
+      TechComPresentation.companyIdentity(
+        id: "northwind",
+        name: "Northwind Labs",
+        archetype: .incumbent,
+        isPlayer: false
+      ),
+      TechComCompanyIdentity(monogram: "NL", accent: .incumbent)
+    )
+    XCTAssertEqual(
+      TechComPresentation.companyIdentity(
+        id: "flashpoint",
+        name: "Flashpoint",
+        archetype: .hypeMachine,
+        isPlayer: false
+      ).accent,
+      .hypeMachine
+    )
+  }
+
+  func testCompanyIdentityFallsBackToCanonicalArchetypeByID() {
+    XCTAssertEqual(
+      TechComPresentation.companyIdentity(
+        id: "steadfast",
+        name: "Steadfast Works",
+        archetype: nil,
+        isPlayer: false
+      ),
+      TechComCompanyIdentity(monogram: "SW", accent: .quietBuilder)
+    )
+  }
+
   func testRankingGapUsesCanonicalOrderedValues() {
     let entries = [
       TechComRankingEntry(id: "a", name: "A", value: 50, isPlayer: false),
