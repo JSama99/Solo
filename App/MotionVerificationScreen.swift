@@ -6,7 +6,12 @@ import SwiftUI
 struct MotionVerificationScreen: View {
   @Environment(\.dismiss) private var dismiss
   @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
-  @State private var fixtureID = LivingCompanyFixture.ID.idleOverview
+  @State private var fixtureID: LivingCompanyFixture.ID
+  @State private var isPlayingCausalProof = false
+
+  init(initialFixture: LivingCompanyFixture.ID = .idleOverview) {
+    _fixtureID = State(initialValue: initialFixture)
+  }
 
   var body: some View {
     NavigationStack {
@@ -43,9 +48,25 @@ struct MotionVerificationScreen: View {
             .font(.caption.weight(.black))
             .foregroundStyle(SoloTheme.cyan)
             .accessibilityIdentifier("motion-qa-current-state")
+          if isPlayingCausalProof {
+            Label("Uninterrupted causal proof playback", systemImage: "record.circle")
+              .font(.caption.weight(.bold))
+              .foregroundStyle(SoloTheme.coral)
+          }
         }
         .padding(16)
         .frame(maxWidth: .infinity)
+      }
+      .task {
+        guard ProcessInfo.processInfo.arguments.contains("--motion-qa-sequence") else { return }
+        isPlayingCausalProof = true
+        try? await Task.sleep(for: .seconds(1))
+        for id in LivingCompanyFixture.causalProofSequence {
+          guard !Task.isCancelled else { return }
+          fixtureID = id
+          try? await Task.sleep(for: .milliseconds(1_100))
+        }
+        isPlayingCausalProof = false
       }
       .navigationTitle("Motion QA")
       .toolbar {
@@ -147,6 +168,25 @@ struct LivingCompanyFixture: Equatable, Sendable {
   var forceReduceMotion: Bool
   var accessibilityLarge: Bool
   var increasedContrast: Bool
+
+  static var causalProofSequence: [ID] {
+    [
+      .planningPhase,
+      .auroraAssignment,
+      .auroraWorking,
+      .workComplete,
+      .awaitingReview,
+      .reviewStep1,
+      .reviewStep2,
+      .reviewStep3,
+      .reviewStep4,
+      .reviewStep5,
+      .verified,
+      .resolving,
+      .resolved,
+      .commitReady
+    ]
+  }
 
   static func make(_ id: ID) -> Self {
     var agents = baseAgents

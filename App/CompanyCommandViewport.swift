@@ -27,12 +27,13 @@ struct CompanyCommandViewport: View {
   @State private var isVisible = true
 
   var body: some View {
-    TimelineView(.animation(minimumInterval: 1 / 18, paused: motionPaused)) { context in
+    let scene = ViewportSceneProjection(agents: agents, sprintPhase: sprintPhase, founderSummary: founderSummary)
+    return TimelineView(.animation(minimumInterval: 1 / 18, paused: motionPaused)) { context in
       let time = context.date.timeIntervalSinceReferenceDate
       VStack(spacing: 8) {
-        header
+        header(hierarchy: scene.hierarchy)
         atmosphereStrip
-        commandFloor(time: time)
+        commandFloor(time: time, scene: scene)
         infrastructureRail
       }
       // The viewport is a compact spatial scene. Cap its miniature labels while
@@ -54,7 +55,7 @@ struct CompanyCommandViewport: View {
     }
     .accessibilityElement(children: .contain)
     .accessibilityLabel("Company Command Viewport, \(atmosphere.facility.name), \(sprintPhase.title)")
-    .accessibilityValue("Priority: \(phaseHierarchy.priority.rawValue). \(atmosphere.accessibilitySummary)")
+    .accessibilityValue("Priority: \(scene.hierarchy.priority.rawValue). \(atmosphere.accessibilitySummary)")
     .accessibilityAction(named: Text("Focus Founder")) { onFocus(.founder) }
     .accessibilityAction(named: Text("Focus Aurora")) { focusCanonicalAgent("aurora") }
     .accessibilityAction(named: Text("Focus Stacks")) { focusCanonicalAgent("stacks") }
@@ -78,7 +79,7 @@ struct CompanyCommandViewport: View {
     onFocus(.agent(id))
   }
 
-  private var header: some View {
+  private func header(hierarchy: CompanyPhaseHierarchy) -> some View {
     HStack(spacing: 8) {
       VStack(alignment: .leading, spacing: 1) {
         Text("COMPANY COMMAND")
@@ -93,7 +94,7 @@ struct CompanyCommandViewport: View {
         Label(sprintPhase.title, systemImage: sprintPhase.symbol)
           .font(.caption2.weight(.bold))
           .lineLimit(1)
-        Text(phaseHierarchy.priority.rawValue.uppercased())
+        Text(hierarchy.priority.rawValue.uppercased())
           .font(.system(size: 7, weight: .black, design: .monospaced))
           .foregroundStyle(SoloTheme.cyan)
       }
@@ -146,16 +147,16 @@ struct CompanyCommandViewport: View {
       .background(color.opacity(0.08), in: Capsule())
   }
 
-  private func commandFloor(time: TimeInterval) -> some View {
+  private func commandFloor(time: TimeInterval, scene: ViewportSceneProjection) -> some View {
     GeometryReader { geometry in
       ZStack(alignment: .bottom) {
         facilityStructure
         switch focus {
         case .agent(let agentID):
-          if let agent = agents.first(where: { $0.agentID == agentID }) {
+          if let agent = scene.agentByID[agentID] {
             AgentCommandFocusPanel(
               agent: agent,
-              surroundingAgents: agents.filter { $0.agentID != agentID },
+              surroundingAgents: scene.surroundingAgents[agentID] ?? [],
               availability: agentAvailability[agentID] ?? .init(),
               time: time,
               reduceMotion: reduceMotion,
@@ -176,26 +177,26 @@ struct CompanyCommandViewport: View {
           )
           .transition(.opacity.combined(with: .scale(scale: 0.96)))
         case nil:
-          overviewCommandFloor(time: time, geometry: geometry)
+          overviewCommandFloor(time: time, geometry: geometry, scene: scene)
         }
       }
     }
   }
 
-  private func overviewCommandFloor(time: TimeInterval, geometry: GeometryProxy) -> some View {
+  private func overviewCommandFloor(time: TimeInterval, geometry: GeometryProxy, scene: ViewportSceneProjection) -> some View {
     ZStack(alignment: .bottom) {
       HStack(alignment: .top, spacing: 6) {
-        ForEach(Array(agents.enumerated()), id: \.element.id) { index, agent in
+        ForEach(scene.agents) { item in
           ViewportAgentStation(
-            agent: agent,
+            agent: item.agent,
             time: time,
             reduceMotion: reduceMotion,
-            dimmed: agents.contains(where: { $0.activity == .reviewing }) && agent.activity != .reviewing,
-            prominence: phaseHierarchy.stationProminence,
-            action: { onFocus(.agent(agent.agentID)) }
+            dimmed: item.dimmed,
+            prominence: scene.hierarchy.stationProminence,
+            action: { onFocus(.agent(item.agent.agentID)) }
           )
           .frame(maxWidth: .infinity)
-          .accessibilitySortPriority(Double(agents.count - index))
+          .accessibilitySortPriority(Double(scene.agents.count - item.index))
         }
       }
       .frame(maxHeight: .infinity, alignment: .top)
@@ -203,24 +204,24 @@ struct CompanyCommandViewport: View {
       .padding(.top, 4)
 
       FounderCommandStation(
-        activeCount: agents.filter { [.assignmentReceived, .working].contains($0.activity) }.count,
-        reviewCount: agents.filter { [.workComplete, .awaitingReview, .reviewing].contains($0.activity) }.count,
+        activeCount: scene.activeCount,
+        reviewCount: scene.reviewCount,
         pressure: atmosphere.pressure,
         action: { onFocus(.founder) }
       )
       .frame(width: min(geometry.size.width * 0.62, 230))
       .offset(y: 3)
 
-      ForEach(Array(agents.enumerated()), id: \.element.id) { index, agent in
-        if shouldShowPacket(for: agent.activity) {
+      ForEach(scene.packetAgents) { item in
+        if shouldShowPacket(for: item.agent.activity) {
           TaskPacket(
-            accent: accent(for: agent.agentID),
-            returning: [.workComplete, .awaitingReview, .reviewing].contains(agent.activity),
-            settled: [.awaitingReview, .reviewing, .resolved].contains(agent.activity),
-            decisionResponse: [.resolving, .resolved].contains(agent.activity),
+            accent: accent(for: item.agent.agentID),
+            returning: [.workComplete, .awaitingReview, .reviewing].contains(item.agent.activity),
+            settled: [.awaitingReview, .reviewing, .resolved].contains(item.agent.activity),
+            decisionResponse: [.resolving, .resolved].contains(item.agent.activity),
             reduceMotion: reduceMotion
           )
-          .position(packetPosition(index: index, agent: agent, size: geometry.size, time: time))
+          .position(packetPosition(index: item.index, agent: item.agent, size: geometry.size, time: time))
           .accessibilityHidden(true)
         }
       }
@@ -240,10 +241,6 @@ struct CompanyCommandViewport: View {
       }
     }
     .frame(height: 32)
-  }
-
-  private var phaseHierarchy: CompanyPhaseHierarchy {
-    CompanyPhaseHierarchy.derive(sprintPhase: sprintPhase, agents: agents, founderSummary: founderSummary)
   }
 
   @ViewBuilder
@@ -400,6 +397,38 @@ struct CompanyCommandViewport: View {
     case .installed: "Installed"
     case .active: "Installed and active"
     }
+  }
+}
+
+private struct ViewportSceneProjection {
+  struct AgentItem: Identifiable {
+    var id: String { agent.agentID }
+    var index: Int
+    var agent: LivingAgentProjection
+    var dimmed: Bool
+  }
+
+  var agents: [AgentItem]
+  var packetAgents: [AgentItem]
+  var agentByID: [String: LivingAgentProjection]
+  var surroundingAgents: [String: [LivingAgentProjection]]
+  var activeCount: Int
+  var reviewCount: Int
+  var hierarchy: CompanyPhaseHierarchy
+
+  init(agents source: [LivingAgentProjection], sprintPhase: SprintPhase, founderSummary: CompanyCommandFounderSummary) {
+    let hasReviewingAgent = source.contains { $0.activity == .reviewing }
+    agents = source.enumerated().map { index, agent in
+      AgentItem(index: index, agent: agent, dimmed: hasReviewingAgent && agent.activity != .reviewing)
+    }
+    packetAgents = agents.filter { [.assignmentReceived, .workComplete, .awaitingReview, .reviewing, .resolving, .resolved].contains($0.agent.activity) }
+    agentByID = Dictionary(uniqueKeysWithValues: source.map { ($0.agentID, $0) })
+    surroundingAgents = Dictionary(uniqueKeysWithValues: source.map { agent in
+      (agent.agentID, source.filter { $0.agentID != agent.agentID })
+    })
+    activeCount = source.filter { [.assignmentReceived, .working].contains($0.activity) }.count
+    reviewCount = source.filter { [.workComplete, .awaitingReview, .reviewing].contains($0.activity) }.count
+    hierarchy = CompanyPhaseHierarchy.derive(sprintPhase: sprintPhase, agents: source, founderSummary: founderSummary)
   }
 }
 
