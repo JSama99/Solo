@@ -8,8 +8,10 @@ struct FounderComputerScreen: View {
   @Environment(FounderProgressionStore.self) private var progression
   @Environment(AppSettingsStore.self) private var settings
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
-  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-  @State private var selectedAgentID: String?
+  @State private var commandInteraction = CompanyCommandInteractionState()
+  @State private var expandedWorkstationAgentID: String?
+  @State private var isViewportVisible = true
+  @AccessibilityFocusState private var accessibilityWorkstationID: String?
   @State private var assignmentDestination: AssignmentDestination?
   @State private var restCandidate: RestCandidate?
   @State private var evidenceExpanded = false
@@ -20,7 +22,6 @@ struct FounderComputerScreen: View {
   @State private var activeReviewTaskID: UUID?
   @State private var reviewStage = 0
   @State private var resolutionFocus: TaskResolutionChoice?
-  @State private var commitPulse = false
   @State private var evidencePulse = false
   @State private var hasPresentedRoster = false
   @State private var commitInProgress = false
@@ -32,34 +33,44 @@ struct FounderComputerScreen: View {
     ScrollViewReader { proxy in
       ScrollView {
         LazyVStack(spacing: 16) {
-          hud.founderEntrance(order: 0, alreadyPresented: hasPresentedRoster)
           CompanyCommandViewport(
             agents: livingAgentProjections,
             atmosphere: companyAtmosphere,
             infrastructure: infrastructureVisuals,
             sprintPhase: store.sprintPhase,
+            focus: commandInteraction.focus,
+            agentAvailability: agentAvailability,
+            founderSummary: founderSummary,
             reduceMotion: reduceMotion,
-            onSelectAgent: select,
-            onSelectFounder: selectFounder,
-            onSkipPresentation: skipPresentation
+            onFocus: focusViewport,
+            onAssign: beginAssignment,
+            onReview: review,
+            onRest: requestRest,
+            onSkipAgentPresentation: skipPresentation,
+            onOpenFullWorkstation: openFullWorkstation,
+            onCommit: commit,
+            onVisibilityChange: { isViewportVisible = $0 }
           )
-          .founderEntrance(order: 1, alreadyPresented: hasPresentedRoster)
+          .id("viewport")
+          .founderEntrance(order: 0, alreadyPresented: hasPresentedRoster)
           FounderWorkstationCard(
             store: store,
             presentation: presentation,
-            expanded: selectedAgentID == nil,
+            expanded: expandedWorkstationAgentID == nil,
             commitInProgress: commitInProgress,
-            onSelect: selectFounder,
+            onSelect: selectCanonicalFounder,
             onSelectAgent: beginReviewFocus,
             onCommit: commit
           )
           .id("founder")
-          .founderEntrance(order: 2, alreadyPresented: hasPresentedRoster)
+          .accessibilityFocused($accessibilityWorkstationID, equals: "founder")
+          .founderEntrance(order: 1, alreadyPresented: hasPresentedRoster)
           ForEach(orderedStations) { station in
             workspaceCard(for: station)
             .id(station.id)
-            .opacity(isReviewFocused && selectedAgentID != station.agentID ? 0.86 : 1)
-            .founderEntrance(order: rank(station.agentID) + 3, alreadyPresented: hasPresentedRoster)
+            .accessibilityFocused($accessibilityWorkstationID, equals: station.agentID)
+            .opacity(isReviewFocused && expandedWorkstationAgentID != station.agentID ? 0.86 : 1)
+            .founderEntrance(order: rank(station.agentID) + 2, alreadyPresented: hasPresentedRoster)
           }
           evidenceDrawer.founderEntrance(order: 5, alreadyPresented: hasPresentedRoster)
           HindsightArchiveCard(
@@ -81,24 +92,24 @@ struct FounderComputerScreen: View {
           hasPresentedRoster = true
         }
       }
-      .onChange(of: selectedAgentID) { _, id in
-        guard let id else { return }
-        withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) { proxy.scrollTo(id, anchor: .center) }
-      }
-      .onChange(of: presentation.latestEvent) { _, event in
-        guard case .assignment(_, _, let agentID, _) = event else { return }
-        selectedAgentID = agentID
+      .onChange(of: commandInteraction.navigationRequest) { _, request in
+        guard let request else { return }
         withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) {
-          proxy.scrollTo(agentID, anchor: .center)
+          proxy.scrollTo(request.target.scrollID, anchor: .center)
+        }
+        Task { @MainActor in
+          if !reduceMotion { try? await Task.sleep(for: .milliseconds(320)) }
+          accessibilityWorkstationID = request.target.scrollID
         }
       }
     }
-    .sensoryFeedback(.selection, trigger: selectedAgentID)
+    .sensoryFeedback(.selection, trigger: commandInteraction.focus)
     .sensoryFeedback(.success, trigger: store.sprint)
     .sensoryFeedback(.impact(weight: .light), trigger: resolutionTick)
     .sensoryFeedback(.impact(weight: .medium), trigger: assignmentArrivalAgentID)
     .sensoryFeedback(.success, trigger: activeReviewTaskID)
     .onChange(of: presentation.latestEvent?.id) { _, _ in handlePresentationEvent() }
+    .onChange(of: assignmentIdentity) { _, _ in reconcilePresentationAfterAssignmentChange() }
     .sheet(item: $assignmentDestination) { destination in
       TaskAssignmentSheet(store: store, presentation: presentation, agentID: destination.agentID) {
         assignmentDestination = nil
@@ -141,7 +152,6 @@ struct FounderComputerScreen: View {
     switch event {
     case .assignment(_, _, let agentID, _):
       settings.playFeedback(.dispatch)
-      selectedAgentID = agentID
       assignmentArrivalAgentID = agentID
       Task { @MainActor in
         try? await Task.sleep(for: .milliseconds(520))
@@ -150,7 +160,9 @@ struct FounderComputerScreen: View {
       if reduceMotion { presentation.skipPresentation(for: agentID) }
     case .review(_, let taskID, let agentID, let result, let evidenceChanged):
       settings.playFeedback(.review)
-      selectedAgentID = agentID
+      if isViewportVisible {
+        commandInteraction.ambientFocus(.agent(agentID))
+      }
       activeReviewTaskID = taskID
       reviewStage = reduceMotion ? 5 : 1
       if evidenceChanged { evidencePulse.toggle() }
@@ -168,7 +180,7 @@ struct FounderComputerScreen: View {
         playVerificationFeedback(result)
       }
     case .sprint:
-      commitPulse.toggle()
+      commandInteraction.clearAfterSprintCommit()
     }
   }
 
@@ -191,7 +203,7 @@ struct FounderComputerScreen: View {
         task: task(for: station.agentID),
         presentation: presentation.presentation(for: station.agentID),
         isResting: store.restingAgentIDs.contains(station.agentID),
-        isSelected: selectedAgentID == station.agentID,
+        isSelected: commandInteraction.focus == .agent(station.agentID),
         founderStats: store.stats
       )
     }
@@ -214,11 +226,21 @@ struct FounderComputerScreen: View {
     )
   }
 
+  private var founderSummary: CompanyCommandFounderSummary {
+    CompanyCommandFounderSummary.derive(store: store, presentation: presentation)
+  }
+
+  private var agentAvailability: [String: CompanyCommandAgentAvailability] {
+    Dictionary(uniqueKeysWithValues: orderedStations.map { station in
+      (station.agentID, availability(for: station.agentID))
+    })
+  }
+
   @ViewBuilder
   private func workspaceCard(for station: AgentStationViewModel) -> some View {
     let agentID = station.agentID
     let assignedTask = task(for: agentID)
-    let isSelected = selectedAgentID == agentID
+    let isSelected = expandedWorkstationAgentID == agentID
     let currentReviewStage = activeReviewTaskID == assignedTask?.id ? reviewStage : 0
     AgentWorkspaceCard(
       station: station,
@@ -231,79 +253,15 @@ struct FounderComputerScreen: View {
       reviewStage: currentReviewStage,
       resolutionFocus: resolutionFocus,
       reduceMotion: reduceMotion,
-      action: { select(agentID) },
-      onAssign: { assignmentDestination = .init(agentID: agentID) },
+      action: { selectCanonicalWorkstation(agentID) },
+      onAssign: { beginAssignment(agentID) },
       onReview: { review(agentID) },
-      onRest: { restCandidate = .init(agentID: agentID, name: station.name, hasAssignment: assignedTask != nil) },
+      onRest: { requestRest(agentID) },
       onResolve: { choice in guard let taskID = assignedTask?.id else { return }; resolve(taskID: taskID, choice: choice) },
-      canAssign: canAssign,
-      canReview: canReview(agentID),
-      canRest: canRest(agentID)
+      canAssign: availability(for: agentID).canAssign,
+      canReview: availability(for: agentID).canReview,
+      canRest: availability(for: agentID).canRest
     )
-  }
-
-  private var hud: some View {
-    VStack(alignment: .leading, spacing: 10) {
-      Group {
-        if dynamicTypeSize.isAccessibilitySize {
-          VStack(alignment: .leading, spacing: 8) {
-            hudTitle
-            hudPhase
-          }
-        } else {
-          HStack {
-            hudTitle
-            Spacer()
-            hudPhase
-          }
-        }
-      }
-      Group {
-        if dynamicTypeSize.isAccessibilitySize {
-          LazyVGrid(columns: accessibilityMetricColumns, alignment: .leading, spacing: 8) {
-            hudMetrics
-          }
-        } else {
-          HStack(spacing: 8) {
-            hudMetrics
-          }
-        }
-      }
-      Text("Venture \(store.venture) · Sprint \(store.sprint)/12 · \(store.chapter.name)").font(.caption).foregroundStyle(.secondary)
-    }
-    .padding(14).background(SoloTheme.card, in: .rect(cornerRadius: 18))
-    .scaleEffect(commitPulse && !reduceMotion ? 1.012 : 1)
-    .overlay { RoundedRectangle(cornerRadius: 18).stroke(SoloTheme.cyan.opacity(commitPulse ? 0.7 : 0), lineWidth: 1.5) }
-    .animation(SoloMotion.resolved(SoloMotion.impact, reduceMotion: reduceMotion), value: commitPulse)
-    .gameplayMotion(value: store.sprintPhase)
-  }
-
-  private var hudTitle: some View {
-    Text("FOUNDER COMPUTER")
-      .font(.caption.weight(.bold))
-      .foregroundStyle(SoloTheme.cyan)
-      .fixedSize(horizontal: false, vertical: true)
-  }
-
-  private var hudPhase: some View {
-    Label(store.sprintPhase.title, systemImage: store.sprintPhase.symbol)
-      .font(.caption.weight(.bold))
-      .fixedSize(horizontal: false, vertical: true)
-      .contentTransition(.interpolate)
-      .symbolEffect(.bounce, value: store.sprintPhase)
-      .id(store.sprintPhase)
-      .transition(.opacity.combined(with: .move(edge: .trailing)))
-  }
-
-  @ViewBuilder private var hudMetrics: some View {
-    HUDMetricView(label: "Runway", value: store.stats.runway, unit: "d", symbol: "calendar")
-    HUDMetricView(label: "Energy", value: store.stats.energy, symbol: "battery.75percent")
-    HUDMetricView(label: "Momentum", value: store.stats.momentum, symbol: "arrow.up.right")
-    HUDMetricView(label: "Attention", value: store.attentionRemaining, maximum: store.attentionMaximum, symbol: "eye")
-  }
-
-  private var accessibilityMetricColumns: [GridItem] {
-    [GridItem(.flexible(), alignment: .leading)]
   }
 
   private var evidenceDrawer: some View {
@@ -311,53 +269,105 @@ struct FounderComputerScreen: View {
   }
 
   private var isReviewFocused: Bool {
-    guard let selectedAgentID,
-          let phase = presentation.presentation(for: selectedAgentID)?.phase else { return false }
+    guard let expandedWorkstationAgentID,
+          let phase = presentation.presentation(for: expandedWorkstationAgentID)?.phase else { return false }
     return phase == .reviewing
   }
 
   private func beginReviewFocus(_ id: String) {
-    select(id)
+    selectCanonicalWorkstation(id)
   }
 
-  private var canAssign: Bool { store.sprintPhase == .chooseCommitments || store.sprintPhase == .assignTeam }
-  private func canReview(_ id: String) -> Bool {
-    guard let task = task(for: id) else { return false }
-    let phase = presentation.presentation(for: id)?.phase
-    let presentationReady = phase == nil || phase == .awaitingReview
-    return presentationReady && store.sprintPhase == .reviewAndResolve && !task.isReviewed && task.result != nil && store.attentionRemaining > 0
+  private func availability(for agentID: String) -> CompanyCommandAgentAvailability {
+    CompanyCommandAgentAvailability.derive(
+      sprintPhase: store.sprintPhase,
+      task: task(for: agentID),
+      presentation: presentation.presentation(for: agentID),
+      isResting: store.restingAgentIDs.contains(agentID),
+      attentionRemaining: store.attentionRemaining
+    )
   }
-  private func canRest(_ id: String) -> Bool { (store.sprintPhase == .chooseCommitments || store.sprintPhase == .assignTeam) && !store.restingAgentIDs.contains(id) }
   private func task(for agentID: String) -> SoloTask? { store.tasks.first { $0.assignedAgentID == agentID } }
   private func agent(for id: String) -> SoloAgent? { store.agents.first { $0.id == id } }
   private func rank(_ id: String) -> Int { ["aurora", "stacks", "brio"].firstIndex(of: id) ?? 100 + (store.agents.firstIndex { $0.id == id } ?? 0) }
 
-  private func select(_ id: String) {
-    withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) { selectedAgentID = id }
-    announce("\(agent(for: id)?.name ?? "Agent") selected.")
+  private var assignmentIdentity: [String] {
+    store.tasks.map { "\($0.id.uuidString):\($0.assignedAgentID ?? "unassigned")" }
   }
 
-  private func selectFounder() {
-    withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) { selectedAgentID = nil }
+  private func focusViewport(_ target: CompanyCommandFocus) {
+    let closesFocus = commandInteraction.focus == target
+    withAnimation(reduceMotion ? nil : .smooth(duration: closesFocus ? 0.22 : 0.28)) {
+      commandInteraction.toggleFocus(target)
+    }
+    let name = switch commandInteraction.focus {
+    case .founder: "Founder command focused."
+    case .agent(let id): "\(agent(for: id)?.name ?? "Agent") focused in Company Command."
+    case nil: "Company overview restored."
+    }
+    announce(name)
+  }
+
+  private func selectCanonicalWorkstation(_ id: String) {
+    withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) {
+      expandedWorkstationAgentID = id
+    }
+    announce("\(agent(for: id)?.name ?? "Agent") workstation expanded.")
+  }
+
+  private func selectCanonicalFounder() {
+    withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) {
+      expandedWorkstationAgentID = nil
+    }
     announce("Founder workstation selected.")
   }
 
-  private func skipPresentation() {
-    presentation.skipAllPresentations()
+  private func openFullWorkstation(_ target: CompanyCommandFocus) {
+    switch target {
+    case .founder:
+      expandedWorkstationAgentID = nil
+    case .agent(let agentID):
+      guard agent(for: agentID) != nil else { return }
+      expandedWorkstationAgentID = agentID
+    }
+    commandInteraction.requestFullWorkstation(target)
+    announce("Moving to the detailed \(target.scrollID == "founder" ? "Founder" : agent(for: target.scrollID)?.name ?? "agent") workstation.")
+  }
+
+  private func beginAssignment(_ agentID: String) {
+    guard availability(for: agentID).canAssign else { return }
+    assignmentDestination = .init(agentID: agentID)
+  }
+
+  private func requestRest(_ agentID: String) {
+    guard availability(for: agentID).canRest,
+          let agent = agent(for: agentID) else { return }
+    restCandidate = .init(
+      agentID: agentID,
+      name: agent.name,
+      hasAssignment: task(for: agentID) != nil
+    )
+  }
+
+  private func skipPresentation(_ agentID: String) {
+    guard availability(for: agentID).canSkipPresentation else { return }
+    presentation.skipPresentation(for: agentID)
     assignmentArrivalAgentID = nil
     reviewStage = 5
-    announce("Work presentation skipped. Final visible state shown.")
+    announce("\(agent(for: agentID)?.name ?? "Agent") presentation skipped. Final visible state shown.")
   }
 
   private func review(_ id: String) {
-    guard let task = task(for: id) else { return }
-    selectedAgentID = id
+    guard availability(for: id).canReview, let task = task(for: id) else { return }
+    if isViewportVisible { commandInteraction.ambientFocus(.agent(id)) }
     withAnimation(SoloMotion.resolved(SoloMotion.focus, reduceMotion: reduceMotion)) {
       activeReviewTaskID = task.id
       reviewStage = 0
     }
     Task { @MainActor in
       if !reduceMotion { try? await Task.sleep(for: .milliseconds(150)) }
+      guard activeReviewTaskID == task.id,
+            self.task(for: id)?.id == task.id else { return }
       presentation.review(taskID: task.id, in: store)
     }
     announce("Founder review started.")
@@ -379,11 +389,22 @@ struct FounderComputerScreen: View {
     withAnimation(MotionKind.celebration.resolved(reduceMotion: reduceMotion)) {
       presentation.commit(in: store, progression: progression)
     }
+    commandInteraction.clearAfterSprintCommit()
     announce("Sprint committed. Company metrics updated for sprint \(store.sprint).")
     settings.playFeedback(.sprintCommit)
     Task { @MainActor in
       try? await Task.sleep(for: .milliseconds(700))
       commitInProgress = false
+    }
+  }
+
+  private func reconcilePresentationAfterAssignmentChange() {
+    guard let activeReviewTaskID else { return }
+    guard store.tasks.contains(where: { $0.id == activeReviewTaskID && $0.assignedAgentID != nil }) else {
+      self.activeReviewTaskID = nil
+      reviewStage = 0
+      resolutionFocus = nil
+      return
     }
   }
 

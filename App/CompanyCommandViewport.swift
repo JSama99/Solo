@@ -7,10 +7,18 @@ struct CompanyCommandViewport: View {
   var atmosphere: CompanyAtmosphere
   var infrastructure: [InfrastructureVisual]
   var sprintPhase: SprintPhase
+  var focus: CompanyCommandFocus?
+  var agentAvailability: [String: CompanyCommandAgentAvailability]
+  var founderSummary: CompanyCommandFounderSummary
   var reduceMotion: Bool
-  var onSelectAgent: (String) -> Void
-  var onSelectFounder: () -> Void
-  var onSkipPresentation: () -> Void
+  var onFocus: (CompanyCommandFocus) -> Void
+  var onAssign: (String) -> Void
+  var onReview: (String) -> Void
+  var onRest: (String) -> Void
+  var onSkipAgentPresentation: (String) -> Void
+  var onOpenFullWorkstation: (CompanyCommandFocus) -> Void
+  var onCommit: () -> Void
+  var onVisibilityChange: (Bool) -> Void
 
   @Environment(\.colorSchemeContrast) private var contrast
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -25,9 +33,12 @@ struct CompanyCommandViewport: View {
         commandFloor(time: time)
         infrastructureRail
       }
+      // The viewport is a compact spatial scene. Cap its miniature labels while
+      // the canonical cards below continue to honor unrestricted Dynamic Type.
+      .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
       .padding(12)
       .frame(maxWidth: .infinity)
-      .frame(height: dynamicTypeSize.isAccessibilitySize ? 280 : 258)
+      .frame(height: viewportHeight)
       .background {
         viewportBackground(time: time)
           .clipShape(.rect(cornerRadius: 24))
@@ -35,25 +46,33 @@ struct CompanyCommandViewport: View {
       .overlay { viewportFrame }
       .shadow(color: atmosphereColor.opacity(0.22), radius: 16, y: 8)
     }
-    .onScrollVisibilityChange(threshold: 0.08) { isVisible = $0 }
+    .onScrollVisibilityChange(threshold: 0.08) {
+      isVisible = $0
+      onVisibilityChange($0)
+    }
     .accessibilityElement(children: .contain)
     .accessibilityLabel("Company Command Viewport, \(atmosphere.facility.name), \(sprintPhase.title)")
-    .accessibilityAction(named: Text("Select Founder command station"), onSelectFounder)
-    .accessibilityAction(named: Text("Select Aurora station")) { selectCanonicalAgent("aurora") }
-    .accessibilityAction(named: Text("Select Stacks station")) { selectCanonicalAgent("stacks") }
-    .accessibilityAction(named: Text("Select Brio station")) { selectCanonicalAgent("brio") }
+    .accessibilityAction(named: Text("Focus Founder")) { onFocus(.founder) }
+    .accessibilityAction(named: Text("Focus Aurora")) { focusCanonicalAgent("aurora") }
+    .accessibilityAction(named: Text("Focus Stacks")) { focusCanonicalAgent("stacks") }
+    .accessibilityAction(named: Text("Focus Brio")) { focusCanonicalAgent("brio") }
+  }
+
+  private var viewportHeight: CGFloat {
+    if dynamicTypeSize.isAccessibilitySize { return focus == nil ? 400 : 560 }
+    return focus == nil ? 344 : 430
   }
 
   private var motionPaused: Bool {
     reduceMotion || !isVisible || scenePhase != .active
   }
 
-  private func selectCanonicalAgent(_ id: String) {
+  private func focusCanonicalAgent(_ id: String) {
     guard ViewportSelectionMap.workstationID(
       for: id,
       canonicalAgentIDs: agents.map(\.agentID)
     ) != nil else { return }
-    onSelectAgent(id)
+    onFocus(.agent(id))
   }
 
   private var header: some View {
@@ -70,11 +89,13 @@ struct CompanyCommandViewport: View {
       Label(sprintPhase.title, systemImage: sprintPhase.symbol)
         .font(.caption2.weight(.bold))
         .lineLimit(1)
-      if agents.contains(where: { [.assignmentReceived, .working, .workComplete, .reviewing, .resolving].contains($0.activity) }) {
-        Button("Skip animation", systemImage: "forward.end.fill", action: onSkipPresentation)
+      if focus != nil {
+        Button("Close focus", systemImage: "xmark") {
+          if let focus { onFocus(focus) }
+        }
           .labelStyle(.iconOnly)
           .frame(minWidth: 44, minHeight: 44)
-          .accessibilityHint("Shows the already determined final presentation state immediately")
+          .accessibilityHint("Returns to the full company overview without scrolling")
       }
     }
     .frame(minHeight: 30)
@@ -84,43 +105,76 @@ struct CompanyCommandViewport: View {
     GeometryReader { geometry in
       ZStack(alignment: .bottom) {
         facilityStructure
-        HStack(alignment: .top, spacing: 6) {
-          ForEach(Array(agents.enumerated()), id: \.element.id) { index, agent in
-            ViewportAgentStation(
+        switch focus {
+        case .agent(let agentID):
+          if let agent = agents.first(where: { $0.agentID == agentID }) {
+            AgentCommandFocusPanel(
               agent: agent,
+              surroundingAgents: agents.filter { $0.agentID != agentID },
+              availability: agentAvailability[agentID] ?? .init(),
               time: time,
               reduceMotion: reduceMotion,
-              dimmed: agents.contains(where: { $0.activity == .reviewing }) && agent.activity != .reviewing,
-              action: { onSelectAgent(agent.agentID) }
+              onTransferFocus: { onFocus(.agent($0)) },
+              onAssign: { onAssign(agentID) },
+              onReview: { onReview(agentID) },
+              onRest: { onRest(agentID) },
+              onSkip: { onSkipAgentPresentation(agentID) },
+              onFullWorkstation: { onOpenFullWorkstation(.agent(agentID)) }
             )
-            .frame(maxWidth: .infinity)
-            .accessibilitySortPriority(Double(agents.count - index))
+            .transition(.opacity.combined(with: .scale(scale: 0.96)))
           }
+        case .founder:
+          FounderCommandFocusPanel(
+            summary: founderSummary,
+            onCommit: onCommit,
+            onFullWorkstation: { onOpenFullWorkstation(.founder) }
+          )
+          .transition(.opacity.combined(with: .scale(scale: 0.96)))
+        case nil:
+          overviewCommandFloor(time: time, geometry: geometry)
         }
-        .frame(maxHeight: .infinity, alignment: .top)
-        .padding(.horizontal, 5)
-        .padding(.top, 4)
+      }
+    }
+  }
 
-        FounderCommandStation(
-          activeCount: agents.filter { [.assignmentReceived, .working].contains($0.activity) }.count,
-          reviewCount: agents.filter { [.workComplete, .awaitingReview, .reviewing].contains($0.activity) }.count,
-          pressure: atmosphere.pressure,
-          action: onSelectFounder
-        )
-        .frame(width: min(geometry.size.width * 0.62, 230))
-        .offset(y: 3)
-
+  private func overviewCommandFloor(time: TimeInterval, geometry: GeometryProxy) -> some View {
+    ZStack(alignment: .bottom) {
+      HStack(alignment: .top, spacing: 6) {
         ForEach(Array(agents.enumerated()), id: \.element.id) { index, agent in
-          if shouldShowPacket(for: agent.activity) {
-            TaskPacket(
-              accent: accent(for: agent.agentID),
-              returning: [.workComplete, .awaitingReview, .reviewing].contains(agent.activity),
-              settled: agent.activity == .awaitingReview || agent.activity == .reviewing,
-              reduceMotion: reduceMotion
-            )
-            .position(packetPosition(index: index, agent: agent, size: geometry.size, time: time))
-            .accessibilityHidden(true)
-          }
+          ViewportAgentStation(
+            agent: agent,
+            time: time,
+            reduceMotion: reduceMotion,
+            dimmed: agents.contains(where: { $0.activity == .reviewing }) && agent.activity != .reviewing,
+            action: { onFocus(.agent(agent.agentID)) }
+          )
+          .frame(maxWidth: .infinity)
+          .accessibilitySortPriority(Double(agents.count - index))
+        }
+      }
+      .frame(maxHeight: .infinity, alignment: .top)
+      .padding(.horizontal, 5)
+      .padding(.top, 4)
+
+      FounderCommandStation(
+        activeCount: agents.filter { [.assignmentReceived, .working].contains($0.activity) }.count,
+        reviewCount: agents.filter { [.workComplete, .awaitingReview, .reviewing].contains($0.activity) }.count,
+        pressure: atmosphere.pressure,
+        action: { onFocus(.founder) }
+      )
+      .frame(width: min(geometry.size.width * 0.62, 230))
+      .offset(y: 3)
+
+      ForEach(Array(agents.enumerated()), id: \.element.id) { index, agent in
+        if shouldShowPacket(for: agent.activity) {
+          TaskPacket(
+            accent: accent(for: agent.agentID),
+            returning: [.workComplete, .awaitingReview, .reviewing].contains(agent.activity),
+            settled: agent.activity == .awaitingReview || agent.activity == .reviewing,
+            reduceMotion: reduceMotion
+          )
+          .position(packetPosition(index: index, agent: agent, size: geometry.size, time: time))
+          .accessibilityHidden(true)
         }
       }
     }
@@ -281,6 +335,306 @@ struct CompanyCommandViewport: View {
   }
 }
 
+private struct AgentCommandFocusPanel: View {
+  var agent: LivingAgentProjection
+  var surroundingAgents: [LivingAgentProjection]
+  var availability: CompanyCommandAgentAvailability
+  var time: TimeInterval
+  var reduceMotion: Bool
+  var onTransferFocus: (String) -> Void
+  var onAssign: () -> Void
+  var onReview: () -> Void
+  var onRest: () -> Void
+  var onSkip: () -> Void
+  var onFullWorkstation: () -> Void
+
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+  var body: some View {
+    VStack(spacing: dynamicTypeSize.isAccessibilitySize ? 10 : 8) {
+      if dynamicTypeSize.isAccessibilitySize {
+        VStack(spacing: 8) {
+          focusedCharacter.frame(height: 92)
+          focusInformation
+        }
+      } else {
+        HStack(alignment: .top, spacing: 12) {
+          focusedCharacter.frame(width: 128, height: 132)
+          focusInformation
+        }
+      }
+      surroundingStations
+      actionTray
+    }
+    .padding(.horizontal, 5)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel("\(agent.name) command focus")
+  }
+
+  private var focusedCharacter: some View {
+    Button { onTransferFocus(agent.agentID) } label: {
+      LivingAgentCharacterView(
+        agentID: agent.agentID,
+        initials: agent.initials,
+        accent: accent,
+        activity: agent.activity,
+        time: time,
+        reduceMotion: reduceMotion
+      )
+      .overlay(alignment: .bottomLeading) {
+        Label(agent.role.rawValue, systemImage: agent.role.symbol)
+          .font(.caption2.weight(.black))
+          .padding(6)
+          .background(.black.opacity(0.82), in: .rect(cornerRadius: 8))
+          .padding(6)
+      }
+    }
+    .buttonStyle(SoloPressStyle(scale: 0.98))
+    .accessibilityLabel("Close \(agent.name) focus")
+    .accessibilityHint("Returns to the company overview without scrolling")
+  }
+
+  private var focusInformation: some View {
+    VStack(alignment: .leading, spacing: 6) {
+      HStack {
+        VStack(alignment: .leading, spacing: 1) {
+          Text(agent.name).font(.title3.weight(.black))
+          Text(agent.role.rawValue).font(.caption.weight(.bold)).foregroundStyle(accent)
+        }
+        Spacer()
+        Label("Lv \(agent.level)", systemImage: "star.fill")
+          .font(.caption.weight(.bold))
+      }
+      Label(agent.activity.label, systemImage: activitySymbol)
+        .font(.subheadline.weight(.bold))
+        .foregroundStyle(statusColor)
+      Text(agent.taskTitle ?? "No task assigned")
+        .font(.subheadline.weight(.semibold))
+        .lineLimit(dynamicTypeSize.isAccessibilitySize ? 2 : 1)
+      HStack(spacing: 10) {
+        Label(agent.stressLabel, systemImage: "gauge.with.dots.needle.50percent")
+        Label(agent.trustLabel, systemImage: "person.crop.circle.badge.checkmark")
+      }
+      .font(.caption2.weight(.semibold))
+      .foregroundStyle(.secondary)
+      if agent.activity == .working || agent.activity == .assignmentReceived {
+        ProgressView(value: agent.progress) {
+          Text("WORK PROGRESS").font(.caption2.weight(.black))
+        }
+        .tint(accent)
+      }
+      if agent.needsFounderAttention {
+        Label("Founder attention required", systemImage: "eye.fill")
+          .font(.caption.weight(.bold))
+          .foregroundStyle(SoloTheme.amber)
+      }
+      if agent.isResting {
+        Label("Recovering this sprint", systemImage: "bed.double.fill")
+          .font(.caption.weight(.bold))
+          .foregroundStyle(.secondary)
+      }
+      RoleActivityMonitor(role: agent.role, progress: agent.progress, accent: accent)
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .accessibilityElement(children: .combine)
+    .accessibilityValue(agent.accessibilityValue)
+  }
+
+  private var surroundingStations: some View {
+    HStack(spacing: 10) {
+      Text("COMMAND ROOM").font(.system(size: 8, weight: .black, design: .monospaced)).foregroundStyle(.secondary)
+      ForEach(surroundingAgents) { surrounding in
+        Button { onTransferFocus(surrounding.agentID) } label: {
+          HStack(spacing: 5) {
+            LivingAgentCharacterView(
+              agentID: surrounding.agentID,
+              initials: surrounding.initials,
+              accent: accent(for: surrounding.agentID),
+              activity: surrounding.activity,
+              time: time,
+              reduceMotion: reduceMotion
+            )
+            .frame(width: 38, height: 38)
+            VStack(alignment: .leading, spacing: 1) {
+              Text(surrounding.name).font(.caption2.weight(.black))
+              Text(surrounding.activity.label).font(.system(size: 8, weight: .semibold)).foregroundStyle(.secondary)
+            }
+          }
+          .frame(minHeight: 44)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Focus \(surrounding.name)")
+        .accessibilityValue(surrounding.accessibilityValue)
+      }
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+  }
+
+  private var actionTray: some View {
+    LazyVGrid(columns: actionColumns, spacing: 7) {
+      if availability.canAssign {
+        commandAction("Assign Task", symbol: "checklist", action: onAssign)
+      }
+      if availability.canReview {
+        commandAction("Review Work", symbol: "eye.fill", action: onReview)
+      }
+      if availability.requiresResolution {
+        commandAction("Resolve in Full Workstation", symbol: "lock.open.fill", action: onFullWorkstation)
+      }
+      if availability.canRest {
+        commandAction("Rest", symbol: "bed.double.fill", action: onRest)
+      }
+      if availability.canSkipPresentation {
+        commandAction("Skip Presentation", symbol: "forward.end.fill", action: onSkip)
+      }
+      commandAction("Full Workstation", symbol: "rectangle.expand.vertical", action: onFullWorkstation)
+    }
+    .padding(7)
+    .background(.black.opacity(0.58), in: .rect(cornerRadius: 12))
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel("Contextual actions")
+  }
+
+  private var actionColumns: [GridItem] {
+    dynamicTypeSize.isAccessibilitySize
+      ? [GridItem(.flexible())]
+      : [GridItem(.flexible()), GridItem(.flexible())]
+  }
+
+  private func commandAction(_ title: String, symbol: String, action: @escaping () -> Void) -> some View {
+    Button(title, systemImage: symbol, action: action)
+      .font(.caption.weight(.bold))
+      .frame(maxWidth: .infinity, minHeight: 44)
+      .background(accent.opacity(0.12), in: .rect(cornerRadius: 9))
+      .buttonStyle(.plain)
+  }
+
+  private var accent: Color { accent(for: agent.agentID) }
+
+  private func accent(for agentID: String) -> Color {
+    switch agentID {
+    case "aurora": SoloTheme.cyan
+    case "stacks": SoloTheme.amber
+    case "brio": SoloTheme.coral
+    default: SoloTheme.mint
+    }
+  }
+
+  private var statusColor: Color {
+    if agent.conditions.contains(.overloaded) { return SoloTheme.amber }
+    if agent.conditions.contains(.verified) { return SoloTheme.mint }
+    if !agent.conditions.intersection([.overclaimed, .drifting, .evidenceIncomplete]).isEmpty { return SoloTheme.coral }
+    return accent
+  }
+
+  private var activitySymbol: String {
+    switch agent.activity {
+    case .idle: "circle.dotted"
+    case .assignmentReceived: "arrow.down.doc.fill"
+    case .working: agent.role.symbol
+    case .workComplete, .awaitingReview: "tray.full.fill"
+    case .reviewing, .reviewed: "eye.fill"
+    case .resolving, .resolved: "lock.fill"
+    case .resting: "bed.double.fill"
+    }
+  }
+}
+
+private struct RoleActivityMonitor: View {
+  var role: AgentRole
+  var progress: Double
+  var accent: Color
+
+  var body: some View {
+    HStack(spacing: 4) {
+      Image(systemName: role.symbol).font(.caption2.weight(.black))
+      ForEach(0..<6, id: \.self) { index in
+        Capsule()
+          .fill(Double(index + 1) / 6 <= progress ? accent : .white.opacity(0.10))
+          .frame(maxWidth: .infinity, minHeight: 5)
+      }
+    }
+    .padding(6)
+    .background(accent.opacity(0.08), in: .rect(cornerRadius: 8))
+    .accessibilityElement(children: .combine)
+    .accessibilityLabel("\(role.rawValue) monitor")
+    .accessibilityValue("\(Int((progress * 100).rounded())) percent activity")
+  }
+}
+
+private struct FounderCommandFocusPanel: View {
+  var summary: CompanyCommandFounderSummary
+  var onCommit: () -> Void
+  var onFullWorkstation: () -> Void
+
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      HStack(spacing: 10) {
+        Image(systemName: "command")
+          .font(.title2.weight(.black))
+          .foregroundStyle(SoloTheme.amber)
+          .frame(width: 52, height: 52)
+          .background(SoloTheme.amber.opacity(0.13), in: .rect(cornerRadius: 14))
+        VStack(alignment: .leading, spacing: 2) {
+          Text("FOUNDER COMMAND").font(.headline.weight(.black))
+          Label(summary.sprintPhase.title, systemImage: summary.sprintPhase.symbol)
+            .font(.caption.weight(.bold))
+            .foregroundStyle(SoloTheme.amber)
+        }
+      }
+      LazyVGrid(columns: metricColumns, alignment: .leading, spacing: 8) {
+        metric("Work active", summary.workInProgressCount, "waveform.path.ecg")
+        metric("Reviews waiting", summary.reviewCount, "eye.fill")
+        metric("Resolutions", summary.resolutionCount, "lock.open.fill")
+        metric("Attention", summary.attentionRemaining, "eye.circle.fill", suffix: "/\(summary.attentionMaximum)")
+      }
+      Label(summary.nextAction, systemImage: summary.canCommit ? "checkmark.seal.fill" : "arrow.forward.circle.fill")
+        .font(.subheadline.weight(.semibold))
+        .foregroundStyle(summary.canCommit ? SoloTheme.mint : .primary)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(.black.opacity(0.46), in: .rect(cornerRadius: 10))
+      VStack(spacing: 7) {
+        if summary.canCommit {
+          Button("Commit Sprint", systemImage: "arrow.forward.square.fill", action: onCommit)
+            .font(.subheadline.weight(.black))
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .background(SoloTheme.amber, in: .rect(cornerRadius: 10))
+            .foregroundStyle(.black)
+            .buttonStyle(.plain)
+        }
+        Button("Full Founder Workstation", systemImage: "rectangle.expand.vertical", action: onFullWorkstation)
+          .font(.subheadline.weight(.bold))
+          .frame(maxWidth: .infinity, minHeight: 44)
+          .background(SoloTheme.amber.opacity(0.13), in: .rect(cornerRadius: 10))
+          .buttonStyle(.plain)
+      }
+    }
+    .padding(.horizontal, 8)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel("Founder command focus")
+  }
+
+  private var metricColumns: [GridItem] {
+    dynamicTypeSize.isAccessibilitySize
+      ? [GridItem(.flexible())]
+      : [GridItem(.flexible()), GridItem(.flexible())]
+  }
+
+  private func metric(_ label: String, _ value: Int, _ symbol: String, suffix: String = "") -> some View {
+    Label {
+      Text("\(label) \(value)\(suffix)").font(.caption.weight(.semibold))
+    } icon: {
+      Image(systemName: symbol).foregroundStyle(SoloTheme.amber)
+    }
+    .frame(maxWidth: .infinity, minHeight: 36, alignment: .leading)
+  }
+}
+
 /// Stable replacement boundary for a future Rive-backed character renderer.
 struct LivingAgentCharacterView: View {
   var agentID: String
@@ -373,7 +727,7 @@ private struct ViewportAgentStation: View {
             time: time,
             reduceMotion: reduceMotion
           )
-          .frame(height: 62)
+          .frame(height: 104)
           conditionBadge
         }
         Text(agent.name)
@@ -396,7 +750,7 @@ private struct ViewportAgentStation: View {
     .frame(minWidth: 44, minHeight: 44)
     .accessibilityLabel("\(agent.name), \(agent.role.rawValue) station")
     .accessibilityValue(agent.accessibilityValue)
-    .accessibilityHint("Selects and scrolls to \(agent.name)'s full workstation")
+    .accessibilityHint("Focuses \(agent.name) inside Company Command without scrolling")
   }
 
   @ViewBuilder
@@ -479,7 +833,7 @@ private struct FounderCommandStation: View {
     .frame(minHeight: 44)
     .accessibilityLabel("Founder command station")
     .accessibilityValue(reviewCount > 0 ? "\(reviewCount) artifacts await Founder attention" : "\(activeCount) agents active. Company pressure: \(pressure.rawValue)")
-    .accessibilityHint("Selects and scrolls to the full Founder workstation")
+    .accessibilityHint("Focuses Founder command inside the viewport without scrolling")
   }
 }
 

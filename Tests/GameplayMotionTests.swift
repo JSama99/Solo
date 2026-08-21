@@ -227,7 +227,10 @@ final class GameplayMotionTests: XCTestCase {
       .workInProgress
     )
 
-    for _ in 0..<8 { await Task.yield() }
+    for _ in 0..<100 {
+      guard presentation.presentation(for: agent.id)?.phase != .awaitingReview else { break }
+      await Task.yield()
+    }
     var summary = FounderWorkstationSummary(store: store, presentation: presentation)
     XCTAssertEqual(summary.reviewCount, 1)
     XCTAssertEqual(summary.readiness, .founderReviewPending)
@@ -267,7 +270,10 @@ final class GameplayMotionTests: XCTestCase {
     let task = try XCTUnwrap(store.tasks.first)
     let agent = try XCTUnwrap(store.agents.first)
     presentation.assign(agentID: agent.id, to: task.id, in: store)
-    for _ in 0..<8 { await Task.yield() }
+    for _ in 0..<100 {
+      guard presentation.presentation(for: agent.id)?.phase != .awaitingReview else { break }
+      await Task.yield()
+    }
     presentation.review(taskID: task.id, in: store)
     presentation.resolve(taskID: task.id, choice: .approve, in: store)
     if let choice = store.activeDilemma?.choices.first {

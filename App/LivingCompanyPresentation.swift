@@ -61,6 +61,136 @@ enum LivingPresentationEmphasis: Equatable, Sendable {
   case decisionLock
 }
 
+/// Presentation-only focus for the command scene. It is never persisted or
+/// passed into `GameStore`.
+enum CompanyCommandFocus: Equatable, Sendable {
+  case founder
+  case agent(String)
+
+  var scrollID: String {
+    switch self {
+    case .founder: "founder"
+    case .agent(let agentID): agentID
+    }
+  }
+
+  func toggled(by target: Self) -> Self? {
+    self == target ? nil : target
+  }
+}
+
+struct CompanyCommandNavigationRequest: Equatable, Sendable {
+  var target: CompanyCommandFocus
+  var sequence: Int
+}
+
+struct CompanyCommandInteractionState: Equatable, Sendable {
+  private(set) var focus: CompanyCommandFocus?
+  private(set) var navigationRequest: CompanyCommandNavigationRequest?
+  private(set) var userInitiatedFocus = false
+  private var navigationSequence = 0
+
+  mutating func toggleFocus(_ target: CompanyCommandFocus) {
+    focus = focus == target ? nil : target
+    userInitiatedFocus = focus != nil
+  }
+
+  mutating func ambientFocus(_ target: CompanyCommandFocus) {
+    guard !userInitiatedFocus else { return }
+    focus = target
+  }
+
+  mutating func requestFullWorkstation(_ target: CompanyCommandFocus) {
+    navigationSequence += 1
+    navigationRequest = .init(target: target, sequence: navigationSequence)
+  }
+
+  mutating func clearAfterSprintCommit() {
+    focus = nil
+    userInitiatedFocus = false
+  }
+}
+
+/// One canonical availability projection is shared by viewport actions and the
+/// full workstation cards, preventing the compact surface from inventing rules.
+struct CompanyCommandAgentAvailability: Equatable, Sendable {
+  var canAssign = false
+  var canReview = false
+  var canRest = false
+  var canSkipPresentation = false
+  var requiresResolution = false
+
+  static func derive(
+    sprintPhase: SprintPhase,
+    task: SoloTask?,
+    presentation: PresentationCoordinator.AgentPresentation?,
+    isResting: Bool,
+    attentionRemaining: Int
+  ) -> Self {
+    let isPlanning = sprintPhase == .chooseCommitments || sprintPhase == .assignTeam
+    let presentationReady = presentation == nil || presentation?.phase == .awaitingReview
+    let activePresentation = presentation.map {
+      [.assignmentReceived, .working, .workComplete, .reviewing, .resolving].contains($0.phase)
+    } ?? false
+    return Self(
+      canAssign: isPlanning && task == nil && !isResting,
+      canReview: sprintPhase == .reviewAndResolve
+        && presentationReady
+        && task?.isReviewed == false
+        && task?.result != nil
+        && attentionRemaining > 0,
+      canRest: isPlanning && !isResting && (task == nil || task?.isReviewed == false),
+      canSkipPresentation: activePresentation,
+      requiresResolution: task?.isReviewed == true && task?.resolutionLocked == false
+    )
+  }
+}
+
+struct CompanyCommandFounderSummary: Equatable, Sendable {
+  var sprintPhase: SprintPhase
+  var workInProgressCount: Int
+  var reviewCount: Int
+  var resolutionCount: Int
+  var attentionRemaining: Int
+  var attentionMaximum: Int
+  var canCommit: Bool
+  var nextAction: String
+
+  @MainActor
+  static func derive(store: GameStore, presentation: PresentationCoordinator) -> Self {
+    let workInProgressCount = store.tasks.compactMap(\.assignedAgentID).filter { agentID in
+      guard let phase = presentation.presentation(for: agentID)?.phase else { return false }
+      return [.assignmentReceived, .working, .workComplete].contains(phase)
+    }.count
+    let reviewCount = store.tasks.filter {
+      $0.assignedAgentID != nil && !$0.isReviewed && $0.result != nil
+    }.count
+    let resolutionCount = store.tasks.filter { $0.isReviewed && !$0.resolutionLocked }.count
+    let nextAction: String
+    if store.sprintPhase == .founderEvent {
+      nextAction = "Choose a response to the Founder Event."
+    } else if workInProgressCount > 0 {
+      nextAction = "Agent work is still in progress."
+    } else if resolutionCount > 0 {
+      nextAction = "Resolve the waiting Founder decision."
+    } else if reviewCount > 0 && store.attentionRemaining > 0 {
+      nextAction = "Review the completed work."
+    } else {
+      nextAction = store.commitBlockerMessage ?? "Ready to commit this sprint."
+    }
+    return Self(
+      sprintPhase: store.sprintPhase,
+      workInProgressCount: workInProgressCount,
+      reviewCount: reviewCount,
+      resolutionCount: resolutionCount,
+      attentionRemaining: store.attentionRemaining,
+      attentionMaximum: store.attentionMaximum,
+      canCommit: store.canCommitSprint,
+      nextAction: nextAction
+    )
+  }
+}
+
 struct LivingAgentProjection: Identifiable, Equatable, Sendable {
   var id: String { agentID }
   var agentID: String
@@ -73,6 +203,11 @@ struct LivingAgentProjection: Identifiable, Equatable, Sendable {
   var conditions: Set<LivingAgentCondition>
   var emphasis: LivingPresentationEmphasis
   var progress: Double
+  var stressLabel: String
+  var trustLabel: String
+  var level: Int
+  var needsFounderAttention: Bool
+  var isResting: Bool
 
   var accessibilityValue: String {
     let task = taskTitle.map { "Task: \($0)." } ?? "No current task."
@@ -80,7 +215,7 @@ struct LivingAgentProjection: Identifiable, Equatable, Sendable {
       .sorted { $0.rawValue < $1.rawValue }
       .map(\.label)
       .joined(separator: ", ")
-    return "\(activity.label). \(task) \(conditionsText)."
+    return "\(activity.label). \(task) Stress \(stressLabel). Trust \(trustLabel). Level \(level). \(conditionsText)."
   }
 
   static func derive(
@@ -151,7 +286,12 @@ struct LivingAgentProjection: Identifiable, Equatable, Sendable {
       activity: activity,
       conditions: conditions,
       emphasis: emphasis,
-      progress: min(1, max(0, presentation?.progress ?? defaultProgress(task: task)))
+      progress: min(1, max(0, presentation?.progress ?? defaultProgress(task: task))),
+      stressLabel: agent.progression.stressBand.label,
+      trustLabel: AgentStationViewModel.TrustBand(trust: agent.trust).label,
+      level: agent.progression.level,
+      needsFounderAttention: [.workComplete, .awaitingReview, .reviewing].contains(activity),
+      isResting: isResting
     )
   }
 
