@@ -27,7 +27,7 @@ struct CompanyCommandViewport: View {
       }
       .padding(12)
       .frame(maxWidth: .infinity)
-      .frame(height: dynamicTypeSize.isAccessibilitySize ? 280 : 258)
+      .frame(height: dynamicTypeSize.isAccessibilitySize ? 370 : 344)
       .background {
         viewportBackground(time: time)
           .clipShape(.rect(cornerRadius: 24))
@@ -373,7 +373,7 @@ private struct ViewportAgentStation: View {
             time: time,
             reduceMotion: reduceMotion
           )
-          .frame(height: 62)
+          .frame(height: 104)
           conditionBadge
         }
         Text(agent.name)

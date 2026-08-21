@@ -8,7 +8,6 @@ struct FounderComputerScreen: View {
   @Environment(FounderProgressionStore.self) private var progression
   @Environment(AppSettingsStore.self) private var settings
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
-  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @State private var selectedAgentID: String?
   @State private var assignmentDestination: AssignmentDestination?
   @State private var restCandidate: RestCandidate?
@@ -20,7 +19,6 @@ struct FounderComputerScreen: View {
   @State private var activeReviewTaskID: UUID?
   @State private var reviewStage = 0
   @State private var resolutionFocus: TaskResolutionChoice?
-  @State private var commitPulse = false
   @State private var evidencePulse = false
   @State private var hasPresentedRoster = false
   @State private var commitInProgress = false
@@ -32,7 +30,6 @@ struct FounderComputerScreen: View {
     ScrollViewReader { proxy in
       ScrollView {
         LazyVStack(spacing: 16) {
-          hud.founderEntrance(order: 0, alreadyPresented: hasPresentedRoster)
           CompanyCommandViewport(
             agents: livingAgentProjections,
             atmosphere: companyAtmosphere,
@@ -43,7 +40,7 @@ struct FounderComputerScreen: View {
             onSelectFounder: selectFounder,
             onSkipPresentation: skipPresentation
           )
-          .founderEntrance(order: 1, alreadyPresented: hasPresentedRoster)
+          .founderEntrance(order: 0, alreadyPresented: hasPresentedRoster)
           FounderWorkstationCard(
             store: store,
             presentation: presentation,
@@ -54,12 +51,12 @@ struct FounderComputerScreen: View {
             onCommit: commit
           )
           .id("founder")
-          .founderEntrance(order: 2, alreadyPresented: hasPresentedRoster)
+          .founderEntrance(order: 1, alreadyPresented: hasPresentedRoster)
           ForEach(orderedStations) { station in
             workspaceCard(for: station)
             .id(station.id)
             .opacity(isReviewFocused && selectedAgentID != station.agentID ? 0.86 : 1)
-            .founderEntrance(order: rank(station.agentID) + 3, alreadyPresented: hasPresentedRoster)
+            .founderEntrance(order: rank(station.agentID) + 2, alreadyPresented: hasPresentedRoster)
           }
           evidenceDrawer.founderEntrance(order: 5, alreadyPresented: hasPresentedRoster)
           HindsightArchiveCard(
@@ -168,7 +165,7 @@ struct FounderComputerScreen: View {
         playVerificationFeedback(result)
       }
     case .sprint:
-      commitPulse.toggle()
+      break
     }
   }
 
@@ -240,70 +237,6 @@ struct FounderComputerScreen: View {
       canReview: canReview(agentID),
       canRest: canRest(agentID)
     )
-  }
-
-  private var hud: some View {
-    VStack(alignment: .leading, spacing: 10) {
-      Group {
-        if dynamicTypeSize.isAccessibilitySize {
-          VStack(alignment: .leading, spacing: 8) {
-            hudTitle
-            hudPhase
-          }
-        } else {
-          HStack {
-            hudTitle
-            Spacer()
-            hudPhase
-          }
-        }
-      }
-      Group {
-        if dynamicTypeSize.isAccessibilitySize {
-          LazyVGrid(columns: accessibilityMetricColumns, alignment: .leading, spacing: 8) {
-            hudMetrics
-          }
-        } else {
-          HStack(spacing: 8) {
-            hudMetrics
-          }
-        }
-      }
-      Text("Venture \(store.venture) · Sprint \(store.sprint)/12 · \(store.chapter.name)").font(.caption).foregroundStyle(.secondary)
-    }
-    .padding(14).background(SoloTheme.card, in: .rect(cornerRadius: 18))
-    .scaleEffect(commitPulse && !reduceMotion ? 1.012 : 1)
-    .overlay { RoundedRectangle(cornerRadius: 18).stroke(SoloTheme.cyan.opacity(commitPulse ? 0.7 : 0), lineWidth: 1.5) }
-    .animation(SoloMotion.resolved(SoloMotion.impact, reduceMotion: reduceMotion), value: commitPulse)
-    .gameplayMotion(value: store.sprintPhase)
-  }
-
-  private var hudTitle: some View {
-    Text("FOUNDER COMPUTER")
-      .font(.caption.weight(.bold))
-      .foregroundStyle(SoloTheme.cyan)
-      .fixedSize(horizontal: false, vertical: true)
-  }
-
-  private var hudPhase: some View {
-    Label(store.sprintPhase.title, systemImage: store.sprintPhase.symbol)
-      .font(.caption.weight(.bold))
-      .fixedSize(horizontal: false, vertical: true)
-      .contentTransition(.interpolate)
-      .symbolEffect(.bounce, value: store.sprintPhase)
-      .id(store.sprintPhase)
-      .transition(.opacity.combined(with: .move(edge: .trailing)))
-  }
-
-  @ViewBuilder private var hudMetrics: some View {
-    HUDMetricView(label: "Runway", value: store.stats.runway, unit: "d", symbol: "calendar")
-    HUDMetricView(label: "Energy", value: store.stats.energy, symbol: "battery.75percent")
-    HUDMetricView(label: "Momentum", value: store.stats.momentum, symbol: "arrow.up.right")
-    HUDMetricView(label: "Attention", value: store.attentionRemaining, maximum: store.attentionMaximum, symbol: "eye")
-  }
-
-  private var accessibilityMetricColumns: [GridItem] {
-    [GridItem(.flexible(), alignment: .leading)]
   }
 
   private var evidenceDrawer: some View {
