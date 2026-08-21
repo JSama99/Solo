@@ -291,7 +291,7 @@ struct LivingAgentProjection: Identifiable, Equatable, Sendable {
       activity: activity,
       conditions: conditions,
       emphasis: emphasis,
-      progress: min(1, max(0, presentation?.progress ?? defaultProgress(task: task))),
+      progress: activity == .resting ? 0 : min(1, max(0, presentation?.progress ?? defaultProgress(task: task))),
       reviewRevealStep: presentation?.reviewRevealStep ?? (task?.isReviewed == true ? 5 : 0),
       stressLabel: agent.progression.stressBand.label,
       trustLabel: AgentStationViewModel.TrustBand(trust: agent.trust).label,

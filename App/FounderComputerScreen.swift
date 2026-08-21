@@ -25,6 +25,8 @@ struct FounderComputerScreen: View {
   @State private var evidencePulse = false
   @State private var hasPresentedRoster = false
   @State private var commitInProgress = false
+  @State private var observedAgentLevels: [String: Int] = [:]
+  @State private var levelUpAgentID: String?
   #if DEBUG
   @State private var showsMotionVerification = false
   #endif
@@ -86,6 +88,9 @@ struct FounderComputerScreen: View {
       .scrollTargetBehavior(.viewAligned)
       .safeAreaPadding(.bottom, 96)
       .onAppear {
+        if observedAgentLevels.isEmpty {
+          observedAgentLevels = Dictionary(uniqueKeysWithValues: store.agents.map { ($0.id, $0.progression.level) })
+        }
         guard !hasPresentedRoster else { return }
         Task { @MainActor in
           try? await Task.sleep(for: .seconds(1))
@@ -102,12 +107,16 @@ struct FounderComputerScreen: View {
           accessibilityWorkstationID = request.target.scrollID
         }
       }
+      .onChange(of: agentLevelSnapshot) { _, levels in
+        presentLevelUpIfNeeded(levels)
+      }
     }
     .sensoryFeedback(.selection, trigger: commandInteraction.focus)
     .sensoryFeedback(.success, trigger: store.sprint)
     .sensoryFeedback(.impact(weight: .light), trigger: resolutionTick)
     .sensoryFeedback(.impact(weight: .medium), trigger: assignmentArrivalAgentID)
     .sensoryFeedback(.success, trigger: activeReviewTaskID)
+    .sensoryFeedback(.success, trigger: levelUpAgentID)
     .onChange(of: presentation.latestEvent?.id) { _, _ in handlePresentationEvent() }
     .onChange(of: assignmentIdentity) { _, _ in reconcilePresentationAfterAssignmentChange() }
     .sheet(item: $assignmentDestination) { destination in
@@ -204,7 +213,8 @@ struct FounderComputerScreen: View {
         presentation: presentation.presentation(for: station.agentID),
         isResting: store.restingAgentIDs.contains(station.agentID),
         isSelected: commandInteraction.focus == .agent(station.agentID),
-        founderStats: store.stats
+        founderStats: store.stats,
+        celebratingLevelUp: levelUpAgentID == station.agentID
       )
     }
   }
@@ -215,6 +225,32 @@ struct FounderComputerScreen: View {
       facility: progression.currentFacility,
       venture: store.venture
     )
+  }
+
+  private var agentLevelSnapshot: [Int] {
+    store.agents.sorted { $0.id < $1.id }.map(\.progression.level)
+  }
+
+  private func presentLevelUpIfNeeded(_ levels: [Int]) {
+    let orderedAgents = store.agents.sorted { $0.id < $1.id }
+    guard levels.count == orderedAgents.count else { return }
+    let newLevels = Dictionary(uniqueKeysWithValues: zip(orderedAgents, levels).map { ($0.0.id, $0.1) })
+    guard let changed = orderedAgents.first(where: { agent in
+      guard let oldLevel = observedAgentLevels[agent.id], let newLevel = newLevels[agent.id] else { return false }
+      return newLevel > oldLevel
+    }) else {
+      observedAgentLevels = newLevels
+      return
+    }
+    observedAgentLevels = newLevels
+    levelUpAgentID = changed.id
+    settings.playFeedback(.levelUp)
+    announce("\(changed.name) reached level \(changed.progression.level).")
+    Task { @MainActor in
+      try? await Task.sleep(for: .milliseconds(reduceMotion ? 250 : 1_100))
+      guard levelUpAgentID == changed.id else { return }
+      levelUpAgentID = nil
+    }
   }
 
   private var infrastructureVisuals: [InfrastructureVisual] {
