@@ -11,6 +11,7 @@ struct CompanyCommandViewport: View {
   var agentAvailability: [String: CompanyCommandAgentAvailability]
   var founderSummary: CompanyCommandFounderSummary
   var reduceMotion: Bool
+  var forceIncreasedContrast = false
   var onFocus: (CompanyCommandFocus) -> Void
   var onAssign: (String) -> Void
   var onReview: (String) -> Void
@@ -30,6 +31,7 @@ struct CompanyCommandViewport: View {
       let time = context.date.timeIntervalSinceReferenceDate
       VStack(spacing: 8) {
         header
+        atmosphereStrip
         commandFloor(time: time)
         infrastructureRail
       }
@@ -52,6 +54,7 @@ struct CompanyCommandViewport: View {
     }
     .accessibilityElement(children: .contain)
     .accessibilityLabel("Company Command Viewport, \(atmosphere.facility.name), \(sprintPhase.title)")
+    .accessibilityValue("Priority: \(phaseHierarchy.priority.rawValue). \(atmosphere.accessibilitySummary)")
     .accessibilityAction(named: Text("Focus Founder")) { onFocus(.founder) }
     .accessibilityAction(named: Text("Focus Aurora")) { focusCanonicalAgent("aurora") }
     .accessibilityAction(named: Text("Focus Stacks")) { focusCanonicalAgent("stacks") }
@@ -59,8 +62,8 @@ struct CompanyCommandViewport: View {
   }
 
   private var viewportHeight: CGFloat {
-    if dynamicTypeSize.isAccessibilitySize { return focus == nil ? 400 : 560 }
-    return focus == nil ? 344 : 430
+    if dynamicTypeSize.isAccessibilitySize { return focus == nil ? 450 : 610 }
+    return focus == nil ? 382 : 468
   }
 
   private var motionPaused: Bool {
@@ -86,9 +89,14 @@ struct CompanyCommandViewport: View {
           .foregroundStyle(.secondary)
       }
       Spacer(minLength: 4)
-      Label(sprintPhase.title, systemImage: sprintPhase.symbol)
-        .font(.caption2.weight(.bold))
-        .lineLimit(1)
+      VStack(alignment: .trailing, spacing: 1) {
+        Label(sprintPhase.title, systemImage: sprintPhase.symbol)
+          .font(.caption2.weight(.bold))
+          .lineLimit(1)
+        Text(phaseHierarchy.priority.rawValue.uppercased())
+          .font(.system(size: 7, weight: .black, design: .monospaced))
+          .foregroundStyle(SoloTheme.cyan)
+      }
       if focus != nil {
         Button("Close focus", systemImage: "xmark") {
           if let focus { onFocus(focus) }
@@ -99,6 +107,43 @@ struct CompanyCommandViewport: View {
       }
     }
     .frame(minHeight: 30)
+  }
+
+  private var atmosphereStrip: some View {
+    HStack(spacing: 5) {
+      atmosphereSignal(
+        atmosphere.isLowEnergy ? "LOW ENERGY" : "ENERGY",
+        symbol: atmosphere.isLowEnergy ? "battery.25percent" : "battery.75percent",
+        color: atmosphere.isLowEnergy ? SoloTheme.amber : SoloTheme.mint
+      )
+      atmosphereSignal(
+        atmosphere.isLowRunway ? "LOW RUNWAY" : "RUNWAY",
+        symbol: atmosphere.isLowRunway ? "hourglass.bottomhalf.filled" : "calendar.badge.checkmark",
+        color: atmosphere.isLowRunway ? SoloTheme.amber : SoloTheme.cyan
+      )
+      atmosphereSignal(
+        atmosphere.isLowTrust ? "LOW TRUST" : "TRUST",
+        symbol: atmosphere.isLowTrust ? "person.crop.circle.badge.exclamationmark" : "person.crop.circle.badge.checkmark",
+        color: atmosphere.isLowTrust ? SoloTheme.coral : SoloTheme.mint
+      )
+      atmosphereSignal(
+        atmosphere.isHighMomentum ? "HIGH FLOW" : "MOMENTUM",
+        symbol: atmosphere.isHighMomentum ? "arrow.up.right" : "arrow.right",
+        color: atmosphere.isHighMomentum ? SoloTheme.cyan : .secondary
+      )
+    }
+    .accessibilityElement(children: .combine)
+    .accessibilityLabel(atmosphere.accessibilitySummary)
+  }
+
+  private func atmosphereSignal(_ title: String, symbol: String, color: Color) -> some View {
+    Label(title, systemImage: symbol)
+      .font(.system(size: 7, weight: .black, design: .monospaced))
+      .foregroundStyle(color)
+      .lineLimit(1)
+      .minimumScaleFactor(0.65)
+      .frame(maxWidth: .infinity, minHeight: 20)
+      .background(color.opacity(0.08), in: Capsule())
   }
 
   private func commandFloor(time: TimeInterval) -> some View {
@@ -146,6 +191,7 @@ struct CompanyCommandViewport: View {
             time: time,
             reduceMotion: reduceMotion,
             dimmed: agents.contains(where: { $0.activity == .reviewing }) && agent.activity != .reviewing,
+            prominence: phaseHierarchy.stationProminence,
             action: { onFocus(.agent(agent.agentID)) }
           )
           .frame(maxWidth: .infinity)
@@ -170,7 +216,8 @@ struct CompanyCommandViewport: View {
           TaskPacket(
             accent: accent(for: agent.agentID),
             returning: [.workComplete, .awaitingReview, .reviewing].contains(agent.activity),
-            settled: agent.activity == .awaitingReview || agent.activity == .reviewing,
+            settled: [.awaitingReview, .reviewing, .resolved].contains(agent.activity),
+            decisionResponse: [.resolving, .resolved].contains(agent.activity),
             reduceMotion: reduceMotion
           )
           .position(packetPosition(index: index, agent: agent, size: geometry.size, time: time))
@@ -182,22 +229,21 @@ struct CompanyCommandViewport: View {
 
   private var infrastructureRail: some View {
     HStack(spacing: 6) {
-      Text("INFRA")
+      Text("COMPANY SYSTEMS")
         .font(.system(size: 8, weight: .black, design: .monospaced))
         .foregroundStyle(.secondary)
       ForEach(infrastructure) { item in
-        Image(systemName: item.symbol)
-          .font(.system(size: 10, weight: .bold))
-          .foregroundStyle(infrastructureColor(item.state))
-          .frame(maxWidth: .infinity, minHeight: 24)
-          .background(infrastructureColor(item.state).opacity(item.state == .uninstalled ? 0.02 : 0.11), in: .rect(cornerRadius: 6))
-          .overlay { RoundedRectangle(cornerRadius: 6).stroke(infrastructureColor(item.state).opacity(0.35), lineWidth: 1) }
-          .symbolEffect(.bounce, value: item.state)
+        InfrastructureEquipmentView(item: item, reduceMotion: reduceMotion)
+          .frame(maxWidth: .infinity, minHeight: 30)
           .accessibilityLabel(item.title)
           .accessibilityValue(infrastructureLabel(item.state))
       }
     }
-    .frame(height: 26)
+    .frame(height: 32)
+  }
+
+  private var phaseHierarchy: CompanyPhaseHierarchy {
+    CompanyPhaseHierarchy.derive(sprintPhase: sprintPhase, agents: agents, founderSummary: founderSummary)
   }
 
   @ViewBuilder
@@ -226,11 +272,11 @@ struct CompanyCommandViewport: View {
     RoundedRectangle(cornerRadius: 24)
       .stroke(
         LinearGradient(
-          colors: [contrast == .increased ? .white.opacity(0.8) : atmosphereColor.opacity(0.75), .white.opacity(0.08)],
+          colors: [increasedContrast ? .white.opacity(0.8) : atmosphereColor.opacity(0.75), .white.opacity(0.08)],
           startPoint: .topLeading,
           endPoint: .bottomTrailing
         ),
-        lineWidth: contrast == .increased ? 2 : 1
+        lineWidth: increasedContrast ? 2 : 1
       )
       .overlay(alignment: .topLeading) {
         HStack(spacing: 4) {
@@ -246,20 +292,36 @@ struct CompanyCommandViewport: View {
   @ViewBuilder
   private var facilityStructure: some View {
     if atmosphere.facility == .founderLoft {
-      HStack(spacing: 10) {
-        ForEach(0..<4, id: \.self) { _ in
-          RoundedRectangle(cornerRadius: 3)
-            .fill(LinearGradient(colors: [SoloTheme.cyan.opacity(0.12), SoloTheme.purple.opacity(0.04)], startPoint: .top, endPoint: .bottom))
-            .overlay { RoundedRectangle(cornerRadius: 3).stroke(.white.opacity(0.08)) }
+      VStack(spacing: 9) {
+        HStack(spacing: 10) {
+          ForEach(0..<4, id: \.self) { index in
+            RoundedRectangle(cornerRadius: 5)
+              .fill(LinearGradient(colors: [SoloTheme.cyan.opacity(0.18), SoloTheme.purple.opacity(0.04)], startPoint: .top, endPoint: .bottom))
+              .overlay { RoundedRectangle(cornerRadius: 5).stroke(.white.opacity(0.12)) }
+              .overlay(alignment: .bottom) {
+                Capsule()
+                  .fill(index.isMultiple(of: 2) ? SoloTheme.cyan.opacity(0.25) : SoloTheme.purple.opacity(0.25))
+                  .frame(height: 2)
+                  .padding(4)
+              }
+          }
         }
+        Capsule().fill(.white.opacity(0.08)).frame(height: 3).padding(.horizontal, 24)
       }
       .padding(.horizontal, 12)
       .padding(.bottom, 48)
     } else {
-      HStack {
-        Rectangle().fill(SoloTheme.amber.opacity(0.08)).frame(width: 3)
-        Spacer()
-        Rectangle().fill(SoloTheme.amber.opacity(0.08)).frame(width: 3)
+      VStack(spacing: 4) {
+        HStack {
+          Rectangle().fill(SoloTheme.amber.opacity(0.16)).frame(width: 4)
+          Spacer()
+          Rectangle().fill(SoloTheme.amber.opacity(0.16)).frame(width: 4)
+        }
+        HStack(spacing: 5) {
+          ForEach(0..<7, id: \.self) { _ in
+            RoundedRectangle(cornerRadius: 2).fill(SoloTheme.amber.opacity(0.10)).frame(height: 5)
+          }
+        }
       }
       .overlay {
         Path { path in
@@ -275,7 +337,7 @@ struct CompanyCommandViewport: View {
   }
 
   private func shouldShowPacket(for activity: LivingAgentActivity) -> Bool {
-    [.assignmentReceived, .workComplete, .awaitingReview, .reviewing].contains(activity)
+    [.assignmentReceived, .workComplete, .awaitingReview, .reviewing, .resolving, .resolved].contains(activity)
   }
 
   private func packetPosition(index: Int, agent: LivingAgentProjection, size: CGSize, time: TimeInterval) -> CGPoint {
@@ -300,6 +362,10 @@ struct CompanyCommandViewport: View {
     atmosphere.facility == .founderLoft ? SoloTheme.purple.opacity(0.30) : Color(red: 0.10, green: 0.09, blue: 0.08)
   }
 
+  private var increasedContrast: Bool {
+    contrast == .increased || forceIncreasedContrast
+  }
+
   private var atmosphereColor: Color {
     switch atmosphere.pressure {
     case .stable: atmosphere.momentum >= 0.6 ? SoloTheme.mint : SoloTheme.cyan
@@ -321,6 +387,7 @@ struct CompanyCommandViewport: View {
   private func infrastructureColor(_ state: InfrastructureVisual.State) -> Color {
     switch state {
     case .uninstalled: .secondary
+    case .installing: SoloTheme.amber
     case .installed: .white
     case .active: SoloTheme.mint
     }
@@ -329,8 +396,78 @@ struct CompanyCommandViewport: View {
   private func infrastructureLabel(_ state: InfrastructureVisual.State) -> String {
     switch state {
     case .uninstalled: "Not installed"
+    case .installing: "Installation in progress"
     case .installed: "Installed"
     case .active: "Installed and active"
+    }
+  }
+}
+
+private struct InfrastructureEquipmentView: View {
+  var item: InfrastructureVisual
+  var reduceMotion: Bool
+
+  private var color: Color {
+    switch item.state {
+    case .uninstalled: .secondary
+    case .installing: SoloTheme.amber
+    case .installed: .white
+    case .active: SoloTheme.mint
+    }
+  }
+
+  var body: some View {
+    ZStack {
+      equipmentShape
+        .foregroundStyle(color.opacity(item.state == .uninstalled ? 0.20 : 0.78))
+      Image(systemName: statusSymbol)
+        .font(.system(size: 7, weight: .black))
+        .foregroundStyle(color)
+        .offset(x: 13, y: -7)
+    }
+    .frame(maxWidth: .infinity, minHeight: 30)
+    .background(color.opacity(item.state == .uninstalled ? 0.025 : 0.09), in: .rect(cornerRadius: 6))
+    .overlay { RoundedRectangle(cornerRadius: 6).stroke(style: StrokeStyle(lineWidth: 1, dash: item.state == .uninstalled ? [3, 3] : [])) .foregroundStyle(color.opacity(0.38)) }
+    .symbolEffect(.pulse, options: .repeat(2), value: item.state == .installing)
+  }
+
+  @ViewBuilder
+  private var equipmentShape: some View {
+    switch item.id {
+    case .developmentRig:
+      HStack(spacing: 2) {
+        ForEach(0..<3, id: \.self) { index in
+          RoundedRectangle(cornerRadius: 1).frame(width: 7, height: CGFloat(8 + index * 3))
+        }
+      }
+    case .verificationArray:
+      ZStack {
+        Circle().stroke(color.opacity(0.75), lineWidth: 2).frame(width: 22, height: 22)
+        Circle().fill(color).frame(width: 5, height: 5)
+      }
+    case .campaignStudio:
+      HStack(alignment: .bottom, spacing: 2) {
+        ForEach(0..<4, id: \.self) { index in Capsule().frame(width: 3, height: CGFloat(6 + index * 3)) }
+      }
+    case .recoveryCorner:
+      HStack(alignment: .bottom, spacing: 2) {
+        RoundedRectangle(cornerRadius: 3).frame(width: 21, height: 9)
+        Capsule().frame(width: 4, height: 17)
+      }
+    case .founderCommandDesk:
+      VStack(spacing: 2) {
+        HStack(spacing: 2) { ForEach(0..<3, id: \.self) { _ in RoundedRectangle(cornerRadius: 1).frame(width: 7, height: 8) } }
+        Capsule().frame(width: 28, height: 3)
+      }
+    }
+  }
+
+  private var statusSymbol: String {
+    switch item.state {
+    case .uninstalled: "plus"
+    case .installing: "wrench.and.screwdriver.fill"
+    case .installed: "checkmark"
+    case .active: "bolt.fill"
     }
   }
 }
@@ -679,6 +816,9 @@ private struct NativeAgentCharacterView: View {
         Text(initials).font(.headline.weight(.black)).foregroundStyle(accent)
       }
       LinearGradient(colors: [.clear, accent.opacity(activity == .resting ? 0.08 : 0.26)], startPoint: .top, endPoint: .bottom)
+      if activity == .assignmentReceived {
+        LinearGradient(colors: [.clear, accent.opacity(0.5)], startPoint: .leading, endPoint: .trailing)
+      }
     }
     .clipShape(RoundedRectangle(cornerRadius: 11))
     .overlay { RoundedRectangle(cornerRadius: 11).stroke(accent.opacity(0.65), lineWidth: 1) }
@@ -704,6 +844,7 @@ private struct ViewportAgentStation: View {
   var time: TimeInterval
   var reduceMotion: Bool
   var dimmed: Bool
+  var prominence: Double
   var action: () -> Void
 
   private var accent: Color {
@@ -737,14 +878,15 @@ private struct ViewportAgentStation: View {
           .font(.system(size: 8, weight: .bold))
           .foregroundStyle(statusColor)
           .lineLimit(1)
-        stationMonitor
+        conditionTreatment
+        RoleSpecificWorkSurface(agent: agent, accent: accent, time: time, reduceMotion: reduceMotion)
       }
       .padding(5)
       .frame(maxWidth: .infinity)
       .background(.black.opacity(agent.emphasis == .inspection ? 0.60 : 0.32), in: .rect(cornerRadius: 13))
       .overlay { RoundedRectangle(cornerRadius: 13).stroke(strokeColor, lineWidth: agent.emphasis == .inspection ? 2 : 1) }
-      .opacity(dimmed ? 0.55 : 1)
-      .scaleEffect(agent.emphasis == .selected && !reduceMotion ? 1.025 : 1)
+      .opacity(dimmed ? 0.55 : prominence)
+      .scaleEffect(scale)
     }
     .buttonStyle(SoloPressStyle(scale: 0.96))
     .frame(minWidth: 44, minHeight: 44)
@@ -770,15 +912,55 @@ private struct ViewportAgentStation: View {
     }
   }
 
-  private var stationMonitor: some View {
-    HStack(spacing: 2) {
-      ForEach(0..<5, id: \.self) { index in
-        Capsule()
-          .fill(Double(index + 1) / 5 <= agent.progress ? accent : .white.opacity(0.10))
-          .frame(maxWidth: .infinity, minHeight: agent.activity == .working && !reduceMotion ? 3 + CGFloat(index % 2) : 3)
+  private var conditionTreatment: some View {
+    Group {
+      if let condition = primaryCondition {
+        Label(condition.label, systemImage: conditionSymbol(condition))
+          .foregroundStyle(conditionColor(condition))
+      } else if agent.activity == .assignmentReceived {
+        Label("Acknowledged", systemImage: "checkmark.message.fill").foregroundStyle(accent)
+      } else if agent.activity == .resting {
+        Label("Recovery active", systemImage: "bed.double.fill").foregroundStyle(.secondary)
       }
     }
-    .frame(height: 5)
+    .font(.system(size: 7, weight: .black, design: .monospaced))
+    .lineLimit(1)
+    .minimumScaleFactor(0.65)
+    .frame(maxWidth: .infinity, minHeight: 11)
+  }
+
+  private var primaryCondition: LivingAgentCondition? {
+    let precedence: [LivingAgentCondition] = [.overloaded, .overclaimed, .drifting, .evidenceIncomplete, .verified, .stressed, .focused]
+    return precedence.first(where: agent.conditions.contains)
+  }
+
+  private func conditionSymbol(_ condition: LivingAgentCondition) -> String {
+    switch condition {
+    case .focused: "scope"
+    case .stressed: "gauge.with.dots.needle.67percent"
+    case .overloaded: "exclamationmark.triangle.fill"
+    case .drifting: "point.bottomleft.forward.to.point.topright.scurvepath"
+    case .verified: "checkmark.seal.fill"
+    case .overclaimed: "arrow.up.and.down.text.horizontal"
+    case .evidenceIncomplete: "link.badge.plus"
+    }
+  }
+
+  private func conditionColor(_ condition: LivingAgentCondition) -> Color {
+    switch condition {
+    case .verified, .focused: condition == .verified ? SoloTheme.mint : accent
+    case .stressed, .overloaded: SoloTheme.amber
+    case .overclaimed, .drifting, .evidenceIncomplete: SoloTheme.coral
+    }
+  }
+
+  private var scale: CGFloat {
+    guard !reduceMotion else { return 1 }
+    return switch agent.emphasis {
+    case .selected: 1.025
+    case .levelUpCelebration: 1.045
+    default: 1
+    }
   }
 
   private var statusColor: Color {
@@ -795,6 +977,96 @@ private struct ViewportAgentStation: View {
     case .founderAttention: SoloTheme.amber
     case .inspection: accent
     case .decisionLock: SoloTheme.mint
+    case .levelUpCelebration: accent
+    }
+  }
+}
+
+private struct RoleSpecificWorkSurface: View {
+  var agent: LivingAgentProjection
+  var accent: Color
+  var time: TimeInterval
+  var reduceMotion: Bool
+
+  private var active: Bool { agent.activity == .working || agent.activity == .assignmentReceived }
+  private var motionPhase: Double { reduceMotion || !active ? 0 : time.truncatingRemainder(dividingBy: 1.4) / 1.4 }
+
+  var body: some View {
+    VStack(spacing: 2) {
+      ZStack {
+        RoundedRectangle(cornerRadius: 4).fill(.black.opacity(agent.activity == .resting ? 0.52 : 0.78))
+        roleArtwork
+          .padding(.horizontal, 4)
+          .opacity(agent.activity == .resting ? 0.30 : 1)
+        if agent.activity == .reviewing {
+          Rectangle()
+            .fill(LinearGradient(colors: [.clear, SoloTheme.cyan.opacity(0.75), .clear], startPoint: .leading, endPoint: .trailing))
+            .frame(width: 20)
+            .offset(x: reduceMotion ? 0 : CGFloat(motionPhase * 54 - 27))
+        }
+      }
+      .frame(height: 27)
+      HStack(spacing: 2) {
+        ForEach(0..<5, id: \.self) { index in
+          Capsule()
+            .fill(Double(index + 1) / 5 <= agent.progress ? accent : .white.opacity(0.10))
+            .frame(maxWidth: .infinity, minHeight: 3)
+        }
+      }
+      Text(surfaceLabel)
+        .font(.system(size: 6, weight: .black, design: .monospaced))
+        .foregroundStyle(active ? accent : .secondary)
+        .lineLimit(1)
+    }
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel("\(agent.role.rawValue) workspace, \(surfaceLabel), \(Int((agent.progress * 100).rounded())) percent")
+  }
+
+  @ViewBuilder
+  private var roleArtwork: some View {
+    switch agent.role {
+    case .research:
+      ZStack {
+        Path { path in
+          path.move(to: CGPoint(x: 6, y: 13)); path.addLine(to: CGPoint(x: 25, y: 5)); path.addLine(to: CGPoint(x: 48, y: 14)); path.addLine(to: CGPoint(x: 70, y: 6))
+        }.stroke(accent.opacity(active ? 0.8 : 0.25), lineWidth: 1)
+        HStack { ForEach(0..<4, id: \.self) { index in Circle().fill(index == Int(motionPhase * 4) ? .white : accent).frame(width: 5, height: 5); if index < 3 { Spacer() } } }
+      }
+    case .engineering:
+      HStack(spacing: 3) {
+        ForEach(0..<4, id: \.self) { index in
+          RoundedRectangle(cornerRadius: 2)
+            .fill(Double(index + 1) / 4 <= agent.progress ? accent : accent.opacity(0.18))
+            .frame(height: CGFloat(8 + index * 3))
+            .overlay { Text("\(index + 1)").font(.system(size: 5, weight: .black)).foregroundStyle(.black) }
+        }
+      }
+    case .marketing:
+      ZStack(alignment: .leading) {
+        ForEach(0..<3, id: \.self) { index in
+          Capsule()
+            .stroke(accent.opacity(0.32 + Double(index) * 0.18), lineWidth: 1)
+            .frame(width: CGFloat(28 + index * 18), height: CGFloat(8 + index * 5))
+        }
+        Circle().fill(accent).frame(width: 6, height: 6).offset(x: CGFloat(motionPhase * 54))
+      }
+    case .general:
+      HStack { ForEach(0..<4, id: \.self) { _ in RoundedRectangle(cornerRadius: 2).fill(accent.opacity(0.5)) } }
+    }
+  }
+
+  private var surfaceLabel: String {
+    if agent.activity == .resting { return "RECOVERY · NO TASK PROGRESS" }
+    if agent.activity == .awaitingReview { return "ARTIFACT STABLE · REVIEW READY" }
+    if agent.activity == .reviewing { return "FOUNDER INSPECTION · STEP \(max(1, agent.reviewRevealStep))/5" }
+    if agent.activity == .reviewed { return "REPORT REVIEWED · RESOLUTION READY" }
+    if agent.activity == .resolving { return "DECISION LOCKING · ALTERNATIVES HELD" }
+    if agent.activity == .resolved { return "FOUNDER RESPONSE RECEIVED" }
+    return switch agent.role {
+    case .research: active ? "SOURCES → EVIDENCE → VERIFY" : "SOURCE SCAN STANDBY"
+    case .engineering: active ? "BUILD → COMPILE → DEPLOY" : "PROCESSOR RAIL STANDBY"
+    case .marketing: active ? "MESSAGE → CHANNELS → RESPONSE" : "SIGNAL CONSOLE STANDBY"
+    case .general: active ? "OPERATIONS ACTIVE" : "OPERATIONS STANDBY"
     }
   }
 }
@@ -841,15 +1113,16 @@ private struct TaskPacket: View {
   var accent: Color
   var returning: Bool
   var settled: Bool
+  var decisionResponse: Bool
   var reduceMotion: Bool
 
   var body: some View {
-    Image(systemName: returning ? "doc.richtext.fill" : "arrow.up.doc.fill")
+    Image(systemName: decisionResponse ? "lock.doc.fill" : (returning ? "doc.richtext.fill" : "arrow.up.doc.fill"))
       .font(.system(size: 10, weight: .black))
-      .foregroundStyle(returning ? SoloTheme.mint : accent)
+      .foregroundStyle(returning || decisionResponse ? SoloTheme.mint : accent)
       .frame(width: 22, height: 22)
       .background(.black.opacity(0.92), in: .rect(cornerRadius: 6))
-      .overlay { RoundedRectangle(cornerRadius: 6).stroke(returning ? SoloTheme.mint : accent) }
+      .overlay { RoundedRectangle(cornerRadius: 6).stroke(returning || decisionResponse ? SoloTheme.mint : accent) }
       .shadow(color: returning ? SoloTheme.mint.opacity(0.5) : accent.opacity(0.5), radius: reduceMotion ? 0 : 5)
       .opacity(settled ? 0.82 : 1)
   }

@@ -118,7 +118,7 @@ struct FounderComputerScreen: View {
     }
     #if DEBUG
     .sheet(isPresented: $showsMotionVerification) {
-      MotionVerificationScreen(presentation: presentation)
+      MotionVerificationScreen()
     }
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {
