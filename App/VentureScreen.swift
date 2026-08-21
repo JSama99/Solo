@@ -4,6 +4,7 @@ struct VentureScreen: View {
   var store: GameStore
 
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(AppSettingsStore.self) private var settings
   @State private var revealStage = 0
   @State private var didCaptureInitialState = false
   @State private var knownConsequenceIDs = Set<String>()
@@ -68,6 +69,7 @@ struct VentureScreen: View {
       .onChange(of: state.chapterNumber) { oldValue, newValue in
         guard didCaptureInitialState, oldValue != newValue else { return }
         chapterFeedback += 1
+        settings.playFeedback(.chapterAdvance)
       }
       .onChange(of: state.objective.isComplete) { wasComplete, isComplete in
         guard didCaptureInitialState, !wasComplete, isComplete else { return }

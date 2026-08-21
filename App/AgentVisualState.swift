@@ -30,7 +30,7 @@ struct AgentVisualState: Equatable {
       return Self(
         activity: .idle,
         verification: .none,
-        warnings: agent.drift >= 35 ? [.drifting] : []
+        warnings: []
       )
     }
     let visible = task.result.map(VisibleSimulationProjection.taskResult)
@@ -45,7 +45,7 @@ struct AgentVisualState: Equatable {
     case .reported, .unverified, .none: verification = .none
     }
     var warnings = Set<Warning>()
-    if agent.drift >= 35 || verification == .driftDetected {
+    if task.isReviewed && (agent.drift >= 35 || verification == .driftDetected) {
       warnings.insert(.drifting)
     }
     let roleMismatch = agent.role != task.role && agent.role != .general && task.role != .general
@@ -53,7 +53,7 @@ struct AgentVisualState: Equatable {
       || founderStats.trust <= 24
       || founderStats.runway <= 8
     if agent.progression.stressBand == .overloaded || agent.progression.stressBand == .critical
-      || (agent.drift >= 35 && (roleMismatch || companyStrained)) {
+      || (task.isReviewed && agent.drift >= 35 && (roleMismatch || companyStrained)) {
       warnings.insert(.overloaded)
     }
     return Self(activity: activity, verification: verification, warnings: warnings)
