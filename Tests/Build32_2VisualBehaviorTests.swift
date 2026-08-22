@@ -163,8 +163,8 @@ final class Build32_2VisualBehaviorTests: XCTestCase {
 
   #if DEBUG
   func testMotionQACoversEveryRequiredProductionFixture() {
-    XCTAssertEqual(LivingCompanyFixture.ID.allCases.count, 46)
-    XCTAssertEqual(Set(LivingCompanyFixture.ID.allCases.map(\.rawValue)).count, 46)
+    XCTAssertEqual(LivingCompanyFixture.ID.allCases.count, 47)
+    XCTAssertEqual(Set(LivingCompanyFixture.ID.allCases.map(\.rawValue)).count, 47)
     for id in LivingCompanyFixture.ID.allCases {
       let fixture = LivingCompanyFixture.make(id)
       XCTAssertEqual(fixture.agents.map(\.agentID), ["aurora", "stacks", "brio"])

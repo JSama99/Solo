@@ -101,6 +101,13 @@ struct CompanyCommandInteractionState: Equatable, Sendable {
     focus = target
   }
 
+  /// Automatic choreography is deliberately observational. Calling this at
+  /// every presentation event documents and enforces that playback cannot
+  /// create focus, navigation, or accessibility transfer state.
+  mutating func receiveAutomaticPresentationUpdate() {
+    // Intentionally empty. User input is the only viewport-focus authority.
+  }
+
   mutating func requestFullWorkstation(_ target: CompanyCommandFocus) {
     navigationSequence += 1
     navigationRequest = .init(target: target, sequence: navigationSequence)
@@ -395,7 +402,7 @@ struct CompanyAtmosphere: Equatable, Sendable {
 }
 
 struct InfrastructureVisual: Identifiable, Equatable, Sendable {
-  enum State: Equatable, Sendable { case uninstalled, installing, installed, active }
+  enum State: Hashable, Sendable { case uninstalled, installing, installed, active }
 
   var id: FacilityUpgradeID
   var title: String
@@ -554,32 +561,45 @@ enum CompanyCausalObjectKind: String, CaseIterable, Hashable, Sendable {
   case resolutionResponse
 }
 
+enum CompanyCausalEndpoint: String, CaseIterable, Hashable, Sendable {
+  case roleMonitor
+  case founderReviewTray
+  case affectedCompanySystem
+}
+
 struct CompanyCausalObject: Identifiable, Equatable, Sendable {
   var id: String
   var taskID: UUID
   var agentID: String
   var kind: CompanyCausalObjectKind
+  var endpoint: CompanyCausalEndpoint
   var atEndpoint: Bool
 
   static func project(agent: LivingAgentProjection, reduceMotion: Bool) -> Self? {
     guard let taskID = agent.taskID else { return nil }
     let kind: CompanyCausalObjectKind
+    let endpoint: CompanyCausalEndpoint
     let settled: Bool
     switch agent.activity {
     case .assignmentReceived:
       kind = .assignmentPacket
+      endpoint = .roleMonitor
       settled = reduceMotion
     case .workComplete:
       kind = .completedArtifact
+      endpoint = .founderReviewTray
       settled = reduceMotion
     case .awaitingReview, .reviewing, .reviewed:
       kind = .completedArtifact
+      endpoint = .founderReviewTray
       settled = true
     case .resolving:
       kind = .resolutionResponse
+      endpoint = .affectedCompanySystem
       settled = reduceMotion
     case .resolved:
       kind = .resolutionResponse
+      endpoint = .affectedCompanySystem
       settled = true
     default:
       return nil
@@ -589,9 +609,39 @@ struct CompanyCausalObject: Identifiable, Equatable, Sendable {
       taskID: taskID,
       agentID: agent.agentID,
       kind: kind,
+      endpoint: endpoint,
       atEndpoint: settled
     )
   }
+}
+
+/// Narrow, visible-safe contract shared by native and future bespoke renderers.
+/// Task results, quality, RNG, persistence, and action availability cannot enter
+/// the character pipeline because they are not members of this value.
+struct LivingAgentCharacterInput: Equatable, Sendable {
+  var role: AgentRole
+  var activity: LivingAgentActivity
+  var conditions: Set<LivingAgentCondition>
+  var emphasis: LivingPresentationEmphasis
+  var reduceMotion: Bool
+  var levelUpTrigger: Bool
+
+  static func project(agent: LivingAgentProjection, reduceMotion: Bool) -> Self {
+    Self(
+      role: agent.role,
+      activity: agent.activity,
+      conditions: agent.conditions,
+      emphasis: agent.emphasis,
+      reduceMotion: reduceMotion,
+      levelUpTrigger: agent.emphasis == .levelUpCelebration
+    )
+  }
+}
+
+enum LivingAgentRendererKind: String, Equatable, Sendable {
+  case nativePortrait
+
+  static var shipped: Self { .nativePortrait }
 }
 
 enum ReviewResultVisual: String, CaseIterable, Equatable, Sendable {

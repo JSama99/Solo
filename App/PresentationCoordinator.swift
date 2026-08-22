@@ -42,13 +42,13 @@ final class PresentationCoordinator {
   }
 
   struct Timing: Equatable, Sendable {
-    var assignmentAcknowledgement: Duration = .milliseconds(300)
+    var assignmentAcknowledgement: Duration = .milliseconds(700)
     var working: Duration = .milliseconds(2_000)
     var progressTick: Duration = .milliseconds(100)
-    var workComplete: Duration = .milliseconds(450)
+    var workComplete: Duration = .milliseconds(820)
     var reviewFocus: Duration = .milliseconds(250)
     var reviewStagger: Duration = .milliseconds(320)
-    var resolution: Duration = .milliseconds(550)
+    var resolution: Duration = .milliseconds(750)
 
     static var immediate: Self {
       Self(

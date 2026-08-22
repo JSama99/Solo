@@ -62,8 +62,8 @@ struct CompanyCommandViewport: View {
   }
 
   private var viewportHeight: CGFloat {
-    if dynamicTypeSize.isAccessibilitySize { return focus == nil ? 430 : 600 }
-    return focus == nil ? 336 : 458
+    if dynamicTypeSize.isAccessibilitySize { return focus == nil ? 470 : 640 }
+    return focus == nil ? 364 : 494
   }
 
   private var motionPaused: Bool {
@@ -79,37 +79,52 @@ struct CompanyCommandViewport: View {
   }
 
   private func header(hierarchy: CompanyPhaseHierarchy) -> some View {
-    HStack(spacing: 8) {
-      VStack(alignment: .leading, spacing: 1) {
-        Text("COMPANY COMMAND")
-          .font(.caption.weight(.black))
-          .foregroundStyle(SoloTheme.amber)
-          .lineLimit(1)
-          .minimumScaleFactor(0.75)
-        Text(atmosphere.facility.name.uppercased())
-          .font(.caption2.monospaced().weight(.bold))
-          .foregroundStyle(.secondary)
-          .lineLimit(1)
-      }
-      Spacer(minLength: 4)
-      VStack(alignment: .trailing, spacing: 1) {
+    VStack(alignment: .leading, spacing: 4) {
+      HStack(spacing: 8) {
+        Label("ONLINE", systemImage: "circle.fill")
+          .font(.system(size: 8, weight: .black, design: .monospaced))
+          .foregroundStyle(SoloTheme.mint)
+          .fixedSize()
+          .accessibilityLabel("Company connection online")
+        Spacer(minLength: 8)
         Label(sprintPhase.title, systemImage: sprintPhase.symbol)
           .font(.caption2.weight(.bold))
-          .lineLimit(1)
-        Text(hierarchy.priority.rawValue.uppercased())
-          .font(.system(size: 7, weight: .black, design: .monospaced))
-          .foregroundStyle(SoloTheme.cyan)
-      }
-      if focus != nil {
-        Button("Close focus", systemImage: "xmark") {
-          if let focus { onFocus(focus) }
-        }
+          .lineLimit(2)
+          .multilineTextAlignment(.trailing)
+          .layoutPriority(1)
+        if focus != nil {
+          Button("Close focus", systemImage: "xmark") {
+            if let focus { onFocus(focus) }
+          }
           .labelStyle(.iconOnly)
           .frame(minWidth: 44, minHeight: 44)
           .accessibilityHint("Returns to the full company overview without scrolling")
+        }
+      }
+      HStack(alignment: .firstTextBaseline, spacing: 8) {
+        VStack(alignment: .leading, spacing: 1) {
+          Text("COMPANY COMMAND")
+            .font(.caption.weight(.black))
+            .foregroundStyle(SoloTheme.amber)
+            .lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
+          Text(atmosphere.facility.name.uppercased())
+            .font(.caption2.monospaced().weight(.bold))
+            .foregroundStyle(.secondary)
+            .lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+        .layoutPriority(1)
+        Spacer(minLength: 4)
+        Text(hierarchy.priority.rawValue.uppercased())
+          .font(.system(size: 8, weight: .black, design: .monospaced))
+          .foregroundStyle(SoloTheme.cyan)
+          .lineLimit(2)
+          .multilineTextAlignment(.trailing)
+          .fixedSize(horizontal: false, vertical: true)
       }
     }
-    .frame(minHeight: 30)
+    .frame(minHeight: 52)
   }
 
   private var atmosphereStrip: some View {
@@ -198,7 +213,6 @@ struct CompanyCommandViewport: View {
                 accent: accent(for: item.agent.agentID),
                 start: causalStart(index: item.index, object: object, size: geometry.size),
                 end: causalEnd(index: item.index, object: object, size: geometry.size),
-                time: time,
                 reduceMotion: reduceMotion
               )
               .accessibilityHidden(true)
@@ -247,7 +261,6 @@ struct CompanyCommandViewport: View {
             accent: accent(for: item.agent.agentID),
             start: causalStart(index: item.index, object: object, size: geometry.size),
             end: causalEnd(index: item.index, object: object, size: geometry.size),
-            time: time,
             reduceMotion: reduceMotion
           )
           .accessibilityHidden(true)
@@ -639,9 +652,8 @@ private struct AgentCommandFocusPanel: View {
         agentID: agent.agentID,
         initials: agent.initials,
         accent: accent,
-        activity: agent.activity,
-        time: time,
-        reduceMotion: reduceMotion
+        input: .project(agent: agent, reduceMotion: reduceMotion),
+        time: time
       )
       .overlay(alignment: .bottomLeading) {
         Label(agent.role.rawValue, systemImage: agent.role.symbol)
@@ -712,9 +724,8 @@ private struct AgentCommandFocusPanel: View {
               agentID: surrounding.agentID,
               initials: surrounding.initials,
               accent: accent(for: surrounding.agentID),
-              activity: surrounding.activity,
-              time: time,
-              reduceMotion: reduceMotion
+              input: .project(agent: surrounding, reduceMotion: reduceMotion),
+              time: time
             )
             .frame(width: 38, height: 38)
             VStack(alignment: .leading, spacing: 1) {
@@ -901,18 +912,16 @@ struct LivingAgentCharacterView: View {
   var agentID: String
   var initials: String
   var accent: Color
-  var activity: LivingAgentActivity
+  var input: LivingAgentCharacterInput
   var time: TimeInterval
-  var reduceMotion: Bool
 
   var body: some View {
     NativeAgentCharacterView(
       agentID: agentID,
       initials: initials,
       accent: accent,
-      activity: activity,
-      time: time,
-      reduceMotion: reduceMotion
+      input: input,
+      time: time
     )
   }
 }
@@ -921,9 +930,8 @@ private struct NativeAgentCharacterView: View {
   var agentID: String
   var initials: String
   var accent: Color
-  var activity: LivingAgentActivity
+  var input: LivingAgentCharacterInput
   var time: TimeInterval
-  var reduceMotion: Bool
 
   var body: some View {
     ZStack {
@@ -939,9 +947,19 @@ private struct NativeAgentCharacterView: View {
       } else {
         Text(initials).font(.headline.weight(.black)).foregroundStyle(accent)
       }
-      LinearGradient(colors: [.clear, accent.opacity(activity == .resting ? 0.08 : 0.26)], startPoint: .top, endPoint: .bottom)
-      if activity == .assignmentReceived {
+      LinearGradient(colors: [.clear, accent.opacity(input.activity == .resting ? 0.08 : 0.26)], startPoint: .top, endPoint: .bottom)
+      if input.activity == .assignmentReceived {
         LinearGradient(colors: [.clear, accent.opacity(0.5)], startPoint: .leading, endPoint: .trailing)
+      }
+      if let symbol = conditionSymbol {
+        Image(systemName: symbol)
+          .font(.caption.weight(.black))
+          .foregroundStyle(.white)
+          .padding(6)
+          .background(conditionColor, in: Circle())
+          .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+          .padding(6)
+          .accessibilityHidden(true)
       }
     }
     .clipShape(RoundedRectangle(cornerRadius: 11))
@@ -949,8 +967,8 @@ private struct NativeAgentCharacterView: View {
   }
 
   private var characterScale: CGFloat {
-    guard !reduceMotion else { return 1.05 }
-    return switch activity {
+    guard !input.reduceMotion else { return 1.05 }
+    return switch input.activity {
     case .assignmentReceived: 1.09
     case .working: 1.06 + 0.012 * sin(time * 2.3)
     case .resting: 1.03
@@ -959,7 +977,21 @@ private struct NativeAgentCharacterView: View {
   }
 
   private var characterOffset: CGFloat {
-    reduceMotion || activity == .resting ? 0 : CGFloat(sin(time * 0.8)) * 0.6
+    guard !input.reduceMotion, input.activity != .resting else { return 0 }
+    let breathing = CGFloat(sin(time * 0.8)) * 0.6
+    let workDirection: CGFloat = input.activity == .working ? (input.role == .marketing ? 1.1 : -0.8) : 0
+    return breathing + workDirection
+  }
+
+  private var conditionSymbol: String? {
+    if input.conditions.contains(.overloaded) { return "exclamationmark.triangle.fill" }
+    if input.conditions.contains(.stressed) { return "gauge.with.dots.needle.67percent" }
+    if input.levelUpTrigger { return "star.fill" }
+    return nil
+  }
+
+  private var conditionColor: Color {
+    input.conditions.contains(.overloaded) ? SoloTheme.coral : (input.levelUpTrigger ? SoloTheme.mint : SoloTheme.amber)
   }
 }
 
@@ -991,9 +1023,8 @@ private struct ViewportAgentStation: View {
             agentID: agent.agentID,
             initials: agent.initials,
             accent: accent,
-            activity: agent.activity,
-            time: time,
-            reduceMotion: reduceMotion
+            input: .project(agent: agent, reduceMotion: reduceMotion),
+            time: time
           )
           .frame(height: dominant ? 112 : 96)
           .padding(.horizontal, 7)
@@ -1313,8 +1344,8 @@ private struct CausalJourney: View {
   var accent: Color
   var start: CGPoint
   var end: CGPoint
-  var time: TimeInterval
   var reduceMotion: Bool
+  @State private var progress: CGFloat = 0
 
   var body: some View {
     ZStack(alignment: .topLeading) {
@@ -1332,12 +1363,26 @@ private struct CausalJourney: View {
       causalObjectView.position(journeyPoint)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .onAppear {
+      guard !object.atEndpoint, !reduceMotion else {
+        progress = 1
+        return
+      }
+      withAnimation(.linear(duration: travelDuration)) {
+        progress = 1
+      }
+    }
+    .onChange(of: object.atEndpoint) { _, settled in
+      if settled { progress = 1 }
+    }
   }
 
-  private var progress: CGFloat {
-    guard !object.atEndpoint, !reduceMotion else { return 1 }
-    let duration: TimeInterval = object.kind == .assignmentPacket ? 0.70 : 0.82
-    return CGFloat(time.truncatingRemainder(dividingBy: duration) / duration)
+  private var travelDuration: TimeInterval {
+    switch object.kind {
+    case .assignmentPacket: 0.70
+    case .completedArtifact: 0.82
+    case .resolutionResponse: 0.75
+    }
   }
 
   private var controlPoint: CGPoint {
@@ -1441,7 +1486,9 @@ private struct FounderInspectionComposition: View {
           Label(displayTitle, systemImage: agent.activity == .reviewed ? resultSymbol : stepSymbol)
             .font(.subheadline.weight(.black))
             .foregroundStyle(agent.activity == .reviewed ? displayColor : .primary)
-            .lineLimit(1)
+            .lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
+            .layoutPriority(1)
           Text(displayPurpose).font(.caption2.weight(.medium)).foregroundStyle(.secondary).lineLimit(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

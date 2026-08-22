@@ -71,7 +71,7 @@ struct MotionVerificationScreen: View {
           || ProcessInfo.processInfo.environment["SOLO_MOTION_QA_SEQUENCE"] == "1" {
           // Gives the recorder time to attach while Planning is already visible;
           // the resulting proof begins in-app with no SpringBoard or launch flash.
-          try? await Task.sleep(for: .milliseconds(2_400))
+          try? await Task.sleep(for: .milliseconds(650))
           await playCausalProof()
           return
         }
@@ -146,6 +146,7 @@ struct MotionVerificationScreen: View {
 struct LivingCompanyFixture: Equatable, Sendable {
   enum ID: String, CaseIterable, Identifiable, Sendable {
     case idleOverview = "Idle overview"
+    case auroraFocus = "Aurora user focus"
     case auroraAssignment = "Aurora assignment received"
     case auroraWorking = "Aurora working"
     case stacksWorking = "Stacks working"
@@ -215,6 +216,7 @@ struct LivingCompanyFixture: Equatable, Sendable {
       .planningPhase,
       .auroraAssignment,
       .auroraWorking,
+      .auroraWorking,
       .workComplete,
       .awaitingReview,
       .reviewStep1,
@@ -224,6 +226,7 @@ struct LivingCompanyFixture: Equatable, Sendable {
       .reviewStep5,
       .verified,
       .resolving,
+      .resolved,
       .resolved,
       .commitReady
     ]
@@ -256,8 +259,10 @@ struct LivingCompanyFixture: Equatable, Sendable {
     }
 
     switch id {
+    case .auroraFocus:
+      focus = .agent("aurora")
     case .auroraAssignment:
-      stage("aurora", activity: .assignmentReceived, progress: 0.08, conditions: [.focused], emphasis: .selected); focus = .agent("aurora")
+      stage("aurora", activity: .assignmentReceived, progress: 0.08, conditions: [.focused])
     case .auroraWorking, .workingPhase:
       stage("aurora", activity: .working, progress: 0.58, conditions: [.focused]); nextAction = "Watch research evidence accumulate."
     case .stacksWorking:

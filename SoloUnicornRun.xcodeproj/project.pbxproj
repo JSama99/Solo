@@ -13,6 +13,7 @@
 		B32200000000000000000001 /* Build32_1ViewportInteractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */; };
 		B32400000000000000000001 /* Build32_2VisualBehaviorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32500000000000000000001 /* Build32_2VisualBehaviorTests.swift */; };
 		B32600000000000000000001 /* Build32_3SpatialViewportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32700000000000000000001 /* Build32_3SpatialViewportTests.swift */; };
+		B32800000000000000000001 /* Build32_4SpatialCausalityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32900000000000000000001 /* Build32_4SpatialCausalityTests.swift */; };
 		AA0000000000000000000001 /* Divergence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000001 /* Divergence.swift */; };
 		AA0000000000000000000002 /* ForkPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000002 /* ForkPromptView.swift */; };
 		AA0000000000000000000003 /* DivergenceIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000003 /* DivergenceIdentityTests.swift */; };
@@ -130,6 +131,7 @@
 		B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_1ViewportInteractionTests.swift; sourceTree = "<group>"; };
 		B32500000000000000000001 /* Build32_2VisualBehaviorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_2VisualBehaviorTests.swift; sourceTree = "<group>"; };
 		B32700000000000000000001 /* Build32_3SpatialViewportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_3SpatialViewportTests.swift; sourceTree = "<group>"; };
+		B32900000000000000000001 /* Build32_4SpatialCausalityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_4SpatialCausalityTests.swift; sourceTree = "<group>"; };
 		AA1000000000000000000001 /* Divergence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Divergence.swift; sourceTree = "<group>"; };
 		AA1000000000000000000002 /* ForkPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForkPromptView.swift; sourceTree = "<group>"; };
 		AA1000000000000000000003 /* DivergenceIdentityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DivergenceIdentityTests.swift; sourceTree = "<group>"; };
@@ -260,6 +262,7 @@
 				B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */,
 				B32500000000000000000001 /* Build32_2VisualBehaviorTests.swift */,
 				B32700000000000000000001 /* Build32_3SpatialViewportTests.swift */,
+				B32900000000000000000001 /* Build32_4SpatialCausalityTests.swift */,
 				AA1000000000000000000003 /* DivergenceIdentityTests.swift */,
 				AA1000000000000000000004 /* DivergenceChaosTests.swift */,
 				AA1000000000000000000005 /* DivergenceSystemTests.swift */,
@@ -473,6 +476,7 @@
 				B32200000000000000000001 /* Build32_1ViewportInteractionTests.swift in Sources */,
 				B32400000000000000000001 /* Build32_2VisualBehaviorTests.swift in Sources */,
 				B32600000000000000000001 /* Build32_3SpatialViewportTests.swift in Sources */,
+				B32800000000000000000001 /* Build32_4SpatialCausalityTests.swift in Sources */,
 				AA0000000000000000000003 /* DivergenceIdentityTests.swift in Sources */,
 				AA0000000000000000000004 /* DivergenceChaosTests.swift in Sources */,
 				AA0000000000000000000005 /* DivergenceSystemTests.swift in Sources */,
