@@ -210,6 +210,8 @@ struct LivingAgentProjection: Identifiable, Equatable, Sendable {
   var level: Int
   var needsFounderAttention: Bool
   var isResting: Bool
+  var presentationSequenceID: UUID? = nil
+  var resolutionChoice: TaskResolutionChoice? = nil
 
   var accessibilityValue: String {
     let task = taskTitle.map { "Task: \($0)." } ?? "No current task."
@@ -297,7 +299,9 @@ struct LivingAgentProjection: Identifiable, Equatable, Sendable {
       trustLabel: AgentStationViewModel.TrustBand(trust: agent.trust).label,
       level: agent.progression.level,
       needsFounderAttention: [.workComplete, .awaitingReview, .reviewing].contains(activity),
-      isResting: isResting
+      isResting: isResting,
+      presentationSequenceID: presentation?.sequenceID,
+      resolutionChoice: presentation?.resolutionChoice
     )
   }
 
@@ -349,6 +353,16 @@ struct CompanyAtmosphere: Equatable, Sendable {
   var isLowRunway: Bool
   var isLowTrust: Bool
   var isHighMomentum: Bool
+  var runway: Int
+  var trust: Int
+
+  var localizedReaction: CompanyAtmosphereReaction {
+    if isLowRunway { return .runwayDepletion }
+    if isLowEnergy { return .selectivePowerDown }
+    if isLowTrust { return .publicSignalInterference }
+    if isHighMomentum { return .connectedMomentum }
+    return .stable
+  }
 
   var accessibilitySummary: String {
     var values = [isLowEnergy ? "Low Founder Energy" : "Founder Energy stable"]
@@ -373,7 +387,9 @@ struct CompanyAtmosphere: Equatable, Sendable {
       isLowEnergy: stats.energy <= 38,
       isLowRunway: stats.runway <= 8,
       isLowTrust: stats.trust <= 24,
-      isHighMomentum: stats.momentum >= 70
+      isHighMomentum: stats.momentum >= 70,
+      runway: stats.runway,
+      trust: stats.trust
     )
   }
 }
@@ -385,6 +401,7 @@ struct InfrastructureVisual: Identifiable, Equatable, Sendable {
   var title: String
   var symbol: String
   var state: State
+  var physicalLocation: InfrastructurePhysicalLocation
 
   static func map(
     purchased: Set<FacilityUpgradeID>,
@@ -416,7 +433,13 @@ struct InfrastructureVisual: Identifiable, Equatable, Sendable {
       } else {
         state = facility == definition.requiredFacility && isRelevant ? .active : .installed
       }
-      return Self(id: definition.id, title: definition.title, symbol: definition.symbol, state: state)
+      return Self(
+        id: definition.id,
+        title: definition.title,
+        symbol: definition.symbol,
+        state: state,
+        physicalLocation: InfrastructurePhysicalLocation.map(definition.id)
+      )
     }
   }
 }
@@ -456,6 +479,148 @@ struct CompanyPhaseHierarchy: Equatable, Sendable {
     }
     return Self(priority: .planning, taskProminence: 1, stationProminence: 0.82, founderTrayProminence: 0.45, decisionProminence: 0.30, commitProminence: 0.25)
   }
+
+  static func dominantAgentID(
+    agents: [LivingAgentProjection],
+    explicitFocus: CompanyCommandFocus?
+  ) -> String? {
+    if case .agent(let id) = explicitFocus { return id }
+    return agents
+      .filter { [.reviewing, .awaitingReview, .workComplete, .resolving, .assignmentReceived, .working].contains($0.activity) }
+      .sorted {
+        if emphasisRank($0.emphasis) != emphasisRank($1.emphasis) {
+          return emphasisRank($0.emphasis) > emphasisRank($1.emphasis)
+        }
+        if $0.progress != $1.progress { return $0.progress > $1.progress }
+        return canonicalRank($0.agentID) < canonicalRank($1.agentID)
+      }
+      .first?.agentID
+  }
+
+  private static func emphasisRank(_ emphasis: LivingPresentationEmphasis) -> Int {
+    switch emphasis {
+    case .normal: 0
+    case .selected: 1
+    case .founderAttention: 2
+    case .inspection: 3
+    case .decisionLock: 4
+    case .levelUpCelebration: 5
+    }
+  }
+
+  private static func canonicalRank(_ id: String) -> Int {
+    ["aurora", "stacks", "brio"].firstIndex(of: id) ?? .max
+  }
+}
+
+enum CompanyAtmosphereReaction: String, Equatable, Sendable {
+  case stable
+  case selectivePowerDown
+  case runwayDepletion
+  case publicSignalInterference
+  case connectedMomentum
+}
+
+enum InfrastructurePhysicalLocation: String, CaseIterable, Equatable, Sendable {
+  case stacksBuildRail
+  case auroraFounderVerificationBridge
+  case brioBroadcastRail
+  case recoverySideBay
+  case founderForegroundDesk
+
+  static func map(_ id: FacilityUpgradeID) -> Self {
+    switch id {
+    case .developmentRig: .stacksBuildRail
+    case .verificationArray: .auroraFounderVerificationBridge
+    case .campaignStudio: .brioBroadcastRail
+    case .recoveryCorner: .recoverySideBay
+    case .founderCommandDesk: .founderForegroundDesk
+    }
+  }
+}
+
+enum CompanySpatialPresentation: String, Equatable, Sendable {
+  case improvisedGarage
+  case elevatedLoft
+
+  static func map(_ facility: FacilityTier) -> Self {
+    facility == .founderLoft ? .elevatedLoft : .improvisedGarage
+  }
+}
+
+enum CompanyCausalObjectKind: String, CaseIterable, Hashable, Sendable {
+  case assignmentPacket
+  case completedArtifact
+  case resolutionResponse
+}
+
+struct CompanyCausalObject: Identifiable, Equatable, Sendable {
+  var id: String
+  var taskID: UUID
+  var agentID: String
+  var kind: CompanyCausalObjectKind
+  var atEndpoint: Bool
+
+  static func project(agent: LivingAgentProjection, reduceMotion: Bool) -> Self? {
+    guard let taskID = agent.taskID else { return nil }
+    let kind: CompanyCausalObjectKind
+    let settled: Bool
+    switch agent.activity {
+    case .assignmentReceived:
+      kind = .assignmentPacket
+      settled = reduceMotion
+    case .workComplete:
+      kind = .completedArtifact
+      settled = reduceMotion
+    case .awaitingReview, .reviewing, .reviewed:
+      kind = .completedArtifact
+      settled = true
+    case .resolving:
+      kind = .resolutionResponse
+      settled = reduceMotion
+    case .resolved:
+      kind = .resolutionResponse
+      settled = true
+    default:
+      return nil
+    }
+    return Self(
+      id: "\(kind.rawValue)-\(taskID.uuidString)",
+      taskID: taskID,
+      agentID: agent.agentID,
+      kind: kind,
+      atEndpoint: settled
+    )
+  }
+}
+
+enum ReviewResultVisual: String, CaseIterable, Equatable, Sendable {
+  case pending
+  case verified
+  case overclaimed
+  case driftDetected
+  case evidenceIncomplete
+
+  static func map(conditions: Set<LivingAgentCondition>, revealStep: Int) -> Self {
+    guard revealStep >= 5 else { return .pending }
+    if conditions.contains(.overclaimed) { return .overclaimed }
+    if conditions.contains(.drifting) { return .driftDetected }
+    if conditions.contains(.evidenceIncomplete) { return .evidenceIncomplete }
+    if conditions.contains(.verified) { return .verified }
+    return .pending
+  }
+}
+
+struct ViewportTextPriorityProjection: Equatable, Sendable {
+  var visibleOverviewFields: [String]
+  var focusOnlyFields: [String]
+  var accessibilityOnlyFields: [String]
+
+  static let build32_3 = Self(
+    visibleOverviewFields: ["agentName", "safeActivity", "taskTitle", "primaryAction", "criticalWarning"],
+    focusOnlyFields: ["role", "level", "stress", "trust", "detailedProgress"],
+    accessibilityOnlyFields: ["infrastructureTitle", "facilityStructure", "causalJourney"]
+  )
 }
 
 enum ViewportSelectionMap {
