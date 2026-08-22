@@ -55,21 +55,36 @@ final class AppSettingsStore {
   /// randomness, or simulation timing is involved.
   func playFeedback(_ kind: GameFeedbackKind) {
     guard soundEffectsEnabled else { return }
-    let format = AVAudioFormat(standardFormatWithSampleRate: 44_100, channels: 1)!
+    let format = feedbackFormat
     let duration = kind.duration
     let frameCount = AVAudioFrameCount(format.sampleRate * duration)
     guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount),
-          let samples = buffer.floatChannelData?[0] else { return }
+          let channelData = buffer.floatChannelData else { return }
     buffer.frameLength = frameCount
     for frame in 0..<Int(frameCount) {
       let progress = Double(frame) / Double(max(1, Int(frameCount) - 1))
       let envelope = sin(.pi * progress) * kind.volume
-      samples[frame] = Float(sin(2 * .pi * kind.frequency * Double(frame) / format.sampleRate) * envelope)
+      let sample = Float(sin(2 * .pi * kind.frequency * Double(frame) / format.sampleRate) * envelope)
+      for channel in 0..<Int(format.channelCount) {
+        channelData[channel][frame] = sample
+      }
     }
     if !engine.isRunning { try? engine.start() }
     feedbackPlayer.stop()
     feedbackPlayer.scheduleBuffer(buffer)
     feedbackPlayer.play()
+  }
+
+  private var feedbackFormat: AVAudioFormat {
+    let outputFormat = feedbackPlayer.outputFormat(forBus: 0)
+    let sampleRate = outputFormat.sampleRate > 0 ? outputFormat.sampleRate : 44_100
+    let channelCount = outputFormat.channelCount > 0 ? outputFormat.channelCount : 2
+    return AVAudioFormat(
+      commonFormat: .pcmFormatFloat32,
+      sampleRate: sampleRate,
+      channels: channelCount,
+      interleaved: false
+    )!
   }
 
   private func restoreMusic() {
