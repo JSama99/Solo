@@ -21,6 +21,7 @@ struct SprintOutcomeScreen: View {
           if revealedStep >= 3 { assignmentResults }
           if revealedStep >= 4 {
             evidenceAndRisk
+            rivalMoveCard
             nextAction
           }
         }
@@ -137,6 +138,22 @@ struct SprintOutcomeScreen: View {
         .accessibilityHint(nextMessage)
     }
     .padding(.top, 4)
+  }
+
+  @ViewBuilder
+  private var rivalMoveCard: some View {
+    if let rivalMoveSummary = report.rivalMoveSummary {
+      outcomeCard {
+        Text("WHILE YOU WERE HEADS DOWN")
+          .font(.caption2.weight(.black))
+          .foregroundStyle(SoloTheme.cyan)
+        Label(rivalMoveSummary, systemImage: "bolt.fill")
+          .font(.subheadline)
+      }
+      .transition(.move(edge: .top).combined(with: .opacity))
+      .accessibilityElement(children: .combine)
+      .accessibilityLabel("While you were heads down. \(rivalMoveSummary)")
+    }
   }
 
   private var metricColumns: [GridItem] {

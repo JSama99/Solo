@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B32000000000000000000001 /* CompanyCommandViewport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32100000000000000000001 /* CompanyCommandViewport.swift */; };
+		B32000000000000000000002 /* LivingCompanyPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32100000000000000000002 /* LivingCompanyPresentation.swift */; };
+		B32000000000000000000003 /* Build32LivingCompanyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32100000000000000000003 /* Build32LivingCompanyTests.swift */; };
+		B32200000000000000000001 /* Build32_1ViewportInteractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */; };
+		B32400000000000000000001 /* Build32_2VisualBehaviorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32500000000000000000001 /* Build32_2VisualBehaviorTests.swift */; };
 		AA0000000000000000000001 /* Divergence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000001 /* Divergence.swift */; };
 		AA0000000000000000000002 /* ForkPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000002 /* ForkPromptView.swift */; };
 		AA0000000000000000000003 /* DivergenceIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000003 /* DivergenceIdentityTests.swift */; };
@@ -102,6 +107,9 @@
 		F27000000000000000000003 /* MotionVerificationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27000000000000000000013 /* MotionVerificationScreen.swift */; };
 		F28000000000000000000001 /* AgentPortraitAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = F28000000000000000000011 /* AgentPortraitAsset.swift */; };
 		B28000000000000000000001 /* OutcomeBackdropMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */; };
+		F31000000000000000000001 /* VentureScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F31000000000000000000011 /* VentureScreen.swift */; };
+		F31000000000000000000002 /* VentureScreenPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F31000000000000000000012 /* VentureScreenPresentation.swift */; };
+		F31000000000000000000003 /* VentureScreenPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F31000000000000000000013 /* VentureScreenPresentationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -115,6 +123,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B32100000000000000000001 /* CompanyCommandViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyCommandViewport.swift; sourceTree = "<group>"; };
+		B32100000000000000000002 /* LivingCompanyPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivingCompanyPresentation.swift; sourceTree = "<group>"; };
+		B32100000000000000000003 /* Build32LivingCompanyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32LivingCompanyTests.swift; sourceTree = "<group>"; };
+		B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_1ViewportInteractionTests.swift; sourceTree = "<group>"; };
+		B32500000000000000000001 /* Build32_2VisualBehaviorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_2VisualBehaviorTests.swift; sourceTree = "<group>"; };
 		AA1000000000000000000001 /* Divergence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Divergence.swift; sourceTree = "<group>"; };
 		AA1000000000000000000002 /* ForkPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForkPromptView.swift; sourceTree = "<group>"; };
 		AA1000000000000000000003 /* DivergenceIdentityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DivergenceIdentityTests.swift; sourceTree = "<group>"; };
@@ -211,6 +224,9 @@
 		F27000000000000000000013 /* MotionVerificationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionVerificationScreen.swift; sourceTree = "<group>"; };
 		F28000000000000000000011 /* AgentPortraitAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentPortraitAsset.swift; sourceTree = "<group>"; };
 		B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutcomeBackdropMotionTests.swift; sourceTree = "<group>"; };
+		F31000000000000000000011 /* VentureScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureScreen.swift; sourceTree = "<group>"; };
+		F31000000000000000000012 /* VentureScreenPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureScreenPresentation.swift; sourceTree = "<group>"; };
+		F31000000000000000000013 /* VentureScreenPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureScreenPresentationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -238,6 +254,9 @@
 		62FFB73B4F7FB65000C228B6 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				B32100000000000000000003 /* Build32LivingCompanyTests.swift */,
+				B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */,
+				B32500000000000000000001 /* Build32_2VisualBehaviorTests.swift */,
 				AA1000000000000000000003 /* DivergenceIdentityTests.swift */,
 				AA1000000000000000000004 /* DivergenceChaosTests.swift */,
 				AA1000000000000000000005 /* DivergenceSystemTests.swift */,
@@ -263,6 +282,7 @@
 				E10000000000000000000020 /* GameStoreTestSupport.swift */,
 				F26000000000000000000002 /* RevenueCatImportBoundaryTests.swift */,
 				B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */,
+				F31000000000000000000013 /* VentureScreenPresentationTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -270,6 +290,8 @@
 		7775A9C13FE1CF8E12C7214B /* App */ = {
 			isa = PBXGroup;
 			children = (
+				B32100000000000000000001 /* CompanyCommandViewport.swift */,
+				B32100000000000000000002 /* LivingCompanyPresentation.swift */,
 				AA1000000000000000000001 /* Divergence.swift */,
 				AA1000000000000000000002 /* ForkPromptView.swift */,
 				C10000000000000000000014 /* AchievementStore.swift */,
@@ -283,6 +305,8 @@
 				17558F294800127BE04C0EBD /* Assets.xcassets */,
 				C10000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift */,
 				D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */,
+				F31000000000000000000011 /* VentureScreen.swift */,
+				F31000000000000000000012 /* VentureScreenPresentation.swift */,
 				C10000000000000000000015 /* EmpireTaskExpansion.swift */,
 				C10000000000000000000003 /* EnvironmentPresentation.swift */,
 				C10000000000000000000004 /* FacilityProgressionConfiguration.swift */,
@@ -442,6 +466,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B32000000000000000000003 /* Build32LivingCompanyTests.swift in Sources */,
+				B32200000000000000000001 /* Build32_1ViewportInteractionTests.swift in Sources */,
+				B32400000000000000000001 /* Build32_2VisualBehaviorTests.swift in Sources */,
 				AA0000000000000000000003 /* DivergenceIdentityTests.swift in Sources */,
 				AA0000000000000000000004 /* DivergenceChaosTests.swift in Sources */,
 				AA0000000000000000000005 /* DivergenceSystemTests.swift in Sources */,
@@ -467,6 +494,7 @@
 				E30000000000000000000010 /* GameStoreTestSupport.swift in Sources */,
 				F26000000000000000000001 /* RevenueCatImportBoundaryTests.swift in Sources */,
 				B28000000000000000000001 /* OutcomeBackdropMotionTests.swift in Sources */,
+				F31000000000000000000003 /* VentureScreenPresentationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -474,6 +502,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B32000000000000000000001 /* CompanyCommandViewport.swift in Sources */,
+				B32000000000000000000002 /* LivingCompanyPresentation.swift in Sources */,
 				AA0000000000000000000001 /* Divergence.swift in Sources */,
 				AA0000000000000000000002 /* ForkPromptView.swift in Sources */,
 				C20000000000000000000001 /* AgentVisualState.swift in Sources */,
@@ -485,6 +515,8 @@
 				B2BFB1EE90AB231E41812DEF /* App.swift in Sources */,
 				C20000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift in Sources */,
 				FB6CDD52B76B96B369913C6B /* ContentView.swift in Sources */,
+				F31000000000000000000001 /* VentureScreen.swift in Sources */,
+				F31000000000000000000002 /* VentureScreenPresentation.swift in Sources */,
 				C20000000000000000000003 /* EnvironmentPresentation.swift in Sources */,
 				C20000000000000000000004 /* FacilityProgressionConfiguration.swift in Sources */,
 				C20000000000000000000005 /* FacilityTier.swift in Sources */,
@@ -553,7 +585,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 32;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -577,7 +609,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 32;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

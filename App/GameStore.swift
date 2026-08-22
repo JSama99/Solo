@@ -174,7 +174,34 @@ final class GameStore {
       playerFlags: companyFlags,
       revealedDoctrine: currentDoctrineProfile.revealed,
       exposedRivalIDs: exposedRivalIDs,
-      discontinuities: rivalDiscontinuities
+      discontinuities: rivalDiscontinuities,
+      lastPlayerEffects: lastSprintEffects
+    )
+  }
+
+  var rivalMoveEvents: [RivalMoveEvent] {
+    RivalEngine.moveEvents(
+      companies: ContentLibrary.rivalSimulationCompanies,
+      venture: venture,
+      sprint: sprint,
+      careerSeed: RivalEngine.careerSeed(founderName: founderName, productType: productType),
+      player: stats,
+      playerFlags: companyFlags,
+      revealedDoctrine: currentDoctrineProfile.revealed,
+      exposedRivalIDs: exposedRivalIDs,
+      discontinuities: rivalDiscontinuities,
+      lastPlayerEffects: lastSprintEffects
+    )
+  }
+
+  private var lastSprintEffects: SimulationEffects {
+    guard let report else { return SimulationEffects() }
+    return SimulationEffects(
+      revenue: report.revenueDelta,
+      momentum: report.momentumDelta,
+      trust: report.trustDelta,
+      energy: report.energyDelta,
+      runway: report.runwayDelta
     )
   }
 
@@ -1099,6 +1126,10 @@ final class GameStore {
       completedObjectives += 1
     }
 
+    let rivalMoves = rivalMoveEvents
+    let rivalMoveVenture = venture
+    let rivalMoveSprint = sprint
+
     let share = rivalStandings.first(where: \.isPlayer)?.marketShare ?? 0
     if effects.revenue > 0 {
       effects.revenue = Int((Double(effects.revenue) * RivalEngine.revenueMultiplier(marketShare: share, fieldSize: rivalStandings.count - 1)).rounded())
@@ -1106,7 +1137,9 @@ final class GameStore {
     if effects.revenue > 0 { effects.revenue = Int((Double(effects.revenue) * thesisProfile.revenueMultiplier).rounded()) }
     if effects.trust < 0 { effects.trust = Int((Double(effects.trust) * thesisProfile.trustPenaltyMultiplier).rounded()) }
     if effects.trust > 0 { effects.trust = Int((Double(effects.trust) * (1 + Double(thesisProfile.customerLoyaltyModifier) / 100)).rounded()) }
+    effects = effects + rivalMoves.reduce(SimulationEffects()) { $0 + $1.playerEffects }
     apply(effects)
+    recordRivalMoveHeadlines(rivalMoves, venture: rivalMoveVenture, sprint: rivalMoveSprint)
     if facilityBonuses.sprintEnergyRecovery > 0 {
       stats.energy = min(100, stats.energy + facilityBonuses.sprintEnergyRecovery)
     }
@@ -1128,7 +1161,11 @@ final class GameStore {
       objectiveTitle: currentObjective?.title,
       objectiveCompleted: objectiveCompleted,
       dilemmaSummary: dilemmaChoice.map { "\($0.title): \($0.consequencePreview)" },
-      skippedTasks: uncommittedTasks.count
+      skippedTasks: uncommittedTasks.count,
+      rivalMoveSummary: rivalMoves
+        .filter { $0.move != .steadyBuild }
+        .max { abs($0.strengthBonus) < abs($1.strengthBonus) }?
+        .headline
     )
 
     recordPrecedentIfConsequential(
@@ -2332,6 +2369,26 @@ final class GameStore {
       founderName: founderName, venture: venture, sprint: sprint, stats: stats,
       agents: agents, tasks: tasks, dilemmaChoice: selectedDilemmaChoice
     ))
+  }
+
+  private func recordRivalMoveHeadlines(_ events: [RivalMoveEvent], venture: Int, sprint: Int) {
+    let notable = events
+      .filter { $0.move != .steadyBuild }
+      .sorted { abs($0.strengthBonus) > abs($1.strengthBonus) }
+    for event in notable.prefix(2) {
+      let headline = TechComHeadline(
+        id: UUID(),
+        category: .rival,
+        text: event.headline,
+        venture: venture,
+        sprint: sprint
+      )
+      guard !techComHeadlines.contains(where: {
+        $0.text == headline.text && $0.venture == headline.venture && $0.sprint == headline.sprint
+      }) else { continue }
+      techComHeadlines.insert(headline, at: 0)
+    }
+    techComHeadlines = Array(techComHeadlines.prefix(60))
   }
 
   func recordTechComHeadlines(events: [PresentationCoordinator.Event], snapshot: TechComSnapshot) {

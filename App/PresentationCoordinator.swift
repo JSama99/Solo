@@ -123,6 +123,7 @@ final class PresentationCoordinator {
   }
 
   func review(taskID: UUID, in store: GameStore) {
+    guard store.tasks.first(where: { $0.id == taskID })?.isReviewed == false else { return }
     let evidenceBefore = store.evidence.count
     store.review(taskID: taskID)
     guard let task = store.tasks.first(where: { $0.id == taskID }),
@@ -142,7 +143,9 @@ final class PresentationCoordinator {
 
   func resolve(taskID: UUID, choice: TaskResolutionChoice, in store: GameStore) {
     guard let taskBefore = store.tasks.first(where: { $0.id == taskID }),
-          let agentID = taskBefore.assignedAgentID else { return }
+          let agentID = taskBefore.assignedAgentID,
+          taskBefore.isReviewed,
+          !taskBefore.resolutionLocked else { return }
     store.resolveReviewedTask(taskID: taskID, choice: choice)
     guard store.tasks.first(where: { $0.id == taskID })?.resolutionLocked == true else { return }
     sequences[agentID]?.cancel()
@@ -218,6 +221,41 @@ final class PresentationCoordinator {
   func clearLatestEvent(id: UUID) {
     guard latestEvent?.id == id else { return }
     latestEvent = nil
+  }
+
+  /// Completes only the visible choreography. Canonical task state was already
+  /// determined synchronously by `GameStore`, so this cannot alter outcomes.
+  func skipPresentation(for agentID: String) {
+    guard var state = agentPresentations[agentID] else { return }
+    sequences[agentID]?.cancel()
+    sequences[agentID] = nil
+    state.progress = 1
+    state.sequenceID = UUID()
+    switch state.phase {
+    case .idle:
+      break
+    case .assignmentReceived, .working, .workComplete:
+      state.phase = .awaitingReview
+    case .awaitingReview:
+      break
+    case .reviewing:
+      state.reviewRevealStep = 5
+      state.phase = .reviewed
+    case .reviewed:
+      state.reviewRevealStep = 5
+    case .resolving:
+      state.reviewRevealStep = 5
+      state.phase = .resolved
+    case .resolved:
+      state.reviewRevealStep = 5
+    }
+    agentPresentations[agentID] = state
+  }
+
+  func skipAllPresentations() {
+    for agentID in Array(agentPresentations.keys) {
+      skipPresentation(for: agentID)
+    }
   }
 
   private func publish(_ event: Event, in store: GameStore) {

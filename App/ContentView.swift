@@ -99,14 +99,17 @@ private struct TitleScreen: View {
         VStack(spacing: 28) {
           Spacer(minLength: 52)
           ZStack {
-            Circle()
-              .fill(SoloTheme.purple.opacity(0.2))
-              .frame(width: 180, height: 180)
-              .blur(radius: 16)
-            Image(systemName: "sparkles")
-              .font(.system(size: 78, weight: .black))
-              .foregroundStyle(SoloTheme.cyan)
-              .shadow(color: SoloTheme.cyan.opacity(0.7), radius: 18)
+            Capsule()
+              .fill(SoloTheme.purple.opacity(0.18))
+              .frame(width: 280, height: 128)
+              .blur(radius: 18)
+            HStack(spacing: -8) {
+              TitleAgentBadge(agentID: "aurora", name: "Aurora", accent: SoloTheme.cyan)
+              TitleAgentBadge(agentID: "stacks", name: "Stacks", accent: SoloTheme.amber)
+                .zIndex(1)
+              TitleAgentBadge(agentID: "brio", name: "Brio", accent: SoloTheme.coral)
+            }
+            .dynamicTypeSize(...DynamicTypeSize.large)
           }
           VStack(spacing: 8) {
             Text("SOLO:")
@@ -160,6 +163,31 @@ private struct TitleScreen: View {
       }
       .background(SoloTheme.background)
     }
+  }
+}
+
+private struct TitleAgentBadge: View {
+  var agentID: String
+  var name: String
+  var accent: Color
+
+  var body: some View {
+    VStack(spacing: 4) {
+      Image(AgentPortraitAsset.name(for: agentID) ?? "")
+        .resizable()
+        .scaledToFill()
+        .frame(width: agentID == "stacks" ? 94 : 82, height: agentID == "stacks" ? 94 : 82)
+        .background(.black)
+        .clipShape(.rect(cornerRadius: 18))
+        .overlay { RoundedRectangle(cornerRadius: 18).stroke(accent.opacity(0.85), lineWidth: 2) }
+        .shadow(color: accent.opacity(0.38), radius: 10)
+        .accessibilityHidden(true)
+      Text(name)
+        .font(.caption2.weight(.black))
+        .foregroundStyle(accent)
+    }
+    .accessibilityElement(children: .combine)
+    .accessibilityLabel("\(name), AI agent")
   }
 }
 
@@ -498,161 +526,6 @@ private struct GameDashboard: View {
         .interactiveDismissDisabled()
       }
     }
-  }
-}
-
-private struct VentureScreen: View {
-  var store: GameStore
-
-  var body: some View {
-    NavigationStack {
-      ScrollView {
-        VStack(spacing: 16) {
-          HStack(spacing: 10) {
-            VentureMetric(title: "Track Record", value: "\(store.stats.trackRecord)", color: SoloTheme.cyan)
-            VentureMetric(title: "Sprint", value: "\(store.sprint)/12 • \(Int(store.ventureObjectiveProgress * 100))%", color: SoloTheme.amber)
-          }
-          HStack(spacing: 10) {
-            VentureMetric(title: "Evidence", value: "\(store.evidence.count)", color: SoloTheme.mint)
-            VentureMetric(title: "Venture", value: "V\(store.venture)", color: SoloTheme.purple)
-          }
-
-          VStack(alignment: .leading, spacing: 8) {
-            Text("CHAPTER \(store.chapter.rawValue)")
-              .font(.caption.weight(.black))
-              .foregroundStyle(SoloTheme.amber)
-            Text(store.chapter.name).font(.title2.bold())
-            Text(store.chapter.subtitle).foregroundStyle(.secondary)
-          }
-          .soloCard()
-
-          let era = VentureEra.era(for: store.venture)
-          VStack(alignment: .leading, spacing: 8) {
-            Label("\(era.name) era", systemImage: "mountain.2.fill").font(.headline)
-            Text(era.newForce).foregroundStyle(.secondary)
-            Text("-\(era.runwayBurnPerSprint) Runway • -\(era.energyCostPerSprint) Energy each sprint")
-              .font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.amber)
-            Text(store.venture < era.milestoneVenture ? "\(era.milestoneVenture - store.venture) venture(s) until \(VentureEra.era(for: era.milestoneVenture + 1).name)." : "You have reached this era’s milestone.")
-              .font(.caption).foregroundStyle(.secondary)
-          }
-          .soloCard()
-
-          VStack(alignment: .leading, spacing: 6) {
-            Label("Active thesis", systemImage: "compass.drawing").font(.headline)
-            Text(store.thesis.name).font(.title3.bold())
-            Text(store.thesis.summary).font(.caption).foregroundStyle(.secondary)
-          }
-          .soloCard()
-
-          let objective = store.ventureObjective ?? VentureObjective.selected(for: store.venture)
-          VStack(alignment: .leading, spacing: 8) {
-            Label("Venture objective", systemImage: "target").font(.headline)
-            Text(objective.title).font(.title3.bold())
-            Text(objective.framing).font(.caption).foregroundStyle(.secondary)
-            ProgressView(value: store.ventureObjectiveProgress)
-              .tint(SoloTheme.mint)
-            Text("\(Int(store.ventureObjectiveProgress * 100))% complete • Reward: \(objective.rewardLabel)")
-              .font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.mint)
-          }
-          .soloCard()
-
-          VStack(alignment: .leading, spacing: 8) {
-            Label("Venture pressure", systemImage: "gauge.with.dots.needle.67percent")
-              .font(.headline)
-            Text(store.venturePressureSummary)
-              .font(.callout)
-              .foregroundStyle(.secondary)
-            Text("Later ventures increase provider instability and no longer restore the company to fixed Runway or Energy floors.")
-              .font(.caption)
-              .foregroundStyle(.secondary)
-          }
-          .soloCard()
-
-          VStack(alignment: .leading, spacing: 10) {
-            Text("Company consequences").font(.headline)
-            if store.companyFlags.isEmpty && store.activeObligations.isEmpty {
-              Text("Founder decisions will appear here when they create lasting company state.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            } else {
-              ForEach(store.companyFlags.sorted(by: { $0.name < $1.name })) { flag in
-                VStack(alignment: .leading, spacing: 2) {
-                  Label(flag.name, systemImage: "point.topleft.down.curvedto.point.bottomright.up").font(.subheadline.weight(.semibold)).foregroundStyle(SoloTheme.cyan)
-                  Text(flag.context).font(.caption).foregroundStyle(.secondary)
-                }
-              }
-              ForEach(store.activeObligations) { obligation in
-                VStack(alignment: .leading, spacing: 3) {
-                  Text(obligation.title).font(.subheadline.bold())
-                  Text(obligation.detail).font(.caption).foregroundStyle(.secondary)
-                  Text("Caused by: \(obligation.sourceDecision)").font(.caption2).foregroundStyle(SoloTheme.cyan)
-                  Text("\(obligation.effectsPerSprint.conciseLossLabel) • \(obligation.durationLabel)")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(SoloTheme.amber)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(10)
-                .background(.white.opacity(0.035), in: .rect(cornerRadius: 10))
-              }
-            }
-          }
-          .soloCard()
-
-          VStack(alignment: .leading, spacing: 10) {
-            Text("Garage upgrades").font(.headline)
-            if store.unlockedGarageUpgrades.isEmpty {
-              Text("Complete sprints, earn revenue, and record evidence to evolve the garage.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            } else {
-              ForEach(store.unlockedGarageUpgrades) { upgrade in
-                Label(upgrade.name, systemImage: upgrade.symbol)
-                  .font(.subheadline.weight(.semibold))
-                  .foregroundStyle(SoloTheme.cyan)
-              }
-            }
-          }
-          .soloCard()
-
-          VStack(alignment: .leading, spacing: 12) {
-            Text("Founder doctrine").font(.caption).foregroundStyle(.secondary)
-            Text(store.doctrine.name).font(.title2.bold())
-            Text(store.doctrine.summary).foregroundStyle(.secondary)
-            Divider()
-            Label("\(store.founderName)’s company is a chain of decisions and consequences.", systemImage: "point.topleft.down.curvedto.point.bottomright.up")
-              .font(.subheadline)
-          }
-          .soloCard()
-
-          VStack(alignment: .leading, spacing: 12) {
-            Text("Career objective").font(.headline)
-            Text(store.careerMode == .bounded
-              ? "Complete two ventures and 24 sprints while protecting runway, trust, energy, and the company you create through persistent decisions."
-              : "Build for as many ventures as you can sustain. Each checkpoint lets you retire, while operating pressure, obligations, and provider risk continue to rise.")
-              .foregroundStyle(.secondary)
-          }
-          .soloCard()
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity)
-      }
-      .navigationTitle("Venture \(store.venture)")
-    }
-  }
-}
-
-private struct VentureMetric: View {
-  var title: String
-  var value: String
-  var color: Color
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 6) {
-      Text(title).font(.caption).foregroundStyle(.secondary)
-      Text(value).font(.title.bold().monospacedDigit()).foregroundStyle(color)
-    }
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .soloCard()
   }
 }
 

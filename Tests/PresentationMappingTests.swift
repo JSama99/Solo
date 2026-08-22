@@ -61,15 +61,30 @@ final class PresentationMappingTests: XCTestCase {
   func testDriftMapping() {
     var agent = makeAgent()
     agent.drift = 48
-    let state = AgentVisualState.derive(agent: agent, task: nil, founderStats: FounderStats())
+    var result = makeResult(actual: 70, reported: 72)
+    result.verify()
+    let state = AgentVisualState.derive(
+      agent: agent,
+      task: makeTask(agent: agent, reviewed: true, result: result),
+      founderStats: FounderStats()
+    )
     XCTAssertTrue(state.warnings.contains(.drifting))
+  }
+
+  func testAgentDriftDoesNotLeakBeforeCanonicalReview() {
+    var agent = makeAgent()
+    agent.drift = 48
+    let task = makeTask(agent: agent, result: makeResult(actual: 42, reported: 78))
+    let state = AgentVisualState.derive(agent: agent, task: task, founderStats: FounderStats())
+    XCTAssertFalse(state.warnings.contains(.drifting))
+    XCTAssertFalse(state.warnings.contains(.overloaded))
+    XCTAssertEqual(state.verification, .none)
   }
 
   func testOverloadedPresentationMappingUsesOnlyVisibleConditions() {
     var agent = makeAgent()
-    agent.drift = 48
-    var task = makeTask(agent: agent, result: makeResult(actual: 70, reported: 72))
-    task.role = .marketing
+    agent.progression.stressLevel = 90
+    let task = makeTask(agent: agent, result: makeResult(actual: 70, reported: 72))
     let state = AgentVisualState.derive(agent: agent, task: task, founderStats: FounderStats())
     XCTAssertTrue(state.warnings.contains(.overloaded))
   }

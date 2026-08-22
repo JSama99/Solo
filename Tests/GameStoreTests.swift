@@ -866,6 +866,41 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(store.tasks[0].assignedAgentID, agent.id)
   }
 
+  func testRivalStandingsMarketShareSumsToOneInLiveStore() {
+    let store = makeStore(seed: 555)
+    XCTAssertEqual(store.rivalStandings.map(\.marketShare).reduce(0, +), 1, accuracy: 0.0001)
+  }
+
+  func testCommitSprintPublishesRivalMoveHeadlinesMatchingTheEngine() throws {
+    let store = makeStore(seed: 4_242)
+    try assignFirstTask(in: store)
+    let expectedMoves = store.rivalMoveEvents
+    XCTAssertFalse(expectedMoves.isEmpty)
+    let expectedHeadlines = Set(expectedMoves.filter { $0.move != .steadyBuild }.map(\.headline))
+
+    store.commitSprint()
+
+    let rivalHeadlines = store.techComHeadlines.filter { $0.category == .rival }
+    XCTAssertLessThanOrEqual(rivalHeadlines.count, 2)
+    for headline in rivalHeadlines {
+      XCTAssertTrue(expectedHeadlines.contains(headline.text))
+    }
+  }
+
+  func testSprintReportIncludesRivalMoveSummaryOnlyWhenAMoveIsNotable() throws {
+    let store = makeStore(seed: 4_242)
+    try assignFirstTask(in: store)
+    let notableMoves = store.rivalMoveEvents.filter { $0.move != .steadyBuild }
+
+    store.commitSprint()
+
+    if notableMoves.isEmpty {
+      XCTAssertNil(store.report?.rivalMoveSummary)
+    } else {
+      XCTAssertNotNil(store.report?.rivalMoveSummary)
+    }
+  }
+
   private func makeStore(
     seed: UInt64 = 1_234,
     doctrine: FounderDoctrine = .guided
