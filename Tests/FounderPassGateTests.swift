@@ -194,4 +194,30 @@ final class PurchaseConfigurationTests: XCTestCase {
     let remedy = PurchaseConfigurationStatus.offeringHasNoPackages.remedy
     XCTAssertTrue(remedy.contains(RevenueCatConfiguration.expectedStoreProductIdentifier))
   }
+
+  func testRecognizesEveryAppStoreFounderPassProduct() {
+    XCTAssertEqual(
+      FounderPassPlanKind(productIdentifier: "com.talonsight.solounicornrun.founderpass.monthly"),
+      .monthly
+    )
+    XCTAssertEqual(
+      FounderPassPlanKind(productIdentifier: "com.talonsight.solounicornrun.founderpass.annual"),
+      .annual
+    )
+    XCTAssertEqual(
+      FounderPassPlanKind(productIdentifier: "com.talonsight.solounicornrun.founderpass.lifetime"),
+      .lifetime
+    )
+  }
+
+  func testBillingDescriptionsDistinguishRenewingAndLifetimeProducts() {
+    XCTAssertEqual(FounderPassPlanKind.monthly.billingDescription, "Auto-renews monthly. Cancel anytime.")
+    XCTAssertEqual(FounderPassPlanKind.annual.billingDescription, "Auto-renews yearly. Cancel anytime.")
+    XCTAssertEqual(FounderPassPlanKind.lifetime.billingDescription, "One-time purchase. No renewal.")
+  }
+
+  func testUnknownProductUsesNeutralCopy() {
+    XCTAssertEqual(FounderPassPlanKind(productIdentifier: "custom.product"), .other)
+    XCTAssertEqual(FounderPassPlanKind.other.billingDescription, "Founder Pass access.")
+  }
 }
