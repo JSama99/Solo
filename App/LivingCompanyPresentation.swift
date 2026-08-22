@@ -59,6 +59,7 @@ enum LivingPresentationEmphasis: Equatable, Sendable {
   case founderAttention
   case inspection
   case decisionLock
+  case levelUpCelebration
 }
 
 /// Presentation-only focus for the command scene. It is never persisted or
@@ -203,6 +204,7 @@ struct LivingAgentProjection: Identifiable, Equatable, Sendable {
   var conditions: Set<LivingAgentCondition>
   var emphasis: LivingPresentationEmphasis
   var progress: Double
+  var reviewRevealStep: Int
   var stressLabel: String
   var trustLabel: String
   var level: Int
@@ -224,7 +226,8 @@ struct LivingAgentProjection: Identifiable, Equatable, Sendable {
     presentation: PresentationCoordinator.AgentPresentation?,
     isResting: Bool,
     isSelected: Bool,
-    founderStats: FounderStats
+    founderStats: FounderStats,
+    celebratingLevelUp: Bool = false
   ) -> Self {
     let activity = deriveActivity(task: task, presentation: presentation, isResting: isResting)
     var conditions = Set<LivingAgentCondition>()
@@ -264,7 +267,9 @@ struct LivingAgentProjection: Identifiable, Equatable, Sendable {
     }
 
     let emphasis: LivingPresentationEmphasis
-    if activity == .reviewing {
+    if celebratingLevelUp {
+      emphasis = .levelUpCelebration
+    } else if activity == .reviewing {
       emphasis = .inspection
     } else if activity == .awaitingReview || activity == .workComplete {
       emphasis = .founderAttention
@@ -286,7 +291,8 @@ struct LivingAgentProjection: Identifiable, Equatable, Sendable {
       activity: activity,
       conditions: conditions,
       emphasis: emphasis,
-      progress: min(1, max(0, presentation?.progress ?? defaultProgress(task: task))),
+      progress: activity == .resting ? 0 : min(1, max(0, presentation?.progress ?? defaultProgress(task: task))),
+      reviewRevealStep: presentation?.reviewRevealStep ?? (task?.isReviewed == true ? 5 : 0),
       stressLabel: agent.progression.stressBand.label,
       trustLabel: AgentStationViewModel.TrustBand(trust: agent.trust).label,
       level: agent.progression.level,
@@ -339,6 +345,18 @@ struct CompanyAtmosphere: Equatable, Sendable {
   var pressure: Pressure
   var energy: Double
   var momentum: Double
+  var isLowEnergy: Bool
+  var isLowRunway: Bool
+  var isLowTrust: Bool
+  var isHighMomentum: Bool
+
+  var accessibilitySummary: String {
+    var values = [isLowEnergy ? "Low Founder Energy" : "Founder Energy stable"]
+    values.append(isLowRunway ? "Low Runway" : "Runway healthy")
+    values.append(isLowTrust ? "Low Company Trust" : "Company Trust stable")
+    values.append(isHighMomentum ? "High Momentum" : "Momentum steady")
+    return values.joined(separator: ". ")
+  }
 
   static func derive(stats: FounderStats, facility: FacilityTier, venture: Int) -> Self {
     let pressure: Pressure
@@ -351,13 +369,17 @@ struct CompanyAtmosphere: Equatable, Sendable {
       equipmentStage: .derive(venture: venture, trackRecord: stats.trackRecord, capital: stats.capital),
       pressure: pressure,
       energy: min(1, max(0.35, Double(stats.energy) / 100)),
-      momentum: min(1, max(0, Double(stats.momentum) / 100))
+      momentum: min(1, max(0, Double(stats.momentum) / 100)),
+      isLowEnergy: stats.energy <= 38,
+      isLowRunway: stats.runway <= 8,
+      isLowTrust: stats.trust <= 24,
+      isHighMomentum: stats.momentum >= 70
     )
   }
 }
 
 struct InfrastructureVisual: Identifiable, Equatable, Sendable {
-  enum State: Equatable, Sendable { case uninstalled, installed, active }
+  enum State: Equatable, Sendable { case uninstalled, installing, installed, active }
 
   var id: FacilityUpgradeID
   var title: String
@@ -368,7 +390,8 @@ struct InfrastructureVisual: Identifiable, Equatable, Sendable {
     purchased: Set<FacilityUpgradeID>,
     facility: FacilityTier,
     agents: [LivingAgentProjection],
-    sprint: Int
+    sprint: Int,
+    installing: Set<FacilityUpgradeID> = []
   ) -> [Self] {
     FacilityUpgradeDefinition.all.map { definition in
       let isInstalled = purchased.contains(definition.id)
@@ -385,9 +408,53 @@ struct InfrastructureVisual: Identifiable, Equatable, Sendable {
       case .founderCommandDesk:
         isRelevant = sprint.isMultiple(of: 3)
       }
-      let state: State = !isInstalled ? .uninstalled : (facility == definition.requiredFacility && isRelevant ? .active : .installed)
+      let state: State
+      if installing.contains(definition.id) {
+        state = .installing
+      } else if !isInstalled {
+        state = .uninstalled
+      } else {
+        state = facility == definition.requiredFacility && isRelevant ? .active : .installed
+      }
       return Self(id: definition.id, title: definition.title, symbol: definition.symbol, state: state)
     }
+  }
+}
+
+struct CompanyPhaseHierarchy: Equatable, Sendable {
+  enum Priority: String, Equatable, Sendable {
+    case planning = "Plan assignments"
+    case working = "Watch active work"
+    case review = "Inspect Founder tray"
+    case resolution = "Lock Founder decision"
+    case commit = "Commit sprint"
+  }
+
+  var priority: Priority
+  var taskProminence: Double
+  var stationProminence: Double
+  var founderTrayProminence: Double
+  var decisionProminence: Double
+  var commitProminence: Double
+
+  static func derive(
+    sprintPhase: SprintPhase,
+    agents: [LivingAgentProjection],
+    founderSummary: CompanyCommandFounderSummary
+  ) -> Self {
+    if agents.contains(where: { $0.activity == .reviewing }) || founderSummary.reviewCount > 0 {
+      return Self(priority: .review, taskProminence: 0.55, stationProminence: 0.72, founderTrayProminence: 1, decisionProminence: 0.55, commitProminence: 0.35)
+    }
+    if founderSummary.resolutionCount > 0 || agents.contains(where: { [.reviewed, .resolving, .resolved].contains($0.activity) }) {
+      return Self(priority: .resolution, taskProminence: 0.55, stationProminence: 0.68, founderTrayProminence: 0.76, decisionProminence: 1, commitProminence: 0.45)
+    }
+    if sprintPhase == .readyToCommit {
+      return Self(priority: .commit, taskProminence: 0.40, stationProminence: 0.55, founderTrayProminence: 0.55, decisionProminence: 0.55, commitProminence: 1)
+    }
+    if agents.contains(where: { [.assignmentReceived, .working, .workComplete].contains($0.activity) }) {
+      return Self(priority: .working, taskProminence: 0.88, stationProminence: 1, founderTrayProminence: 0.62, decisionProminence: 0.35, commitProminence: 0.25)
+    }
+    return Self(priority: .planning, taskProminence: 1, stationProminence: 0.82, founderTrayProminence: 0.45, decisionProminence: 0.30, commitProminence: 0.25)
   }
 }
 

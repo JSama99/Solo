@@ -116,6 +116,7 @@ enum GameFeedbackKind {
   case resolutionLock
   case sprintCommit
   case infrastructureInstall
+  case levelUp
   case chapterAdvance
 
   var frequency: Double {
@@ -128,6 +129,7 @@ enum GameFeedbackKind {
     case .resolutionLock: 360
     case .sprintCommit: 740
     case .infrastructureInstall: 610
+    case .levelUp: 920
     case .chapterAdvance: 820
     }
   }
