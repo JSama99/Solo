@@ -1,5 +1,14 @@
 #if DEBUG
+import Dispatch
 import SwiftUI
+
+private let motionQAProofNotification = Notification.Name("SOLOMotionQAPlayProof")
+private let motionQAProofDarwinName = "com.talonsight.solounicornrun.motion-qa-play" as CFString
+private let motionQAProofCallback: CFNotificationCallback = { _, _, _, _, _ in
+  DispatchQueue.main.async {
+    NotificationCenter.default.post(name: motionQAProofNotification, object: nil)
+  }
+}
 
 /// Immutable, production-component visual verification catalog. It owns no
 /// GameStore, coordinator, persistence, RNG, purchase, or network dependency.
@@ -14,21 +23,14 @@ struct MotionVerificationScreen: View {
   }
 
   var body: some View {
-    NavigationStack {
+    ZStack(alignment: .topTrailing) {
+      Color.black.ignoresSafeArea()
       ScrollView {
-        VStack(alignment: .leading, spacing: 14) {
-          Text("Production Company Command rendered from immutable, visible-safe fixtures. Career state is never read or changed.")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-
-          Picker("Visual fixture", selection: $fixtureID) {
-            ForEach(LivingCompanyFixture.ID.allCases) { id in
-              Text(id.rawValue).tag(id)
-            }
-          }
-          .pickerStyle(.menu)
-          .buttonStyle(.borderedProminent)
-
+        VStack(alignment: .leading, spacing: 10) {
+          Label("Production component · DEBUG fixture", systemImage: "checkmark.seal.fill")
+            .font(.caption.weight(.bold))
+            .foregroundStyle(SoloTheme.mint)
+            .padding(.trailing, 72)
           fixtureViewport
 
           HStack {
@@ -41,13 +43,20 @@ struct MotionVerificationScreen: View {
           }
           .buttonStyle(.bordered)
 
-          Label("Production component · DEBUG fixture", systemImage: "checkmark.seal.fill")
-            .font(.caption.weight(.bold))
-            .foregroundStyle(SoloTheme.mint)
-          Text("Current state: \(fixtureID.rawValue)")
-            .font(.caption.weight(.black))
-            .foregroundStyle(SoloTheme.cyan)
-            .accessibilityIdentifier("motion-qa-current-state")
+          Button("Play causal proof", systemImage: "play.fill") {
+            Task { await playCausalProof() }
+          }
+          .buttonStyle(.bordered)
+          .disabled(isPlayingCausalProof)
+
+          Picker("Visual fixture", selection: $fixtureID) {
+            ForEach(LivingCompanyFixture.ID.allCases) { id in
+              Text(id.rawValue).tag(id)
+            }
+          }
+          .pickerStyle(.menu)
+          .buttonStyle(.borderedProminent)
+          .accessibilityIdentifier("motion-qa-current-state")
           if isPlayingCausalProof {
             Label("Uninterrupted causal proof playback", systemImage: "record.circle")
               .font(.caption.weight(.bold))
@@ -58,23 +67,55 @@ struct MotionVerificationScreen: View {
         .frame(maxWidth: .infinity)
       }
       .task {
-        guard ProcessInfo.processInfo.arguments.contains("--motion-qa-sequence") else { return }
-        isPlayingCausalProof = true
-        try? await Task.sleep(for: .seconds(1))
-        for id in LivingCompanyFixture.causalProofSequence {
-          guard !Task.isCancelled else { return }
-          fixtureID = id
-          try? await Task.sleep(for: .milliseconds(1_100))
+        if ProcessInfo.processInfo.arguments.contains("--motion-qa-sequence")
+          || ProcessInfo.processInfo.environment["SOLO_MOTION_QA_SEQUENCE"] == "1" {
+          // Gives the recorder time to attach while Planning is already visible;
+          // the resulting proof begins in-app with no SpringBoard or launch flash.
+          try? await Task.sleep(for: .milliseconds(2_400))
+          await playCausalProof()
+          return
         }
-        isPlayingCausalProof = false
+        return
       }
-      .navigationTitle("Motion QA")
-      .toolbar {
-        ToolbarItem(placement: .confirmationAction) {
-          Button("Done") { dismiss() }
-        }
+      .onAppear {
+        CFNotificationCenterAddObserver(
+          CFNotificationCenterGetDarwinNotifyCenter(),
+          nil,
+          motionQAProofCallback,
+          motionQAProofDarwinName,
+          nil,
+          .deliverImmediately
+        )
       }
+      .onDisappear {
+        CFNotificationCenterRemoveObserver(
+          CFNotificationCenterGetDarwinNotifyCenter(),
+          nil,
+          CFNotificationName(motionQAProofDarwinName),
+          nil
+        )
+      }
+      .onReceive(NotificationCenter.default.publisher(for: motionQAProofNotification)) { _ in
+        Task { await playCausalProof() }
+      }
+
+      Button("Done") { dismiss() }
+        .buttonStyle(.bordered)
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
+      }
+  }
+
+  @MainActor
+  private func playCausalProof() async {
+    guard !isPlayingCausalProof else { return }
+    isPlayingCausalProof = true
+    for id in LivingCompanyFixture.causalProofSequence {
+      guard !Task.isCancelled else { return }
+      fixtureID = id
+      try? await Task.sleep(for: .milliseconds(1_550))
     }
+    isPlayingCausalProof = false
   }
 
   private var fixtureViewport: some View {
@@ -233,13 +274,13 @@ struct LivingCompanyFixture: Equatable, Sendable {
       let step = [ID.reviewStep1: 1, .reviewStep2: 2, .reviewStep3: 3, .reviewStep4: 4, .reviewStep5: 5][id] ?? 1
       stage("aurora", activity: .reviewing, progress: 1, conditions: step == 5 ? [.verified] : [], emphasis: .inspection, reviewStep: step); reviewCount = 1; sprintPhase = .reviewAndResolve
     case .verified:
-      stage("aurora", activity: .reviewed, progress: 1, conditions: [.verified]); resolutionCount = 1; sprintPhase = .reviewAndResolve
+      stage("aurora", activity: .reviewed, progress: 1, conditions: [.verified], reviewStep: 5); resolutionCount = 1; sprintPhase = .reviewAndResolve
     case .overclaimed:
-      stage("aurora", activity: .reviewed, progress: 1, conditions: [.overclaimed]); resolutionCount = 1; sprintPhase = .reviewAndResolve
+      stage("aurora", activity: .reviewed, progress: 1, conditions: [.overclaimed], reviewStep: 5); resolutionCount = 1; sprintPhase = .reviewAndResolve
     case .driftDetected:
-      stage("brio", activity: .reviewed, progress: 1, conditions: [.drifting]); resolutionCount = 1; sprintPhase = .reviewAndResolve
+      stage("brio", activity: .reviewed, progress: 1, conditions: [.drifting], reviewStep: 5); resolutionCount = 1; sprintPhase = .reviewAndResolve
     case .evidenceIncomplete:
-      stage("aurora", activity: .reviewed, progress: 1, conditions: [.evidenceIncomplete]); resolutionCount = 1; sprintPhase = .reviewAndResolve
+      stage("aurora", activity: .reviewed, progress: 1, conditions: [.evidenceIncomplete], reviewStep: 5); resolutionCount = 1; sprintPhase = .reviewAndResolve
     case .stressed:
       agents[1].conditions = [.stressed]; agents[1].stressLabel = "Pressured"
     case .overloaded:
