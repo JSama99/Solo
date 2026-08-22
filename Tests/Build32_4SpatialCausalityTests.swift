@@ -1,8 +1,18 @@
+import AVFoundation
 import XCTest
 @testable import Solo_Unicorn_Run
 
 @MainActor
 final class Build32_4SpatialCausalityTests: XCTestCase {
+  func testFeedbackToneBufferMatchesNegotiatedMultichannelFormat() throws {
+    let format = try XCTUnwrap(AVAudioFormat(standardFormatWithSampleRate: 48_000, channels: 2))
+    let buffer = try XCTUnwrap(FeedbackToneBuffer.make(kind: .review, format: format))
+    XCTAssertEqual(buffer.format.channelCount, format.channelCount)
+    XCTAssertEqual(buffer.frameLength, AVAudioFrameCount(format.sampleRate * GameFeedbackKind.review.duration))
+    XCTAssertNotNil(buffer.floatChannelData?[0])
+    XCTAssertNotNil(buffer.floatChannelData?[1])
+  }
+
   func testAutomaticPresentationNeverCreatesViewportFocus() {
     var state = CompanyCommandInteractionState()
     state.receiveAutomaticPresentationUpdate()

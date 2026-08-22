@@ -11,11 +11,11 @@ Build 32.4 is a presentation-only spatial causality, facility identity, layout, 
 - Preserved the five-step Founder Review projection while allowing complete multiline final titles, including “Evidence Incomplete.”
 - Strengthened Garage and Loft structure, physical infrastructure states, localized atmosphere, and native character posture/symbol responses.
 - Added a presentation-safe character input boundary containing only role, activity, visible conditions, emphasis, Reduce Motion, and a one-shot level-up trigger.
-- Added 20 Build 32.4 regression tests and expanded the DEBUG proof catalog from 46 to 47 fixtures.
+- Added 21 Build 32.4 regression tests and expanded the DEBUG proof catalog from 46 to 47 fixtures.
+- Repaired review-feedback playback to synthesize its buffer in the audio node’s negotiated channel format, preventing the simulator crash caused by a mono/stereo scheduling mismatch.
 
 ## Compatibility
 
 - Deployment and SDK use remain compatible with iOS 26.5.
 - No save schema, decoded value, RevenueCat configuration, product behavior, or canonical rule changed.
 - No production `.riv` assets exist in the repository; no Rive dependency or placeholder was added.
-
