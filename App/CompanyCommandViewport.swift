@@ -338,6 +338,7 @@ struct CompanyCommandViewport: View {
           Spacer()
           Rectangle().fill(SoloTheme.cyan.opacity(0.18)).frame(width: 8)
         }
+        Capsule().fill(.white.opacity(0.08)).frame(height: 3).padding(.horizontal, 24)
       }
     } else {
       ZStack {
