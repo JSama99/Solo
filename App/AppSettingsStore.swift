@@ -55,21 +55,15 @@ final class AppSettingsStore {
   /// randomness, or simulation timing is involved.
   func playFeedback(_ kind: GameFeedbackKind) {
     guard soundEffectsEnabled else { return }
-    let format = feedbackFormat
-    let duration = kind.duration
-    let frameCount = AVAudioFrameCount(format.sampleRate * duration)
-    guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount),
-          let channelData = buffer.floatChannelData else { return }
-    buffer.frameLength = frameCount
-    for frame in 0..<Int(frameCount) {
-      let progress = Double(frame) / Double(max(1, Int(frameCount) - 1))
-      let envelope = sin(.pi * progress) * kind.volume
-      let sample = Float(sin(2 * .pi * kind.frequency * Double(frame) / format.sampleRate) * envelope)
-      for channel in 0..<Int(format.channelCount) {
-        channelData[channel][frame] = sample
+    if !engine.isRunning {
+      do {
+        try engine.start()
+      } catch {
+        return
       }
     }
-    if !engine.isRunning { try? engine.start() }
+    let format = feedbackFormat
+    guard let buffer = FeedbackToneBuffer.make(kind: kind, format: format) else { return }
     feedbackPlayer.stop()
     feedbackPlayer.scheduleBuffer(buffer)
     feedbackPlayer.play()
@@ -119,6 +113,25 @@ final class AppSettingsStore {
         self.scheduleLoop(file)
       }
     }
+  }
+}
+
+enum FeedbackToneBuffer {
+  static func make(kind: GameFeedbackKind, format: AVAudioFormat) -> AVAudioPCMBuffer? {
+    guard format.sampleRate > 0, format.channelCount > 0 else { return nil }
+    let frameCount = AVAudioFrameCount(format.sampleRate * kind.duration)
+    guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount),
+          let channels = buffer.floatChannelData else { return nil }
+    buffer.frameLength = frameCount
+    for frame in 0..<Int(frameCount) {
+      let progress = Double(frame) / Double(max(1, Int(frameCount) - 1))
+      let envelope = sin(.pi * progress) * kind.volume
+      let sample = Float(sin(2 * .pi * kind.frequency * Double(frame) / format.sampleRate) * envelope)
+      for channel in 0..<Int(format.channelCount) {
+        channels[channel][frame] = sample
+      }
+    }
+    return buffer
   }
 }
 

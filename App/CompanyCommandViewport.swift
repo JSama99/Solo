@@ -2,6 +2,10 @@ import SwiftUI
 
 /// Compact, first-person overview of the canonical Founder Computer workflow.
 /// It accepts immutable visible projections and owns no simulation state.
+///
+/// Build 32.4 keeps every automatic causal presentation inside one stable
+/// spatial scene: choreography never opens agent focus, never expands the
+/// canonical workstation, and never moves the page.
 struct CompanyCommandViewport: View {
   var agents: [LivingAgentProjection]
   var atmosphere: CompanyAtmosphere
@@ -27,25 +31,42 @@ struct CompanyCommandViewport: View {
   @State private var isVisible = true
 
   var body: some View {
-    let scene = ViewportSceneProjection(agents: agents, sprintPhase: sprintPhase, founderSummary: founderSummary)
+    let scene = ViewportSceneProjection(
+      agents: agents,
+      sprintPhase: sprintPhase,
+      founderSummary: founderSummary,
+      atmosphere: atmosphere,
+      reduceMotion: reduceMotion
+    )
     return TimelineView(.animation(minimumInterval: 1 / 18, paused: motionPaused)) { context in
       let time = context.date.timeIntervalSinceReferenceDate
-      VStack(spacing: 8) {
-        header(hierarchy: scene.hierarchy)
+      VStack(spacing: 7) {
+        // The header carries essential state and must stay readable, so it is
+        // capped far above the miniature scene labels below it.
+        ViewportHeader(
+          facilityName: atmosphere.facility.name,
+          sprintPhase: sprintPhase,
+          hierarchy: scene.hierarchy,
+          secondaryInstruction: scene.secondaryInstruction,
+          showsCloseFocus: focus != nil,
+          onCloseFocus: { if let focus { onFocus(focus) } }
+        )
+        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+
         commandFloor(time: time, scene: scene)
+          .dynamicTypeSize(...DynamicTypeSize.xLarge)
+
         infrastructureRail
+          .dynamicTypeSize(...DynamicTypeSize.large)
       }
-      // The viewport is a compact spatial scene. Cap its miniature labels while
-      // the canonical cards below continue to honor unrestricted Dynamic Type.
-      .dynamicTypeSize(...DynamicTypeSize.xLarge)
       .padding(12)
       .frame(maxWidth: .infinity)
       .frame(height: viewportHeight)
       .background {
-        viewportBackground(time: time)
+        viewportBackground(time: time, treatment: scene.treatment)
           .clipShape(.rect(cornerRadius: 24))
       }
-      .overlay { viewportFrame }
+      .overlay { viewportFrame(structure: scene.structure) }
       .shadow(color: atmosphereColor.opacity(0.22), radius: 16, y: 8)
     }
     .onScrollVisibilityChange(threshold: 0.08) {
@@ -62,8 +83,8 @@ struct CompanyCommandViewport: View {
   }
 
   private var viewportHeight: CGFloat {
-    if dynamicTypeSize.isAccessibilitySize { return focus == nil ? 430 : 600 }
-    return focus == nil ? 336 : 458
+    if dynamicTypeSize.isAccessibilitySize { return focus == nil ? 470 : 636 }
+    return focus == nil ? 376 : 486
   }
 
   private var motionPaused: Bool {
@@ -78,142 +99,109 @@ struct CompanyCommandViewport: View {
     onFocus(.agent(id))
   }
 
-  private func header(hierarchy: CompanyPhaseHierarchy) -> some View {
-    HStack(spacing: 8) {
-      VStack(alignment: .leading, spacing: 1) {
-        Text("COMPANY COMMAND")
-          .font(.caption.weight(.black))
-          .foregroundStyle(SoloTheme.amber)
-          .lineLimit(1)
-          .minimumScaleFactor(0.75)
-        Text(atmosphere.facility.name.uppercased())
-          .font(.caption2.monospaced().weight(.bold))
-          .foregroundStyle(.secondary)
-          .lineLimit(1)
-      }
-      Spacer(minLength: 4)
-      VStack(alignment: .trailing, spacing: 1) {
-        Label(sprintPhase.title, systemImage: sprintPhase.symbol)
-          .font(.caption2.weight(.bold))
-          .lineLimit(1)
-        Text(hierarchy.priority.rawValue.uppercased())
-          .font(.system(size: 7, weight: .black, design: .monospaced))
-          .foregroundStyle(SoloTheme.cyan)
-      }
-      if focus != nil {
-        Button("Close focus", systemImage: "xmark") {
-          if let focus { onFocus(focus) }
-        }
-          .labelStyle(.iconOnly)
-          .frame(minWidth: 44, minHeight: 44)
-          .accessibilityHint("Returns to the full company overview without scrolling")
-      }
-    }
-    .frame(minHeight: 30)
-  }
-
-  private var atmosphereStrip: some View {
-    HStack(spacing: 5) {
-      atmosphereSignal(
-        atmosphere.isLowEnergy ? "LOW ENERGY" : "ENERGY",
-        symbol: atmosphere.isLowEnergy ? "battery.25percent" : "battery.75percent",
-        color: atmosphere.isLowEnergy ? SoloTheme.amber : SoloTheme.mint
-      )
-      atmosphereSignal(
-        atmosphere.isLowRunway ? "LOW RUNWAY" : "RUNWAY",
-        symbol: atmosphere.isLowRunway ? "hourglass.bottomhalf.filled" : "calendar.badge.checkmark",
-        color: atmosphere.isLowRunway ? SoloTheme.amber : SoloTheme.cyan
-      )
-      atmosphereSignal(
-        atmosphere.isLowTrust ? "LOW TRUST" : "TRUST",
-        symbol: atmosphere.isLowTrust ? "person.crop.circle.badge.exclamationmark" : "person.crop.circle.badge.checkmark",
-        color: atmosphere.isLowTrust ? SoloTheme.coral : SoloTheme.mint
-      )
-      atmosphereSignal(
-        atmosphere.isHighMomentum ? "HIGH FLOW" : "MOMENTUM",
-        symbol: atmosphere.isHighMomentum ? "arrow.up.right" : "arrow.right",
-        color: atmosphere.isHighMomentum ? SoloTheme.cyan : .secondary
-      )
-    }
-    .accessibilityElement(children: .combine)
-    .accessibilityLabel(atmosphere.accessibilitySummary)
-  }
-
-  private func atmosphereSignal(_ title: String, symbol: String, color: Color) -> some View {
-    Label(title, systemImage: symbol)
-      .font(.system(size: 7, weight: .black, design: .monospaced))
-      .foregroundStyle(color)
-      .lineLimit(1)
-      .minimumScaleFactor(0.65)
-      .frame(maxWidth: .infinity, minHeight: 20)
-      .background(color.opacity(0.08), in: Capsule())
-  }
+  // MARK: Scene
 
   private func commandFloor(time: TimeInterval, scene: ViewportSceneProjection) -> some View {
     GeometryReader { geometry in
-      ZStack(alignment: .bottom) {
-        facilityStructure
-        localizedAtmosphere
-        if let inspectionAgent = scene.agents.first(where: { [.reviewing, .reviewed].contains($0.agent.activity) })?.agent {
-          overviewCommandFloor(time: time, geometry: geometry, scene: scene)
-          FounderInspectionComposition(agent: inspectionAgent, reduceMotion: reduceMotion, time: time)
-            .padding(.horizontal, 24)
-            .padding(.bottom, 42)
-            .transition(.opacity.combined(with: .scale(scale: 0.94)))
-        } else {
-        switch focus {
-        case .agent(let agentID):
-          if let agent = scene.agentByID[agentID] {
-            AgentCommandFocusPanel(
-              agent: agent,
-              surroundingAgents: scene.surroundingAgents[agentID] ?? [],
-              availability: agentAvailability[agentID] ?? .init(),
-              time: time,
-              reduceMotion: reduceMotion,
-              onTransferFocus: { onFocus(.agent($0)) },
-              onAssign: { onAssign(agentID) },
-              onReview: { onReview(agentID) },
-              onRest: { onRest(agentID) },
-              onSkip: { onSkipAgentPresentation(agentID) },
-              onFullWorkstation: { onOpenFullWorkstation(.agent(agentID)) }
-            )
-            .transition(.opacity.combined(with: .scale(scale: 0.96)))
-          }
-        case .founder:
-          FounderCommandFocusPanel(
-            summary: founderSummary,
-            onCommit: onCommit,
-            onFullWorkstation: { onOpenFullWorkstation(.founder) }
-          )
-          .transition(.opacity.combined(with: .scale(scale: 0.96)))
-        case nil:
-          overviewCommandFloor(time: time, geometry: geometry, scene: scene)
+      let layout = CompanySceneLayout(
+        size: geometry.size,
+        agentOrder: scene.agentOrder,
+        structure: scene.structure
+      )
+      ZStack {
+        FacilityStructureLayer(
+          structure: scene.structure,
+          layout: layout,
+          treatment: scene.treatment,
+          time: time,
+          reduceMotion: reduceMotion,
+          increasedContrast: increasedContrast
+        )
+
+        // The overview scene is always the spatial stage. Founder inspection
+        // composes on top of it; only an explicit user focus replaces it.
+        if scene.showsOverviewStage(focus: focus) {
+          overviewStage(time: time, layout: layout, scene: scene)
+            .transition(.opacity)
         }
 
-        if focus != nil {
-          ForEach(scene.packetAgents) { item in
-            if let object = CompanyCausalObject.project(agent: item.agent, reduceMotion: reduceMotion) {
-              CausalJourney(
-                object: object,
-                accent: accent(for: item.agent.agentID),
-                start: causalStart(index: item.index, object: object, size: geometry.size),
-                end: causalEnd(index: item.index, object: object, size: geometry.size),
+        LocalizedAtmosphereLayer(
+          treatment: scene.treatment,
+          atmosphere: atmosphere,
+          layout: layout,
+          activeAgentIDs: scene.activeAgentIDs,
+          time: time,
+          reduceMotion: reduceMotion
+        )
+        .allowsHitTesting(false)
+
+        if let inspectionAgent = scene.inspectionAgent {
+          FounderInspectionComposition(agent: inspectionAgent, reduceMotion: reduceMotion, time: time)
+            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+            .padding(.horizontal, 10)
+            .position(x: geometry.size.width / 2, y: layout.bayCenterY + layout.bayHeight * 0.30)
+            .transition(.opacity.combined(with: .scale(scale: 0.94)))
+        } else {
+          switch focus {
+          case .agent(let agentID):
+            if let agent = scene.agentByID[agentID] {
+              AgentCommandFocusPanel(
+                agent: agent,
+                surroundingAgents: scene.surroundingAgents[agentID] ?? [],
+                availability: agentAvailability[agentID] ?? .init(),
                 time: time,
-                reduceMotion: reduceMotion
+                reduceMotion: reduceMotion,
+                onTransferFocus: { onFocus(.agent($0)) },
+                onAssign: { onAssign(agentID) },
+                onReview: { onReview(agentID) },
+                onRest: { onRest(agentID) },
+                onSkip: { onSkipAgentPresentation(agentID) },
+                onFullWorkstation: { onOpenFullWorkstation(.agent(agentID)) }
               )
-              .accessibilityHidden(true)
+              .transition(.opacity.combined(with: .scale(scale: 0.96)))
             }
+          case .founder:
+            FounderCommandFocusPanel(
+              summary: founderSummary,
+              onCommit: onCommit,
+              onFullWorkstation: { onOpenFullWorkstation(.founder) }
+            )
+            .transition(.opacity.combined(with: .scale(scale: 0.96)))
+          case nil:
+            EmptyView()
           }
         }
-        }
+
+        // Causal objects render last so an in-flight document is never hidden
+        // by the inspection composition or by a user focus panel.
+        causalLayer(plan: scene.plan, layout: layout, time: time)
       }
     }
     .clipped()
   }
 
-  private func overviewCommandFloor(time: TimeInterval, geometry: GeometryProxy, scene: ViewportSceneProjection) -> some View {
-    ZStack(alignment: .bottom) {
-      physicalInfrastructure(in: geometry.size)
+  private func overviewStage(
+    time: TimeInterval,
+    layout: CompanySceneLayout,
+    scene: ViewportSceneProjection
+  ) -> some View {
+    ZStack {
+      ForEach(infrastructure) { item in
+        PhysicalEquipmentView(
+          item: item,
+          structure: scene.structure,
+          size: layout.systemSize(item.physicalLocation),
+          time: time,
+          reduceMotion: reduceMotion
+        )
+        .frame(
+          width: layout.systemSize(item.physicalLocation).width,
+          height: layout.systemSize(item.physicalLocation).height
+        )
+        .position(layout.point(.companySystem(item.physicalLocation)))
+        .accessibilityLabel(item.title)
+        .accessibilityValue("\(infrastructureLabel(item.state)). Located at \(item.physicalLocation.accessibilityName).")
+      }
 
       ForEach(scene.agents) { item in
         ViewportAgentStation(
@@ -223,11 +211,13 @@ struct CompanyCommandViewport: View {
           dimmed: item.dimmed,
           prominence: scene.hierarchy.stationProminence,
           dominant: item.dominant,
-          facility: CompanySpatialPresentation.map(atmosphere.facility),
+          structure: scene.structure,
+          confidence: scene.treatment.ambientMovementConfidence,
+          signalIntegrity: item.agent.role == .marketing ? scene.treatment.externalSignalIntegrity : 1,
           action: { onFocus(.agent(item.agent.agentID)) }
         )
-        .frame(width: stationWidth(dominant: item.dominant, total: geometry.size.width))
-        .position(stationPosition(index: item.index, size: geometry.size))
+        .frame(width: layout.stationWidth(dominant: item.dominant), height: layout.bayHeight)
+        .position(layout.stationCenter(item.agent.agentID))
         .accessibilitySortPriority(Double(scene.agents.count - item.index))
       }
 
@@ -235,212 +225,93 @@ struct CompanyCommandViewport: View {
         activeCount: scene.activeCount,
         reviewCount: scene.reviewCount,
         pressure: atmosphere.pressure,
+        deskProfile: scene.structure.founderDeskProfile,
+        lightLevel: scene.treatment.founderLightLevel,
         action: { onFocus(.founder) }
       )
-      .frame(width: min(geometry.size.width * 0.62, 230))
-      .offset(y: 7)
+      .frame(width: layout.founderPanelWidth)
+      .position(x: layout.size.width / 2, y: layout.founderDeskY)
+    }
+  }
 
-      ForEach(scene.packetAgents) { item in
-        if let object = CompanyCausalObject.project(agent: item.agent, reduceMotion: reduceMotion) {
-          CausalJourney(
-            object: object,
-            accent: accent(for: item.agent.agentID),
-            start: causalStart(index: item.index, object: object, size: geometry.size),
-            end: causalEnd(index: item.index, object: object, size: geometry.size),
-            time: time,
-            reduceMotion: reduceMotion
-          )
-          .accessibilityHidden(true)
-        }
+  private func causalLayer(
+    plan: CausalPresentationPlan,
+    layout: CompanySceneLayout,
+    time: TimeInterval
+  ) -> some View {
+    ZStack(alignment: .topLeading) {
+      ForEach(plan.objects) { object in
+        CausalJourney(
+          object: object,
+          accent: accent(for: object.agentID),
+          start: layout.point(object.start),
+          end: layout.point(object.end),
+          lane: plan.lane(forAgentID: object.agentID, in: layout.agentOrder),
+          laneCount: layout.agentOrder.count,
+          time: time,
+          reduceMotion: reduceMotion,
+          increasedContrast: increasedContrast
+        )
+        .accessibilityHidden(true)
       }
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .allowsHitTesting(false)
   }
 
   private var infrastructureRail: some View {
     HStack(spacing: 6) {
-      Text("COMPANY SYSTEMS")
+      Text("SYSTEMS")
         .font(.system(size: 8, weight: .black, design: .monospaced))
         .foregroundStyle(.secondary)
+        .fixedSize()
       ForEach(infrastructure) { item in
         InfrastructureEquipmentView(item: item, reduceMotion: reduceMotion)
-          .frame(maxWidth: .infinity, minHeight: 30)
+          .frame(maxWidth: .infinity, minHeight: 28)
           .accessibilityLabel(item.title)
           .accessibilityValue(infrastructureLabel(item.state))
       }
     }
-    .frame(height: 32)
+    .frame(height: 30)
+    .accessibilityElement(children: .contain)
+    .accessibilityLabel("Company systems index")
   }
 
+  // MARK: Chrome
+
   @ViewBuilder
-  private func viewportBackground(time: TimeInterval) -> some View {
-    let pulse = motionPaused ? 0 : 0.025 * sin(time * (1.2 + atmosphere.momentum))
+  private func viewportBackground(time: TimeInterval, treatment: CompanyAtmosphereTreatment) -> some View {
+    let pulse = motionPaused ? 0 : 0.02 * sin(time * (1.2 + atmosphere.momentum))
     LinearGradient(
       colors: [
         facilityBase.opacity(0.88),
         SoloTheme.background,
-        atmosphereColor.opacity(0.10 + pulse)
+        atmosphereColor.opacity(0.08 + pulse)
       ],
       startPoint: .topLeading,
       endPoint: .bottomTrailing
     )
     .overlay(alignment: .top) {
       LinearGradient(
-        colors: [atmosphereColor.opacity((0.12 + pulse) * atmosphere.energy), .clear],
+        colors: [atmosphereColor.opacity((0.10 + pulse) * atmosphere.energy), .clear],
         startPoint: .top,
         endPoint: .bottom
       )
-      .frame(height: 110)
+      .frame(height: 96)
     }
   }
 
-  private var viewportFrame: some View {
+  private func viewportFrame(structure: FacilityStructureProjection) -> some View {
     RoundedRectangle(cornerRadius: 24)
       .stroke(
         LinearGradient(
-          colors: [increasedContrast ? .white.opacity(0.8) : atmosphereColor.opacity(0.75), .white.opacity(0.08)],
+          colors: [increasedContrast ? .white.opacity(0.85) : atmosphereColor.opacity(0.7), .white.opacity(0.08)],
           startPoint: .topLeading,
           endPoint: .bottomTrailing
         ),
-        lineWidth: increasedContrast ? 2 : 1
+        lineWidth: increasedContrast ? 2.5 : structure.frameEdgeWeight
       )
-      .overlay(alignment: .topLeading) {
-        Circle().fill(atmosphereColor).frame(width: 7, height: 7)
-        .padding(8)
-        .accessibilityHidden(true)
-      }
-  }
-
-  @ViewBuilder
-  private var facilityStructure: some View {
-    if atmosphere.facility == .founderLoft {
-      ZStack {
-        HStack(spacing: 14) {
-          ForEach(0..<3, id: \.self) { index in
-            RoundedRectangle(cornerRadius: 8)
-              .fill(LinearGradient(colors: [SoloTheme.cyan.opacity(0.20), SoloTheme.purple.opacity(0.04)], startPoint: .top, endPoint: .bottom))
-              .overlay(alignment: .bottom) {
-                HStack(alignment: .bottom, spacing: 3) {
-                  ForEach(0..<(5 + index), id: \.self) { building in
-                    Rectangle()
-                      .fill(.black.opacity(0.48))
-                      .frame(height: CGFloat(10 + (building * 7 + index * 5) % 34))
-                  }
-                }
-                .padding(5)
-              }
-              .overlay { RoundedRectangle(cornerRadius: 8).stroke(.white.opacity(0.16)) }
-          }
-        }
-        .padding(.horizontal, 8)
-        .padding(.bottom, 48)
-        HStack {
-          Rectangle().fill(SoloTheme.purple.opacity(0.28)).frame(width: 8)
-          Spacer()
-          Rectangle().fill(SoloTheme.cyan.opacity(0.18)).frame(width: 8)
-        }
-        Capsule().fill(.white.opacity(0.08)).frame(height: 3).padding(.horizontal, 24)
-      }
-    } else {
-      ZStack {
-        HStack {
-          Rectangle().fill(SoloTheme.amber.opacity(0.20)).frame(width: 5)
-          Spacer()
-          Rectangle().fill(SoloTheme.amber.opacity(0.10)).frame(width: 3)
-        }
-        Path { path in
-          path.move(to: CGPoint(x: 0, y: 12))
-          path.addLine(to: CGPoint(x: 126, y: 72))
-          path.addLine(to: CGPoint(x: 248, y: 2))
-          path.move(to: CGPoint(x: 22, y: 120))
-          path.addCurve(to: CGPoint(x: 292, y: 164), control1: CGPoint(x: 110, y: 40), control2: CGPoint(x: 210, y: 220))
-        }
-        .stroke(SoloTheme.amber.opacity(0.16), style: StrokeStyle(lineWidth: 3, lineCap: .round))
-      }
-      .padding(.horizontal, 8)
-    }
-  }
-
-  private func stationWidth(dominant: Bool, total: CGFloat) -> CGFloat {
-    min(dominant ? 132 : 112, max(88, total * (dominant ? 0.35 : 0.29)))
-  }
-
-  private func stationPosition(index: Int, size: CGSize) -> CGPoint {
-    let x = (CGFloat(index) + 0.5) * size.width / CGFloat(max(1, agents.count))
-    let structuralOffset: CGFloat = atmosphere.facility == .founderLoft ? 0 : (index == 1 ? -4 : 5)
-    return CGPoint(x: x, y: 84 + structuralOffset)
-  }
-
-  private func stationEndpoint(index: Int, size: CGSize) -> CGPoint {
-    CGPoint(x: (CGFloat(index) + 0.5) * size.width / CGFloat(max(1, agents.count)), y: 80)
-  }
-
-  private func causalStart(index: Int, object: CompanyCausalObject, size: CGSize) -> CGPoint {
-    object.kind == .completedArtifact ? stationEndpoint(index: index, size: size) : CGPoint(x: size.width / 2, y: size.height - 30)
-  }
-
-  private func causalEnd(index: Int, object: CompanyCausalObject, size: CGSize) -> CGPoint {
-    object.kind == .completedArtifact ? CGPoint(x: size.width / 2, y: size.height - 30) : stationEndpoint(index: index, size: size)
-  }
-
-  @ViewBuilder
-  private func physicalInfrastructure(in size: CGSize) -> some View {
-    ForEach(infrastructure) { item in
-      PhysicalInfrastructureView(item: item, reduceMotion: reduceMotion)
-        .frame(width: item.physicalLocation == .founderForegroundDesk ? 70 : 46, height: 34)
-        .position(infrastructurePosition(item.physicalLocation, in: size))
-        .accessibilityHidden(true)
-    }
-  }
-
-  private func infrastructurePosition(_ location: InfrastructurePhysicalLocation, in size: CGSize) -> CGPoint {
-    switch location {
-    case .stacksBuildRail: CGPoint(x: size.width * 0.50, y: 137)
-    case .auroraFounderVerificationBridge: CGPoint(x: size.width * 0.27, y: size.height - 61)
-    case .brioBroadcastRail: CGPoint(x: size.width * 0.83, y: 132)
-    case .recoverySideBay: CGPoint(x: 24, y: size.height - 55)
-    case .founderForegroundDesk: CGPoint(x: size.width * 0.72, y: size.height - 29)
-    }
-  }
-
-  @ViewBuilder
-  private var localizedAtmosphere: some View {
-    switch atmosphere.localizedReaction {
-    case .stable:
-      EmptyView()
-    case .selectivePowerDown:
-      HStack {
-        Rectangle().fill(.black.opacity(0.42)).frame(width: 76)
-        Spacer()
-        Rectangle().fill(.black.opacity(0.35)).frame(width: 72)
-      }
       .allowsHitTesting(false)
-    case .runwayDepletion:
-      VStack(alignment: .trailing, spacing: 3) {
-        Label("\(atmosphere.runway)d runway", systemImage: "hourglass.bottomhalf.filled")
-          .font(.caption.weight(.black))
-          .foregroundStyle(SoloTheme.amber)
-        ProgressView(value: Double(max(0, atmosphere.runway)), total: 42).tint(SoloTheme.amber)
-      }
-      .frame(width: 112)
-      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-      .padding(8)
-    case .publicSignalInterference:
-      VStack(spacing: 3) {
-        Image(systemName: "antenna.radiowaves.left.and.right.slash")
-        HStack(spacing: 2) { ForEach(0..<5, id: \.self) { _ in Rectangle().frame(height: 2) } }
-      }
-      .foregroundStyle(SoloTheme.coral)
-      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-      .padding(10)
-    case .connectedMomentum:
-      Path { path in
-        path.move(to: CGPoint(x: 28, y: 150))
-        path.addCurve(to: CGPoint(x: 310, y: 150), control1: CGPoint(x: 100, y: 112), control2: CGPoint(x: 220, y: 190))
-      }
-      .trim(from: 0.08, to: 0.94)
-      .stroke(SoloTheme.mint.opacity(0.30), style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [8, 10]))
-      .allowsHitTesting(false)
-    }
   }
 
   private var facilityBase: Color {
@@ -460,23 +331,7 @@ struct CompanyCommandViewport: View {
     }
   }
 
-  private func accent(for agentID: String) -> Color {
-    switch agentID {
-    case "aurora": SoloTheme.cyan
-    case "stacks": SoloTheme.amber
-    case "brio": SoloTheme.coral
-    default: SoloTheme.mint
-    }
-  }
-
-  private func infrastructureColor(_ state: InfrastructureVisual.State) -> Color {
-    switch state {
-    case .uninstalled: .secondary
-    case .installing: SoloTheme.amber
-    case .installed: .white
-    case .active: SoloTheme.mint
-    }
-  }
+  private func accent(for agentID: String) -> Color { SoloAgentAccent.color(agentID) }
 
   private func infrastructureLabel(_ state: InfrastructureVisual.State) -> String {
     switch state {
@@ -488,6 +343,164 @@ struct CompanyCommandViewport: View {
   }
 }
 
+// MARK: - Shared accent
+
+enum SoloAgentAccent {
+  static func color(_ agentID: String) -> Color {
+    switch agentID {
+    case "aurora": SoloTheme.cyan
+    case "stacks": SoloTheme.amber
+    case "brio": SoloTheme.coral
+    default: SoloTheme.mint
+    }
+  }
+}
+
+// MARK: - Header
+
+/// Four independent regions: connection status, title and facility subtitle,
+/// current phase and action, and an optional secondary instruction.
+private struct ViewportHeader: View {
+  var facilityName: String
+  var sprintPhase: SprintPhase
+  var hierarchy: CompanyPhaseHierarchy
+  var secondaryInstruction: String?
+  var showsCloseFocus: Bool
+  var onCloseFocus: () -> Void
+
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+  var body: some View {
+    GeometryReader { geometry in
+      let composition = ViewportHeaderComposition.derive(
+        width: geometry.size.width,
+        dynamicTypeSize: dynamicTypeSize,
+        hasFocusAction: showsCloseFocus
+      )
+      Group {
+        switch composition.layout {
+        case .inline:
+          HStack(alignment: .top, spacing: 8) {
+            statusRegion(composition)
+            titleRegion
+            Spacer(minLength: 4)
+            phaseRegion(composition)
+            closeControl
+          }
+        case .stacked:
+          VStack(alignment: .leading, spacing: 5) {
+            HStack(alignment: .top, spacing: 8) {
+              statusRegion(composition)
+              titleRegion
+              Spacer(minLength: 4)
+              closeControl
+            }
+            phaseRegion(composition)
+              .frame(maxWidth: .infinity, alignment: .leading)
+          }
+        }
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    .frame(height: headerHeight)
+  }
+
+  private var headerHeight: CGFloat {
+    if dynamicTypeSize.isAccessibilitySize { return showsCloseFocus ? 108 : 96 }
+    if dynamicTypeSize >= .xxLarge { return 66 }
+    return 38
+  }
+
+  /// The top-leading corner is reserved so nothing can be overdrawn on the
+  /// title. It is a labelled control target, not a decorative dot.
+  private func statusRegion(_ composition: ViewportHeaderComposition) -> some View {
+    HStack(spacing: 3) {
+      Circle()
+        .fill(SoloTheme.mint)
+        .frame(width: 7, height: 7)
+      if composition.showsStatusText {
+        Text("LIVE")
+          .font(.system(size: 7, weight: .black, design: .monospaced))
+          .foregroundStyle(SoloTheme.mint)
+          .fixedSize()
+      }
+    }
+    .frame(width: composition.showsStatusText ? nil : ViewportHeaderComposition.statusRegionWidth, alignment: .leading)
+    .padding(.top, 3)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel("Company Command connection")
+    .accessibilityValue("Live")
+  }
+
+  private var titleRegion: some View {
+    VStack(alignment: .leading, spacing: 2) {
+      Text("COMPANY COMMAND")
+        .font(.caption.weight(.black))
+        .foregroundStyle(SoloTheme.amber)
+        .lineLimit(1)
+        .minimumScaleFactor(0.85)
+      Text(facilityName.uppercased())
+        .font(.system(size: 9, weight: .bold, design: .monospaced))
+        .foregroundStyle(.secondary)
+        .lineLimit(1)
+        .minimumScaleFactor(0.8)
+    }
+    .fixedSize(horizontal: false, vertical: true)
+    .accessibilityElement(children: .combine)
+    .accessibilityLabel("Company Command, \(facilityName)")
+  }
+
+  @ViewBuilder
+  private func phaseRegion(_ composition: ViewportHeaderComposition) -> some View {
+    VStack(alignment: composition.layout == .inline ? .trailing : .leading, spacing: 2) {
+      Group {
+        if composition.collapsesPhaseToIcon {
+          Label(sprintPhase.title, systemImage: sprintPhase.symbol).labelStyle(.iconOnly)
+        } else {
+          Label(sprintPhase.title, systemImage: sprintPhase.symbol).labelStyle(.titleAndIcon)
+        }
+      }
+      .font(.caption2.weight(.bold))
+      .lineLimit(2)
+      .multilineTextAlignment(composition.layout == .inline ? .trailing : .leading)
+      .fixedSize(horizontal: false, vertical: true)
+      if composition.showsPriorityLine {
+        Text(hierarchy.priority.rawValue.uppercased())
+          .font(.system(size: 8, weight: .black, design: .monospaced))
+          .foregroundStyle(SoloTheme.cyan)
+          .lineLimit(1)
+      } else if let secondaryInstruction, composition.layout == .stacked {
+        Text(secondaryInstruction)
+          .font(.caption2.weight(.semibold))
+          .foregroundStyle(.secondary)
+          .lineLimit(2)
+          .fixedSize(horizontal: false, vertical: true)
+      }
+    }
+    .accessibilityElement(children: .combine)
+    .accessibilityLabel("Current phase, \(sprintPhase.title)")
+    .accessibilityValue(hierarchy.priority.rawValue)
+  }
+
+  @ViewBuilder
+  private var closeControl: some View {
+    if showsCloseFocus {
+      Button("Close focus", systemImage: "xmark", action: onCloseFocus)
+        .labelStyle(.iconOnly)
+        .font(.footnote.weight(.bold))
+        .frame(width: 44, height: 44)
+        .contentShape(.rect)
+        .buttonStyle(.plain)
+        .offset(y: -4)
+        .accessibilityHint("Returns to the full company overview without scrolling")
+    }
+  }
+}
+
+// MARK: - Scene projection
+
+/// Precomputed, frame-independent scene indexing. Nothing here sorts, filters,
+/// or allocates inside a frame-driven expression.
 private struct ViewportSceneProjection {
   struct AgentItem: Identifiable {
     var id: String { agent.agentID }
@@ -498,35 +511,557 @@ private struct ViewportSceneProjection {
   }
 
   var agents: [AgentItem]
-  var packetAgents: [AgentItem]
+  var agentOrder: [String]
   var agentByID: [String: LivingAgentProjection]
   var surroundingAgents: [String: [LivingAgentProjection]]
+  var activeAgentIDs: [String]
   var activeCount: Int
   var reviewCount: Int
   var hierarchy: CompanyPhaseHierarchy
+  var structure: FacilityStructureProjection
+  var treatment: CompanyAtmosphereTreatment
+  var plan: CausalPresentationPlan
+  var inspectionAgent: LivingAgentProjection?
+  var secondaryInstruction: String?
 
-  init(agents source: [LivingAgentProjection], sprintPhase: SprintPhase, founderSummary: CompanyCommandFounderSummary) {
+  init(
+    agents source: [LivingAgentProjection],
+    sprintPhase: SprintPhase,
+    founderSummary: CompanyCommandFounderSummary,
+    atmosphere: CompanyAtmosphere,
+    reduceMotion: Bool
+  ) {
     let hasReviewingAgent = source.contains { $0.activity == .reviewing }
     let dominantID = CompanyPhaseHierarchy.dominantAgentID(agents: source, explicitFocus: nil)
     agents = source.enumerated().map { index, agent in
       AgentItem(
         index: index,
         agent: agent,
-        dimmed: (hasReviewingAgent && agent.activity != .reviewing) || (dominantID != nil && dominantID != agent.agentID),
+        dimmed: (hasReviewingAgent && agent.activity != .reviewing)
+          || (dominantID != nil && dominantID != agent.agentID),
         dominant: dominantID == agent.agentID
       )
     }
-    packetAgents = agents.filter { [.assignmentReceived, .workComplete, .awaitingReview, .reviewing, .resolving, .resolved].contains($0.agent.activity) }
+    agentOrder = source.map(\.agentID)
     agentByID = Dictionary(uniqueKeysWithValues: source.map { ($0.agentID, $0) })
     surroundingAgents = Dictionary(uniqueKeysWithValues: source.map { agent in
       (agent.agentID, source.filter { $0.agentID != agent.agentID })
     })
+    activeAgentIDs = source
+      .filter { [.assignmentReceived, .working, .workComplete].contains($0.activity) }
+      .map(\.agentID)
     activeCount = source.filter { [.assignmentReceived, .working].contains($0.activity) }.count
     reviewCount = source.filter { [.workComplete, .awaitingReview, .reviewing].contains($0.activity) }.count
-    hierarchy = CompanyPhaseHierarchy.derive(sprintPhase: sprintPhase, agents: source, founderSummary: founderSummary)
+    hierarchy = CompanyPhaseHierarchy.derive(
+      sprintPhase: sprintPhase,
+      agents: source,
+      founderSummary: founderSummary
+    )
+    structure = FacilityStructureProjection.derive(atmosphere.facility)
+    treatment = CompanyAtmosphereTreatment.derive(atmosphere)
+    plan = CausalPresentationPlan.derive(agents: source, reduceMotion: reduceMotion)
+    inspectionAgent = source.first { [.reviewing, .reviewed].contains($0.activity) }
+    secondaryInstruction = founderSummary.nextAction
+  }
+
+  /// The spatial stage stays mounted for automatic presentation. Only an
+  /// explicit user focus (with no inspection running) replaces it.
+  func showsOverviewStage(focus: CompanyCommandFocus?) -> Bool {
+    inspectionAgent != nil || focus == nil
   }
 }
 
+// MARK: - Facility structure
+
+/// Garage and Loft differ by structure — proportion, rails, conduit, window
+/// bays, recesses, mounting, and light character — not by a palette swap.
+private struct FacilityStructureLayer: View {
+  var structure: FacilityStructureProjection
+  var layout: CompanySceneLayout
+  var treatment: CompanyAtmosphereTreatment
+  var time: TimeInterval
+  var reduceMotion: Bool
+  var increasedContrast: Bool
+
+  var body: some View {
+    ZStack {
+      switch structure.presentation {
+      case .improvisedGarage: garage
+      case .elevatedLoft: loft
+      }
+      floorPlane
+    }
+    .allowsHitTesting(false)
+  }
+
+  // MARK: Garage
+
+  /// Lower, tighter, improvised: recessed wall sections, asymmetric exposed
+  /// rails, sagging conduit, and warm industrial practical lights.
+  private var garage: some View {
+    let band = layout.structureBandHeight
+    return ZStack(alignment: .top) {
+      HStack(spacing: 8) {
+        ForEach(0..<structure.wallRecessCount, id: \.self) { index in
+          Rectangle()
+            .fill(.black.opacity(0.40))
+            .frame(height: band * (index == 1 ? 0.92 : 0.72))
+            .overlay(alignment: .top) { Rectangle().fill(.white.opacity(0.07)).frame(height: 2) }
+        }
+      }
+      .padding(.horizontal, 8)
+      .frame(height: band, alignment: .top)
+
+      // Asymmetric overhead rail plus uneven vertical supports in the bay gaps.
+      Path { path in
+        let width = layout.size.width
+        path.move(to: CGPoint(x: 0, y: band * 0.62))
+        path.addLine(to: CGPoint(x: width * 0.44, y: band * 0.28))
+        path.addLine(to: CGPoint(x: width, y: band * 0.80))
+        for index in 0..<layout.gapCount {
+          let x = layout.gapX(index)
+          path.move(to: CGPoint(x: x, y: index == 0 ? band * 0.3 : 0))
+          path.addLine(to: CGPoint(x: x, y: index == 0 ? layout.floorY : layout.floorY * 0.88))
+        }
+      }
+      .stroke(
+        SoloTheme.amber.opacity(increasedContrast ? 0.55 : 0.34),
+        style: StrokeStyle(lineWidth: 3, lineCap: .square)
+      )
+
+      ForEach(0..<structure.exposedConduitCount, id: \.self) { index in
+        conduit(index: index, band: band)
+      }
+
+      HStack(spacing: layout.size.width * 0.26) {
+        practicalLight
+        practicalLight
+      }
+      .frame(height: band, alignment: .top)
+      .offset(y: -band * 0.28)
+    }
+  }
+
+  private func conduit(index: Int, band: CGFloat) -> some View {
+    let width = layout.size.width
+    let startX = width * (0.06 + Double(index) * 0.18)
+    let sag = band * (0.24 + Double(index % 3) * 0.16)
+    let top = band * 0.16
+    return Path { path in
+      path.move(to: CGPoint(x: startX, y: top))
+      path.addQuadCurve(
+        to: CGPoint(x: startX + width * 0.19, y: top + band * 0.08),
+        control: CGPoint(x: startX + width * 0.095, y: top + sag)
+      )
+    }
+    .stroke(
+      Color(red: 0.46, green: 0.36, blue: 0.22).opacity(0.85),
+      style: StrokeStyle(lineWidth: index.isMultiple(of: 2) ? 2.5 : 1.5, lineCap: .round)
+    )
+  }
+
+  private var practicalLight: some View {
+    Circle()
+      .fill(
+        RadialGradient(
+          colors: [SoloTheme.amber.opacity(0.6 * treatment.founderLightLevel), .clear],
+          center: .center,
+          startRadius: 1,
+          endRadius: 30
+        )
+      )
+      .frame(width: 58, height: 58)
+      .overlay {
+        Capsule()
+          .fill(SoloTheme.amber.opacity(0.85 * treatment.founderLightLevel))
+          .frame(width: 20, height: 4)
+      }
+  }
+
+  // MARK: Loft
+
+  /// Taller and cleaner: full-width window bays with an exterior skyline depth
+  /// layer, organized mullions, and softer reflected light.
+  private var loft: some View {
+    let band = layout.structureBandHeight
+    return ZStack(alignment: .top) {
+      HStack(spacing: 10) {
+        ForEach(0..<structure.windowBayCount, id: \.self) { index in
+          windowBay(index: index, height: band)
+        }
+      }
+      .padding(.horizontal, 8)
+      .frame(height: band, alignment: .top)
+
+      // Organized mullions continue cleanly down the bay gaps.
+      Path { path in
+        for index in 0..<layout.gapCount {
+          let x = layout.gapX(index)
+          path.move(to: CGPoint(x: x, y: 0))
+          path.addLine(to: CGPoint(x: x, y: layout.floorY))
+        }
+      }
+      .stroke(SoloTheme.purple.opacity(increasedContrast ? 0.45 : 0.26), lineWidth: 2)
+
+      LinearGradient(
+        colors: [SoloTheme.cyan.opacity(0.20 * treatment.founderLightLevel), .clear],
+        startPoint: .top,
+        endPoint: .bottom
+      )
+      .frame(height: layout.size.height * 0.24)
+    }
+  }
+
+  private func windowBay(index: Int, height: CGFloat) -> some View {
+    RoundedRectangle(cornerRadius: structure.bayCornerRadius)
+      .fill(
+        LinearGradient(
+          colors: [SoloTheme.cyan.opacity(0.26), SoloTheme.purple.opacity(0.06)],
+          startPoint: .top,
+          endPoint: .bottom
+        )
+      )
+      .frame(height: height)
+      .overlay(alignment: .bottom) {
+        if structure.hasSkylineLayer { skyline(index: index, height: height) }
+      }
+      .overlay {
+        RoundedRectangle(cornerRadius: structure.bayCornerRadius)
+          .stroke(.white.opacity(increasedContrast ? 0.5 : 0.22), lineWidth: 1)
+      }
+      .clipShape(.rect(cornerRadius: structure.bayCornerRadius))
+  }
+
+  private func skyline(index: Int, height: CGFloat) -> some View {
+    HStack(alignment: .bottom, spacing: 3) {
+      ForEach(0..<(6 + index), id: \.self) { building in
+        Rectangle()
+          .fill(.black.opacity(0.62))
+          .frame(height: height * CGFloat(0.26 + Double((building * 11 + index * 7) % 26) / 52))
+          .overlay(alignment: .top) {
+            Rectangle().fill(SoloTheme.cyan.opacity(0.35)).frame(height: 1)
+          }
+      }
+    }
+    .padding(.horizontal, 4)
+  }
+
+  // MARK: Shared floor
+
+  private var floorPlane: some View {
+    VStack(spacing: 0) {
+      Spacer(minLength: 0)
+      LinearGradient(
+        colors: [
+          .black.opacity(structure.presentation == .elevatedLoft ? 0.42 : 0.62),
+          .black.opacity(0.88)
+        ],
+        startPoint: .top,
+        endPoint: .bottom
+      )
+      .frame(height: max(0, layout.size.height - layout.floorY))
+      .overlay(alignment: .top) {
+        Rectangle()
+          .fill(
+            structure.presentation == .elevatedLoft
+              ? SoloTheme.cyan.opacity(0.24)
+              : SoloTheme.amber.opacity(0.22)
+          )
+          .frame(height: structure.presentation == .elevatedLoft ? 1 : 2)
+      }
+    }
+  }
+}
+
+// MARK: - Localized atmosphere
+
+/// Every condition is expressed at a specific place in the room. Nothing here
+/// tints the whole viewport, and every treatment carries text or a symbol.
+private struct LocalizedAtmosphereLayer: View {
+  var treatment: CompanyAtmosphereTreatment
+  var atmosphere: CompanyAtmosphere
+  var layout: CompanySceneLayout
+  var activeAgentIDs: [String]
+  var time: TimeInterval
+  var reduceMotion: Bool
+
+  var body: some View {
+    ZStack {
+      if treatment.showsMomentumLinks { momentumLinks }
+      if treatment.showsTrustInterference { trustInterference }
+      if treatment.showsEnergyStatus { energyStatus }
+      if treatment.showsRunwayCountdown { runwayDepletion }
+    }
+  }
+
+  /// Strengthened connections between active stations and Founder Command.
+  private var momentumLinks: some View {
+    ZStack {
+      ForEach(activeAgentIDs, id: \.self) { agentID in
+        Path { path in
+          let station = layout.point(.roleMonitor(agentID))
+          let founder = layout.point(.founderCommand)
+          path.move(to: station)
+          path.addQuadCurve(
+            to: founder,
+            control: CGPoint(x: (station.x + founder.x) / 2, y: layout.floorY - 6)
+          )
+        }
+        .stroke(
+          SoloTheme.mint.opacity(0.20 + 0.30 * treatment.momentumLinkStrength),
+          style: StrokeStyle(lineWidth: 1.5 + 1.5 * treatment.momentumLinkStrength, lineCap: .round)
+        )
+      }
+    }
+  }
+
+  /// Contained interference on the public-facing broadcast rail only.
+  private var trustInterference: some View {
+    let center = layout.point(.companySystem(.brioBroadcastRail))
+    let jitter = reduceMotion ? 0 : sin(time * 5.5) * 1.6
+    return VStack(spacing: 2) {
+      Label("SIGNAL", systemImage: "antenna.radiowaves.left.and.right.slash")
+        .font(.system(size: 7, weight: .black, design: .monospaced))
+        .foregroundStyle(SoloTheme.coral)
+        .fixedSize()
+      ForEach(0..<3, id: \.self) { index in
+        Rectangle()
+          .fill(SoloTheme.coral.opacity(0.35 + 0.25 * (1 - treatment.externalSignalIntegrity)))
+          .frame(width: 40, height: 1.5)
+          .offset(x: index.isMultiple(of: 2) ? jitter : -jitter)
+      }
+    }
+    // Sits on the public-facing display above the broadcast rail, clear of the
+    // agent's own name and private work surface.
+    .position(x: center.x, y: max(14, layout.structureBandHeight * 0.52))
+    .accessibilityHidden(true)
+  }
+
+  /// Reduced practical light near Founder Command with a visible-safe symbol.
+  private var energyStatus: some View {
+    let founder = layout.point(.founderCommand)
+    return Label("LOW ENERGY", systemImage: "battery.25percent")
+      .font(.system(size: 8, weight: .black, design: .monospaced))
+      .foregroundStyle(SoloTheme.purple)
+      .padding(.horizontal, 6)
+      .padding(.vertical, 3)
+      .background(.black.opacity(0.72), in: Capsule())
+      .fixedSize()
+      .position(x: min(layout.size.width - 50, founder.x), y: max(16, founder.y - 42))
+      .accessibilityHidden(true)
+  }
+
+  /// A depletion rail beside the Founder tray. It reuses the canonical runway
+  /// value and invents no new timer.
+  private var runwayDepletion: some View {
+    let tray = layout.point(.founderTray)
+    return VStack(alignment: .trailing, spacing: 2) {
+      Label("\(max(0, atmosphere.runway))d", systemImage: "hourglass.bottomhalf.filled")
+        .font(.system(size: 9, weight: .black, design: .monospaced))
+        .foregroundStyle(SoloTheme.amber)
+        .fixedSize()
+      HStack(spacing: 1.5) {
+        ForEach(0..<8, id: \.self) { index in
+          Capsule()
+            .fill(Double(index) < Double(8) * (1 - treatment.runwayPressure)
+              ? SoloTheme.amber
+              : SoloTheme.amber.opacity(0.16))
+            .frame(width: 4, height: 8)
+        }
+      }
+    }
+    .padding(.horizontal, 5)
+    .padding(.vertical, 3)
+    .background(.black.opacity(0.68), in: .rect(cornerRadius: 7))
+    .position(x: min(layout.size.width - 40, tray.x + 4), y: max(18, tray.y - 46))
+    .accessibilityHidden(true)
+  }
+}
+
+// MARK: - Physical infrastructure
+
+/// Installed infrastructure that reads as furniture in the room. Only the four
+/// existing presentation states are represented; no bonus is invented.
+private struct PhysicalEquipmentView: View {
+  var item: InfrastructureVisual
+  var structure: FacilityStructureProjection
+  var size: CGSize
+  var time: TimeInterval
+  var reduceMotion: Bool
+
+  private var color: Color {
+    switch item.state {
+    case .uninstalled: .secondary
+    case .installing: SoloTheme.amber
+    case .installed: .white
+    case .active: SoloTheme.mint
+    }
+  }
+
+  var body: some View {
+    ZStack {
+      switch item.state {
+      case .uninstalled: reservedMount
+      case .installing: assemblyRails
+      case .installed: equipment(active: false)
+      case .active: equipment(active: true)
+      }
+    }
+    .frame(width: size.width, height: size.height)
+    .animation(reduceMotion ? nil : .smooth(duration: 0.9), value: item.state)
+  }
+
+  /// Empty mounting point with a reserved silhouette and no connection.
+  private var reservedMount: some View {
+    ZStack {
+      RoundedRectangle(cornerRadius: 4)
+        .stroke(.secondary.opacity(0.32), style: StrokeStyle(lineWidth: 1, dash: [3, 4]))
+      HStack(spacing: 4) {
+        ForEach(0..<2, id: \.self) { _ in
+          Rectangle().fill(.secondary.opacity(0.20)).frame(width: 2, height: size.height * 0.55)
+        }
+      }
+      Image(systemName: "plus")
+        .font(.system(size: 7, weight: .black))
+        .foregroundStyle(.secondary.opacity(0.65))
+    }
+  }
+
+  /// Staged components on assembly rails.
+  private var assemblyRails: some View {
+    ZStack {
+      RoundedRectangle(cornerRadius: 4).fill(.black.opacity(0.62))
+      VStack(spacing: 2) {
+        HStack(spacing: 3) {
+          ForEach(0..<3, id: \.self) { index in
+            RoundedRectangle(cornerRadius: 1)
+              .fill(SoloTheme.amber.opacity(index == staged ? 0.9 : 0.28))
+              .frame(width: size.width * 0.16, height: size.height * 0.30)
+          }
+        }
+        Rectangle().fill(SoloTheme.amber.opacity(0.7)).frame(height: 2)
+      }
+      .padding(.horizontal, 5)
+      Image(systemName: "wrench.and.screwdriver.fill")
+        .font(.system(size: 8, weight: .black))
+        .foregroundStyle(SoloTheme.amber)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+        .padding(2)
+    }
+    .overlay {
+      RoundedRectangle(cornerRadius: 4)
+        .stroke(SoloTheme.amber.opacity(0.72), style: StrokeStyle(lineWidth: 1.5, dash: [5, 3]))
+    }
+  }
+
+  private var staged: Int {
+    reduceMotion ? 1 : Int(time.truncatingRemainder(dividingBy: 1.2) / 0.4) % 3
+  }
+
+  /// Persistent, recognizable equipment. Relevant-active adds a localized
+  /// activation tied to the canonical context that already applies its bonus.
+  private func equipment(active: Bool) -> some View {
+    ZStack {
+      RoundedRectangle(cornerRadius: structure.mountStyle == .organized ? 6 : 3)
+        .fill(
+          LinearGradient(
+            colors: [.white.opacity(0.16), .black.opacity(0.86)],
+            startPoint: .top,
+            endPoint: .bottom
+          )
+        )
+      silhouette(active: active)
+        .padding(.horizontal, 4)
+        .padding(.vertical, 3)
+      if active {
+        RoundedRectangle(cornerRadius: structure.mountStyle == .organized ? 6 : 3)
+          .fill(SoloTheme.mint.opacity(0.12))
+        Image(systemName: "bolt.fill")
+          .font(.system(size: 8, weight: .black))
+          .foregroundStyle(SoloTheme.mint)
+          .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+          .padding(2)
+      }
+    }
+    .overlay {
+      RoundedRectangle(cornerRadius: structure.mountStyle == .organized ? 6 : 3)
+        .stroke(active ? SoloTheme.mint.opacity(0.9) : .white.opacity(0.34), lineWidth: active ? 1.8 : 1)
+    }
+    .shadow(color: active ? SoloTheme.mint.opacity(0.4) : .clear, radius: 6)
+  }
+
+  @ViewBuilder
+  private func silhouette(active: Bool) -> some View {
+    let tint = active ? SoloTheme.mint : Color.white.opacity(0.72)
+    switch item.id {
+    case .developmentRig:
+      // A stacked build rack against the Stacks bay.
+      HStack(alignment: .bottom, spacing: 3) {
+        ForEach(0..<4, id: \.self) { index in
+          RoundedRectangle(cornerRadius: 1)
+            .fill(tint.opacity(0.30 + Double(index) * 0.16))
+            .frame(maxWidth: .infinity)
+            .frame(height: size.height * (0.42 + Double(index) * 0.13))
+        }
+      }
+      .frame(maxHeight: .infinity, alignment: .bottom)
+    case .verificationArray:
+      // A dish array on the Aurora verification bridge.
+      HStack(spacing: 5) {
+        ForEach(0..<3, id: \.self) { index in
+          Circle()
+            .stroke(tint.opacity(0.85), lineWidth: 1.5)
+            .frame(width: size.height * 0.52, height: size.height * 0.52)
+            .overlay { Circle().fill(tint).frame(width: 3, height: 3) }
+            .offset(y: index == 1 ? -2 : 0)
+        }
+      }
+    case .campaignStudio:
+      // A broadcast console with output bars.
+      HStack(alignment: .bottom, spacing: 3) {
+        ForEach(0..<5, id: \.self) { index in
+          Capsule()
+            .fill(tint.opacity(0.75))
+            .frame(width: 3)
+            .frame(height: size.height * (0.24 + Double((index * 3) % 5) * 0.14))
+        }
+        RoundedRectangle(cornerRadius: 2)
+          .fill(tint.opacity(0.35))
+          .frame(width: size.width * 0.24, height: size.height * 0.5)
+      }
+      .frame(maxHeight: .infinity, alignment: .bottom)
+    case .recoveryCorner:
+      // A couch and lamp in the shared recovery bay.
+      HStack(alignment: .bottom, spacing: 3) {
+        RoundedRectangle(cornerRadius: 4)
+          .fill(tint.opacity(0.55))
+          .frame(width: size.width * 0.55, height: size.height * 0.48)
+        VStack(spacing: 0) {
+          Circle().fill(tint.opacity(0.8)).frame(width: 7, height: 7)
+          Rectangle().fill(tint.opacity(0.5)).frame(width: 2, height: size.height * 0.42)
+        }
+      }
+      .frame(maxHeight: .infinity, alignment: .bottom)
+    case .founderCommandDesk:
+      // The foreground desk surface the Founder panel rests on.
+      ZStack(alignment: .top) {
+        UnevenRoundedRectangle(
+          topLeadingRadius: structure.founderDeskProfile == .refined ? 8 : 2,
+          bottomLeadingRadius: 2,
+          bottomTrailingRadius: 2,
+          topTrailingRadius: structure.founderDeskProfile == .refined ? 8 : 2
+        )
+        .fill(tint.opacity(structure.founderDeskProfile == .refined ? 0.30 : 0.22))
+        Rectangle()
+          .fill(tint.opacity(0.55))
+          .frame(height: structure.founderDeskProfile == .refined ? 1.5 : 3)
+      }
+    }
+  }
+}
+
+/// The compact status index. It stays a fast scan, never the primary
+/// representation of installed infrastructure.
 private struct InfrastructureEquipmentView: View {
   var item: InfrastructureVisual
   var reduceMotion: Bool
@@ -542,48 +1077,23 @@ private struct InfrastructureEquipmentView: View {
 
   var body: some View {
     ZStack {
-      equipmentShape
-        .foregroundStyle(color.opacity(item.state == .uninstalled ? 0.20 : 0.78))
+      Image(systemName: item.symbol)
+        .font(.system(size: 11, weight: .bold))
+        .foregroundStyle(color.opacity(item.state == .uninstalled ? 0.35 : 0.92))
       Image(systemName: statusSymbol)
         .font(.system(size: 7, weight: .black))
         .foregroundStyle(color)
-        .offset(x: 13, y: -7)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+        .padding(3)
     }
-    .frame(maxWidth: .infinity, minHeight: 30)
-    .background(color.opacity(item.state == .uninstalled ? 0.025 : 0.09), in: .rect(cornerRadius: 6))
-    .overlay { RoundedRectangle(cornerRadius: 6).stroke(style: StrokeStyle(lineWidth: 1, dash: item.state == .uninstalled ? [3, 3] : [])) .foregroundStyle(color.opacity(0.38)) }
+    .frame(maxWidth: .infinity, minHeight: 28)
+    .background(color.opacity(item.state == .uninstalled ? 0.03 : 0.10), in: .rect(cornerRadius: 6))
+    .overlay {
+      RoundedRectangle(cornerRadius: 6)
+        .stroke(style: StrokeStyle(lineWidth: 1, dash: item.state == .uninstalled ? [3, 3] : []))
+        .foregroundStyle(color.opacity(0.40))
+    }
     .symbolEffect(.pulse, options: .repeat(2), value: item.state == .installing)
-  }
-
-  @ViewBuilder
-  private var equipmentShape: some View {
-    switch item.id {
-    case .developmentRig:
-      HStack(spacing: 2) {
-        ForEach(0..<3, id: \.self) { index in
-          RoundedRectangle(cornerRadius: 1).frame(width: 7, height: CGFloat(8 + index * 3))
-        }
-      }
-    case .verificationArray:
-      ZStack {
-        Circle().stroke(color.opacity(0.75), lineWidth: 2).frame(width: 22, height: 22)
-        Circle().fill(color).frame(width: 5, height: 5)
-      }
-    case .campaignStudio:
-      HStack(alignment: .bottom, spacing: 2) {
-        ForEach(0..<4, id: \.self) { index in Capsule().frame(width: 3, height: CGFloat(6 + index * 3)) }
-      }
-    case .recoveryCorner:
-      HStack(alignment: .bottom, spacing: 2) {
-        RoundedRectangle(cornerRadius: 3).frame(width: 21, height: 9)
-        Capsule().frame(width: 4, height: 17)
-      }
-    case .founderCommandDesk:
-      VStack(spacing: 2) {
-        HStack(spacing: 2) { ForEach(0..<3, id: \.self) { _ in RoundedRectangle(cornerRadius: 1).frame(width: 7, height: 8) } }
-        Capsule().frame(width: 28, height: 3)
-      }
-    }
   }
 
   private var statusSymbol: String {
@@ -595,6 +1105,8 @@ private struct InfrastructureEquipmentView: View {
     }
   }
 }
+
+// MARK: - Focus panels
 
 private struct AgentCommandFocusPanel: View {
   var agent: LivingAgentProjection
@@ -636,12 +1148,9 @@ private struct AgentCommandFocusPanel: View {
   private var focusedCharacter: some View {
     Button { onTransferFocus(agent.agentID) } label: {
       LivingAgentCharacterView(
-        agentID: agent.agentID,
-        initials: agent.initials,
+        input: CharacterRendererInput.derive(agent: agent, reduceMotion: reduceMotion),
         accent: accent,
-        activity: agent.activity,
-        time: time,
-        reduceMotion: reduceMotion
+        time: time
       )
       .overlay(alignment: .bottomLeading) {
         Label(agent.role.rawValue, systemImage: agent.role.symbol)
@@ -704,22 +1213,23 @@ private struct AgentCommandFocusPanel: View {
 
   private var surroundingStations: some View {
     HStack(spacing: 10) {
-      Text("COMMAND ROOM").font(.system(size: 8, weight: .black, design: .monospaced)).foregroundStyle(.secondary)
+      Text("COMMAND ROOM")
+        .font(.system(size: 8, weight: .black, design: .monospaced))
+        .foregroundStyle(.secondary)
       ForEach(surroundingAgents) { surrounding in
         Button { onTransferFocus(surrounding.agentID) } label: {
           HStack(spacing: 5) {
             LivingAgentCharacterView(
-              agentID: surrounding.agentID,
-              initials: surrounding.initials,
-              accent: accent(for: surrounding.agentID),
-              activity: surrounding.activity,
-              time: time,
-              reduceMotion: reduceMotion
+              input: CharacterRendererInput.derive(agent: surrounding, reduceMotion: reduceMotion),
+              accent: SoloAgentAccent.color(surrounding.agentID),
+              time: time
             )
             .frame(width: 38, height: 38)
             VStack(alignment: .leading, spacing: 1) {
               Text(surrounding.name).font(.caption2.weight(.black))
-              Text(surrounding.activity.label).font(.system(size: 8, weight: .semibold)).foregroundStyle(.secondary)
+              Text(surrounding.activity.label)
+                .font(.system(size: 8, weight: .semibold))
+                .foregroundStyle(.secondary)
             }
           }
           .frame(minHeight: 44)
@@ -771,21 +1281,14 @@ private struct AgentCommandFocusPanel: View {
       .buttonStyle(.plain)
   }
 
-  private var accent: Color { accent(for: agent.agentID) }
-
-  private func accent(for agentID: String) -> Color {
-    switch agentID {
-    case "aurora": SoloTheme.cyan
-    case "stacks": SoloTheme.amber
-    case "brio": SoloTheme.coral
-    default: SoloTheme.mint
-    }
-  }
+  private var accent: Color { SoloAgentAccent.color(agent.agentID) }
 
   private var statusColor: Color {
     if agent.conditions.contains(.overloaded) { return SoloTheme.amber }
     if agent.conditions.contains(.verified) { return SoloTheme.mint }
-    if !agent.conditions.intersection([.overclaimed, .drifting, .evidenceIncomplete]).isEmpty { return SoloTheme.coral }
+    if !agent.conditions.intersection([.overclaimed, .drifting, .evidenceIncomplete]).isEmpty {
+      return SoloTheme.coral
+    }
     return accent
   }
 
@@ -896,72 +1399,163 @@ private struct FounderCommandFocusPanel: View {
   }
 }
 
-/// Stable replacement boundary for a future Rive-backed character renderer.
+// MARK: - Character renderer boundary
+
+/// The stable replacement boundary for a bespoke character renderer. Build 32.4
+/// resolves to the native portrait renderer because the repository contains no
+/// production `.riv` asset. Only `CharacterRendererInput` crosses this line, so
+/// no renderer can reach `GameStore`, a task result, hidden actual quality,
+/// seeded RNG, persistence, or canonical action availability.
 struct LivingAgentCharacterView: View {
-  var agentID: String
-  var initials: String
+  var input: CharacterRendererInput
   var accent: Color
-  var activity: LivingAgentActivity
   var time: TimeInterval
-  var reduceMotion: Bool
 
   var body: some View {
-    NativeAgentCharacterView(
-      agentID: agentID,
-      initials: initials,
-      accent: accent,
-      activity: activity,
-      time: time,
-      reduceMotion: reduceMotion
-    )
+    switch CharacterRendererContract.resolvedRenderer() {
+    case .rive, .native:
+      // No production `.riv` asset ships in this build, and a failed asset load
+      // must never blank a station, so the native renderer is the fallback for
+      // both cases until real assets are integrated.
+      NativeAgentCharacterView(input: input, accent: accent, time: time)
+    }
   }
 }
 
+/// Native portrait renderer. It moves the whole portrait inside a fixed crop —
+/// breathing depth, crop parallax, posture, and lighting — and never deforms or
+/// continuously bounces a face.
 private struct NativeAgentCharacterView: View {
-  var agentID: String
-  var initials: String
+  var input: CharacterRendererInput
   var accent: Color
-  var activity: LivingAgentActivity
   var time: TimeInterval
-  var reduceMotion: Bool
 
   var body: some View {
     ZStack {
-      RoundedRectangle(cornerRadius: 11)
-        .fill(.black.opacity(0.7))
-      if let assetName = AgentPortraitAsset.name(for: agentID) {
-        Image(assetName)
-          .resizable()
-          .scaledToFill()
-          .scaleEffect(characterScale)
-          .offset(y: characterOffset)
-          .accessibilityHidden(true)
-      } else {
-        Text(initials).font(.headline.weight(.black)).foregroundStyle(accent)
+      RoundedRectangle(cornerRadius: 11).fill(.black.opacity(0.72))
+      portrait
+      // Rest settlement and station lighting.
+      LinearGradient(
+        colors: [.clear, accent.opacity(input.conditionModifiers.contains(.resting) ? 0.08 : 0.24)],
+        startPoint: .top,
+        endPoint: .bottom
+      )
+      conditionLighting
+      if input.activity == .assignmentReceived {
+        // Brief incoming-task response from the Founder side of the room.
+        LinearGradient(colors: [accent.opacity(0.55), .clear], startPoint: .leading, endPoint: .trailing)
       }
-      LinearGradient(colors: [.clear, accent.opacity(activity == .resting ? 0.08 : 0.26)], startPoint: .top, endPoint: .bottom)
-      if activity == .assignmentReceived {
-        LinearGradient(colors: [.clear, accent.opacity(0.5)], startPoint: .leading, endPoint: .trailing)
+      if input.emphasis == .inspection {
+        // Inspection treatment stays isolated to the reviewed agent.
+        RoundedRectangle(cornerRadius: 11)
+          .stroke(SoloTheme.cyan, lineWidth: 2)
+          .background(SoloTheme.cyan.opacity(0.10).clipShape(.rect(cornerRadius: 11)))
       }
     }
     .clipShape(RoundedRectangle(cornerRadius: 11))
-    .overlay { RoundedRectangle(cornerRadius: 11).stroke(accent.opacity(0.65), lineWidth: 1) }
+    .overlay { RoundedRectangle(cornerRadius: 11).stroke(rimColor, lineWidth: rimWidth) }
+    .scaleEffect(celebration)
   }
 
-  private var characterScale: CGFloat {
-    guard !reduceMotion else { return 1.05 }
-    return switch activity {
-    case .assignmentReceived: 1.09
-    case .working: 1.06 + 0.012 * sin(time * 2.3)
-    case .resting: 1.03
-    default: 1.05 + 0.006 * sin(time * 0.8)
+  @ViewBuilder
+  private var portrait: some View {
+    if let assetName = AgentPortraitAsset.name(for: input.agentID) {
+      Image(assetName)
+        .resizable()
+        .scaledToFill()
+        .scaleEffect(depth)
+        .offset(x: parallaxX, y: parallaxY)
+        .grayscale(input.conditionModifiers.contains(.resting) ? 0.45 : 0)
+        .accessibilityHidden(true)
+    } else {
+      Text(input.initials).font(.headline.weight(.black)).foregroundStyle(accent)
     }
   }
 
-  private var characterOffset: CGFloat {
-    reduceMotion || activity == .resting ? 0 : CGFloat(sin(time * 0.8)) * 0.6
+  /// Local amber pressure for stress and overload. Never a global filter.
+  @ViewBuilder
+  private var conditionLighting: some View {
+    if input.conditionModifiers.contains(.overloaded) {
+      LinearGradient(
+        colors: [SoloTheme.amber.opacity(0.30), .clear],
+        startPoint: .bottom,
+        endPoint: .center
+      )
+    } else if input.conditionModifiers.contains(.stressed) {
+      LinearGradient(
+        colors: [SoloTheme.amber.opacity(0.16), .clear],
+        startPoint: .bottom,
+        endPoint: .center
+      )
+    }
+  }
+
+  /// Slow breathing depth. Stress and overload reduce motion confidence rather
+  /// than adding new motion.
+  private var depth: CGFloat {
+    let base: CGFloat = 1.05
+    guard !input.reduceMotion, !input.conditionModifiers.contains(.resting) else {
+      return input.conditionModifiers.contains(.resting) ? 1.02 : base
+    }
+    let amplitude = confidence * (input.activity == .working ? 0.014 : 0.007)
+    let rate = input.activity == .working ? 2.1 : 0.8
+    let posture: CGFloat = input.activity == .assignmentReceived ? 0.045 : 0
+    return base + posture + amplitude * CGFloat(sin(time * rate))
+  }
+
+  /// Controlled crop parallax that expresses where attention is directed.
+  private var parallaxX: CGFloat {
+    guard !input.reduceMotion else { return staticPosture }
+    return staticPosture + 0.5 * confidence * CGFloat(sin(time * 0.55))
+  }
+
+  private var staticPosture: CGFloat {
+    switch input.activity {
+    // Working turns toward the role monitor at the front of the bay.
+    case .working: 2.2
+    // Completed work and review turn attention back toward Founder Command.
+    case .workComplete, .awaitingReview, .reviewing, .reviewed: -2.4
+    case .resolving, .resolved: -1.4
+    default: 0
+    }
+  }
+
+  private var parallaxY: CGFloat {
+    guard !input.reduceMotion, !input.conditionModifiers.contains(.resting) else {
+      return input.conditionModifiers.contains(.resting) ? 1.5 : 0
+    }
+    return 0.7 * confidence * CGFloat(sin(time * 0.8))
+  }
+
+  private var confidence: CGFloat {
+    if input.conditionModifiers.contains(.overloaded) { return 0.35 }
+    if input.conditionModifiers.contains(.stressed) { return 0.6 }
+    return 1
+  }
+
+  /// One-shot earned celebration. The trigger is a level-up, not a loop.
+  private var celebration: CGFloat {
+    guard input.levelUpTrigger > 0, !input.reduceMotion else { return 1 }
+    return 1.04
+  }
+
+  private var rimColor: Color {
+    if input.conditionModifiers.contains(.overloaded) { return SoloTheme.amber }
+    switch input.postReviewSignal {
+    case .verified: return SoloTheme.mint
+    case .overclaimed: return SoloTheme.coral
+    case .driftDetected: return SoloTheme.purple
+    case .evidenceIncomplete: return SoloTheme.amber
+    case .pending: return accent.opacity(0.65)
+    }
+  }
+
+  private var rimWidth: CGFloat {
+    input.postReviewSignal == .pending && !input.conditionModifiers.contains(.overloaded) ? 1 : 2
   }
 }
+
+// MARK: - Workstation bay
 
 private struct ViewportAgentStation: View {
   var agent: LivingAgentProjection
@@ -970,64 +1564,104 @@ private struct ViewportAgentStation: View {
   var dimmed: Bool
   var prominence: Double
   var dominant: Bool
-  var facility: CompanySpatialPresentation
+  var structure: FacilityStructureProjection
+  var confidence: Double
+  var signalIntegrity: Double
   var action: () -> Void
 
-  private var accent: Color {
-    switch agent.agentID {
-    case "aurora": SoloTheme.cyan
-    case "stacks": SoloTheme.amber
-    case "brio": SoloTheme.coral
-    default: SoloTheme.mint
-    }
-  }
+  private var accent: Color { SoloAgentAccent.color(agent.agentID) }
 
   var body: some View {
     Button(action: action) {
-      VStack(spacing: 4) {
-        ZStack(alignment: .bottom) {
-          stationBay
-          LivingAgentCharacterView(
-            agentID: agent.agentID,
-            initials: agent.initials,
+      ZStack {
+        stationBay
+        // The portrait absorbs the remaining height so the labels and the role
+        // monitor always fit inside the bay at any viewport size.
+        VStack(spacing: 3) {
+          ZStack {
+            LivingAgentCharacterView(
+              input: CharacterRendererInput.derive(agent: agent, reduceMotion: reduceMotion),
+              accent: accent,
+              time: time
+            )
+            conditionBadge
+              .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+              .padding(4)
+          }
+          .frame(maxHeight: .infinity)
+          .padding(.horizontal, 6)
+
+          Text(agent.name)
+            .font(.caption.weight(.black))
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+            .fixedSize(horizontal: false, vertical: true)
+          Text(overviewState)
+            .font(.system(size: 9, weight: .bold))
+            .foregroundStyle(statusColor)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .fixedSize(horizontal: false, vertical: true)
+          conditionTreatment
+          RoleSpecificWorkSurface(
+            agent: agent,
             accent: accent,
-            activity: agent.activity,
             time: time,
-            reduceMotion: reduceMotion
+            reduceMotion: reduceMotion,
+            signalIntegrity: signalIntegrity,
+            confidence: confidence
           )
-          .frame(height: dominant ? 112 : 96)
-          .padding(.horizontal, 7)
-          .offset(y: dominant ? -9 : -5)
-          consoleSilhouette
-          conditionBadge
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-            .padding(5)
+          .frame(height: 30)
+          .padding(.horizontal, 4)
         }
-        .frame(height: dominant ? 112 : 100)
-        Text(agent.name)
-          .font(.caption.weight(.black))
-          .lineLimit(1)
-        Text(overviewState)
-          .font(.caption2.weight(.bold))
-          .foregroundStyle(statusColor)
-          .lineLimit(1)
-        conditionTreatment
-        RoleSpecificWorkSurface(agent: agent, accent: accent, time: time, reduceMotion: reduceMotion)
+        .padding(.vertical, 5)
+        if agent.conditions.contains(.overloaded) {
+          // Overload uses a stronger warning frame in addition to text and
+          // symbol. No flashing, shaking, or flicker.
+          bayShape
+            .stroke(SoloTheme.amber, style: StrokeStyle(lineWidth: 2.5, dash: [6, 3]))
+        }
       }
-      .padding(.horizontal, 4)
-      .padding(.bottom, 5)
-      .frame(maxWidth: .infinity)
-      .background(.black.opacity(agent.emphasis == .inspection ? 0.58 : 0.20), in: UnevenRoundedRectangle(topLeadingRadius: 18, bottomLeadingRadius: 5, bottomTrailingRadius: 5, topTrailingRadius: 18))
-      .overlay(alignment: .bottom) { Rectangle().fill(strokeColor.opacity(0.78)).frame(height: dominant ? 3 : 1) }
-      .opacity(dimmed ? 0.40 : prominence)
-      .scaleEffect(dominant && !reduceMotion ? max(scale, 1.04) : scale)
-      .shadow(color: dominant ? accent.opacity(0.35) : .clear, radius: 10, y: 3)
     }
     .buttonStyle(SoloPressStyle(scale: 0.96))
     .frame(minWidth: 44, minHeight: 44)
+    .opacity(dimmed ? 0.42 : prominence)
+    .scaleEffect(dominant && !reduceMotion ? max(scale, 1.03) : scale)
+    .shadow(color: dominant ? accent.opacity(0.35) : .clear, radius: 10, y: 3)
     .accessibilityLabel("\(agent.name), \(agent.role.rawValue) station")
     .accessibilityValue(agent.accessibilityValue)
     .accessibilityHint("Focuses \(agent.name) inside Company Command without scrolling")
+  }
+
+  private var bayShape: UnevenRoundedRectangle {
+    UnevenRoundedRectangle(
+      topLeadingRadius: structure.bayCornerRadius,
+      bottomLeadingRadius: 3,
+      bottomTrailingRadius: 3,
+      topTrailingRadius: structure.mountStyle == .improvised
+        ? structure.bayCornerRadius * 2
+        : structure.bayCornerRadius
+    )
+  }
+
+  private var stationBay: some View {
+    bayShape
+      .fill(
+        LinearGradient(
+          colors: [accent.opacity(dominant ? 0.22 : 0.10), .black.opacity(0.78)],
+          startPoint: .top,
+          endPoint: .bottom
+        )
+      )
+      .overlay {
+        bayShape.stroke(
+          strokeColor.opacity(dominant ? 0.9 : 0.34),
+          lineWidth: dominant ? structure.frameEdgeWeight + 0.5 : max(1, structure.frameEdgeWeight - 1.5)
+        )
+      }
+      .overlay(alignment: .bottom) {
+        Rectangle().fill(strokeColor.opacity(0.8)).frame(height: dominant ? 3 : 1)
+      }
   }
 
   private var overviewState: String {
@@ -1044,69 +1678,34 @@ private struct ViewportAgentStation: View {
     }
   }
 
-  private var stationBay: some View {
-    UnevenRoundedRectangle(
-      topLeadingRadius: facility == .elevatedLoft ? 18 : 8,
-      bottomLeadingRadius: 2,
-      bottomTrailingRadius: 2,
-      topTrailingRadius: facility == .elevatedLoft ? 18 : 13
-    )
-    .fill(LinearGradient(
-      colors: [accent.opacity(dominant ? 0.22 : 0.10), .black.opacity(0.72)],
-      startPoint: .top,
-      endPoint: .bottom
-    ))
-    .overlay {
-      UnevenRoundedRectangle(
-        topLeadingRadius: facility == .elevatedLoft ? 18 : 8,
-        bottomLeadingRadius: 2,
-        bottomTrailingRadius: 2,
-        topTrailingRadius: facility == .elevatedLoft ? 18 : 13
-      )
-      .stroke(accent.opacity(dominant ? 0.75 : 0.20), lineWidth: dominant ? 2 : 1)
-    }
-  }
-
-  private var consoleSilhouette: some View {
-    VStack(spacing: 0) {
-      Spacer()
-      RoundedRectangle(cornerRadius: 3)
-        .fill(.black.opacity(0.86))
-        .frame(height: 19)
-        .overlay(alignment: .top) {
-          HStack(spacing: 3) {
-            ForEach(0..<4, id: \.self) { index in
-              Capsule()
-                .fill(Double(index + 1) / 4 <= agent.progress ? accent : .white.opacity(0.16))
-                .frame(height: 3)
-            }
-          }
-          .padding(4)
-        }
-      Rectangle().fill(.black.opacity(0.88)).frame(height: 5).padding(.horizontal, -4)
-    }
-  }
-
   @ViewBuilder
   private var conditionBadge: some View {
     if agent.conditions.contains(.overloaded) {
-      Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(SoloTheme.amber)
+      Image(systemName: "exclamationmark.triangle.fill")
+        .foregroundStyle(SoloTheme.amber)
         .accessibilityHidden(true)
     } else if agent.conditions.contains(.verified) {
-      Image(systemName: "checkmark.seal.fill").foregroundStyle(SoloTheme.mint)
+      Image(systemName: "checkmark.seal.fill")
+        .foregroundStyle(SoloTheme.mint)
         .accessibilityHidden(true)
-    } else if agent.conditions.contains(.overclaimed) || agent.conditions.contains(.drifting) || agent.conditions.contains(.evidenceIncomplete) {
-      Image(systemName: "waveform.badge.exclamationmark").foregroundStyle(SoloTheme.coral)
+    } else if !agent.conditions.intersection([.overclaimed, .drifting, .evidenceIncomplete]).isEmpty {
+      Image(systemName: "waveform.badge.exclamationmark")
+        .foregroundStyle(SoloTheme.coral)
         .accessibilityHidden(true)
     } else if agent.activity == .resting {
-      Image(systemName: "bed.double.fill").foregroundStyle(.secondary)
+      Image(systemName: "bed.double.fill")
+        .foregroundStyle(.secondary)
         .accessibilityHidden(true)
     }
   }
 
   private var conditionTreatment: some View {
     Group {
-      if let condition = primaryCondition {
+      if agent.emphasis == .levelUpCelebration {
+        // A short earned celebration: text plus symbol, then settlement.
+        Label("LEVEL \(agent.level) EARNED", systemImage: "star.fill")
+          .foregroundStyle(SoloTheme.mint)
+      } else if let condition = primaryCondition {
         Label(condition.label, systemImage: conditionSymbol(condition))
           .foregroundStyle(conditionColor(condition))
       } else if agent.activity == .assignmentReceived {
@@ -1115,14 +1714,16 @@ private struct ViewportAgentStation: View {
         Label("Recovery active", systemImage: "bed.double.fill").foregroundStyle(.secondary)
       }
     }
-    .font(.system(size: 7, weight: .black, design: .monospaced))
+    .font(.system(size: 8, weight: .black, design: .monospaced))
     .lineLimit(1)
-    .minimumScaleFactor(0.65)
+    .minimumScaleFactor(0.7)
     .frame(maxWidth: .infinity, minHeight: 11)
   }
 
   private var primaryCondition: LivingAgentCondition? {
-    let precedence: [LivingAgentCondition] = [.overloaded, .overclaimed, .drifting, .evidenceIncomplete, .verified, .stressed]
+    let precedence: [LivingAgentCondition] = [
+      .overloaded, .overclaimed, .drifting, .evidenceIncomplete, .verified, .stressed
+    ]
     return precedence.first(where: agent.conditions.contains)
   }
 
@@ -1140,7 +1741,8 @@ private struct ViewportAgentStation: View {
 
   private func conditionColor(_ condition: LivingAgentCondition) -> Color {
     switch condition {
-    case .verified, .focused: condition == .verified ? SoloTheme.mint : accent
+    case .verified: SoloTheme.mint
+    case .focused: accent
     case .stressed, .overloaded: SoloTheme.amber
     case .overclaimed, .drifting, .evidenceIncomplete: SoloTheme.coral
     }
@@ -1158,46 +1760,59 @@ private struct ViewportAgentStation: View {
   private var statusColor: Color {
     if agent.conditions.contains(.overloaded) { return SoloTheme.amber }
     if agent.conditions.contains(.verified) { return SoloTheme.mint }
-    if agent.conditions.contains(.overclaimed) || agent.conditions.contains(.drifting) { return SoloTheme.coral }
+    if !agent.conditions.intersection([.overclaimed, .drifting, .evidenceIncomplete]).isEmpty {
+      return SoloTheme.coral
+    }
     return accent
   }
 
   private var strokeColor: Color {
     switch agent.emphasis {
-    case .normal: accent.opacity(0.24)
-    case .selected: accent.opacity(0.9)
+    case .normal: accent.opacity(0.30)
+    case .selected: accent
     case .founderAttention: SoloTheme.amber
-    case .inspection: accent
+    case .inspection: SoloTheme.cyan
     case .decisionLock: SoloTheme.mint
     case .levelUpCelebration: accent
     }
   }
 }
 
+/// The role monitor and work surface at the front of each bay. It is also the
+/// dock target for an inbound assignment document.
 private struct RoleSpecificWorkSurface: View {
   var agent: LivingAgentProjection
   var accent: Color
   var time: TimeInterval
   var reduceMotion: Bool
+  var signalIntegrity: Double
+  var confidence: Double
 
   private var active: Bool { agent.activity == .working || agent.activity == .assignmentReceived }
-  private var motionPhase: Double { reduceMotion || !active ? 0 : time.truncatingRemainder(dividingBy: 1.4) / 1.4 }
+  private var motionPhase: Double {
+    reduceMotion || !active ? 0 : time.truncatingRemainder(dividingBy: 1.4) / 1.4
+  }
 
   var body: some View {
     VStack(spacing: 2) {
       ZStack {
-        RoundedRectangle(cornerRadius: 4).fill(.black.opacity(agent.activity == .resting ? 0.52 : 0.78))
+        RoundedRectangle(cornerRadius: 4)
+          .fill(.black.opacity(agent.activity == .resting ? 0.52 : 0.82))
         roleArtwork
           .padding(.horizontal, 4)
-          .opacity(agent.activity == .resting ? 0.30 : 1)
+          .opacity((agent.activity == .resting ? 0.30 : 1) * signalIntegrity)
         if agent.activity == .reviewing {
           Rectangle()
-            .fill(LinearGradient(colors: [.clear, SoloTheme.cyan.opacity(0.75), .clear], startPoint: .leading, endPoint: .trailing))
+            .fill(LinearGradient(
+              colors: [.clear, SoloTheme.cyan.opacity(0.75), .clear],
+              startPoint: .leading,
+              endPoint: .trailing
+            ))
             .frame(width: 20)
             .offset(x: reduceMotion ? 0 : CGFloat(motionPhase * 54 - 27))
         }
       }
-      .frame(height: 32)
+      .frame(maxHeight: .infinity)
       HStack(spacing: 2) {
         ForEach(0..<5, id: \.self) { index in
           Capsule()
@@ -1216,9 +1831,20 @@ private struct RoleSpecificWorkSurface: View {
     case .research:
       ZStack {
         Path { path in
-          path.move(to: CGPoint(x: 6, y: 13)); path.addLine(to: CGPoint(x: 25, y: 5)); path.addLine(to: CGPoint(x: 48, y: 14)); path.addLine(to: CGPoint(x: 70, y: 6))
-        }.stroke(accent.opacity(active ? 0.8 : 0.25), lineWidth: 1)
-        HStack { ForEach(0..<4, id: \.self) { index in Circle().fill(index == Int(motionPhase * 4) ? .white : accent).frame(width: 5, height: 5); if index < 3 { Spacer() } } }
+          path.move(to: CGPoint(x: 6, y: 13))
+          path.addLine(to: CGPoint(x: 25, y: 5))
+          path.addLine(to: CGPoint(x: 48, y: 14))
+          path.addLine(to: CGPoint(x: 70, y: 6))
+        }
+        .stroke(accent.opacity(active ? 0.8 : 0.25), lineWidth: 1)
+        HStack {
+          ForEach(0..<4, id: \.self) { index in
+            Circle()
+              .fill(index == Int(motionPhase * 4) ? .white : accent)
+              .frame(width: 5, height: 5)
+            if index < 3 { Spacer() }
+          }
+        }
       }
     case .engineering:
       HStack(spacing: 3) {
@@ -1226,7 +1852,9 @@ private struct RoleSpecificWorkSurface: View {
           RoundedRectangle(cornerRadius: 2)
             .fill(Double(index + 1) / 4 <= agent.progress ? accent : accent.opacity(0.18))
             .frame(height: CGFloat(8 + index * 3))
-            .overlay { Text("\(index + 1)").font(.system(size: 5, weight: .black)).foregroundStyle(.black) }
+            .overlay {
+              Text("\(index + 1)").font(.system(size: 5, weight: .black)).foregroundStyle(.black)
+            }
         }
       }
     case .marketing:
@@ -1239,7 +1867,9 @@ private struct RoleSpecificWorkSurface: View {
         Circle().fill(accent).frame(width: 6, height: 6).offset(x: CGFloat(motionPhase * 54))
       }
     case .general:
-      HStack { ForEach(0..<4, id: \.self) { _ in RoundedRectangle(cornerRadius: 2).fill(accent.opacity(0.5)) } }
+      HStack {
+        ForEach(0..<4, id: \.self) { _ in RoundedRectangle(cornerRadius: 2).fill(accent.opacity(0.5)) }
+      }
     }
   }
 
@@ -1259,10 +1889,14 @@ private struct RoleSpecificWorkSurface: View {
   }
 }
 
+// MARK: - Founder foreground
+
 private struct FounderCommandStation: View {
   var activeCount: Int
   var reviewCount: Int
   var pressure: CompanyAtmosphere.Pressure
+  var deskProfile: FacilityStructureProjection.DeskProfile
+  var lightLevel: Double
   var action: () -> Void
 
   var body: some View {
@@ -1270,78 +1904,137 @@ private struct FounderCommandStation: View {
       HStack(spacing: 8) {
         Image(systemName: "command")
           .font(.headline.weight(.black))
-          .foregroundStyle(SoloTheme.amber)
-          .frame(width: 34, height: 34)
-          .background(SoloTheme.amber.opacity(0.12), in: .rect(cornerRadius: 9))
-        VStack(alignment: .leading, spacing: 2) {
+          .foregroundStyle(SoloTheme.amber.opacity(0.45 + 0.55 * lightLevel))
+          .frame(width: 32, height: 32)
+          .background(SoloTheme.amber.opacity(0.12 * lightLevel), in: .rect(cornerRadius: 9))
+        VStack(alignment: .leading, spacing: 1) {
           Text("FOUNDER COMMAND")
-            .font(.caption2.weight(.black))
-          Text(reviewCount > 0 ? "\(reviewCount) artifact\(reviewCount == 1 ? "" : "s") in review tray" : "\(activeCount) active station\(activeCount == 1 ? "" : "s")")
+            .font(.system(size: 10, weight: .black))
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+          Text(reviewCount > 0
+            ? "\(reviewCount) artifact\(reviewCount == 1 ? "" : "s") in review tray"
+            : "\(activeCount) active station\(activeCount == 1 ? "" : "s")")
             .font(.system(size: 9, weight: .semibold))
             .foregroundStyle(reviewCount > 0 ? SoloTheme.amber : .secondary)
             .lineLimit(1)
+            .minimumScaleFactor(0.75)
         }
         Spacer(minLength: 2)
-        Image(systemName: reviewCount > 0 ? "tray.full.fill" : "rectangle.3.group.fill")
-          .foregroundStyle(reviewCount > 0 ? SoloTheme.amber : .secondary)
+        // The review tray. Returning artifacts settle here.
+        ZStack {
+          RoundedRectangle(cornerRadius: 6)
+            .fill(.black.opacity(0.8))
+            .frame(width: 30, height: 26)
+          RoundedRectangle(cornerRadius: 6)
+            .stroke(reviewCount > 0 ? SoloTheme.amber : .white.opacity(0.28), lineWidth: reviewCount > 0 ? 1.8 : 1)
+            .frame(width: 30, height: 26)
+          Image(systemName: reviewCount > 0 ? "tray.full.fill" : "tray")
+            .font(.system(size: 12, weight: .bold))
+            .foregroundStyle(reviewCount > 0 ? SoloTheme.amber : .secondary)
+        }
       }
-      .padding(7)
-      .background(.black.opacity(0.84), in: .rect(cornerRadius: 12))
-      .overlay { RoundedRectangle(cornerRadius: 12).stroke(SoloTheme.amber.opacity(reviewCount > 0 ? 0.9 : 0.35)) }
+      .padding(.horizontal, 8)
+      .padding(.vertical, 7)
+      .background(.black.opacity(0.86), in: .rect(cornerRadius: deskProfile == .refined ? 13 : 6))
+      .overlay {
+        RoundedRectangle(cornerRadius: deskProfile == .refined ? 13 : 6)
+          .stroke(
+            SoloTheme.amber.opacity((reviewCount > 0 ? 0.9 : 0.35) * (0.4 + 0.6 * lightLevel)),
+            lineWidth: deskProfile == .refined ? 1 : 2
+          )
+      }
     }
     .buttonStyle(SoloPressStyle())
     .frame(minHeight: 44)
     .accessibilityLabel("Founder command station")
-    .accessibilityValue(reviewCount > 0 ? "\(reviewCount) artifacts await Founder attention" : "\(activeCount) agents active. Company pressure: \(pressure.rawValue)")
+    .accessibilityValue(reviewCount > 0
+      ? "\(reviewCount) artifacts await Founder attention"
+      : "\(activeCount) agents active. Company pressure: \(pressure.rawValue)")
     .accessibilityHint("Focuses Founder command inside the viewport without scrolling")
   }
 }
 
-private struct PhysicalInfrastructureView: View {
-  var item: InfrastructureVisual
-  var reduceMotion: Bool
+// MARK: - Causal objects
 
-  var body: some View {
-    InfrastructureEquipmentView(item: item, reduceMotion: reduceMotion)
-      .scaleEffect(item.state == .installing && !reduceMotion ? 1.06 : 1)
-      .animation(reduceMotion ? nil : .smooth(duration: 0.9), value: item.state)
-  }
-}
-
+/// Three visibly distinct object families travelling between stable anchors.
+/// Endpoints persist so Reduce Motion communicates the same causal result.
 private struct CausalJourney: View {
   var object: CompanyCausalObject
   var accent: Color
   var start: CGPoint
   var end: CGPoint
+  var lane: Int
+  var laneCount: Int
   var time: TimeInterval
   var reduceMotion: Bool
+  var increasedContrast: Bool
 
   var body: some View {
     ZStack(alignment: .topLeading) {
-      Path { path in
-        path.move(to: start)
-        path.addQuadCurve(to: end, control: controlPoint)
+      if !object.atEndpoint {
+        trail
       }
-      .trim(from: max(0, progress - 0.30), to: progress)
-      .stroke(journeyColor.opacity(0.82), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, dash: dash))
-      Circle()
-        .stroke(journeyColor.opacity(object.atEndpoint ? 0.85 : 0.38), lineWidth: 3)
-        .frame(width: object.atEndpoint ? 42 : 30, height: object.atEndpoint ? 42 : 30)
-        .overlay { Circle().fill(journeyColor.opacity(object.atEndpoint ? 0.16 : 0.05)).padding(5) }
-        .position(end)
-      causalObjectView.position(journeyPoint)
+      if !(object.atEndpoint && object.kind == .assignmentPacket) {
+        // The docked assignment marker is deliberately small enough that it
+        // never needs the full endpoint ring; every other settled state keeps it.
+        endpointMarker.position(end)
+      }
+      // A settled object tucks into the station monitor, the Founder tray, or
+      // the company system it landed on instead of covering the label there.
+      causalObjectView
+        .scaleEffect(settledScale)
+        .position(object.atEndpoint ? settledPoint : journeyPoint)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 
+  private var trail: some View {
+    Path { path in
+      path.move(to: start)
+      path.addQuadCurve(to: end, control: controlPoint)
+    }
+    .trim(from: max(0, progress - 0.28), to: progress)
+    .stroke(
+      journeyColor.opacity(increasedContrast ? 0.95 : 0.8),
+      style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, dash: dash)
+    )
+  }
+
+  private var endpointMarker: some View {
+    Circle()
+      .stroke(journeyColor.opacity(object.atEndpoint ? 0.9 : 0.35), lineWidth: object.atEndpoint ? 2.5 : 2)
+      .frame(width: object.atEndpoint ? 30 : 28, height: object.atEndpoint ? 30 : 28)
+      .overlay { Circle().fill(journeyColor.opacity(object.atEndpoint ? 0.14 : 0.05)).padding(4) }
+  }
+
+  /// A docked assignment sits directly on its stable anchor, which is already
+  /// tucked into the lower edge of the role-specific work surface.
+  private var settledPoint: CGPoint { end }
+
+  /// The docked assignment badge is deliberately tiny — a resting indicator on
+  /// the console, not a focal object — so it never competes with the task
+  /// title or the work surface's own progress pips.
+  private var settledScale: CGFloat {
+    guard object.atEndpoint else { return 1 }
+    return object.kind == .assignmentPacket ? 0.34 : 0.66
+  }
+
   private var progress: CGFloat {
     guard !object.atEndpoint, !reduceMotion else { return 1 }
-    let duration: TimeInterval = object.kind == .assignmentPacket ? 0.70 : 0.82
+    let duration = max(0.2, object.travelDuration)
     return CGFloat(time.truncatingRemainder(dividingBy: duration) / duration)
   }
 
+  /// Each agent gets a stable lane so concurrent paths never tangle.
+  private var laneBend: CGFloat {
+    let spread = CGFloat(max(1, laneCount - 1))
+    let normalized = (CGFloat(lane) - spread / 2) / max(1, spread)
+    return normalized * 26
+  }
+
   private var controlPoint: CGPoint {
-    CGPoint(x: (start.x + end.x) / 2 + bend, y: min(start.y, end.y) - 20)
+    CGPoint(x: (start.x + end.x) / 2 + bend + laneBend, y: min(start.y, end.y) - 18)
   }
 
   private var bend: CGFloat {
@@ -1367,22 +2060,67 @@ private struct CausalJourney: View {
     )
   }
 
+  @ViewBuilder
   private var causalObjectView: some View {
+    switch object.kind {
+    case .assignmentPacket: assignmentDocument
+    case .completedArtifact: deliverableContainer
+    case .resolutionResponse: decisionSeal
+    }
+  }
+
+  /// Role-colored document with a task glyph.
+  private var assignmentDocument: some View {
     ZStack {
-      if object.kind == .resolutionResponse {
-        RoundedRectangle(cornerRadius: 7)
-          .fill(.black)
-          .frame(width: 30, height: 30)
-          .rotationEffect(.degrees(45))
-          .overlay { RoundedRectangle(cornerRadius: 7).stroke(journeyColor, lineWidth: 2).rotationEffect(.degrees(45)) }
-      } else {
-        RoundedRectangle(cornerRadius: object.kind == .assignmentPacket ? 9 : 4)
-          .fill(.black.opacity(0.94))
-          .frame(width: object.kind == .completedArtifact ? 36 : 32, height: object.kind == .completedArtifact ? 32 : 28)
-          .overlay { RoundedRectangle(cornerRadius: object.kind == .assignmentPacket ? 9 : 4).stroke(journeyColor, lineWidth: 2) }
+      UnevenRoundedRectangle(topLeadingRadius: 4, bottomLeadingRadius: 4, bottomTrailingRadius: 4, topTrailingRadius: 10)
+        .fill(.black.opacity(0.95))
+        .frame(width: 28, height: 34)
+      UnevenRoundedRectangle(topLeadingRadius: 4, bottomLeadingRadius: 4, bottomTrailingRadius: 4, topTrailingRadius: 10)
+        .stroke(journeyColor, lineWidth: 2)
+        .frame(width: 28, height: 34)
+      VStack(spacing: 2) {
+        Image(systemName: "checklist")
+          .font(.system(size: 11, weight: .black))
+          .foregroundStyle(journeyColor)
+        Rectangle().fill(journeyColor.opacity(0.6)).frame(width: 14, height: 1.5)
+        Rectangle().fill(journeyColor.opacity(0.4)).frame(width: 10, height: 1.5)
       }
-      Image(systemName: symbol)
-        .font(.subheadline.weight(.black))
+    }
+    .shadow(color: journeyColor.opacity(0.6), radius: reduceMotion ? 0 : 6)
+  }
+
+  /// Mint deliverable container with a completion mark.
+  private var deliverableContainer: some View {
+    ZStack {
+      RoundedRectangle(cornerRadius: 5)
+        .fill(.black.opacity(0.95))
+        .frame(width: 40, height: 30)
+      RoundedRectangle(cornerRadius: 5)
+        .stroke(journeyColor, lineWidth: 2.5)
+        .frame(width: 40, height: 30)
+      Rectangle().fill(journeyColor.opacity(0.55)).frame(width: 40, height: 2).offset(y: -6)
+      Image(systemName: "checkmark.circle.fill")
+        .font(.system(size: 13, weight: .black))
+        .foregroundStyle(journeyColor)
+        .offset(y: 3)
+    }
+    .shadow(color: journeyColor.opacity(0.6), radius: reduceMotion ? 0 : 6)
+  }
+
+  /// Purple decision seal with a visibly different silhouette.
+  private var decisionSeal: some View {
+    ZStack {
+      Circle().fill(.black.opacity(0.95)).frame(width: 32, height: 32)
+      ForEach(0..<8, id: \.self) { index in
+        Capsule()
+          .fill(journeyColor)
+          .frame(width: 3, height: 7)
+          .offset(y: -17)
+          .rotationEffect(.degrees(Double(index) * 45))
+      }
+      Circle().stroke(journeyColor, lineWidth: 2).frame(width: 30, height: 30)
+      Image(systemName: "seal.fill")
+        .font(.system(size: 13, weight: .black))
         .foregroundStyle(journeyColor)
     }
     .shadow(color: journeyColor.opacity(0.65), radius: reduceMotion ? 0 : 7)
@@ -1396,23 +2134,27 @@ private struct CausalJourney: View {
     }
   }
 
-  private var symbol: String {
+  private var dash: [CGFloat] {
     switch object.kind {
-    case .assignmentPacket: "arrow.up.doc.fill"
-    case .completedArtifact: "doc.richtext.fill"
-    case .resolutionResponse: "checkmark.seal.fill"
+    case .assignmentPacket: []
+    case .completedArtifact: []
+    case .resolutionResponse: [3, 6]
     }
   }
 
-  private var dash: [CGFloat] {
-    object.kind == .resolutionResponse ? [3, 6] : []
-  }
-
   private var lineWidth: CGFloat {
-    object.kind == .completedArtifact ? 5 : 4
+    switch object.kind {
+    case .assignmentPacket: 3.5
+    case .completedArtifact: 5
+    case .resolutionResponse: 4
+    }
   }
 }
 
+// MARK: - Founder review
+
+/// Five visually distinct purposes over the same spatial scene. Hidden truth is
+/// admitted only after the canonical fifth reveal step.
 private struct FounderInspectionComposition: View {
   var agent: LivingAgentProjection
   var reduceMotion: Bool
@@ -1429,70 +2171,104 @@ private struct FounderInspectionComposition: View {
         Label("FOUNDER INSPECTION", systemImage: "viewfinder")
           .font(.caption.weight(.black))
           .foregroundStyle(SoloTheme.cyan)
-        Spacer()
-        Text(agent.name).font(.caption.weight(.bold)).foregroundStyle(.secondary)
+          .lineLimit(1)
+          .minimumScaleFactor(0.8)
+        Spacer(minLength: 6)
+        Text(agent.name)
+          .font(.caption.weight(.bold))
+          .foregroundStyle(.secondary)
+          .lineLimit(1)
       }
-      HStack(spacing: 12) {
+      HStack(spacing: 10) {
         artifact
         VStack(alignment: .leading, spacing: 3) {
           Text(agent.activity == .reviewed ? "INSPECTION COMPLETE" : "STEP \(step) OF 5")
             .font(.caption2.monospacedDigit().weight(.black))
             .foregroundStyle(displayColor)
+            .lineLimit(1)
+          // The result title must never truncate.
           Label(displayTitle, systemImage: agent.activity == .reviewed ? resultSymbol : stepSymbol)
             .font(.subheadline.weight(.black))
             .foregroundStyle(agent.activity == .reviewed ? displayColor : .primary)
-            .lineLimit(1)
-          Text(displayPurpose).font(.caption2.weight(.medium)).foregroundStyle(.secondary).lineLimit(2)
+            .lineLimit(2)
+            .minimumScaleFactor(0.9)
+            .fixedSize(horizontal: false, vertical: true)
+          Text(displayPurpose)
+            .font(.caption2.weight(.medium))
+            .foregroundStyle(.secondary)
+            .lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
       }
-      HStack(spacing: 6) {
+      HStack(spacing: 5) {
         ForEach(1...5, id: \.self) { index in
-          Image(systemName: symbol(for: index))
-            .font(.caption2.weight(.black))
-            .foregroundStyle(index <= step ? color(for: index) : .secondary.opacity(0.35))
-            .frame(maxWidth: .infinity, minHeight: 26)
-            .background(index == step ? color(for: index).opacity(0.15) : .clear, in: .rect(cornerRadius: 6))
+          VStack(spacing: 2) {
+            Image(systemName: symbol(for: index))
+              .font(.caption2.weight(.black))
+              .foregroundStyle(index <= step ? color(for: index) : .secondary.opacity(0.35))
+            Rectangle()
+              .fill(index <= step ? color(for: index) : .secondary.opacity(0.22))
+              .frame(height: index == step ? 2.5 : 1)
+          }
+          .frame(maxWidth: .infinity, minHeight: 26)
+          .padding(.vertical, 2)
+          .background(index == step ? color(for: index).opacity(0.15) : .clear, in: .rect(cornerRadius: 6))
         }
       }
     }
-    .padding(12)
-    .background(.black.opacity(0.94), in: .rect(cornerRadius: 18))
+    .padding(11)
+    .background(.black.opacity(0.95), in: .rect(cornerRadius: 18))
     .overlay { RoundedRectangle(cornerRadius: 18).stroke(displayColor, lineWidth: 2) }
     .shadow(color: displayColor.opacity(0.40), radius: reduceMotion ? 0 : 14)
     .accessibilityElement(children: .combine)
     .accessibilityLabel("Founder inspection for \(agent.name), step \(step) of 5, \(stepTitle)")
+    .accessibilityValue(agent.activity == .reviewed ? displayTitle : "Result not yet revealed")
   }
 
   private var artifact: some View {
     ZStack {
       resultShape
       Image(systemName: resultSymbol)
-        .font(.title2.weight(.black))
+        .font(.title3.weight(.black))
         .foregroundStyle(resultColor)
       Rectangle()
         .fill(SoloTheme.cyan.opacity(0.50))
         .frame(height: 2)
-        .offset(y: reduceMotion ? 0 : CGFloat(sin(time * 2.2)) * 22)
+        .offset(y: reduceMotion ? 0 : CGFloat(sin(time * 2.2)) * 20)
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
-    .frame(width: 76, height: 70)
+    .frame(width: 64, height: 62)
   }
 
   @ViewBuilder private var resultShape: some View {
     switch result {
     case .pending:
-      RoundedRectangle(cornerRadius: 12).fill(SoloTheme.cyan.opacity(0.12)).overlay { RoundedRectangle(cornerRadius: 12).stroke(SoloTheme.cyan, lineWidth: 2) }
+      RoundedRectangle(cornerRadius: 12)
+        .fill(SoloTheme.cyan.opacity(0.12))
+        .overlay { RoundedRectangle(cornerRadius: 12).stroke(SoloTheme.cyan, lineWidth: 2) }
     case .verified:
-      Circle().fill(SoloTheme.mint.opacity(0.15)).overlay { Circle().stroke(SoloTheme.mint, lineWidth: 3) }
+      Circle()
+        .fill(SoloTheme.mint.opacity(0.15))
+        .overlay { Circle().stroke(SoloTheme.mint, lineWidth: 3) }
     case .overclaimed:
-      RoundedRectangle(cornerRadius: 3).fill(SoloTheme.coral.opacity(0.16)).overlay { RoundedRectangle(cornerRadius: 3).stroke(SoloTheme.coral, style: StrokeStyle(lineWidth: 3, dash: [7, 3])) }
+      RoundedRectangle(cornerRadius: 3)
+        .fill(SoloTheme.coral.opacity(0.16))
+        .overlay {
+          RoundedRectangle(cornerRadius: 3)
+            .stroke(SoloTheme.coral, style: StrokeStyle(lineWidth: 3, dash: [7, 3]))
+        }
     case .driftDetected:
-      Capsule().fill(SoloTheme.purple.opacity(0.16)).overlay { Capsule().stroke(SoloTheme.purple, style: StrokeStyle(lineWidth: 3, dash: [2, 5])) }
+      Capsule()
+        .fill(SoloTheme.purple.opacity(0.16))
+        .overlay { Capsule().stroke(SoloTheme.purple, style: StrokeStyle(lineWidth: 3, dash: [2, 5])) }
     case .evidenceIncomplete:
       UnevenRoundedRectangle(topLeadingRadius: 14, bottomLeadingRadius: 14, bottomTrailingRadius: 2, topTrailingRadius: 2)
         .fill(SoloTheme.amber.opacity(0.16))
-        .overlay { UnevenRoundedRectangle(topLeadingRadius: 14, bottomLeadingRadius: 14, bottomTrailingRadius: 2, topTrailingRadius: 2).stroke(SoloTheme.amber, lineWidth: 3) }
+        .overlay {
+          UnevenRoundedRectangle(topLeadingRadius: 14, bottomLeadingRadius: 14, bottomTrailingRadius: 2, topTrailingRadius: 2)
+            .stroke(SoloTheme.amber, lineWidth: 3)
+        }
     }
   }
 
@@ -1531,7 +2307,13 @@ private struct FounderInspectionComposition: View {
   }
 
   private func symbol(for step: Int) -> String {
-    ["chart.bar.doc.horizontal.fill", "point.3.connected.trianglepath.dotted", "checkmark.shield.fill", "arrow.left.arrow.right.square.fill", "exclamationmark.triangle.fill"][step - 1]
+    [
+      "chart.bar.doc.horizontal.fill",
+      "point.3.connected.trianglepath.dotted",
+      "checkmark.shield.fill",
+      "arrow.left.arrow.right.square.fill",
+      "exclamationmark.triangle.fill"
+    ][step - 1]
   }
 
   private func color(for step: Int) -> Color {
