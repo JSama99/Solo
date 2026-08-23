@@ -16,4 +16,4 @@ An iPhone 17 Pro simulator build and launch succeeded. The production Founder Co
 
 ## Honest limitations
 
-Only the Founder Garage production screenshot was exported in this pass. The full requested Build 32.4.1 PNG catalog and a newly exported uninterrupted 24–30 second causal video were **not** completed, so this change is not a completed visual-acceptance sign-off. Instruments, VoiceOver, and physical-device testing did not occur. No visual-direction percentage is asserted beyond the limited simulator observation.
+The full requested Build 32.4.1 PNG catalog remains incomplete. A new uninterrupted causal video is present and verified separately in the visual-acceptance record. Instruments, VoiceOver, and physical-device testing did not occur. No visual-direction percentage is asserted beyond the limited simulator observation.
