@@ -89,6 +89,9 @@ struct CompanyCommandInteractionState: Equatable, Sendable {
   private(set) var focus: CompanyCommandFocus?
   private(set) var navigationRequest: CompanyCommandNavigationRequest?
   private(set) var userInitiatedFocus = false
+  /// Build 32.4: automatic choreography records who it is presenting so the
+  /// overview can lead the right station. It is never focus.
+  private(set) var presentingAgentID: String?
   private var navigationSequence = 0
 
   mutating func toggleFocus(_ target: CompanyCommandFocus) {
@@ -96,9 +99,18 @@ struct CompanyCommandInteractionState: Equatable, Sendable {
     userInitiatedFocus = focus != nil
   }
 
-  mutating func ambientFocus(_ target: CompanyCommandFocus) {
-    guard !userInitiatedFocus else { return }
-    focus = target
+  /// Observation only. Automatic causal presentation must never open agent
+  /// focus, change the viewport layout mode, or move the page, so this records
+  /// the presented agent and deliberately leaves `focus` untouched.
+  mutating func observePresentation(agentID: String) {
+    presentingAgentID = agentID
+  }
+
+  /// Automatic choreography is deliberately observational. Calling this at
+  /// every presentation event documents and enforces that playback cannot
+  /// create focus, navigation, or accessibility transfer state.
+  mutating func receiveAutomaticPresentationUpdate() {
+    // Intentionally empty. User input is the only viewport-focus authority.
   }
 
   mutating func requestFullWorkstation(_ target: CompanyCommandFocus) {
@@ -109,6 +121,7 @@ struct CompanyCommandInteractionState: Equatable, Sendable {
   mutating func clearAfterSprintCommit() {
     focus = nil
     userInitiatedFocus = false
+    presentingAgentID = nil
   }
 }
 
@@ -395,7 +408,7 @@ struct CompanyAtmosphere: Equatable, Sendable {
 }
 
 struct InfrastructureVisual: Identifiable, Equatable, Sendable {
-  enum State: Equatable, Sendable { case uninstalled, installing, installed, active }
+  enum State: Hashable, Sendable { case uninstalled, installing, installed, active }
 
   var id: FacilityUpgradeID
   var title: String
@@ -552,6 +565,30 @@ enum CompanyCausalObjectKind: String, CaseIterable, Hashable, Sendable {
   case assignmentPacket
   case completedArtifact
   case resolutionResponse
+
+  var accessibilityName: String {
+    switch self {
+    case .assignmentPacket: "Assignment document"
+    case .completedArtifact: "Completed deliverable"
+    case .resolutionResponse: "Founder decision response"
+    }
+  }
+}
+
+/// Where a causal object currently is inside the one continuous spatial event.
+enum CompanyCausalStage: String, CaseIterable, Hashable, Sendable {
+  case dispatch
+  case docked
+  case artifactReturn
+  case artifactSettled
+  case resolutionDispatch
+  case resolutionSettled
+}
+
+enum CompanyCausalEndpoint: String, CaseIterable, Hashable, Sendable {
+  case roleMonitor
+  case founderReviewTray
+  case affectedCompanySystem
 }
 
 struct CompanyCausalObject: Identifiable, Equatable, Sendable {
@@ -559,39 +596,127 @@ struct CompanyCausalObject: Identifiable, Equatable, Sendable {
   var taskID: UUID
   var agentID: String
   var kind: CompanyCausalObjectKind
+  var stage: CompanyCausalStage
   var atEndpoint: Bool
+  var start: CompanySceneAnchor
+  var end: CompanySceneAnchor
+  /// Visible travel time. Presentation only — canonical results are immediate.
+  var travelDuration: TimeInterval
+  var settleDuration: TimeInterval
+
+  var accessibilityJourney: String {
+    "\(kind.accessibilityName) from \(start.accessibilityName) to \(end.accessibilityName)"
+  }
 
   static func project(agent: LivingAgentProjection, reduceMotion: Bool) -> Self? {
     guard let taskID = agent.taskID else { return nil }
     let kind: CompanyCausalObjectKind
+    let stage: CompanyCausalStage
     let settled: Bool
+    let start: CompanySceneAnchor
+    let end: CompanySceneAnchor
+    let travel: TimeInterval
+    let settle: TimeInterval
+
     switch agent.activity {
     case .assignmentReceived:
       kind = .assignmentPacket
+      stage = reduceMotion ? .docked : .dispatch
       settled = reduceMotion
+      start = .founderCommand
+      end = .roleMonitor(agent.agentID)
+      travel = 0.70
+      settle = 0.23
+    case .working:
+      // The document has already docked. Keeping it visible preserves one
+      // continuous event instead of an object that vanishes mid-journey.
+      kind = .assignmentPacket
+      stage = .docked
+      settled = true
+      start = .founderCommand
+      end = .roleMonitor(agent.agentID)
+      travel = 0.70
+      settle = 0.23
     case .workComplete:
       kind = .completedArtifact
+      stage = reduceMotion ? .artifactSettled : .artifactReturn
       settled = reduceMotion
+      start = .roleMonitor(agent.agentID)
+      end = .founderTray
+      travel = 0.80
+      settle = 0.22
     case .awaitingReview, .reviewing, .reviewed:
       kind = .completedArtifact
+      stage = .artifactSettled
       settled = true
+      start = .roleMonitor(agent.agentID)
+      end = .founderTray
+      travel = 0.80
+      settle = 0.22
     case .resolving:
       kind = .resolutionResponse
+      stage = reduceMotion ? .resolutionSettled : .resolutionDispatch
       settled = reduceMotion
+      start = .founderCommand
+      end = .companySystem(.affectedSystem(forAgentID: agent.agentID))
+      travel = 0.72
+      settle = 0.24
     case .resolved:
       kind = .resolutionResponse
+      stage = .resolutionSettled
       settled = true
+      start = .founderCommand
+      end = .companySystem(.affectedSystem(forAgentID: agent.agentID))
+      travel = 0.72
+      settle = 0.24
     default:
       return nil
     }
+
     return Self(
-      id: "\(kind.rawValue)-\(taskID.uuidString)",
+      // Identity is keyed by kind, canonical agent, and canonical task so
+      // concurrent journeys can never collapse into one rendered object.
+      id: "\(kind.rawValue)-\(agent.agentID)-\(taskID.uuidString)",
       taskID: taskID,
       agentID: agent.agentID,
       kind: kind,
-      atEndpoint: settled
+      stage: stage,
+      atEndpoint: settled,
+      start: start,
+      end: end,
+      travelDuration: travel,
+      settleDuration: settle
     )
   }
+}
+
+/// Narrow, visible-safe contract shared by native and future bespoke renderers.
+/// Task results, quality, RNG, persistence, and action availability cannot enter
+/// the character pipeline because they are not members of this value.
+struct LivingAgentCharacterInput: Equatable, Sendable {
+  var role: AgentRole
+  var activity: LivingAgentActivity
+  var conditions: Set<LivingAgentCondition>
+  var emphasis: LivingPresentationEmphasis
+  var reduceMotion: Bool
+  var levelUpTrigger: Bool
+
+  static func project(agent: LivingAgentProjection, reduceMotion: Bool) -> Self {
+    Self(
+      role: agent.role,
+      activity: agent.activity,
+      conditions: agent.conditions,
+      emphasis: agent.emphasis,
+      reduceMotion: reduceMotion,
+      levelUpTrigger: agent.emphasis == .levelUpCelebration
+    )
+  }
+}
+
+enum LivingAgentRendererKind: String, Equatable, Sendable {
+  case nativePortrait
+
+  static var shipped: Self { .nativePortrait }
 }
 
 enum ReviewResultVisual: String, CaseIterable, Equatable, Sendable {
@@ -620,6 +745,16 @@ struct ViewportTextPriorityProjection: Equatable, Sendable {
     visibleOverviewFields: ["agentName", "safeActivity", "taskTitle", "primaryAction", "criticalWarning"],
     focusOnlyFields: ["role", "level", "stress", "trust", "detailedProgress"],
     accessibilityOnlyFields: ["infrastructureTitle", "facilityStructure", "causalJourney"]
+  )
+
+  /// Build 32.4 keeps the same overview budget but promotes the review result
+  /// title, which must never truncate, out of the capped scene text.
+  static let build32_4 = Self(
+    visibleOverviewFields: [
+      "agentName", "safeActivity", "taskTitle", "primaryAction", "criticalWarning", "reviewResultTitle"
+    ],
+    focusOnlyFields: ["role", "level", "stress", "trust", "detailedProgress"],
+    accessibilityOnlyFields: ["infrastructureTitle", "facilityStructure", "causalJourney", "sceneAnchor"]
   )
 }
 

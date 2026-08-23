@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B32800000000000000000001 /* CompanyCommandScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32900000000000000000001 /* CompanyCommandScene.swift */; };
+		B32A00000000000000000001 /* Build32_4SpatialCausalityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32B00000000000000000001 /* Build32_4SpatialCausalityTests.swift */; };
 		B32000000000000000000001 /* CompanyCommandViewport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32100000000000000000001 /* CompanyCommandViewport.swift */; };
 		B32000000000000000000002 /* LivingCompanyPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32100000000000000000002 /* LivingCompanyPresentation.swift */; };
 		B32000000000000000000003 /* Build32LivingCompanyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32100000000000000000003 /* Build32LivingCompanyTests.swift */; };
@@ -124,6 +126,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B32900000000000000000001 /* CompanyCommandScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyCommandScene.swift; sourceTree = "<group>"; };
+		B32B00000000000000000001 /* Build32_4SpatialCausalityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_4SpatialCausalityTests.swift; sourceTree = "<group>"; };
 		B32100000000000000000001 /* CompanyCommandViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyCommandViewport.swift; sourceTree = "<group>"; };
 		B32100000000000000000002 /* LivingCompanyPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivingCompanyPresentation.swift; sourceTree = "<group>"; };
 		B32100000000000000000003 /* Build32LivingCompanyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32LivingCompanyTests.swift; sourceTree = "<group>"; };
@@ -259,6 +263,7 @@
 				B32100000000000000000003 /* Build32LivingCompanyTests.swift */,
 				B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */,
 				B32500000000000000000001 /* Build32_2VisualBehaviorTests.swift */,
+				B32B00000000000000000001 /* Build32_4SpatialCausalityTests.swift */,
 				B32700000000000000000001 /* Build32_3SpatialViewportTests.swift */,
 				AA1000000000000000000003 /* DivergenceIdentityTests.swift */,
 				AA1000000000000000000004 /* DivergenceChaosTests.swift */,
@@ -293,6 +298,7 @@
 		7775A9C13FE1CF8E12C7214B /* App */ = {
 			isa = PBXGroup;
 			children = (
+				B32900000000000000000001 /* CompanyCommandScene.swift */,
 				B32100000000000000000001 /* CompanyCommandViewport.swift */,
 				B32100000000000000000002 /* LivingCompanyPresentation.swift */,
 				AA1000000000000000000001 /* Divergence.swift */,
@@ -472,6 +478,7 @@
 				B32000000000000000000003 /* Build32LivingCompanyTests.swift in Sources */,
 				B32200000000000000000001 /* Build32_1ViewportInteractionTests.swift in Sources */,
 				B32400000000000000000001 /* Build32_2VisualBehaviorTests.swift in Sources */,
+				B32A00000000000000000001 /* Build32_4SpatialCausalityTests.swift in Sources */,
 				B32600000000000000000001 /* Build32_3SpatialViewportTests.swift in Sources */,
 				AA0000000000000000000003 /* DivergenceIdentityTests.swift in Sources */,
 				AA0000000000000000000004 /* DivergenceChaosTests.swift in Sources */,
@@ -506,6 +513,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B32800000000000000000001 /* CompanyCommandScene.swift in Sources */,
 				B32000000000000000000001 /* CompanyCommandViewport.swift in Sources */,
 				B32000000000000000000002 /* LivingCompanyPresentation.swift in Sources */,
 				AA0000000000000000000001 /* Divergence.swift in Sources */,
