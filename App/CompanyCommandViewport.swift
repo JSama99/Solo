@@ -1451,16 +1451,6 @@ private struct NativeAgentCharacterView: View {
           .stroke(SoloTheme.cyan, lineWidth: 2)
           .background(SoloTheme.cyan.opacity(0.10).clipShape(.rect(cornerRadius: 11)))
       }
-      if let symbol = conditionSymbol {
-        Image(systemName: symbol)
-          .font(.caption.weight(.black))
-          .foregroundStyle(.white)
-          .padding(6)
-          .background(conditionColor, in: Circle())
-          .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-          .padding(6)
-          .accessibilityHidden(true)
-      }
     }
     .clipShape(RoundedRectangle(cornerRadius: 11))
     .overlay { RoundedRectangle(cornerRadius: 11).stroke(rimColor, lineWidth: rimWidth) }
@@ -1997,18 +1987,6 @@ private struct CausalJourney: View {
         .position(object.atEndpoint ? settledPoint : journeyPoint)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .onAppear {
-      guard !object.atEndpoint, !reduceMotion else {
-        progress = 1
-        return
-      }
-      withAnimation(.linear(duration: travelDuration)) {
-        progress = 1
-      }
-    }
-    .onChange(of: object.atEndpoint) { _, settled in
-      if settled { progress = 1 }
-    }
   }
 
   private var trail: some View {

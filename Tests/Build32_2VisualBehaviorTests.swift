@@ -193,10 +193,23 @@ final class Build32_2VisualBehaviorTests: XCTestCase {
     ]).isSubset(of: Set(LivingCompanyFixture.causalProofSequence)))
   }
 
-  func testReduceMotionFixtureUsesSameVisibleEndpointAsResolvedFixture() {
+  func testReduceMotionFixtureShowsAllThreeCausalFamiliesAtTheirEndpoints() {
+    // Build 32.4: Reduce Motion demonstrates every causal object family
+    // (assignment, artifact, resolution) settled at its endpoint in one
+    // frame, rather than a flat idle state.
     let fixture = LivingCompanyFixture.make(.reduceMotion)
     XCTAssertTrue(fixture.forceReduceMotion)
-    XCTAssertTrue(fixture.agents.allSatisfy { $0.activity == .idle && $0.progress == 0 })
+    for agent in fixture.agents {
+      guard let object = CompanyCausalObject.project(agent: agent, reduceMotion: true) else {
+        XCTFail("\(agent.agentID) produced no causal object in the Reduce Motion fixture")
+        continue
+      }
+      XCTAssertTrue(object.atEndpoint, "\(agent.agentID) is not settled at its endpoint")
+    }
+    let kinds = Set(fixture.agents.compactMap {
+      CompanyCausalObject.project(agent: $0, reduceMotion: true)?.kind
+    })
+    XCTAssertEqual(kinds.count, 3, "Reduce Motion must show all three causal object families")
   }
 
   func testWarningFixturesRemainVisuallyAndSemanticallyDistinct() {
