@@ -170,6 +170,9 @@ struct FounderComputerScreen: View {
       if reduceMotion { presentation.skipPresentation(for: agentID) }
     case .review(_, let taskID, let agentID, let result, let evidenceChanged):
       settings.playFeedback(.review)
+      // Build 32.4: review presentation stays in the overview scene. It records
+      // the presented agent but never opens the agent-focus layout.
+      commandInteraction.observePresentation(agentID: agentID)
       activeReviewTaskID = taskID
       reviewStage = reduceMotion ? 5 : 1
       if evidenceChanged { evidencePulse.toggle() }
@@ -393,7 +396,7 @@ struct FounderComputerScreen: View {
 
   private func review(_ id: String) {
     guard availability(for: id).canReview, let task = task(for: id) else { return }
-    if isViewportVisible { commandInteraction.ambientFocus(.agent(id)) }
+    commandInteraction.observePresentation(agentID: id)
     withAnimation(SoloMotion.resolved(SoloMotion.focus, reduceMotion: reduceMotion)) {
       activeReviewTaskID = task.id
       reviewStage = 0

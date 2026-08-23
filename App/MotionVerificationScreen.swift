@@ -189,6 +189,8 @@ struct LivingCompanyFixture: Equatable, Sendable {
     case lowTrust = "Low Trust"
     case lowMomentum = "Low Momentum"
     case highMomentum = "High Momentum"
+    case combinedPressure = "Combined company pressure"
+    case userFocusAurora = "User-initiated Aurora focus"
     case reduceMotion = "Reduce Motion endpoints"
     case accessibilityLarge = "Accessibility Extra Large"
     case increasedContrast = "Increased Contrast"
@@ -262,7 +264,9 @@ struct LivingCompanyFixture: Equatable, Sendable {
     case .auroraFocus:
       focus = .agent("aurora")
     case .auroraAssignment:
-      stage("aurora", activity: .assignmentReceived, progress: 0.08, conditions: [.focused])
+      // Build 32.4: assignment presentation stays in the overview scene. The
+      // fixture no longer opens the agent-focus layout.
+      stage("aurora", activity: .assignmentReceived, progress: 0.08, conditions: [.focused], emphasis: .selected)
     case .auroraWorking, .workingPhase:
       stage("aurora", activity: .working, progress: 0.58, conditions: [.focused]); nextAction = "Watch research evidence accumulate."
     case .stacksWorking:
@@ -293,7 +297,7 @@ struct LivingCompanyFixture: Equatable, Sendable {
     case .resting:
       stage("brio", activity: .resting, progress: 0); agents[2].conditions = [.stressed]
     case .levelUp:
-      agents[1].level = 4; agents[1].emphasis = .levelUpCelebration; focus = .agent("stacks")
+      agents[1].level = 4; agents[1].emphasis = .levelUpCelebration
     case .resolving, .resolutionPhase:
       stage("aurora", activity: .resolving, progress: 1, conditions: [.verified], emphasis: .decisionLock, reviewStep: 5); resolutionCount = 1; sprintPhase = .reviewAndResolve
     case .resolved:
@@ -329,10 +333,31 @@ struct LivingCompanyFixture: Equatable, Sendable {
     case .lowMomentum:
       stats.momentum = 6
     case .highMomentum:
+      // Momentum strengthens the path between active stations and Founder
+      // Command, so the fixture needs an active station to connect.
       stats.momentum = 91
+      stage("aurora", activity: .working, progress: 0.46, conditions: [.focused])
+      stage("brio", activity: .working, progress: 0.62, conditions: [.focused])
+    case .combinedPressure:
+      // Build 32.4 treatments are independent axes, so all four coexist.
+      stats.energy = 22; stats.runway = 5; stats.trust = 18; stats.momentum = 91
+      stage("stacks", activity: .working, progress: 0.5, conditions: [.focused])
+    case .userFocusAurora:
+      // The only path into the focus layout is an explicit user interaction.
+      focus = .agent("aurora")
     case .planningPhase:
       sprintPhase = .assignTeam
-    case .idleOverview, .reduceMotion, .accessibilityLarge, .increasedContrast:
+    case .reduceMotion:
+      // All three causal families held at their endpoints: the assignment
+      // docked at its agent, completed work in the Founder tray, and the
+      // resolution response settled in its company system.
+      stage("aurora", activity: .assignmentReceived, progress: 0.1, conditions: [.focused])
+      stage("stacks", activity: .awaitingReview, progress: 1, emphasis: .founderAttention)
+      stage("brio", activity: .resolved, progress: 1, conditions: [.verified], emphasis: .decisionLock, reviewStep: 5)
+      reviewCount = 1
+      sprintPhase = .reviewAndResolve
+      nextAction = "Reduce Motion shows every causal endpoint without travel."
+    case .idleOverview, .accessibilityLarge, .increasedContrast:
       break
     }
 
