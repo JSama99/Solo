@@ -2,9 +2,25 @@ import SwiftUI
 
 /// Presentation-only ownership for the room surrounding the canonical Founder
 /// Computer. This type deliberately has no reference to saves, RNG, or actions.
-enum FounderEnvironmentMode: Equatable, Sendable {
+enum FounderEnvironmentMode: CaseIterable, Equatable, Sendable {
   case computerFocused
+  case transitioningToComputerFocus
   case freeLook
+  case transitioningToFreeLook
+
+  var isTransitioning: Bool {
+    switch self {
+    case .transitioningToComputerFocus, .transitioningToFreeLook: true
+    case .computerFocused, .freeLook: false
+    }
+  }
+
+  var targetsComputerFocus: Bool {
+    switch self {
+    case .computerFocused, .transitioningToComputerFocus: true
+    case .freeLook, .transitioningToFreeLook: false
+    }
+  }
 }
 
 struct FounderEnvironmentCameraState: Equatable, Sendable {
@@ -19,6 +35,32 @@ struct FounderEnvironmentCameraState: Equatable, Sendable {
   var environmentAllowsCameraGestures: Bool { mode == .freeLook }
   var freeLookDragPolicyActive: Bool { mode == .freeLook }
   var monitorReturnInteractionEnabled: Bool { mode == .freeLook }
+  var lookOutControlAvailable: Bool { mode == .computerFocused }
+  var interactionLocked: Bool { mode.isTransitioning }
+
+  @discardableResult
+  mutating func beginComputerFocusTransition() -> Bool {
+    guard mode == .freeLook else { return false }
+    mode = .transitioningToComputerFocus
+    return true
+  }
+
+  mutating func completeComputerFocusTransition() {
+    guard mode == .transitioningToComputerFocus else { return }
+    mode = .computerFocused
+  }
+
+  @discardableResult
+  mutating func beginFreeLookTransition() -> Bool {
+    guard mode == .computerFocused else { return false }
+    mode = .transitioningToFreeLook
+    return true
+  }
+
+  mutating func completeFreeLookTransition() {
+    guard mode == .transitioningToFreeLook else { return }
+    mode = .freeLook
+  }
 
   mutating func look(horizontal: Double = 0, vertical: Double = 0, reduceMotion: Bool = false) {
     guard mode == .freeLook else { return }
@@ -63,6 +105,7 @@ struct FounderEnvironmentScreen: View {
   @Environment(\.scenePhase) private var scenePhase
   @State private var camera = FounderEnvironmentCameraState()
   @State private var dragStartCamera: FounderEnvironmentCameraState?
+  @State private var transitionID = UUID()
   @AccessibilityFocusState private var environmentIsFocused: Bool
   @AccessibilityFocusState private var computerIsFocused: Bool
 
@@ -76,9 +119,12 @@ struct FounderEnvironmentScreen: View {
           reduceMotion: reduceMotion,
           sceneActive: scenePhase == .active
         )
-        let focused = camera.mode == .computerFocused
-        let monitorWidth = monitorWidth(for: geometry.size, focused: focused)
-        let monitorHeight = monitorHeight(for: geometry.size, focused: focused)
+        let targetsComputerFocus = camera.mode.targetsComputerFocus
+        let monitorSize = FounderCommandFocusLayout.monitorSize(
+          viewport: geometry.size,
+          mode: camera.mode,
+          accessibilitySize: dynamicTypeSize.isAccessibilitySize
+        )
         let layout = FounderEnvironmentLayout(viewportSize: geometry.size)
         let monitorPosition = layout.viewportPosition(for: .founderMonitor, camera: camera, layer: .foreground)
         let monitorOffset = CGSize(
@@ -97,11 +143,12 @@ struct FounderEnvironmentScreen: View {
           .clipped()
 
           FounderPhysicalMonitorView(
-            focused: focused,
-            width: monitorWidth,
-            height: monitorHeight,
+            focused: targetsComputerFocus,
+            width: monitorSize.width,
+            height: monitorSize.height,
+            commandViewportSize: geometry.size,
             camera: camera,
-            worldOffset: focused ? .zero : monitorOffset,
+            worldOffset: targetsComputerFocus ? .zero : monitorOffset,
             increasedContrast: contrast == .increased,
             monitorGlowIntensity: garageMotion.lighting.founderMonitorGlow,
             notificationIntensity: garageMotion.lighting.founderNotificationIntensity,
@@ -123,7 +170,7 @@ struct FounderEnvironmentScreen: View {
 
             Button(action: focusComputer) {
               Color.clear
-                .frame(width: monitorWidth, height: monitorHeight)
+                .frame(width: monitorSize.width, height: monitorSize.height)
                 .contentShape(.rect)
             }
             .buttonStyle(.plain)
@@ -146,6 +193,13 @@ struct FounderEnvironmentScreen: View {
           .accessibilityFocused($environmentIsFocused)
           .frame(width: geometry.size.width, height: geometry.size.height, alignment: .bottom)
           .zIndex(3)
+
+          if camera.interactionLocked {
+            Color.clear
+              .contentShape(.rect)
+              .accessibilityHidden(true)
+              .zIndex(4)
+          }
         }
         .frame(width: geometry.size.width, height: geometry.size.height)
         .animation(reduceMotion ? nil : .smooth(duration: 0.34), value: camera.mode)
@@ -158,7 +212,7 @@ struct FounderEnvironmentScreen: View {
         .accessibilityAction(named: Text("Return to Founder Computer")) { focusComputer() }
         .accessibilityAction(named: Text("Focus Founder Computer")) { focusComputer() }
       }
-      .navigationTitle("SOLO")
+      .toolbar(.hidden, for: .navigationBar)
       .onChange(of: store.stats.trackRecord, initial: true) { _, value in
         progression.observe(trackRecord: value)
       }
@@ -216,37 +270,82 @@ struct FounderEnvironmentScreen: View {
       }
   }
 
-  private func monitorWidth(for size: CGSize, focused: Bool) -> CGFloat {
-    let margin: CGFloat = dynamicTypeSize.isAccessibilitySize ? 4 : 12
-    return focused ? size.width - margin * 2 : min(size.width * 0.58, 300)
-  }
-
-  private func monitorHeight(for size: CGSize, focused: Bool) -> CGFloat {
-    focused ? min(size.height * 0.82, 780) : min(size.height * 0.34, 330)
-  }
-
   private func enterFreeLook() {
-    guard camera.mode != .freeLook else { return }
-    camera.mode = .freeLook
+    guard camera.beginFreeLookTransition() else { return }
     dragStartCamera = nil
-    environmentIsFocused = true
+    beginTransition(completing: .freeLook)
   }
 
   private func focusComputer() {
-    guard camera.mode != .computerFocused else { return }
-    camera.mode = .computerFocused
+    guard camera.beginComputerFocusTransition() else { return }
     dragStartCamera = nil
-    computerIsFocused = true
+    beginTransition(completing: .computerFocused)
   }
 
   private func moveCamera(horizontal: Double, vertical: Double) {
-    if camera.mode != .freeLook { enterFreeLook() }
+    guard camera.mode == .freeLook else { return }
     camera.look(horizontal: horizontal, vertical: vertical, reduceMotion: reduceMotion)
   }
 
   private func centerCamera() {
-    if camera.mode != .freeLook { enterFreeLook() }
+    guard camera.mode == .freeLook else { return }
     camera.center()
+  }
+
+  private func beginTransition(completing destination: FounderEnvironmentMode) {
+    let id = UUID()
+    transitionID = id
+    Task { @MainActor in
+      if !reduceMotion {
+        try? await Task.sleep(for: .milliseconds(520))
+      }
+      guard transitionID == id else { return }
+      switch destination {
+      case .computerFocused:
+        camera.completeComputerFocusTransition()
+        computerIsFocused = true
+      case .freeLook:
+        camera.completeFreeLookTransition()
+        environmentIsFocused = true
+      case .transitioningToComputerFocus, .transitioningToFreeLook:
+        break
+      }
+    }
+  }
+}
+
+/// Pure geometry policy for one physical monitor moving between observation
+/// and an edge-to-edge command surface. It owns no navigation or game state.
+struct FounderCommandFocusLayout: Equatable, Sendable {
+  static func monitorSize(
+    viewport: CGSize,
+    mode: FounderEnvironmentMode,
+    accessibilitySize: Bool
+  ) -> CGSize {
+    if mode.targetsComputerFocus {
+      return CGSize(width: viewport.width + 6, height: viewport.height + 6)
+    }
+    let width = min(viewport.width * (accessibilitySize ? 0.64 : 0.58), accessibilitySize ? 320 : 300)
+    return CGSize(width: width, height: min(viewport.height * 0.34, 330))
+  }
+
+  static func commandCoverage(viewport: CGSize, mode: FounderEnvironmentMode) -> Double {
+    let size = monitorSize(viewport: viewport, mode: mode, accessibilitySize: false)
+    guard viewport.width > 0, viewport.height > 0 else { return 0 }
+    return min(1, (size.width * size.height) / (viewport.width * viewport.height))
+  }
+
+  static func contentScale(
+    commandViewport: CGSize,
+    monitorSize: CGSize,
+    focused: Bool,
+    screenInset: CGFloat
+  ) -> CGFloat {
+    guard !focused, commandViewport.width > 0, commandViewport.height > 0 else { return 1 }
+    return max(
+      max(0, monitorSize.width - screenInset * 2) / commandViewport.width,
+      max(0, monitorSize.height - screenInset * 2) / commandViewport.height
+    )
   }
 }
 
@@ -285,8 +384,8 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       .storage: CGPoint(x: 225, y: 320),
       .auroraStation: CGPoint(x: 325, y: 300),
       .verificationArray: CGPoint(x: 188, y: 505),
-      .stacksStation: CGPoint(x: 680, y: 220),
-      .developmentRig: CGPoint(x: 820, y: 455),
+      .stacksStation: CGPoint(x: 540, y: 220),
+      .developmentRig: CGPoint(x: 760, y: 455),
       .brioStation: CGPoint(x: 1_035, y: 300),
       .campaignStudio: CGPoint(x: 1_185, y: 485),
       .recoveryCorner: CGPoint(x: 1_285, y: 565),
@@ -1145,6 +1244,7 @@ struct FounderPhysicalMonitorView<Content: View>: View {
   var focused: Bool
   var width: CGFloat
   var height: CGFloat
+  var commandViewportSize: CGSize
   var camera: FounderEnvironmentCameraState
   var worldOffset: CGSize
   var increasedContrast: Bool
@@ -1155,29 +1255,44 @@ struct FounderPhysicalMonitorView<Content: View>: View {
   @ViewBuilder var content: Content
 
   var body: some View {
+    let focusedCornerRadius: CGFloat = focused ? 0 : 13
+    let screenInset: CGFloat = focused ? 0 : 7
+    let contentScale = FounderCommandFocusLayout.contentScale(
+      commandViewport: commandViewportSize,
+      monitorSize: CGSize(width: width, height: height),
+      focused: focused,
+      screenInset: screenInset
+    )
     ZStack {
-      RoundedRectangle(cornerRadius: focused ? 19 : 13)
+      RoundedRectangle(cornerRadius: focusedCornerRadius)
         .fill(Color(red: 0.025, green: 0.028, blue: 0.032))
         .offset(x: focused ? 3 : 5, y: focused ? 5 : 7)
         .shadow(color: .black.opacity(0.78), radius: focused ? 14 : 8, y: 8)
         .allowsHitTesting(false)
-      RoundedRectangle(cornerRadius: focused ? 18 : 12)
+      RoundedRectangle(cornerRadius: focusedCornerRadius)
         .fill(LinearGradient(
           colors: [Color(red: 0.12, green: 0.13, blue: 0.14), .black],
           startPoint: .topLeading,
           endPoint: .bottomTrailing
         ))
-        .overlay { RoundedRectangle(cornerRadius: focused ? 18 : 12).stroke(.white.opacity(increasedContrast ? 0.94 : 0.38), lineWidth: focused ? 3 : 2) }
+        .overlay { RoundedRectangle(cornerRadius: focusedCornerRadius).stroke(.white.opacity(focused ? 0.08 : increasedContrast ? 0.94 : 0.38), lineWidth: focused ? 1 : 2) }
         .shadow(
           color: .cyan.opacity((focused ? 0.20 : 0.08) * monitorGlowIntensity),
           radius: focused ? 18 : 8
         )
       content
-        .clipShape(.rect(cornerRadius: focused ? 12 : 8))
-        .padding(focused ? 9 : 7)
+        .frame(width: commandViewportSize.width, height: commandViewportSize.height, alignment: .topLeading)
+        .scaleEffect(contentScale, anchor: .topLeading)
+        .frame(
+          width: max(0, width - screenInset * 2),
+          height: max(0, height - screenInset * 2),
+          alignment: .topLeading
+        )
+        .clipShape(.rect(cornerRadius: focused ? 0 : 8))
+        .padding(screenInset)
       LinearGradient(colors: [.white.opacity(0.11), .clear], startPoint: .topLeading, endPoint: .center)
-        .clipShape(.rect(cornerRadius: focused ? 12 : 8))
-        .padding(focused ? 9 : 7)
+        .clipShape(.rect(cornerRadius: focused ? 0 : 8))
+        .padding(screenInset)
         .allowsHitTesting(false)
       Rectangle()
         .fill(
@@ -1191,20 +1306,22 @@ struct FounderPhysicalMonitorView<Content: View>: View {
         .phaseAnimator(reduceMotion ? [0.0] : [-0.38, 0.38]) { content, phase in
           content.offset(y: height * phase)
         } animation: { _ in .linear(duration: 4.8) }
-        .clipShape(.rect(cornerRadius: focused ? 12 : 8))
-        .padding(focused ? 9 : 7)
+        .clipShape(.rect(cornerRadius: focused ? 0 : 8))
+        .padding(screenInset)
         .allowsHitTesting(false)
-      HStack(spacing: 4) {
-        ForEach(0..<5, id: \.self) { _ in
-          Capsule().fill(.white.opacity(0.16)).frame(width: focused ? 8 : 5, height: 2)
+      if !focused {
+        HStack(spacing: 4) {
+          ForEach(0..<5, id: \.self) { _ in
+            Capsule().fill(.white.opacity(0.16)).frame(width: 5, height: 2)
+          }
         }
+        .position(x: width / 2, y: height - 4)
+        .allowsHitTesting(false)
       }
-      .position(x: width / 2, y: height - (focused ? 5 : 4))
-      .allowsHitTesting(false)
       Circle()
         .fill(notificationIntensity > 0 ? Color.orange : Color.white.opacity(0.24))
         .frame(width: 7, height: 7)
-        .position(x: width - 18, y: height - 12)
+        .position(x: width - (focused ? 10 : 18), y: height - (focused ? 10 : 12))
         .phaseAnimator([0.72, 1.0, 0.72], trigger: eventToken) { content, phase in
           content
             .opacity(reduceMotion ? max(0.45, notificationIntensity) : notificationIntensity * phase)
@@ -1216,12 +1333,12 @@ struct FounderPhysicalMonitorView<Content: View>: View {
     }
     .frame(width: width, height: height)
     .scaleEffect(focused ? 1 : 0.98)
-    .offset(x: worldOffset.width, y: focused ? -6 : worldOffset.height)
+    .offset(x: worldOffset.width, y: focused ? 0 : worldOffset.height)
     .overlay(alignment: .trailing) {
       RoundedRectangle(cornerRadius: 2)
         .fill(.black.opacity(0.88))
-        .frame(width: focused ? 3 : 5, height: height * 0.68)
-        .offset(x: focused ? 2 : 4)
+        .frame(width: focused ? 1 : 5, height: height * 0.68)
+        .offset(x: focused ? 0 : 4)
         .allowsHitTesting(false)
     }
   }
@@ -1243,19 +1360,28 @@ struct FounderEnvironmentControlLayer: View {
         Button {
           onLookAround()
         } label: {
-          if dynamicTypeSize.isAccessibilitySize {
-            Image(systemName: "binoculars.fill")
-              .frame(width: 44, height: 44)
-          } else {
-            Label("Look Around", systemImage: "binoculars.fill")
-          }
+          Label("LOOK OUT", systemImage: "binoculars.fill")
+            .font(.caption2.weight(.black))
+            .padding(.horizontal, dynamicTypeSize.isAccessibilitySize ? 8 : 12)
+            .frame(minWidth: 44, minHeight: 44)
+            .background(.black.opacity(0.78), in: Capsule())
+            .overlay { Capsule().stroke(.white.opacity(0.30), lineWidth: 1) }
         }
-          .buttonStyle(.borderedProminent)
-          .tint(.black.opacity(0.72))
-          .accessibilityLabel("Look Around")
-          .accessibilityHint("Recedes the monitor and enables room camera controls.")
-          .position(x: proxy.size.width - (dynamicTypeSize.isAccessibilitySize ? 30 : 82), y: 25)
-      } else {
+        .buttonStyle(.plain)
+        .foregroundStyle(.white)
+        .accessibilityLabel("Look Out")
+        .accessibilityHint("Pulls away from Company Command to observe the Founder Garage.")
+        .position(x: proxy.size.width / 2, y: 24)
+      } else if mode == .freeLook {
+        Text("FOUNDER GARAGE · FREE LOOK")
+          .font(.caption2.monospaced().weight(.black))
+          .foregroundStyle(.white.opacity(0.82))
+          .padding(.horizontal, 10)
+          .frame(height: 28)
+          .background(.black.opacity(0.62), in: Capsule())
+          .position(x: 112, y: 20)
+          .accessibilityAddTraits(.isHeader)
+
         HStack(spacing: 8) {
           Button("Look Left", systemImage: "chevron.left") { onLook(-1, 0) }.labelStyle(.iconOnly)
           Button("Center", systemImage: "viewfinder") { onCenter() }.labelStyle(.iconOnly)

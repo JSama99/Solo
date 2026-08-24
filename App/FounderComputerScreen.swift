@@ -11,6 +11,7 @@ struct FounderComputerScreen: View {
   @State private var commandInteraction = CompanyCommandInteractionState()
   @State private var expandedWorkstationAgentID: String?
   @State private var isViewportVisible = true
+  @State private var scrollPosition = ScrollPosition()
   @AccessibilityFocusState private var accessibilityWorkstationID: String?
   @State private var assignmentDestination: AssignmentDestination?
   @State private var restCandidate: RestCandidate?
@@ -86,6 +87,7 @@ struct FounderComputerScreen: View {
         .scrollTargetLayout()
       }
       .scrollTargetBehavior(.viewAligned)
+      .scrollPosition($scrollPosition)
       .safeAreaPadding(.bottom, 96)
       .onAppear {
         if observedAgentLevels.isEmpty {

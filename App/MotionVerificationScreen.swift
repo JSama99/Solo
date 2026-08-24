@@ -18,16 +18,69 @@ struct MotionVerificationScreen: View {
   @State private var fixtureID: LivingCompanyFixture.ID
   @State private var isPlayingCausalProof = false
   @State private var showsPhysicalEnvironment: Bool
-  @State private var proofComputerFocused: Bool
+  @State private var proofMode: FounderEnvironmentMode
+
+  private var isCommandFocusProof: Bool {
+    ProcessInfo.processInfo.arguments.contains("--motion-qa-command-focus-proof")
+  }
 
   init(initialFixture: LivingCompanyFixture.ID = .idleOverview) {
     _fixtureID = State(initialValue: initialFixture)
     let physical = ProcessInfo.processInfo.arguments.contains("--motion-qa-physical")
+    let commandFocusProof = ProcessInfo.processInfo.arguments.contains("--motion-qa-command-focus-proof")
     _showsPhysicalEnvironment = State(initialValue: physical)
-    _proofComputerFocused = State(initialValue: physical)
+    _proofMode = State(initialValue: physical && !commandFocusProof ? .computerFocused : .freeLook)
   }
 
   var body: some View {
+    Group {
+      if isCommandFocusProof {
+        fixtureEnvironment(LivingCompanyFixture.make(fixtureID), fixedHeight: nil)
+          .overlay(alignment: .topTrailing) {
+            Text("DEBUG · CONTINUITY PROOF")
+              .font(.caption2.monospaced().weight(.black))
+              .foregroundStyle(SoloTheme.mint)
+              .padding(.horizontal, 8)
+              .frame(height: 26)
+              .background(.black.opacity(0.76), in: Capsule())
+              .padding(8)
+              .allowsHitTesting(false)
+          }
+      } else {
+        verificationCatalog
+      }
+    }
+    .task {
+      if ProcessInfo.processInfo.arguments.contains("--motion-qa-sequence")
+        || ProcessInfo.processInfo.environment["SOLO_MOTION_QA_SEQUENCE"] == "1" {
+        try? await Task.sleep(for: .milliseconds(650))
+        await playCausalProof()
+      }
+    }
+    .onAppear {
+      CFNotificationCenterAddObserver(
+        CFNotificationCenterGetDarwinNotifyCenter(),
+        nil,
+        motionQAProofCallback,
+        motionQAProofDarwinName,
+        nil,
+        .deliverImmediately
+      )
+    }
+    .onDisappear {
+      CFNotificationCenterRemoveObserver(
+        CFNotificationCenterGetDarwinNotifyCenter(),
+        nil,
+        CFNotificationName(motionQAProofDarwinName),
+        nil
+      )
+    }
+    .onReceive(NotificationCenter.default.publisher(for: motionQAProofNotification)) { _ in
+      Task { await playCausalProof() }
+    }
+  }
+
+  private var verificationCatalog: some View {
     ZStack(alignment: .topTrailing) {
       Color.black.ignoresSafeArea()
       ScrollView {
@@ -77,39 +130,6 @@ struct MotionVerificationScreen: View {
         .padding(16)
         .frame(maxWidth: .infinity)
       }
-      .task {
-        if ProcessInfo.processInfo.arguments.contains("--motion-qa-sequence")
-          || ProcessInfo.processInfo.environment["SOLO_MOTION_QA_SEQUENCE"] == "1" {
-          // Gives the recorder time to attach while Planning is already visible;
-          // the resulting proof begins in-app with no SpringBoard or launch flash.
-          try? await Task.sleep(for: .milliseconds(650))
-          await playCausalProof()
-          return
-        }
-        return
-      }
-      .onAppear {
-        CFNotificationCenterAddObserver(
-          CFNotificationCenterGetDarwinNotifyCenter(),
-          nil,
-          motionQAProofCallback,
-          motionQAProofDarwinName,
-          nil,
-          .deliverImmediately
-        )
-      }
-      .onDisappear {
-        CFNotificationCenterRemoveObserver(
-          CFNotificationCenterGetDarwinNotifyCenter(),
-          nil,
-          CFNotificationName(motionQAProofDarwinName),
-          nil
-        )
-      }
-      .onReceive(NotificationCenter.default.publisher(for: motionQAProofNotification)) { _ in
-        Task { await playCausalProof() }
-      }
-
       Button("Done") { dismiss() }
         .buttonStyle(.bordered)
         .padding(.horizontal, 16)
@@ -123,10 +143,38 @@ struct MotionVerificationScreen: View {
     isPlayingCausalProof = true
     if showsPhysicalEnvironment {
       fixtureID = .planningPhase
-      proofComputerFocused = true
+      proofMode = .freeLook
+      try? await Task.sleep(for: .milliseconds(850))
+      fixtureID = .auroraWorking
       try? await Task.sleep(for: .milliseconds(900))
-      proofComputerFocused = false
-      try? await Task.sleep(for: .milliseconds(1_150))
+      fixtureID = .stacksWorking
+      try? await Task.sleep(for: .milliseconds(900))
+      fixtureID = .brioWorking
+      try? await Task.sleep(for: .milliseconds(900))
+      fixtureID = .stacksWorking
+      try? await Task.sleep(for: .milliseconds(650))
+      proofMode = .transitioningToComputerFocus
+      try? await Task.sleep(for: .milliseconds(520))
+      proofMode = .computerFocused
+      try? await Task.sleep(for: .milliseconds(950))
+      fixtureID = .awaitingReview
+      try? await Task.sleep(for: .milliseconds(850))
+      fixtureID = .reviewStep1
+      try? await Task.sleep(for: .milliseconds(650))
+      fixtureID = .reviewStep5
+      try? await Task.sleep(for: .milliseconds(850))
+      proofMode = .transitioningToFreeLook
+      try? await Task.sleep(for: .milliseconds(520))
+      proofMode = .freeLook
+      fixtureID = .stacksWorking
+      try? await Task.sleep(for: .milliseconds(1_000))
+      proofMode = .transitioningToComputerFocus
+      try? await Task.sleep(for: .milliseconds(520))
+      proofMode = .computerFocused
+      fixtureID = .commitReady
+      try? await Task.sleep(for: .milliseconds(1_200))
+      isPlayingCausalProof = false
+      return
     }
     for id in LivingCompanyFixture.causalProofSequence {
       guard !Task.isCancelled else { return }
@@ -135,7 +183,9 @@ struct MotionVerificationScreen: View {
     }
     if showsPhysicalEnvironment {
       try? await Task.sleep(for: .milliseconds(650))
-      proofComputerFocused = true
+      proofMode = .transitioningToComputerFocus
+      try? await Task.sleep(for: .milliseconds(520))
+      proofMode = .computerFocused
       try? await Task.sleep(for: .milliseconds(1_150))
     }
     isPlayingCausalProof = false
@@ -174,11 +224,12 @@ struct MotionVerificationScreen: View {
     .environment(\.dynamicTypeSize, fixture.accessibilityLarge ? .accessibility3 : .large)
   }
 
-  private func fixtureEnvironment(_ fixture: LivingCompanyFixture) -> some View {
+  private func fixtureEnvironment(
+    _ fixture: LivingCompanyFixture,
+    fixedHeight: CGFloat? = 620
+  ) -> some View {
     GeometryReader { proxy in
-      let camera = proofComputerFocused
-        ? FounderEnvironmentCameraState(mode: .computerFocused)
-        : fixtureEnvironmentCamera(fixture)
+      let camera = fixtureEnvironmentCamera(fixture, mode: proofMode)
       let projection = FounderEnvironmentProjection(
         facility: fixture.atmosphere.facility,
         atmosphere: fixture.atmosphere,
@@ -201,6 +252,12 @@ struct MotionVerificationScreen: View {
         width: monitorPosition.x - proxy.size.width / 2,
         height: monitorPosition.y - proxy.size.height / 2
       )
+      let monitorSize = FounderCommandFocusLayout.monitorSize(
+        viewport: proxy.size,
+        mode: proofMode,
+        accessibilitySize: fixture.accessibilityLarge
+      )
+      let targetsComputerFocus = proofMode.targetsComputerFocus
 
       ZStack {
         FounderEnvironmentRendererView(
@@ -210,11 +267,12 @@ struct MotionVerificationScreen: View {
           increasedContrast: fixture.increasedContrast
         )
         FounderPhysicalMonitorView(
-          focused: proofComputerFocused,
-          width: proofComputerFocused ? proxy.size.width - 16 : min(proxy.size.width * 0.58, 300),
-          height: proofComputerFocused ? min(proxy.size.height * 0.82, 520) : min(proxy.size.height * 0.28, 260),
+          focused: targetsComputerFocus,
+          width: monitorSize.width,
+          height: monitorSize.height,
+          commandViewportSize: proxy.size,
           camera: camera,
-          worldOffset: proofComputerFocused
+          worldOffset: targetsComputerFocus
             ? .zero
             : CGSize(width: monitorOffset.width, height: monitorOffset.height + 42),
           increasedContrast: fixture.increasedContrast,
@@ -226,20 +284,30 @@ struct MotionVerificationScreen: View {
           companyCommandViewport(fixture)
             .allowsHitTesting(false)
         }
+        FounderEnvironmentControlLayer(
+          mode: proofMode,
+          reduceMotion: fixture.forceReduceMotion || systemReduceMotion,
+          onLookAround: {},
+          onFocusComputer: {},
+          onLook: { _, _ in },
+          onCenter: {}
+        )
+        .allowsHitTesting(false)
       }
       .clipped()
       .animation(
         fixture.forceReduceMotion || systemReduceMotion ? nil : .smooth(duration: 0.38),
-        value: proofComputerFocused
+        value: proofMode
       )
     }
-    .frame(height: 620)
+    .frame(height: fixedHeight)
     .environment(\.dynamicTypeSize, fixture.accessibilityLarge ? .accessibility3 : .large)
     .accessibilityLabel("Physical Founder Garage DEBUG fixture. \(fixture.id.rawValue)")
   }
 
   private func fixtureEnvironmentCamera(
-    _ fixture: LivingCompanyFixture
+    _ fixture: LivingCompanyFixture,
+    mode: FounderEnvironmentMode
   ) -> FounderEnvironmentCameraState {
     let active = fixture.agents.filter {
       ![.idle, .resting, .resolved].contains($0.activity)
@@ -252,7 +320,7 @@ struct MotionVerificationScreen: View {
     } else {
       horizontal = 0
     }
-    return FounderEnvironmentCameraState(horizontalLook: horizontal, mode: .freeLook)
+    return FounderEnvironmentCameraState(horizontalLook: horizontal, mode: mode)
   }
 }
 

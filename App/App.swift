@@ -51,6 +51,9 @@ struct SoloUnicornRunApp: App {
 
   #if DEBUG
   private var motionQAFixture: LivingCompanyFixture.ID {
+    if ProcessInfo.processInfo.arguments.contains("--motion-qa-command-focus-proof") {
+      return .planningPhase
+    }
     if ProcessInfo.processInfo.arguments.contains("--motion-qa-sequence")
       || ProcessInfo.processInfo.environment["SOLO_MOTION_QA_SEQUENCE"] == "1" {
       return .planningPhase

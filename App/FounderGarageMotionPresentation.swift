@@ -107,14 +107,16 @@ struct FounderGarageCameraMotion: Equatable, Sendable {
   var computerIsInteractive: Bool
 
   static func derive(mode: FounderEnvironmentMode) -> Self {
-    let freeLook = mode == .freeLook
-    return Self(
-      mode: mode,
-      revealProgress: freeLook ? 1 : 0,
-      showsMonitorHardware: true,
-      showsDeskHardware: true,
-      computerIsInteractive: !freeLook
-    )
+    switch mode {
+    case .computerFocused:
+      return Self(mode: mode, revealProgress: 0, showsMonitorHardware: false, showsDeskHardware: false, computerIsInteractive: true)
+    case .transitioningToComputerFocus:
+      return Self(mode: mode, revealProgress: 0, showsMonitorHardware: true, showsDeskHardware: true, computerIsInteractive: false)
+    case .freeLook:
+      return Self(mode: mode, revealProgress: 1, showsMonitorHardware: true, showsDeskHardware: true, computerIsInteractive: false)
+    case .transitioningToFreeLook:
+      return Self(mode: mode, revealProgress: 1, showsMonitorHardware: true, showsDeskHardware: true, computerIsInteractive: false)
+    }
   }
 }
 
