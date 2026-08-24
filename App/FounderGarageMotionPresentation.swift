@@ -24,6 +24,60 @@ enum FounderGarageStationWorkflow: String, CaseIterable, Equatable, Sendable {
   case resting
 }
 
+enum FounderGarageArtifactState: String, Equatable, Sendable {
+  case none
+  case inboundTask
+  case assembling
+  case returnedForReview
+}
+
+/// Object-level physical presentation derived exclusively from player-visible
+/// lifecycle state. Values are deliberately role-neutral and contain no result
+/// quality, verification, or resolution data.
+struct FounderGarageStationPhysicalPresentation: Equatable, Sendable {
+  var portraitMotionEnabled: Bool
+  var portraitLightIntensity: Double
+  var primaryDisplayIntensity: Double
+  var secondaryDisplayIntensity: Double
+  var coolingActivity: Double
+  var indicatorActivity: Double
+  var artifactState: FounderGarageArtifactState
+  var artifactProgress: Double
+
+  static func derive(
+    activity: LivingAgentActivity,
+    visibleProgress: Double,
+    reduceMotion: Bool,
+    sceneActive: Bool
+  ) -> Self {
+    let active = sceneActive && !reduceMotion
+    let isWorking = activity == .working
+    let isOperating = [.assignmentReceived, .working, .reviewing, .resolving].contains(activity)
+    let artifactState: FounderGarageArtifactState
+    switch activity {
+    case .assignmentReceived:
+      artifactState = .inboundTask
+    case .working:
+      artifactState = .assembling
+    case .workComplete, .awaitingReview:
+      artifactState = .returnedForReview
+    default:
+      artifactState = .none
+    }
+
+    return Self(
+      portraitMotionEnabled: active && [.idle, .working].contains(activity),
+      portraitLightIntensity: isOperating ? 0.78 : activity == .awaitingReview ? 0.58 : 0.28,
+      primaryDisplayIntensity: isOperating ? 0.94 : activity == .idle ? 0.24 : 0.62,
+      secondaryDisplayIntensity: isWorking ? 0.84 : activity == .assignmentReceived ? 0.58 : 0.18,
+      coolingActivity: active && isWorking ? 0.82 : active ? 0.12 : 0,
+      indicatorActivity: activity == .awaitingReview ? 1 : isOperating ? 0.72 : 0.18,
+      artifactState: artifactState,
+      artifactProgress: min(1, max(0, visibleProgress))
+    )
+  }
+}
+
 enum FounderGarageVisibleEvent: Equatable, Sendable {
   case assignment(id: UUID, agentID: String)
   case review(id: UUID, agentID: String)
@@ -53,14 +107,16 @@ struct FounderGarageCameraMotion: Equatable, Sendable {
   var computerIsInteractive: Bool
 
   static func derive(mode: FounderEnvironmentMode) -> Self {
-    let freeLook = mode == .freeLook
-    return Self(
-      mode: mode,
-      revealProgress: freeLook ? 1 : 0,
-      showsMonitorHardware: true,
-      showsDeskHardware: true,
-      computerIsInteractive: !freeLook
-    )
+    switch mode {
+    case .computerFocused:
+      return Self(mode: mode, revealProgress: 0, showsMonitorHardware: false, showsDeskHardware: false, computerIsInteractive: true)
+    case .transitioningToComputerFocus:
+      return Self(mode: mode, revealProgress: 0, showsMonitorHardware: true, showsDeskHardware: true, computerIsInteractive: false)
+    case .freeLook:
+      return Self(mode: mode, revealProgress: 1, showsMonitorHardware: true, showsDeskHardware: true, computerIsInteractive: false)
+    case .transitioningToFreeLook:
+      return Self(mode: mode, revealProgress: 1, showsMonitorHardware: true, showsDeskHardware: true, computerIsInteractive: false)
+    }
   }
 }
 
@@ -103,6 +159,7 @@ struct FounderGarageStationMotion: Equatable, Sendable {
   var needsFounderAttention: Bool
   var continuousMotionEnabled: Bool
   var eventToken: UUID?
+  var physical: FounderGarageStationPhysicalPresentation
 
   static func derive(
     agent: LivingAgentProjection,
@@ -127,7 +184,13 @@ struct FounderGarageStationMotion: Equatable, Sendable {
       safeConditionSignals: visibleConditions,
       needsFounderAttention: agent.needsFounderAttention,
       continuousMotionEnabled: sceneActive && !reduceMotion && agent.activity == .working,
-      eventToken: agent.presentationSequenceID
+      eventToken: agent.presentationSequenceID,
+      physical: .derive(
+        activity: agent.activity,
+        visibleProgress: agent.progress,
+        reduceMotion: reduceMotion,
+        sceneActive: sceneActive
+      )
     )
   }
 

@@ -2,9 +2,25 @@ import SwiftUI
 
 /// Presentation-only ownership for the room surrounding the canonical Founder
 /// Computer. This type deliberately has no reference to saves, RNG, or actions.
-enum FounderEnvironmentMode: Equatable, Sendable {
+enum FounderEnvironmentMode: CaseIterable, Equatable, Sendable {
   case computerFocused
+  case transitioningToComputerFocus
   case freeLook
+  case transitioningToFreeLook
+
+  var isTransitioning: Bool {
+    switch self {
+    case .transitioningToComputerFocus, .transitioningToFreeLook: true
+    case .computerFocused, .freeLook: false
+    }
+  }
+
+  var targetsComputerFocus: Bool {
+    switch self {
+    case .computerFocused, .transitioningToComputerFocus: true
+    case .freeLook, .transitioningToFreeLook: false
+    }
+  }
 }
 
 struct FounderEnvironmentCameraState: Equatable, Sendable {
@@ -19,6 +35,32 @@ struct FounderEnvironmentCameraState: Equatable, Sendable {
   var environmentAllowsCameraGestures: Bool { mode == .freeLook }
   var freeLookDragPolicyActive: Bool { mode == .freeLook }
   var monitorReturnInteractionEnabled: Bool { mode == .freeLook }
+  var lookOutControlAvailable: Bool { mode == .computerFocused }
+  var interactionLocked: Bool { mode.isTransitioning }
+
+  @discardableResult
+  mutating func beginComputerFocusTransition() -> Bool {
+    guard mode == .freeLook else { return false }
+    mode = .transitioningToComputerFocus
+    return true
+  }
+
+  mutating func completeComputerFocusTransition() {
+    guard mode == .transitioningToComputerFocus else { return }
+    mode = .computerFocused
+  }
+
+  @discardableResult
+  mutating func beginFreeLookTransition() -> Bool {
+    guard mode == .computerFocused else { return false }
+    mode = .transitioningToFreeLook
+    return true
+  }
+
+  mutating func completeFreeLookTransition() {
+    guard mode == .transitioningToFreeLook else { return }
+    mode = .freeLook
+  }
 
   mutating func look(horizontal: Double = 0, vertical: Double = 0, reduceMotion: Bool = false) {
     guard mode == .freeLook else { return }
@@ -63,6 +105,7 @@ struct FounderEnvironmentScreen: View {
   @Environment(\.scenePhase) private var scenePhase
   @State private var camera = FounderEnvironmentCameraState()
   @State private var dragStartCamera: FounderEnvironmentCameraState?
+  @State private var transitionID = UUID()
   @AccessibilityFocusState private var environmentIsFocused: Bool
   @AccessibilityFocusState private var computerIsFocused: Bool
 
@@ -76,9 +119,12 @@ struct FounderEnvironmentScreen: View {
           reduceMotion: reduceMotion,
           sceneActive: scenePhase == .active
         )
-        let focused = camera.mode == .computerFocused
-        let monitorWidth = monitorWidth(for: geometry.size, focused: focused)
-        let monitorHeight = monitorHeight(for: geometry.size, focused: focused)
+        let targetsComputerFocus = camera.mode.targetsComputerFocus
+        let monitorSize = FounderCommandFocusLayout.monitorSize(
+          viewport: geometry.size,
+          mode: camera.mode,
+          accessibilitySize: dynamicTypeSize.isAccessibilitySize
+        )
         let layout = FounderEnvironmentLayout(viewportSize: geometry.size)
         let monitorPosition = layout.viewportPosition(for: .founderMonitor, camera: camera, layer: .foreground)
         let monitorOffset = CGSize(
@@ -97,11 +143,12 @@ struct FounderEnvironmentScreen: View {
           .clipped()
 
           FounderPhysicalMonitorView(
-            focused: focused,
-            width: monitorWidth,
-            height: monitorHeight,
+            focused: targetsComputerFocus,
+            width: monitorSize.width,
+            height: monitorSize.height,
+            commandViewportSize: geometry.size,
             camera: camera,
-            worldOffset: focused ? .zero : monitorOffset,
+            worldOffset: targetsComputerFocus ? .zero : monitorOffset,
             increasedContrast: contrast == .increased,
             monitorGlowIntensity: garageMotion.lighting.founderMonitorGlow,
             notificationIntensity: garageMotion.lighting.founderNotificationIntensity,
@@ -123,7 +170,7 @@ struct FounderEnvironmentScreen: View {
 
             Button(action: focusComputer) {
               Color.clear
-                .frame(width: monitorWidth, height: monitorHeight)
+                .frame(width: monitorSize.width, height: monitorSize.height)
                 .contentShape(.rect)
             }
             .buttonStyle(.plain)
@@ -146,6 +193,13 @@ struct FounderEnvironmentScreen: View {
           .accessibilityFocused($environmentIsFocused)
           .frame(width: geometry.size.width, height: geometry.size.height, alignment: .bottom)
           .zIndex(3)
+
+          if camera.interactionLocked {
+            Color.clear
+              .contentShape(.rect)
+              .accessibilityHidden(true)
+              .zIndex(4)
+          }
         }
         .frame(width: geometry.size.width, height: geometry.size.height)
         .animation(reduceMotion ? nil : .smooth(duration: 0.34), value: camera.mode)
@@ -158,7 +212,7 @@ struct FounderEnvironmentScreen: View {
         .accessibilityAction(named: Text("Return to Founder Computer")) { focusComputer() }
         .accessibilityAction(named: Text("Focus Founder Computer")) { focusComputer() }
       }
-      .navigationTitle("SOLO")
+      .toolbar(.hidden, for: .navigationBar)
       .onChange(of: store.stats.trackRecord, initial: true) { _, value in
         progression.observe(trackRecord: value)
       }
@@ -216,37 +270,82 @@ struct FounderEnvironmentScreen: View {
       }
   }
 
-  private func monitorWidth(for size: CGSize, focused: Bool) -> CGFloat {
-    let margin: CGFloat = dynamicTypeSize.isAccessibilitySize ? 4 : 12
-    return focused ? size.width - margin * 2 : min(size.width * 0.58, 300)
-  }
-
-  private func monitorHeight(for size: CGSize, focused: Bool) -> CGFloat {
-    focused ? min(size.height * 0.82, 780) : min(size.height * 0.34, 330)
-  }
-
   private func enterFreeLook() {
-    guard camera.mode != .freeLook else { return }
-    camera.mode = .freeLook
+    guard camera.beginFreeLookTransition() else { return }
     dragStartCamera = nil
-    environmentIsFocused = true
+    beginTransition(completing: .freeLook)
   }
 
   private func focusComputer() {
-    guard camera.mode != .computerFocused else { return }
-    camera.mode = .computerFocused
+    guard camera.beginComputerFocusTransition() else { return }
     dragStartCamera = nil
-    computerIsFocused = true
+    beginTransition(completing: .computerFocused)
   }
 
   private func moveCamera(horizontal: Double, vertical: Double) {
-    if camera.mode != .freeLook { enterFreeLook() }
+    guard camera.mode == .freeLook else { return }
     camera.look(horizontal: horizontal, vertical: vertical, reduceMotion: reduceMotion)
   }
 
   private func centerCamera() {
-    if camera.mode != .freeLook { enterFreeLook() }
+    guard camera.mode == .freeLook else { return }
     camera.center()
+  }
+
+  private func beginTransition(completing destination: FounderEnvironmentMode) {
+    let id = UUID()
+    transitionID = id
+    Task { @MainActor in
+      if !reduceMotion {
+        try? await Task.sleep(for: .milliseconds(520))
+      }
+      guard transitionID == id else { return }
+      switch destination {
+      case .computerFocused:
+        camera.completeComputerFocusTransition()
+        computerIsFocused = true
+      case .freeLook:
+        camera.completeFreeLookTransition()
+        environmentIsFocused = true
+      case .transitioningToComputerFocus, .transitioningToFreeLook:
+        break
+      }
+    }
+  }
+}
+
+/// Pure geometry policy for one physical monitor moving between observation
+/// and an edge-to-edge command surface. It owns no navigation or game state.
+struct FounderCommandFocusLayout: Equatable, Sendable {
+  static func monitorSize(
+    viewport: CGSize,
+    mode: FounderEnvironmentMode,
+    accessibilitySize: Bool
+  ) -> CGSize {
+    if mode.targetsComputerFocus {
+      return CGSize(width: viewport.width + 6, height: viewport.height + 6)
+    }
+    let width = min(viewport.width * (accessibilitySize ? 0.64 : 0.58), accessibilitySize ? 320 : 300)
+    return CGSize(width: width, height: min(viewport.height * 0.34, 330))
+  }
+
+  static func commandCoverage(viewport: CGSize, mode: FounderEnvironmentMode) -> Double {
+    let size = monitorSize(viewport: viewport, mode: mode, accessibilitySize: false)
+    guard viewport.width > 0, viewport.height > 0 else { return 0 }
+    return min(1, (size.width * size.height) / (viewport.width * viewport.height))
+  }
+
+  static func contentScale(
+    commandViewport: CGSize,
+    monitorSize: CGSize,
+    focused: Bool,
+    screenInset: CGFloat
+  ) -> CGFloat {
+    guard !focused, commandViewport.width > 0, commandViewport.height > 0 else { return 1 }
+    return max(
+      max(0, monitorSize.width - screenInset * 2) / commandViewport.width,
+      max(0, monitorSize.height - screenInset * 2) / commandViewport.height
+    )
   }
 }
 
@@ -285,8 +384,8 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       .storage: CGPoint(x: 225, y: 320),
       .auroraStation: CGPoint(x: 325, y: 300),
       .verificationArray: CGPoint(x: 188, y: 505),
-      .stacksStation: CGPoint(x: 680, y: 220),
-      .developmentRig: CGPoint(x: 820, y: 455),
+      .stacksStation: CGPoint(x: 540, y: 220),
+      .developmentRig: CGPoint(x: 760, y: 455),
       .brioStation: CGPoint(x: 1_035, y: 300),
       .campaignStudio: CGPoint(x: 1_185, y: 485),
       .recoveryCorner: CGPoint(x: 1_285, y: 565),
@@ -395,6 +494,7 @@ struct FounderEnvironmentRendererView: View {
       practicalLighting(size: size, layout: layout)
       garageArchitecture(size: size, layout: layout)
       panoramicStations(size: size, layout: layout)
+      taskArtifactLayer(size: size, layout: layout)
       panoramicInfrastructure(size: size, layout: layout)
       founderDesk(size: size, layout: layout)
       ambientEquipmentLayer(size: size, layout: layout)
@@ -532,65 +632,77 @@ struct FounderEnvironmentRendererView: View {
     .allowsHitTesting(false)
   }
 
-  private enum EnvironmentStationKind { case research, engineering, campaign }
-
-  private func stationView(agentID: String, role: String, tone: Color, kind: EnvironmentStationKind) -> some View {
+  private func stationView(agentID: String, role: String, tone: Color, kind: FounderGarageStationKind) -> some View {
     let agent = projection.agents.first { $0.agentID == agentID }
     let stationMotion = motion.station(for: agentID)
-    return ZStack(alignment: .bottom) {
-      Circle()
-        .fill(tone.opacity(0.08 + (stationMotion?.localLightIntensity ?? 0.1) * 0.14))
-        .frame(width: 230, height: 230)
-        .blur(radius: 18)
-        .offset(y: -42)
-      stationBackboard(kind: kind, tone: tone)
-      if let stationMotion {
-        stationWorkflowOverlay(stationMotion, tone: tone)
-          .offset(y: -105)
-      }
-      if let portrait = AgentPortraitAsset.name(for: agentID) {
-        Image(portrait)
-          .resizable()
-          .scaledToFill()
-          .frame(width: 92, height: 116)
-          .clipShape(.rect(cornerRadius: 18))
-          .overlay { RoundedRectangle(cornerRadius: 18).stroke(tone.opacity(0.86), lineWidth: 3) }
-          .shadow(color: tone.opacity(0.38), radius: 10)
-          .offset(y: -60)
-      }
-      RoundedRectangle(cornerRadius: 12)
-        .fill(.black.opacity(0.88))
-        .frame(width: 190, height: 72)
-        .overlay(alignment: .top) {
-          VStack(spacing: 4) {
-            Text(role).font(.caption2.weight(.black)).tracking(0.8).foregroundStyle(tone)
-            HStack(spacing: 5) {
-              Circle()
-                .fill(tone)
-                .frame(width: 7, height: 7)
-                .phaseAnimator([0.65, 1.0, 0.65], trigger: stationMotion?.eventToken) { content, phase in
-                  content
-                    .opacity(stationMotion?.continuousMotionEnabled == true ? phase : 0.82)
-                    .scaleEffect(stationMotion?.needsFounderAttention == true ? phase : 1)
-                } animation: { _ in .smooth(duration: 0.28) }
-              Text(agent?.activity.label ?? "Ready").font(.caption2.weight(.semibold)).foregroundStyle(.white.opacity(0.82))
-            }
-          }.padding(.top, 9)
+    return FounderGaragePhysicalStationView(
+      agent: agent,
+      motion: stationMotion,
+      role: role,
+      tone: tone,
+      kind: kind,
+      increasedContrast: increasedContrast
+    )
+  }
+
+  private func taskArtifactLayer(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
+    let founder = layout.viewportPosition(for: .founderMonitor, camera: camera, layer: .foreground)
+    return ZStack {
+      ForEach(motion.stations, id: \.agentID) { station in
+        if station.physical.artifactState != .none {
+          let destination = artifactDestination(for: station.agentID, layout: layout)
+          let returning = station.physical.artifactState == .returnedForReview
+          let position = returning ? founder : destination
+          Path { path in
+            path.move(to: founder)
+            path.addCurve(
+              to: destination,
+              control1: CGPoint(x: founder.x, y: founder.y - 72),
+              control2: CGPoint(x: destination.x, y: destination.y + 72)
+            )
+          }
+          .trim(from: 0, to: station.physical.artifactState == .assembling ? 0.72 : 1)
+          .stroke(
+            stationTone(for: station.agentID).opacity(0.28),
+            style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [5, 6])
+          )
+
+          FounderGarageTaskArtifactView(
+            tone: stationTone(for: station.agentID),
+            state: station.physical.artifactState,
+            progress: station.physical.artifactProgress,
+            reduceMotion: !motion.ambient.continuousMotionEnabled,
+            eventToken: station.eventToken
+          )
+          .position(position)
+          .animation(.smooth(duration: 0.62), value: station.physical.artifactState)
         }
-      stationConsole(kind: kind, tone: tone)
-        .opacity(0.46 + (stationMotion?.activityIntensity ?? 0.1) * 0.54)
-        .offset(y: 18)
-      if stationMotion?.needsFounderAttention == true {
-        Image(systemName: "doc.badge.clock")
-          .font(.caption.weight(.black))
-          .foregroundStyle(tone)
-          .padding(7)
-          .background(.black.opacity(0.88), in: Circle())
-          .offset(x: 88, y: -72)
-          .accessibilityHidden(true)
       }
     }
-    .frame(width: 220, height: 238)
+    .frame(width: size.width, height: size.height)
+    .allowsHitTesting(false)
+  }
+
+  private func artifactDestination(
+    for agentID: String,
+    layout: FounderEnvironmentLayout
+  ) -> CGPoint {
+    let anchor: FounderEnvironmentWorldAnchor
+    switch agentID {
+    case "aurora": anchor = .auroraStation
+    case "brio": anchor = .brioStation
+    default: anchor = .stacksStation
+    }
+    let station = layout.viewportPosition(for: anchor, camera: camera, layer: .middleGround)
+    return CGPoint(x: station.x, y: station.y + 75)
+  }
+
+  private func stationTone(for agentID: String) -> Color {
+    switch agentID {
+    case "aurora": .cyan
+    case "brio": .pink
+    default: .orange
+    }
   }
 
   @ViewBuilder
@@ -660,7 +772,7 @@ struct FounderEnvironmentRendererView: View {
   }
 
   @ViewBuilder
-  private func stationBackboard(kind: EnvironmentStationKind, tone: Color) -> some View {
+  private func stationBackboard(kind: FounderGarageStationKind, tone: Color) -> some View {
     switch kind {
     case .research:
       HStack(spacing: 8) {
@@ -677,7 +789,7 @@ struct FounderEnvironmentRendererView: View {
     }
   }
 
-  private func stationConsole(kind: EnvironmentStationKind, tone: Color) -> some View {
+  private func stationConsole(kind: FounderGarageStationKind, tone: Color) -> some View {
     HStack(spacing: 6) {
       ForEach(0..<5, id: \.self) { index in
         RoundedRectangle(cornerRadius: kind == .research ? 8 : 3)
@@ -923,6 +1035,25 @@ struct FounderEnvironmentRendererView: View {
         .position(layout.viewportPosition(worldPoint: point, camera: camera, layer: .background))
       }
 
+      stationLightSpill(
+        agentID: "aurora",
+        tone: .cyan,
+        worldPoint: CGPoint(x: 325, y: 315),
+        layout: layout
+      )
+      stationLightSpill(
+        agentID: "stacks",
+        tone: .orange,
+        worldPoint: CGPoint(x: 680, y: 300),
+        layout: layout
+      )
+      stationLightSpill(
+        agentID: "brio",
+        tone: .pink,
+        worldPoint: CGPoint(x: 1_035, y: 315),
+        layout: layout
+      )
+
       if motion.lighting.warningIntensity > 0 {
         Capsule()
           .fill(.orange.opacity(0.35 + motion.lighting.warningIntensity * 0.35))
@@ -939,6 +1070,23 @@ struct FounderEnvironmentRendererView: View {
     .allowsHitTesting(false)
   }
 
+  private func stationLightSpill(
+    agentID: String,
+    tone: Color,
+    worldPoint: CGPoint,
+    layout: FounderEnvironmentLayout
+  ) -> some View {
+    let intensity = motion.station(for: agentID)?.localLightIntensity ?? 0.08
+    return RadialGradient(
+      colors: [tone.opacity(0.06 + intensity * 0.16), tone.opacity(intensity * 0.04), .clear],
+      center: .center,
+      startRadius: 8,
+      endRadius: 145
+    )
+    .frame(width: 290, height: 230)
+    .position(layout.viewportPosition(worldPoint: worldPoint, camera: camera, layer: .middleGround))
+  }
+
   private func ambientEquipmentLayer(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
     ZStack {
       ambientFan(
@@ -953,6 +1101,24 @@ struct FounderEnvironmentRendererView: View {
           layer: .middleGround
         )
       )
+
+      networkHardware
+        .position(
+          layout.viewportPosition(
+            worldPoint: CGPoint(x: 540, y: 365),
+            camera: camera,
+            layer: .middleGround
+          )
+        )
+
+      powerStrip
+        .position(
+          layout.viewportPosition(
+            worldPoint: CGPoint(x: 690, y: 575),
+            camera: camera,
+            layer: .foreground
+          )
+        )
 
       ambientFan(
         station: motion.station(for: "stacks"),
@@ -982,6 +1148,37 @@ struct FounderEnvironmentRendererView: View {
       )
     }
     .allowsHitTesting(false)
+  }
+
+  private var networkHardware: some View {
+    let active = motion.ambient.continuousMotionEnabled
+    return ZStack {
+      RoundedRectangle(cornerRadius: 5).fill(.black.opacity(0.92)).frame(width: 74, height: 32)
+      HStack(spacing: 5) {
+        ForEach(0..<7, id: \.self) { index in
+          Circle()
+            .fill(index.isMultiple(of: 3) ? Color.green : Color.cyan)
+            .frame(width: 4, height: 4)
+            .phaseAnimator(active ? [0.25, 0.95, 0.42] : [0.35]) { content, opacity in
+              content.opacity(index.isMultiple(of: 2) ? opacity : 0.62)
+            } animation: { _ in .easeInOut(duration: 1.15) }
+        }
+      }
+      Capsule().fill(.white.opacity(0.14)).frame(width: 48, height: 2).offset(y: 10)
+    }
+    .overlay { RoundedRectangle(cornerRadius: 5).stroke(.white.opacity(0.18), lineWidth: 1) }
+  }
+
+  private var powerStrip: some View {
+    HStack(spacing: 8) {
+      ForEach(0..<4, id: \.self) { index in
+        Circle().stroke(.white.opacity(0.28), lineWidth: 1).frame(width: 11, height: 11)
+        if index < 3 { Circle().fill(.green.opacity(0.66)).frame(width: 3, height: 3) }
+      }
+    }
+    .padding(.horizontal, 9)
+    .frame(height: 22)
+    .background(.black.opacity(0.88), in: Capsule())
   }
 
   private func ambientFan(
@@ -1047,6 +1244,7 @@ struct FounderPhysicalMonitorView<Content: View>: View {
   var focused: Bool
   var width: CGFloat
   var height: CGFloat
+  var commandViewportSize: CGSize
   var camera: FounderEnvironmentCameraState
   var worldOffset: CGSize
   var increasedContrast: Bool
@@ -1057,25 +1255,73 @@ struct FounderPhysicalMonitorView<Content: View>: View {
   @ViewBuilder var content: Content
 
   var body: some View {
+    let focusedCornerRadius: CGFloat = focused ? 0 : 13
+    let screenInset: CGFloat = focused ? 0 : 7
+    let contentScale = FounderCommandFocusLayout.contentScale(
+      commandViewport: commandViewportSize,
+      monitorSize: CGSize(width: width, height: height),
+      focused: focused,
+      screenInset: screenInset
+    )
     ZStack {
-      RoundedRectangle(cornerRadius: focused ? 18 : 12)
-        .fill(.black)
-        .overlay { RoundedRectangle(cornerRadius: focused ? 18 : 12).stroke(.white.opacity(increasedContrast ? 0.94 : 0.38), lineWidth: focused ? 3 : 2) }
+      RoundedRectangle(cornerRadius: focusedCornerRadius)
+        .fill(Color(red: 0.025, green: 0.028, blue: 0.032))
+        .offset(x: focused ? 3 : 5, y: focused ? 5 : 7)
+        .shadow(color: .black.opacity(0.78), radius: focused ? 14 : 8, y: 8)
+        .allowsHitTesting(false)
+      RoundedRectangle(cornerRadius: focusedCornerRadius)
+        .fill(LinearGradient(
+          colors: [Color(red: 0.12, green: 0.13, blue: 0.14), .black],
+          startPoint: .topLeading,
+          endPoint: .bottomTrailing
+        ))
+        .overlay { RoundedRectangle(cornerRadius: focusedCornerRadius).stroke(.white.opacity(focused ? 0.08 : increasedContrast ? 0.94 : 0.38), lineWidth: focused ? 1 : 2) }
         .shadow(
           color: .cyan.opacity((focused ? 0.20 : 0.08) * monitorGlowIntensity),
           radius: focused ? 18 : 8
         )
       content
-        .clipShape(.rect(cornerRadius: focused ? 12 : 8))
-        .padding(focused ? 9 : 7)
+        .frame(width: commandViewportSize.width, height: commandViewportSize.height, alignment: .topLeading)
+        .scaleEffect(contentScale, anchor: .topLeading)
+        .frame(
+          width: max(0, width - screenInset * 2),
+          height: max(0, height - screenInset * 2),
+          alignment: .topLeading
+        )
+        .clipShape(.rect(cornerRadius: focused ? 0 : 8))
+        .padding(screenInset)
       LinearGradient(colors: [.white.opacity(0.11), .clear], startPoint: .topLeading, endPoint: .center)
-        .clipShape(.rect(cornerRadius: focused ? 12 : 8))
-        .padding(focused ? 9 : 7)
+        .clipShape(.rect(cornerRadius: focused ? 0 : 8))
+        .padding(screenInset)
         .allowsHitTesting(false)
+      Rectangle()
+        .fill(
+          LinearGradient(
+            colors: [.clear, .white.opacity(0.055), .clear],
+            startPoint: .top,
+            endPoint: .bottom
+          )
+        )
+        .frame(height: max(18, height * 0.11))
+        .phaseAnimator(reduceMotion ? [0.0] : [-0.38, 0.38]) { content, phase in
+          content.offset(y: height * phase)
+        } animation: { _ in .linear(duration: 4.8) }
+        .clipShape(.rect(cornerRadius: focused ? 0 : 8))
+        .padding(screenInset)
+        .allowsHitTesting(false)
+      if !focused {
+        HStack(spacing: 4) {
+          ForEach(0..<5, id: \.self) { _ in
+            Capsule().fill(.white.opacity(0.16)).frame(width: 5, height: 2)
+          }
+        }
+        .position(x: width / 2, y: height - 4)
+        .allowsHitTesting(false)
+      }
       Circle()
         .fill(notificationIntensity > 0 ? Color.orange : Color.white.opacity(0.24))
         .frame(width: 7, height: 7)
-        .position(x: width - 18, y: height - 12)
+        .position(x: width - (focused ? 10 : 18), y: height - (focused ? 10 : 12))
         .phaseAnimator([0.72, 1.0, 0.72], trigger: eventToken) { content, phase in
           content
             .opacity(reduceMotion ? max(0.45, notificationIntensity) : notificationIntensity * phase)
@@ -1087,7 +1333,14 @@ struct FounderPhysicalMonitorView<Content: View>: View {
     }
     .frame(width: width, height: height)
     .scaleEffect(focused ? 1 : 0.98)
-    .offset(x: worldOffset.width, y: focused ? -6 : worldOffset.height)
+    .offset(x: worldOffset.width, y: focused ? 0 : worldOffset.height)
+    .overlay(alignment: .trailing) {
+      RoundedRectangle(cornerRadius: 2)
+        .fill(.black.opacity(0.88))
+        .frame(width: focused ? 1 : 5, height: height * 0.68)
+        .offset(x: focused ? 0 : 4)
+        .allowsHitTesting(false)
+    }
   }
 }
 
@@ -1107,19 +1360,28 @@ struct FounderEnvironmentControlLayer: View {
         Button {
           onLookAround()
         } label: {
-          if dynamicTypeSize.isAccessibilitySize {
-            Image(systemName: "binoculars.fill")
-              .frame(width: 44, height: 44)
-          } else {
-            Label("Look Around", systemImage: "binoculars.fill")
-          }
+          Label("LOOK OUT", systemImage: "binoculars.fill")
+            .font(.caption2.weight(.black))
+            .padding(.horizontal, dynamicTypeSize.isAccessibilitySize ? 8 : 12)
+            .frame(minWidth: 44, minHeight: 44)
+            .background(.black.opacity(0.78), in: Capsule())
+            .overlay { Capsule().stroke(.white.opacity(0.30), lineWidth: 1) }
         }
-          .buttonStyle(.borderedProminent)
-          .tint(.black.opacity(0.72))
-          .accessibilityLabel("Look Around")
-          .accessibilityHint("Recedes the monitor and enables room camera controls.")
-          .position(x: proxy.size.width - (dynamicTypeSize.isAccessibilitySize ? 30 : 82), y: 25)
-      } else {
+        .buttonStyle(.plain)
+        .foregroundStyle(.white)
+        .accessibilityLabel("Look Out")
+        .accessibilityHint("Pulls away from Company Command to observe the Founder Garage.")
+        .position(x: proxy.size.width / 2, y: 24)
+      } else if mode == .freeLook {
+        Text("FOUNDER GARAGE · FREE LOOK")
+          .font(.caption2.monospaced().weight(.black))
+          .foregroundStyle(.white.opacity(0.82))
+          .padding(.horizontal, 10)
+          .frame(height: 28)
+          .background(.black.opacity(0.62), in: Capsule())
+          .position(x: 112, y: 20)
+          .accessibilityAddTraits(.isHeader)
+
         HStack(spacing: 8) {
           Button("Look Left", systemImage: "chevron.left") { onLook(-1, 0) }.labelStyle(.iconOnly)
           Button("Center", systemImage: "viewfinder") { onCenter() }.labelStyle(.iconOnly)

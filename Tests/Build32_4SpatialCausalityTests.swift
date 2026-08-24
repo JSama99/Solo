@@ -681,6 +681,138 @@ final class Build32_5FounderEnvironmentTests: XCTestCase {
     XCTAssertTrue(camera.computerAllowsHitTesting)
   }
 
+  func testFreeLookBeginsAndCompletesComputerFocusTransition() {
+    var camera = FounderEnvironmentCameraState(horizontalLook: 0.72, verticalLook: -0.18, mode: .freeLook)
+    XCTAssertTrue(camera.beginComputerFocusTransition())
+    XCTAssertEqual(camera.mode, .transitioningToComputerFocus)
+    XCTAssertTrue(camera.interactionLocked)
+    camera.completeComputerFocusTransition()
+    XCTAssertEqual(camera.mode, .computerFocused)
+    XCTAssertEqual(camera.horizontalLook, 0.72)
+    XCTAssertEqual(camera.verticalLook, -0.18)
+  }
+
+  func testComputerFocusBeginsAndCompletesFreeLookTransition() {
+    var camera = FounderEnvironmentCameraState()
+    XCTAssertTrue(camera.beginFreeLookTransition())
+    XCTAssertEqual(camera.mode, .transitioningToFreeLook)
+    XCTAssertTrue(camera.interactionLocked)
+    camera.completeFreeLookTransition()
+    XCTAssertEqual(camera.mode, .freeLook)
+  }
+
+  func testTransitionStatesRejectConflictingActivation() {
+    var camera = FounderEnvironmentCameraState(mode: .freeLook)
+    XCTAssertTrue(camera.beginComputerFocusTransition())
+    XCTAssertFalse(camera.beginComputerFocusTransition())
+    XCTAssertFalse(camera.beginFreeLookTransition())
+    XCTAssertFalse(camera.computerAllowsHitTesting)
+    XCTAssertFalse(camera.environmentAllowsCameraGestures)
+    XCTAssertFalse(camera.monitorReturnInteractionEnabled)
+  }
+
+  func testLookOutIsAvailableOnlyInStableComputerFocus() {
+    for mode in FounderEnvironmentMode.allCases {
+      let camera = FounderEnvironmentCameraState(mode: mode)
+      XCTAssertEqual(camera.lookOutControlAvailable, mode == .computerFocused)
+    }
+  }
+
+  func testComputerHitTestingExistsOnlyInStableComputerFocus() {
+    for mode in FounderEnvironmentMode.allCases {
+      let camera = FounderEnvironmentCameraState(mode: mode)
+      XCTAssertEqual(camera.computerAllowsHitTesting, mode == .computerFocused)
+    }
+  }
+
+  func testCameraGesturesExistOnlyInStableFreeLook() {
+    for mode in FounderEnvironmentMode.allCases {
+      let camera = FounderEnvironmentCameraState(mode: mode)
+      XCTAssertEqual(camera.environmentAllowsCameraGestures, mode == .freeLook)
+    }
+  }
+
+  func testCommandFocusFillsUsableViewport() {
+    let viewport = CGSize(width: 402, height: 720)
+    let size = FounderCommandFocusLayout.monitorSize(viewport: viewport, mode: .computerFocused, accessibilitySize: false)
+    XCTAssertGreaterThanOrEqual(size.width, viewport.width)
+    XCTAssertGreaterThanOrEqual(size.height, viewport.height)
+    XCTAssertGreaterThanOrEqual(FounderCommandFocusLayout.commandCoverage(viewport: viewport, mode: .computerFocused), 0.95)
+  }
+
+  func testFreeLookKeepsMonitorAsPhysicalRoomObject() {
+    let viewport = CGSize(width: 402, height: 720)
+    let size = FounderCommandFocusLayout.monitorSize(viewport: viewport, mode: .freeLook, accessibilitySize: false)
+    XCTAssertLessThan(size.width, viewport.width * 0.7)
+    XCTAssertLessThan(size.height, viewport.height * 0.5)
+  }
+
+  func testPhysicalMonitorKeepsOneStableCommandLayoutAcrossFocusModes() {
+    let viewport = CGSize(width: 402, height: 720)
+    let focusedSize = FounderCommandFocusLayout.monitorSize(viewport: viewport, mode: .computerFocused, accessibilitySize: false)
+    let freeLookSize = FounderCommandFocusLayout.monitorSize(viewport: viewport, mode: .freeLook, accessibilitySize: false)
+    XCTAssertEqual(
+      FounderCommandFocusLayout.contentScale(commandViewport: viewport, monitorSize: focusedSize, focused: true, screenInset: 0),
+      1
+    )
+    XCTAssertLessThan(
+      FounderCommandFocusLayout.contentScale(commandViewport: viewport, monitorSize: freeLookSize, focused: false, screenInset: 7),
+      0.6
+    )
+  }
+
+  func testReduceMotionUsesIdenticalFocusEndpoints() {
+    var standard = FounderEnvironmentCameraState(mode: .freeLook)
+    var reduced = FounderEnvironmentCameraState(mode: .freeLook)
+    XCTAssertTrue(standard.beginComputerFocusTransition())
+    XCTAssertTrue(reduced.beginComputerFocusTransition())
+    standard.completeComputerFocusTransition()
+    reduced.completeComputerFocusTransition()
+    XCTAssertEqual(standard, reduced)
+    XCTAssertEqual(standard.mode, .computerFocused)
+  }
+
+  func testCameraModesContainOnlySingleScreenPresentationPhases() {
+    XCTAssertEqual(
+      Set(FounderEnvironmentMode.allCases),
+      [.freeLook, .transitioningToComputerFocus, .computerFocused, .transitioningToFreeLook]
+    )
+  }
+
+  func testStacksObservationIsReadableBesideFounderMonitor() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 720))
+    let camera = FounderEnvironmentCameraState(mode: .freeLook)
+    let stacks = layout.viewportPosition(for: .stacksStation, camera: camera, layer: .middleGround)
+    let monitor = layout.viewportPosition(for: .founderMonitor, camera: camera, layer: .foreground)
+    XCTAssertTrue(layout.zoneIsVisible(.stacksStation, camera: camera))
+    XCTAssertLessThan(stacks.x, monitor.x - 90)
+  }
+
+  func testAgentLifecyclePresentationDoesNotResetAcrossAllCameraPhases() throws {
+    let agent = livingAgent(id: "stacks", role: .engineering, activity: .working)
+    let baseline = try XCTUnwrap(livingMotion(agents: [agent], mode: .freeLook).station(for: "stacks"))
+    for mode in FounderEnvironmentMode.allCases {
+      let station = try XCTUnwrap(livingMotion(agents: [agent], mode: mode).station(for: "stacks"))
+      XCTAssertEqual(station, baseline)
+    }
+  }
+
+  func testHiddenTruthPresentationIsInvariantAcrossFocusPhases() throws {
+    let agent = livingAgent(
+      id: "aurora",
+      role: .research,
+      activity: .working,
+      conditions: [.verified, .drifting, .overclaimed, .evidenceIncomplete],
+      revealStep: 4
+    )
+    let baseline = try XCTUnwrap(livingMotion(agents: [agent], mode: .freeLook).station(for: "aurora"))
+    for mode in FounderEnvironmentMode.allCases {
+      let station = try XCTUnwrap(livingMotion(agents: [agent], mode: mode).station(for: "aurora"))
+      XCTAssertEqual(station, baseline)
+      XCTAssertTrue(station.safeConditionSignals.isEmpty)
+    }
+  }
+
   func testCameraMovementIsBoundedAndPresentationOnly() {
     var camera = FounderEnvironmentCameraState(mode: .freeLook)
     camera.look(horizontal: 9, vertical: 9)
@@ -991,6 +1123,90 @@ final class Build32_5FounderEnvironmentTests: XCTestCase {
   func testLivingGarageProjectionIsDeterministicForIdenticalVisibleInputs() {
     let agents = [livingAgent(id: "aurora", role: .research, activity: .assignmentReceived)]
     XCTAssertEqual(livingMotion(agents: agents), livingMotion(agents: agents))
+  }
+
+  func testPhysicalStationMapsVisibleLifecycleToNeutralArtifactFlow() throws {
+    let assignment = try XCTUnwrap(livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .assignmentReceived)
+    ]).station(for: "aurora"))
+    let working = try XCTUnwrap(livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .working)
+    ]).station(for: "aurora"))
+    let returned = try XCTUnwrap(livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .awaitingReview)
+    ]).station(for: "aurora"))
+
+    XCTAssertEqual(assignment.physical.artifactState, .inboundTask)
+    XCTAssertEqual(working.physical.artifactState, .assembling)
+    XCTAssertEqual(returned.physical.artifactState, .returnedForReview)
+  }
+
+  func testIdlePhysicalStationRetainsLifeWithoutClaimingWork() throws {
+    let station = try XCTUnwrap(livingMotion(agents: [
+      livingAgent(id: "stacks", role: .engineering, activity: .idle)
+    ]).station(for: "stacks"))
+    XCTAssertEqual(station.physical.artifactState, .none)
+    XCTAssertLessThan(station.physical.primaryDisplayIntensity, 0.5)
+    XCTAssertLessThan(station.physical.secondaryDisplayIntensity, 0.3)
+    XCTAssertLessThan(station.physical.indicatorActivity, 0.3)
+  }
+
+  func testWorkingPhysicalStationsOperateIndependently() throws {
+    let motion = livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .working),
+      livingAgent(id: "stacks", role: .engineering, activity: .idle),
+      livingAgent(id: "brio", role: .marketing, activity: .awaitingReview)
+    ])
+    let aurora = try XCTUnwrap(motion.station(for: "aurora"))
+    let stacks = try XCTUnwrap(motion.station(for: "stacks"))
+    let brio = try XCTUnwrap(motion.station(for: "brio"))
+    XCTAssertGreaterThan(aurora.physical.coolingActivity, stacks.physical.coolingActivity)
+    XCTAssertEqual(aurora.physical.artifactState, .assembling)
+    XCTAssertEqual(stacks.physical.artifactState, .none)
+    XCTAssertEqual(brio.physical.artifactState, .returnedForReview)
+  }
+
+  func testReduceMotionStopsPortraitCoolingAndArtifactFlourishInputs() throws {
+    let station = try XCTUnwrap(livingMotion(
+      agents: [livingAgent(id: "stacks", role: .engineering, activity: .working)],
+      reduceMotion: true
+    ).station(for: "stacks"))
+    XCTAssertFalse(station.physical.portraitMotionEnabled)
+    XCTAssertEqual(station.physical.coolingActivity, 0)
+    XCTAssertEqual(station.physical.artifactState, .assembling)
+    XCTAssertGreaterThan(station.physical.primaryDisplayIntensity, 0.8)
+  }
+
+  func testBackgroundingStopsPhysicalPresenceButPreservesVisibleState() throws {
+    let station = try XCTUnwrap(livingMotion(
+      agents: [livingAgent(id: "brio", role: .marketing, activity: .working)],
+      sceneActive: false
+    ).station(for: "brio"))
+    XCTAssertFalse(station.physical.portraitMotionEnabled)
+    XCTAssertEqual(station.physical.coolingActivity, 0)
+    XCTAssertEqual(station.physical.artifactState, .assembling)
+  }
+
+  func testHiddenConditionsCannotAlterPreReviewPhysicalPresentation() throws {
+    let neutral = livingAgent(id: "aurora", role: .research, activity: .working)
+    let hidden = livingAgent(
+      id: "aurora",
+      role: .research,
+      activity: .working,
+      conditions: [.verified, .drifting, .overclaimed, .evidenceIncomplete],
+      revealStep: 4
+    )
+    let neutralStation = try XCTUnwrap(livingMotion(agents: [neutral]).station(for: "aurora"))
+    let hiddenStation = try XCTUnwrap(livingMotion(agents: [hidden]).station(for: "aurora"))
+    XCTAssertEqual(neutralStation.physical, hiddenStation.physical)
+    XCTAssertEqual(hiddenStation.safeConditionSignals, [])
+  }
+
+  func testPhysicalPresentationDoesNotDependOnCameraMode() throws {
+    let agent = livingAgent(id: "brio", role: .marketing, activity: .working)
+    let focused = try XCTUnwrap(livingMotion(agents: [agent], mode: .computerFocused).station(for: "brio"))
+    let freeLook = try XCTUnwrap(livingMotion(agents: [agent], mode: .freeLook).station(for: "brio"))
+    XCTAssertEqual(focused.physical, freeLook.physical)
   }
 
   private func livingMotion(
