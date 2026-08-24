@@ -794,4 +794,68 @@ final class Build32_5FounderEnvironmentTests: XCTestCase {
     XCTAssertTrue(projection.agentAccessibilitySummary.contains("Working"))
     XCTAssertFalse(projection.agentAccessibilitySummary.contains("Campaign"))
   }
+
+  func testPanoramicCenterExposesFounderDeskMonitorAndStacks() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    let camera = FounderEnvironmentCameraState(mode: .freeLook)
+    XCTAssertTrue(layout.zoneIsVisible(.founderDesk, camera: camera))
+    XCTAssertTrue(layout.zoneIsVisible(.founderMonitor, camera: camera))
+    XCTAssertTrue(layout.zoneIsVisible(.stacksStation, camera: camera))
+  }
+
+  func testPanoramicFullLeftExposesAuroraStorageAndEntrance() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    let camera = FounderEnvironmentCameraState(horizontalLook: -1, mode: .freeLook)
+    XCTAssertTrue(layout.zoneIsVisible(.auroraStation, camera: camera))
+    XCTAssertTrue(layout.zoneIsVisible(.storage, camera: camera))
+    XCTAssertTrue(layout.zoneIsVisible(.garageEntrance, camera: camera, margin: 150))
+  }
+
+  func testPanoramicFullRightExposesBrioCampaignAndRecovery() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    let camera = FounderEnvironmentCameraState(horizontalLook: 1, mode: .freeLook)
+    XCTAssertTrue(layout.zoneIsVisible(.brioStation, camera: camera))
+    XCTAssertTrue(layout.zoneIsVisible(.campaignStudio, camera: camera))
+    XCTAssertTrue(layout.zoneIsVisible(.recoveryCorner, camera: camera, margin: 150))
+  }
+
+  func testPanoramicCameraEndpointsProduceDifferentVisibleWorldBounds() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    let left = layout.visibleWorldBounds(camera: FounderEnvironmentCameraState(horizontalLook: -1, mode: .freeLook))
+    let center = layout.visibleWorldBounds(camera: FounderEnvironmentCameraState(mode: .freeLook))
+    let right = layout.visibleWorldBounds(camera: FounderEnvironmentCameraState(horizontalLook: 1, mode: .freeLook))
+    XCTAssertLessThan(left.midX, center.midX)
+    XCTAssertLessThan(center.midX, right.midX)
+    XCTAssertGreaterThan(right.minX - left.minX, 600)
+  }
+
+  func testPanoramicWorldProjectionClampsOutOfRangeCameraInput() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    let excessive = FounderEnvironmentCameraState(horizontalLook: 80, verticalLook: -50, mode: .freeLook)
+    let clamped = layout.clampedCamera(excessive)
+    XCTAssertEqual(clamped.horizontalLook, 1)
+    XCTAssertEqual(clamped.verticalLook, -0.30)
+  }
+
+  func testPanoramicWorldAnchorsRemainStableAcrossCameraPositions() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    let anchors = layout.anchors
+    _ = layout.viewportPosition(for: .auroraStation, camera: FounderEnvironmentCameraState(horizontalLook: -1, mode: .freeLook), layer: .middleGround)
+    _ = layout.viewportPosition(for: .brioStation, camera: FounderEnvironmentCameraState(horizontalLook: 1, mode: .freeLook), layer: .middleGround)
+    XCTAssertEqual(layout.anchors, anchors)
+    XCTAssertEqual(Set(layout.anchors.keys), Set(FounderEnvironmentWorldAnchor.allCases))
+  }
+
+  func testAllInfrastructureUsesDeterministicPanoramicAnchors() {
+    let expected: [FacilityUpgradeID: FounderEnvironmentWorldAnchor] = [
+      .developmentRig: .developmentRig,
+      .verificationArray: .verificationArray,
+      .campaignStudio: .campaignStudio,
+      .recoveryCorner: .recoveryCorner,
+      .founderCommandDesk: .founderCommandDesk
+    ]
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    XCTAssertEqual(expected.count, FacilityUpgradeID.allCases.count)
+    for anchor in expected.values { XCTAssertNotNil(layout.anchors[anchor]) }
+  }
 }
