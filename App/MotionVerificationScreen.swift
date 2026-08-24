@@ -17,6 +17,7 @@ struct MotionVerificationScreen: View {
   @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
   @State private var fixtureID: LivingCompanyFixture.ID
   @State private var isPlayingCausalProof = false
+  @State private var showsPhysicalEnvironment = false
 
   init(initialFixture: LivingCompanyFixture.ID = .idleOverview) {
     _fixtureID = State(initialValue: initialFixture)
@@ -31,6 +32,12 @@ struct MotionVerificationScreen: View {
             .font(.caption.weight(.bold))
             .foregroundStyle(SoloTheme.mint)
             .padding(.trailing, 72)
+
+          Picker("Verification surface", selection: $showsPhysicalEnvironment) {
+            Text("Company Command").tag(false)
+            Text("Physical Garage").tag(true)
+          }
+          .pickerStyle(.segmented)
           fixtureViewport
 
           HStack {
@@ -118,9 +125,18 @@ struct MotionVerificationScreen: View {
     isPlayingCausalProof = false
   }
 
+  @ViewBuilder
   private var fixtureViewport: some View {
     let fixture = LivingCompanyFixture.make(fixtureID)
-    return CompanyCommandViewport(
+    if showsPhysicalEnvironment {
+      fixtureEnvironment(fixture)
+    } else {
+      companyCommandViewport(fixture)
+    }
+  }
+
+  private func companyCommandViewport(_ fixture: LivingCompanyFixture) -> some View {
+    CompanyCommandViewport(
       agents: fixture.agents,
       atmosphere: fixture.atmosphere,
       infrastructure: fixture.infrastructure,
@@ -140,6 +156,79 @@ struct MotionVerificationScreen: View {
       onVisibilityChange: { _ in }
     )
     .environment(\.dynamicTypeSize, fixture.accessibilityLarge ? .accessibility3 : .large)
+  }
+
+  private func fixtureEnvironment(_ fixture: LivingCompanyFixture) -> some View {
+    GeometryReader { proxy in
+      let camera = fixtureEnvironmentCamera(fixture)
+      let projection = FounderEnvironmentProjection(
+        facility: fixture.atmosphere.facility,
+        atmosphere: fixture.atmosphere,
+        infrastructure: fixture.infrastructure,
+        agents: fixture.agents
+      )
+      let motion = FounderGarageMotionPresentation.derive(
+        environment: projection,
+        camera: camera,
+        reduceMotion: fixture.forceReduceMotion || systemReduceMotion,
+        sceneActive: true
+      )
+      let layout = FounderEnvironmentLayout(viewportSize: proxy.size)
+      let monitorPosition = layout.viewportPosition(
+        for: .founderMonitor,
+        camera: camera,
+        layer: .foreground
+      )
+      let monitorOffset = CGSize(
+        width: monitorPosition.x - proxy.size.width / 2,
+        height: monitorPosition.y - proxy.size.height / 2
+      )
+
+      ZStack {
+        FounderEnvironmentRendererView(
+          projection: projection,
+          camera: camera,
+          motion: motion,
+          increasedContrast: fixture.increasedContrast
+        )
+        FounderPhysicalMonitorView(
+          focused: false,
+          width: min(proxy.size.width * 0.58, 300),
+          height: min(proxy.size.height * 0.28, 260),
+          camera: camera,
+          worldOffset: CGSize(width: monitorOffset.width, height: monitorOffset.height + 42),
+          increasedContrast: fixture.increasedContrast,
+          monitorGlowIntensity: motion.lighting.founderMonitorGlow,
+          notificationIntensity: motion.lighting.founderNotificationIntensity,
+          eventToken: motion.event.token,
+          reduceMotion: fixture.forceReduceMotion || systemReduceMotion
+        ) {
+          companyCommandViewport(fixture)
+            .allowsHitTesting(false)
+        }
+      }
+      .clipped()
+    }
+    .frame(height: 620)
+    .environment(\.dynamicTypeSize, fixture.accessibilityLarge ? .accessibility3 : .large)
+    .accessibilityLabel("Physical Founder Garage DEBUG fixture. \(fixture.id.rawValue)")
+  }
+
+  private func fixtureEnvironmentCamera(
+    _ fixture: LivingCompanyFixture
+  ) -> FounderEnvironmentCameraState {
+    let active = fixture.agents.filter {
+      ![.idle, .resting, .resolved].contains($0.activity)
+    }
+    let horizontal: Double
+    if active.count == 1, active[0].agentID == "aurora" {
+      horizontal = -1
+    } else if active.count == 1, active[0].agentID == "brio" {
+      horizontal = 1
+    } else {
+      horizontal = 0
+    }
+    return FounderEnvironmentCameraState(horizontalLook: horizontal, mode: .freeLook)
   }
 }
 

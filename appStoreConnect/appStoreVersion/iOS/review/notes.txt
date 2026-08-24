@@ -1,17 +1,23 @@
-SOLO: Unicorn Run is an offline single-player startup strategy simulation. No account, sign-in, or network connection is required.
+SOLO: Unicorn Run is an offline single-player startup strategy simulation. No account or sign-in is required. Network access is used only for App Store purchase information and transactions.
 
-GETTING INTO GAMEPLAY
-Tap "New Career," enter any founder name, choose a doctrine and a career mode, then tap "Open the Garage." Each sprint you respond to a founder dilemma, draft three of five opportunities, assign AI agents, optionally review their reported results, and commit.
+PURCHASES INCLUDED WITH THIS SUBMISSION
+- Founder Pass Monthly — $9.99, auto-renewable monthly subscription
+  Product ID: com.talonsight.solounicornrun.founderpass.monthly
+- Founder Pass Annual — $79.99, auto-renewable yearly subscription
+  Product ID: com.talonsight.solounicornrun.founderpass.annual
+- Founder Pass — $99.99, lifetime non-consumable purchase
+  Product ID: com.talonsight.solounicornrun.founderpass.lifetime
 
-IN-APP PURCHASE (important for review)
-The app is free. Venture 1 (12 sprints) is fully playable at no cost and demonstrates every core mechanic. There is one non-consumable in-app purchase:
-- Product ID: com.talonsight.solounicornrun.founderpass.lifetime
-- Display name: Founder Pass, $4.99, one-time (not a subscription)
-- Unlocks: Venture 2, Continuous mode, and Hindsight recall
-- RevenueCat entitlement identifier: solo_unicorn_run_pro
+Every option activates the same RevenueCat entitlement, solo_unicorn_run_pro, and unlocks Venture 2, Continuous mode, Hindsight Recall, and the full career outcome. Subscription access continues while the subscription is active. The lifetime purchase does not renew. Eligible new US customers receive a seven-day introductory trial with the annual subscription.
 
-HOW TO REACH THE PAYWALL
-The Founder Pass paywall appears at the venture boundary: after completing the 12 sprints of Venture 1 in Career mode, or at the first venture checkpoint in Continuous mode. Committing a sprint advances the sprint counter (shown top-left). The purchase and Restore Purchases controls are both on that unlock screen. Purchases can be validated with a StoreKit sandbox Apple Account. If a faster path to the paywall would help review, contact us and we will provide a promo code.
+FASTEST PATH TO THE PURCHASE SCREEN
+1. Launch the app.
+2. Tap Continue Career. If no saved career is available, tap Choose Mode and start any career.
+3. Tap More in the bottom tab bar.
+4. Tap Solo Pro.
+5. Tap Monthly, Annual, or Lifetime to select it, then tap the Continue button.
+
+The same purchase screen also appears after Venture 1 at the Venture 2 checkpoint. Venture 1 is fully playable for free. Restore Purchases is directly below the purchase button on the Solo Pro screen.
 
 CONTACT
 Jermaine Nelson, jsama999@talonsight.com, +1 678 847 8569

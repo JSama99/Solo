@@ -661,3 +661,386 @@ final class Build32_4SpatialCausalityTests: XCTestCase {
     return store
   }
 }
+
+/// Build 32.5 regression coverage for the presentation-only environment shell.
+@MainActor
+final class Build32_5FounderEnvironmentTests: XCTestCase {
+  func testDefaultCameraIsComputerFocusedAndInteractive() {
+    let camera = FounderEnvironmentCameraState()
+    XCTAssertEqual(camera.mode, .computerFocused)
+    XCTAssertTrue(camera.computerAllowsHitTesting)
+    XCTAssertFalse(camera.environmentAllowsCameraGestures)
+  }
+
+  func testFreeLookTransfersInteractionOwnershipWithoutChangingCameraModelIdentity() {
+    var camera = FounderEnvironmentCameraState()
+    camera.mode = .freeLook
+    XCTAssertFalse(camera.computerAllowsHitTesting)
+    XCTAssertTrue(camera.environmentAllowsCameraGestures)
+    camera.mode = .computerFocused
+    XCTAssertTrue(camera.computerAllowsHitTesting)
+  }
+
+  func testCameraMovementIsBoundedAndPresentationOnly() {
+    var camera = FounderEnvironmentCameraState(mode: .freeLook)
+    camera.look(horizontal: 9, vertical: 9)
+    XCTAssertEqual(camera.horizontalLook, 1)
+    XCTAssertEqual(camera.verticalLook, 0.30)
+    camera.look(horizontal: -9, vertical: -9)
+    XCTAssertEqual(camera.horizontalLook, -1)
+    XCTAssertEqual(camera.verticalLook, -0.30)
+    camera.center()
+    XCTAssertEqual(camera.horizontalLook, 0)
+    XCTAssertEqual(camera.verticalLook, 0)
+  }
+
+  func testReduceMotionUsesStableCameraEndpoints() {
+    var camera = FounderEnvironmentCameraState(mode: .freeLook)
+    camera.setLook(horizontal: 0.5, vertical: 0.2, reduceMotion: true)
+    XCTAssertEqual(camera.horizontalLook, 1)
+    XCTAssertEqual(camera.verticalLook, 0.30)
+    camera.setLook(horizontal: 0.1, vertical: 0.02, reduceMotion: true)
+    XCTAssertEqual(camera.horizontalLook, 0)
+    XCTAssertEqual(camera.verticalLook, 0)
+  }
+
+  func testGarageAndLoftRemainStructurallyDistinctProjections() {
+    let stats = FounderStats()
+    let garage = FounderEnvironmentProjection(facility: .founderGarage, atmosphere: .derive(stats: stats, facility: .founderGarage, venture: 1), infrastructure: [], agents: [])
+    let loft = FounderEnvironmentProjection(facility: .founderLoft, atmosphere: .derive(stats: stats, facility: .founderLoft, venture: 1), infrastructure: [], agents: [])
+    XCTAssertEqual(garage.spatialPresentation, .improvisedGarage)
+    XCTAssertEqual(loft.spatialPresentation, .elevatedLoft)
+    XCTAssertNotEqual(garage.facility.accessibilityDescription, loft.facility.accessibilityDescription)
+  }
+
+  func testAllExistingUpgradesMapToPhysicalEnvironmentLocations() {
+    XCTAssertEqual(FounderEnvironmentProjection.physicalLocation(for: .developmentRig), .stacksBuildRail)
+    XCTAssertEqual(FounderEnvironmentProjection.physicalLocation(for: .verificationArray), .auroraFounderVerificationBridge)
+    XCTAssertEqual(FounderEnvironmentProjection.physicalLocation(for: .campaignStudio), .brioBroadcastRail)
+    XCTAssertEqual(FounderEnvironmentProjection.physicalLocation(for: .recoveryCorner), .recoverySideBay)
+    XCTAssertEqual(FounderEnvironmentProjection.physicalLocation(for: .founderCommandDesk), .founderForegroundDesk)
+  }
+
+  func testEnvironmentAccessibilityOmitsHiddenReviewTruth() {
+    let agent = LivingAgentProjection(
+      agentID: "aurora", name: "Aurora", initials: "AU", role: .research,
+      taskID: UUID(), taskTitle: "Visible task", activity: .awaitingReview,
+      conditions: [.overclaimed, .drifting, .evidenceIncomplete, .stressed], emphasis: .founderAttention,
+      progress: 1, reviewRevealStep: 4, stressLabel: "Pressured", trustLabel: "Trusted", level: 2,
+      needsFounderAttention: true, isResting: false
+    )
+    let projection = FounderEnvironmentProjection(
+      facility: .founderGarage,
+      atmosphere: .derive(stats: FounderStats(), facility: .founderGarage, venture: 1),
+      infrastructure: [], agents: [agent]
+    )
+    XCTAssertTrue(projection.agentAccessibilitySummary.contains("Awaiting Founder review"))
+    XCTAssertTrue(projection.agentAccessibilitySummary.contains("Stressed"))
+    XCTAssertFalse(projection.agentAccessibilitySummary.localizedCaseInsensitiveContains("overclaim"))
+    XCTAssertFalse(projection.agentAccessibilitySummary.localizedCaseInsensitiveContains("drift"))
+    XCTAssertFalse(projection.agentAccessibilitySummary.localizedCaseInsensitiveContains("evidence"))
+  }
+
+  func testEnvironmentRendererBoundaryIsNativeAndReplaceable() {
+    XCTAssertEqual(FounderEnvironmentRendererKind.native2D, .native2D)
+  }
+
+  func testNoFreeLookDragPolicyExistsDuringComputerFocus() {
+    XCTAssertFalse(FounderEnvironmentCameraState().freeLookDragPolicyActive)
+  }
+
+  func testMonitorReturnPolicyExistsOnlyDuringFreeLook() {
+    var camera = FounderEnvironmentCameraState()
+    XCTAssertFalse(camera.monitorReturnInteractionEnabled)
+    camera.mode = .freeLook
+    XCTAssertTrue(camera.monitorReturnInteractionEnabled)
+  }
+
+  func testRelativeCameraMovementAccumulatesAcrossDrags() {
+    var camera = FounderEnvironmentCameraState(horizontalLook: 0.35, verticalLook: -0.10, mode: .freeLook)
+    camera.setLook(horizontal: 0.65, vertical: 0.12)
+    XCTAssertEqual(camera.horizontalLook, 0.65)
+    XCTAssertEqual(camera.verticalLook, 0.12)
+    camera.setLook(horizontal: -0.25, vertical: 0.20)
+    XCTAssertEqual(camera.horizontalLook, -0.25)
+    XCTAssertEqual(camera.verticalLook, 0.20)
+  }
+
+  func testModeChangesPreserveCameraPosition() {
+    var camera = FounderEnvironmentCameraState(horizontalLook: -0.8, verticalLook: 0.2, mode: .freeLook)
+    camera.mode = .computerFocused
+    XCTAssertEqual(camera.horizontalLook, -0.8)
+    XCTAssertEqual(camera.verticalLook, 0.2)
+  }
+
+  func testCameraCannotMoveWhileComputerFocused() {
+    var camera = FounderEnvironmentCameraState()
+    camera.look(horizontal: 1, vertical: 0.3)
+    XCTAssertEqual(camera.horizontalLook, 0)
+    XCTAssertEqual(camera.verticalLook, 0)
+  }
+
+  func testAllInfrastructureStatesAreStableForSameInputs() {
+    let agents: [LivingAgentProjection] = []
+    let first = InfrastructureVisual.map(purchased: [], facility: .founderGarage, agents: agents, sprint: 1)
+    let second = InfrastructureVisual.map(purchased: [], facility: .founderGarage, agents: agents, sprint: 1)
+    XCTAssertEqual(first, second)
+    XCTAssertTrue(first.allSatisfy { $0.state == .uninstalled })
+  }
+
+  func testEnvironmentAgentTextUsesVisibleActivityRatherThanTaskTruth() {
+    let agent = LivingAgentProjection(agentID: "brio", name: "Brio", initials: "BR", role: .marketing, taskID: UUID(), taskTitle: "Campaign", activity: .working, conditions: [.focused], emphasis: .normal, progress: 0.5, reviewRevealStep: 0, stressLabel: "Focused", trustLabel: "Trusted", level: 1, needsFounderAttention: false, isResting: false)
+    let projection = FounderEnvironmentProjection(facility: .founderGarage, atmosphere: .derive(stats: FounderStats(), facility: .founderGarage, venture: 1), infrastructure: [], agents: [agent])
+    XCTAssertTrue(projection.agentAccessibilitySummary.contains("Working"))
+    XCTAssertFalse(projection.agentAccessibilitySummary.contains("Campaign"))
+  }
+
+  func testPanoramicCenterExposesFounderDeskMonitorAndStacks() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    let camera = FounderEnvironmentCameraState(mode: .freeLook)
+    XCTAssertTrue(layout.zoneIsVisible(.founderDesk, camera: camera))
+    XCTAssertTrue(layout.zoneIsVisible(.founderMonitor, camera: camera))
+    XCTAssertTrue(layout.zoneIsVisible(.stacksStation, camera: camera))
+  }
+
+  func testPanoramicFullLeftExposesAuroraStorageAndEntrance() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    let camera = FounderEnvironmentCameraState(horizontalLook: -1, mode: .freeLook)
+    XCTAssertTrue(layout.zoneIsVisible(.auroraStation, camera: camera))
+    XCTAssertTrue(layout.zoneIsVisible(.storage, camera: camera))
+    XCTAssertTrue(layout.zoneIsVisible(.garageEntrance, camera: camera, margin: 150))
+  }
+
+  func testPanoramicFullRightExposesBrioCampaignAndRecovery() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    let camera = FounderEnvironmentCameraState(horizontalLook: 1, mode: .freeLook)
+    XCTAssertTrue(layout.zoneIsVisible(.brioStation, camera: camera))
+    XCTAssertTrue(layout.zoneIsVisible(.campaignStudio, camera: camera))
+    XCTAssertTrue(layout.zoneIsVisible(.recoveryCorner, camera: camera, margin: 150))
+  }
+
+  func testPanoramicCameraEndpointsProduceDifferentVisibleWorldBounds() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    let left = layout.visibleWorldBounds(camera: FounderEnvironmentCameraState(horizontalLook: -1, mode: .freeLook))
+    let center = layout.visibleWorldBounds(camera: FounderEnvironmentCameraState(mode: .freeLook))
+    let right = layout.visibleWorldBounds(camera: FounderEnvironmentCameraState(horizontalLook: 1, mode: .freeLook))
+    XCTAssertLessThan(left.midX, center.midX)
+    XCTAssertLessThan(center.midX, right.midX)
+    XCTAssertGreaterThan(right.minX - left.minX, 600)
+  }
+
+  func testPanoramicWorldProjectionClampsOutOfRangeCameraInput() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    let excessive = FounderEnvironmentCameraState(horizontalLook: 80, verticalLook: -50, mode: .freeLook)
+    let clamped = layout.clampedCamera(excessive)
+    XCTAssertEqual(clamped.horizontalLook, 1)
+    XCTAssertEqual(clamped.verticalLook, -0.30)
+  }
+
+  func testPanoramicWorldAnchorsRemainStableAcrossCameraPositions() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    let anchors = layout.anchors
+    _ = layout.viewportPosition(for: .auroraStation, camera: FounderEnvironmentCameraState(horizontalLook: -1, mode: .freeLook), layer: .middleGround)
+    _ = layout.viewportPosition(for: .brioStation, camera: FounderEnvironmentCameraState(horizontalLook: 1, mode: .freeLook), layer: .middleGround)
+    XCTAssertEqual(layout.anchors, anchors)
+    XCTAssertEqual(Set(layout.anchors.keys), Set(FounderEnvironmentWorldAnchor.allCases))
+  }
+
+  func testAllInfrastructureUsesDeterministicPanoramicAnchors() {
+    let expected: [FacilityUpgradeID: FounderEnvironmentWorldAnchor] = [
+      .developmentRig: .developmentRig,
+      .verificationArray: .verificationArray,
+      .campaignStudio: .campaignStudio,
+      .recoveryCorner: .recoveryCorner,
+      .founderCommandDesk: .founderCommandDesk
+    ]
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    XCTAssertEqual(expected.count, FacilityUpgradeID.allCases.count)
+    for anchor in expected.values { XCTAssertNotNil(layout.anchors[anchor]) }
+  }
+
+  func testLivingGarageDeclaresAllFiveIndependentMotionLayers() {
+    let motion = livingMotion(agents: [])
+    XCTAssertEqual(Set(motion.layers), Set(FounderGarageMotionLayer.allCases))
+    XCTAssertEqual(motion.layers.count, 5)
+  }
+
+  func testRoleSpecificWorkingStatesUseDistinctSafeWorkflows() throws {
+    let motion = livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .working),
+      livingAgent(id: "stacks", role: .engineering, activity: .working),
+      livingAgent(id: "brio", role: .marketing, activity: .working)
+    ])
+    XCTAssertEqual(try XCTUnwrap(motion.station(for: "aurora")).workflow, .researchScan)
+    XCTAssertEqual(try XCTUnwrap(motion.station(for: "stacks")).workflow, .engineeringBuild)
+    XCTAssertEqual(try XCTUnwrap(motion.station(for: "brio")).workflow, .campaignDistribution)
+  }
+
+  func testAgentActivityChannelsRemainIndependent() throws {
+    let motion = livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .idle),
+      livingAgent(id: "stacks", role: .engineering, activity: .working),
+      livingAgent(id: "brio", role: .marketing, activity: .resting)
+    ])
+    XCTAssertEqual(try XCTUnwrap(motion.station(for: "aurora")).workflow, .idle)
+    XCTAssertEqual(try XCTUnwrap(motion.station(for: "stacks")).workflow, .engineeringBuild)
+    XCTAssertEqual(try XCTUnwrap(motion.station(for: "brio")).workflow, .resting)
+    XCTAssertTrue(try XCTUnwrap(motion.station(for: "stacks")).continuousMotionEnabled)
+    XCTAssertFalse(try XCTUnwrap(motion.station(for: "aurora")).continuousMotionEnabled)
+  }
+
+  func testReduceMotionStopsContinuousDecorationWithoutChangingEndpoints() {
+    let agent = livingAgent(id: "aurora", role: .research, activity: .working)
+    let standard = livingMotion(agents: [agent], reduceMotion: false)
+    let reduced = livingMotion(agents: [agent], reduceMotion: true)
+    XCTAssertTrue(standard.ambient.continuousMotionEnabled)
+    XCTAssertFalse(reduced.ambient.continuousMotionEnabled)
+    XCTAssertEqual(standard.station(for: "aurora")?.workflow, reduced.station(for: "aurora")?.workflow)
+    XCTAssertEqual(standard.station(for: "aurora")?.visibleProgress, reduced.station(for: "aurora")?.visibleProgress)
+  }
+
+  func testBackgroundedEnvironmentPausesAmbientAndStationLoops() throws {
+    let motion = livingMotion(
+      agents: [livingAgent(id: "stacks", role: .engineering, activity: .working)],
+      sceneActive: false
+    )
+    XCTAssertFalse(motion.ambient.continuousMotionEnabled)
+    XCTAssertFalse(try XCTUnwrap(motion.station(for: "stacks")).continuousMotionEnabled)
+  }
+
+  func testMotionProjectionRejectsHiddenTruthThroughReviewStepFour() throws {
+    let agent = livingAgent(
+      id: "aurora",
+      role: .research,
+      activity: .reviewing,
+      conditions: [.focused, .stressed, .verified, .drifting, .overclaimed, .evidenceIncomplete],
+      revealStep: 4
+    )
+    let station = try XCTUnwrap(livingMotion(agents: [agent]).station(for: "aurora"))
+    XCTAssertEqual(station.safeConditionSignals, [.focused, .stressed])
+  }
+
+  func testMotionProjectionAdmitsCanonicalPostReviewSignalsAtStepFive() throws {
+    let agent = livingAgent(
+      id: "aurora",
+      role: .research,
+      activity: .reviewed,
+      conditions: [.verified],
+      revealStep: 5
+    )
+    let station = try XCTUnwrap(livingMotion(agents: [agent]).station(for: "aurora"))
+    XCTAssertEqual(station.safeConditionSignals, [.verified])
+  }
+
+  func testReviewRequiredNotificationOutranksOtherVisibleEvents() {
+    let eventID = UUID(uuidString: "32510000-0000-0000-0000-000000000001")!
+    let agent = livingAgent(
+      id: "brio",
+      role: .marketing,
+      activity: .awaitingReview,
+      needsFounderAttention: true
+    )
+    let motion = livingMotion(
+      agents: [agent],
+      visibleEvent: .sprint(id: eventID)
+    )
+    XCTAssertEqual(motion.event.kind, .founderReviewRequired)
+    XCTAssertEqual(motion.event.agentID, "brio")
+    XCTAssertEqual(motion.event.priority, 5)
+    XCTAssertGreaterThanOrEqual(motion.event.duration, 0.4)
+    XCTAssertLessThanOrEqual(motion.event.duration, 1.2)
+  }
+
+  func testLightingUsesOnlyVisibleAtmosphereAndActivity() {
+    var stats = FounderStats()
+    stats.runway = 6
+    stats.momentum = 80
+    let atmosphere = CompanyAtmosphere.derive(
+      stats: stats,
+      facility: .founderGarage,
+      venture: 1
+    )
+    let environment = FounderEnvironmentProjection(
+      facility: .founderGarage,
+      atmosphere: atmosphere,
+      infrastructure: [],
+      agents: [livingAgent(id: "stacks", role: .engineering, activity: .working)]
+    )
+    let motion = FounderGarageMotionPresentation.derive(
+      environment: environment,
+      camera: FounderEnvironmentCameraState(),
+      reduceMotion: false,
+      sceneActive: true
+    )
+    XCTAssertGreaterThan(motion.lighting.warningIntensity, 0)
+    XCTAssertGreaterThan(motion.lighting.momentumConnectionIntensity, 0.5)
+    XCTAssertLessThan(motion.lighting.warningIntensity, 1)
+  }
+
+  func testCameraModeChangesOnlyTheCameraPresentationChannel() {
+    let agents = [livingAgent(id: "stacks", role: .engineering, activity: .working)]
+    let focused = livingMotion(agents: agents, mode: .computerFocused)
+    let freeLook = livingMotion(agents: agents, mode: .freeLook)
+    XCTAssertNotEqual(focused.camera, freeLook.camera)
+    XCTAssertEqual(focused.stations, freeLook.stations)
+    XCTAssertEqual(focused.lighting, freeLook.lighting)
+    XCTAssertTrue(focused.camera.computerIsInteractive)
+    XCTAssertFalse(freeLook.camera.computerIsInteractive)
+  }
+
+  func testLivingGarageProjectionIsDeterministicForIdenticalVisibleInputs() {
+    let agents = [livingAgent(id: "aurora", role: .research, activity: .assignmentReceived)]
+    XCTAssertEqual(livingMotion(agents: agents), livingMotion(agents: agents))
+  }
+
+  private func livingMotion(
+    agents: [LivingAgentProjection],
+    visibleEvent: FounderGarageVisibleEvent? = nil,
+    mode: FounderEnvironmentMode = .freeLook,
+    reduceMotion: Bool = false,
+    sceneActive: Bool = true
+  ) -> FounderGarageMotionPresentation {
+    let environment = FounderEnvironmentProjection(
+      facility: .founderGarage,
+      atmosphere: .derive(stats: FounderStats(), facility: .founderGarage, venture: 1),
+      infrastructure: [],
+      agents: agents,
+      visibleEvent: visibleEvent
+    )
+    return FounderGarageMotionPresentation.derive(
+      environment: environment,
+      camera: FounderEnvironmentCameraState(mode: mode),
+      reduceMotion: reduceMotion,
+      sceneActive: sceneActive
+    )
+  }
+
+  private func livingAgent(
+    id: String,
+    role: AgentRole,
+    activity: LivingAgentActivity,
+    conditions: Set<LivingAgentCondition> = [],
+    revealStep: Int = 0,
+    needsFounderAttention: Bool = false
+  ) -> LivingAgentProjection {
+    LivingAgentProjection(
+      agentID: id,
+      name: id.capitalized,
+      initials: String(id.prefix(2)).uppercased(),
+      role: role,
+      taskID: UUID(uuidString: "32510000-0000-0000-0000-000000000002"),
+      taskTitle: "Visible task",
+      activity: activity,
+      conditions: conditions,
+      emphasis: needsFounderAttention ? .founderAttention : .normal,
+      progress: activity == .working ? 0.52 : activity == .idle ? 0 : 1,
+      reviewRevealStep: revealStep,
+      stressLabel: conditions.contains(.stressed) ? "Stressed" : "Focused",
+      trustLabel: "Trusted",
+      level: 2,
+      needsFounderAttention: needsFounderAttention,
+      isResting: activity == .resting,
+      presentationSequenceID: UUID(uuidString: "32510000-0000-0000-0000-000000000003")
+    )
+  }
+}
