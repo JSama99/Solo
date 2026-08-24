@@ -744,4 +744,54 @@ final class Build32_5FounderEnvironmentTests: XCTestCase {
   func testEnvironmentRendererBoundaryIsNativeAndReplaceable() {
     XCTAssertEqual(FounderEnvironmentRendererKind.native2D, .native2D)
   }
+
+  func testNoFreeLookDragPolicyExistsDuringComputerFocus() {
+    XCTAssertFalse(FounderEnvironmentCameraState().freeLookDragPolicyActive)
+  }
+
+  func testMonitorReturnPolicyExistsOnlyDuringFreeLook() {
+    var camera = FounderEnvironmentCameraState()
+    XCTAssertFalse(camera.monitorReturnInteractionEnabled)
+    camera.mode = .freeLook
+    XCTAssertTrue(camera.monitorReturnInteractionEnabled)
+  }
+
+  func testRelativeCameraMovementAccumulatesAcrossDrags() {
+    var camera = FounderEnvironmentCameraState(horizontalLook: 0.35, verticalLook: -0.10, mode: .freeLook)
+    camera.setLook(horizontal: 0.65, vertical: 0.12)
+    XCTAssertEqual(camera.horizontalLook, 0.65)
+    XCTAssertEqual(camera.verticalLook, 0.12)
+    camera.setLook(horizontal: -0.25, vertical: 0.20)
+    XCTAssertEqual(camera.horizontalLook, -0.25)
+    XCTAssertEqual(camera.verticalLook, 0.20)
+  }
+
+  func testModeChangesPreserveCameraPosition() {
+    var camera = FounderEnvironmentCameraState(horizontalLook: -0.8, verticalLook: 0.2, mode: .freeLook)
+    camera.mode = .computerFocused
+    XCTAssertEqual(camera.horizontalLook, -0.8)
+    XCTAssertEqual(camera.verticalLook, 0.2)
+  }
+
+  func testCameraCannotMoveWhileComputerFocused() {
+    var camera = FounderEnvironmentCameraState()
+    camera.look(horizontal: 1, vertical: 0.3)
+    XCTAssertEqual(camera.horizontalLook, 0)
+    XCTAssertEqual(camera.verticalLook, 0)
+  }
+
+  func testAllInfrastructureStatesAreStableForSameInputs() {
+    let agents: [LivingAgentProjection] = []
+    let first = InfrastructureVisual.map(purchased: [], facility: .founderGarage, agents: agents, sprint: 1)
+    let second = InfrastructureVisual.map(purchased: [], facility: .founderGarage, agents: agents, sprint: 1)
+    XCTAssertEqual(first, second)
+    XCTAssertTrue(first.allSatisfy { $0.state == .uninstalled })
+  }
+
+  func testEnvironmentAgentTextUsesVisibleActivityRatherThanTaskTruth() {
+    let agent = LivingAgentProjection(agentID: "brio", name: "Brio", initials: "BR", role: .marketing, taskID: UUID(), taskTitle: "Campaign", activity: .working, conditions: [.focused], emphasis: .normal, progress: 0.5, reviewRevealStep: 0, stressLabel: "Focused", trustLabel: "Trusted", level: 1, needsFounderAttention: false, isResting: false)
+    let projection = FounderEnvironmentProjection(facility: .founderGarage, atmosphere: .derive(stats: FounderStats(), facility: .founderGarage, venture: 1), infrastructure: [], agents: [agent])
+    XCTAssertTrue(projection.agentAccessibilitySummary.contains("Working"))
+    XCTAssertFalse(projection.agentAccessibilitySummary.contains("Campaign"))
+  }
 }

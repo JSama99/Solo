@@ -17,6 +17,8 @@ struct FounderEnvironmentCameraState: Equatable, Sendable {
 
   var computerAllowsHitTesting: Bool { mode == .computerFocused }
   var environmentAllowsCameraGestures: Bool { mode == .freeLook }
+  var freeLookDragPolicyActive: Bool { mode == .freeLook }
+  var monitorReturnInteractionEnabled: Bool { mode == .freeLook }
 
   mutating func look(horizontal: Double = 0, vertical: Double = 0, reduceMotion: Bool = false) {
     guard mode == .freeLook else { return }
@@ -59,6 +61,7 @@ struct FounderEnvironmentScreen: View {
   @Environment(\.colorSchemeContrast) private var contrast
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @State private var camera = FounderEnvironmentCameraState()
+  @State private var dragStartCamera: FounderEnvironmentCameraState?
   @AccessibilityFocusState private var environmentIsFocused: Bool
   @AccessibilityFocusState private var computerIsFocused: Bool
 
@@ -91,13 +94,24 @@ struct FounderEnvironmentScreen: View {
               .accessibilityHidden(!camera.computerAllowsHitTesting)
               .accessibilityFocused($computerIsFocused)
           }
-          .onTapGesture {
-            guard camera.mode == .freeLook else { return }
-            focusComputer()
+
+          if camera.mode == .freeLook {
+            Color.clear
+              .contentShape(.rect)
+              .gesture(freeLookDragGesture(in: geometry.size))
+              .accessibilityHidden(true)
+              .zIndex(1)
+
+            Button(action: focusComputer) {
+              Color.clear
+                .frame(width: monitorWidth, height: monitorHeight)
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Founder Computer")
+            .accessibilityHint("Double tap to return to the Founder Computer.")
+            .zIndex(2)
           }
-          .accessibilityAddTraits(camera.mode == .freeLook ? .isButton : [])
-          .accessibilityLabel(camera.mode == .freeLook ? "Founder Computer" : "Founder Computer, interactive")
-          .accessibilityHint(camera.mode == .freeLook ? "Double tap to return to the Founder Computer." : "Company Command is ready.")
 
           FounderEnvironmentControlLayer(
             mode: camera.mode,
@@ -110,13 +124,10 @@ struct FounderEnvironmentScreen: View {
             onCenter: centerCamera
           )
           .accessibilityFocused($environmentIsFocused)
+          .zIndex(3)
         }
         .frame(width: geometry.size.width, height: geometry.size.height)
-        .contentShape(.rect)
-        .gesture(environmentDragGesture)
         .animation(reduceMotion ? nil : .smooth(duration: 0.34), value: camera.mode)
-        .animation(reduceMotion ? nil : .smooth(duration: 0.24), value: camera.horizontalLook)
-        .animation(reduceMotion ? nil : .smooth(duration: 0.24), value: camera.verticalLook)
         .accessibilityAction(named: Text("Look Around")) { enterFreeLook() }
         .accessibilityAction(named: Text("Look Left")) { moveCamera(horizontal: -1, vertical: 0) }
         .accessibilityAction(named: Text("Look Center")) { centerCamera() }
@@ -154,15 +165,19 @@ struct FounderEnvironmentScreen: View {
     )
   }
 
-  private var environmentDragGesture: some Gesture {
+  private func freeLookDragGesture(in size: CGSize) -> some Gesture {
     DragGesture(minimumDistance: 8)
       .onChanged { value in
-        guard camera.environmentAllowsCameraGestures else { return }
-        camera.setLook(
-          horizontal: Double(value.translation.width / 180),
-          vertical: Double(-value.translation.height / 520),
-          reduceMotion: reduceMotion
-        )
+        if dragStartCamera == nil { dragStartCamera = camera }
+        guard let start = dragStartCamera else { return }
+        let horizontal = start.horizontalLook + Double(value.translation.width / max(size.width * 0.42, 1))
+        let vertical = start.verticalLook + Double(-value.translation.height / max(size.height * 0.72, 1))
+        var updated = camera
+        updated.setLook(horizontal: horizontal, vertical: vertical, reduceMotion: reduceMotion)
+        camera = updated
+      }
+      .onEnded { _ in
+        dragStartCamera = nil
       }
   }
 
@@ -178,12 +193,14 @@ struct FounderEnvironmentScreen: View {
   private func enterFreeLook() {
     guard camera.mode != .freeLook else { return }
     camera.mode = .freeLook
+    dragStartCamera = nil
     environmentIsFocused = true
   }
 
   private func focusComputer() {
     guard camera.mode != .computerFocused else { return }
     camera.mode = .computerFocused
+    dragStartCamera = nil
     computerIsFocused = true
   }
 
@@ -295,9 +312,9 @@ struct FounderEnvironmentRendererView: View {
 
   private func stationLayer(size: CGSize) -> some View {
     ZStack {
-      station("aurora", role: "Research", symbol: "microscope", x: -0.31, y: -0.04, size: size)
-      station("stacks", role: "Engineering", symbol: "wrench.and.screwdriver.fill", x: 0.30, y: -0.02, size: size)
-      station("brio", role: "Campaign", symbol: "megaphone.fill", x: 0.39, y: 0.20, size: size)
+      station("aurora", role: "Research", symbol: "microscope", x: -0.62, y: -0.02, size: size)
+      station("stacks", role: "Engineering", symbol: "wrench.and.screwdriver.fill", x: 0, y: -0.04, size: size)
+      station("brio", role: "Campaign", symbol: "megaphone.fill", x: 0.62, y: -0.02, size: size)
       infrastructure(size: size)
     }
   }
@@ -305,13 +322,28 @@ struct FounderEnvironmentRendererView: View {
   private func station(_ id: String, role: String, symbol: String, x: CGFloat, y: CGFloat, size: CGSize) -> some View {
     let agent = projection.agents.first { $0.agentID == id }
     let isAttention = agent?.needsFounderAttention == true
-    return VStack(spacing: 3) {
-      RoundedRectangle(cornerRadius: 5).fill(.black.opacity(0.65)).frame(width: 58, height: 35)
-        .overlay(Image(systemName: symbol).foregroundStyle(isAttention ? .yellow : .cyan).font(.caption))
-      Capsule().fill(.black.opacity(0.55)).frame(width: 75, height: 8)
-      Text(role).font(.caption2.weight(.semibold)).foregroundStyle(.white.opacity(0.82))
+    return VStack(spacing: 2) {
+      ZStack(alignment: .bottom) {
+        RoundedRectangle(cornerRadius: 6).fill(.black.opacity(0.72)).frame(width: 92, height: 50)
+          .overlay(alignment: .topTrailing) {
+            Image(systemName: symbol).font(.caption2.weight(.bold)).foregroundStyle(isAttention ? .yellow : .cyan).padding(5)
+          }
+        if let portrait = AgentPortraitAsset.name(for: id) {
+          Image(portrait)
+            .resizable()
+            .scaledToFill()
+            .frame(width: 44, height: 48)
+            .clipShape(.rect(cornerRadius: 5))
+            .offset(x: -15, y: 2)
+        }
+        RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.92)).frame(width: 78, height: 13)
+          .overlay(Rectangle().fill(isAttention ? .yellow.opacity(0.75) : .cyan.opacity(0.48)).frame(width: 34, height: 2))
+          .offset(y: 2)
+      }
+      Capsule().fill(.black.opacity(0.72)).frame(width: 112, height: 10)
+      Text(role.uppercased()).font(.caption2.weight(.bold)).tracking(0.7).foregroundStyle(.white.opacity(0.86))
     }
-    .offset(x: x * size.width + CGFloat(camera.horizontalLook) * 28, y: y * size.height + CGFloat(camera.verticalLook) * 16)
+    .offset(x: x * size.width - CGFloat(camera.horizontalLook) * size.width * 0.46, y: y * size.height + CGFloat(camera.verticalLook) * 18)
     .accessibilityHidden(true)
   }
 
@@ -319,24 +351,43 @@ struct FounderEnvironmentRendererView: View {
     ZStack {
       ForEach(projection.infrastructure) { item in
         let position = infrastructurePosition(for: item.physicalLocation, size: size)
-        Image(systemName: item.symbol)
-          .font(.caption.weight(.bold))
-          .foregroundStyle(item.state == .active ? .green : item.state == .uninstalled ? .gray : .white.opacity(0.78))
-          .frame(width: 26, height: 26)
-          .background(.black.opacity(item.state == .uninstalled ? 0.22 : 0.58), in: .rect(cornerRadius: 6))
-          .overlay { RoundedRectangle(cornerRadius: 6).stroke(.white.opacity(increasedContrast ? 0.78 : 0.24), lineWidth: 1) }
-          .offset(x: position.x + CGFloat(camera.horizontalLook) * 22, y: position.y + CGFloat(camera.verticalLook) * 14)
+        equipment(item)
+          .offset(x: position.x - CGFloat(camera.horizontalLook) * size.width * 0.42, y: position.y + CGFloat(camera.verticalLook) * 14)
       }
     }
     .accessibilityHidden(true)
   }
 
+  private func equipment(_ item: InfrastructureVisual) -> some View {
+    let tone: Color = item.state == .active ? .green : item.state == .uninstalled ? .gray : .cyan
+    return ZStack {
+      switch item.id {
+      case .developmentRig:
+        HStack(spacing: 3) { RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.85)).frame(width: 18, height: 38); VStack(spacing: 3) { ForEach(0..<3, id: \.self) { _ in Capsule().fill(tone.opacity(0.8)).frame(width: 20, height: 3) } } }
+      case .verificationArray:
+        RoundedRectangle(cornerRadius: 7).fill(.black.opacity(0.84)).frame(width: 42, height: 25)
+          .overlay(Circle().stroke(tone, lineWidth: 2).frame(width: 13, height: 13))
+      case .campaignStudio:
+        RoundedRectangle(cornerRadius: 4).fill(.black.opacity(0.84)).frame(width: 44, height: 25)
+          .overlay(HStack(spacing: 3) { ForEach(0..<5, id: \.self) { _ in Rectangle().fill(tone.opacity(0.75)).frame(width: 3, height: 12) } })
+      case .recoveryCorner:
+        RoundedRectangle(cornerRadius: 9).fill(.black.opacity(0.78)).frame(width: 46, height: 21)
+          .overlay(Rectangle().fill(tone.opacity(0.50)).frame(width: 25, height: 5).offset(y: 4))
+      case .founderCommandDesk:
+        RoundedRectangle(cornerRadius: 4).fill(.black.opacity(0.86)).frame(width: 48, height: 18)
+          .overlay(HStack(spacing: 4) { ForEach(0..<4, id: \.self) { _ in Circle().fill(tone.opacity(0.8)).frame(width: 4, height: 4) } })
+      }
+      if item.state == .uninstalled { Image(systemName: "shippingbox.fill").font(.caption2).foregroundStyle(.white.opacity(0.55)) }
+    }
+    .overlay { RoundedRectangle(cornerRadius: 6).stroke(.white.opacity(increasedContrast ? 0.78 : 0.25), lineWidth: 1) }
+  }
+
   private func infrastructurePosition(for location: InfrastructurePhysicalLocation, size: CGSize) -> CGPoint {
     switch location {
-    case .stacksBuildRail: CGPoint(x: size.width * 0.28, y: -size.height * 0.10)
-    case .auroraFounderVerificationBridge: CGPoint(x: -size.width * 0.28, y: -size.height * 0.10)
-    case .brioBroadcastRail: CGPoint(x: size.width * 0.38, y: size.height * 0.12)
-    case .recoverySideBay: CGPoint(x: -size.width * 0.39, y: size.height * 0.18)
+    case .stacksBuildRail: CGPoint(x: 0, y: -size.height * 0.13)
+    case .auroraFounderVerificationBridge: CGPoint(x: -size.width * 0.58, y: -size.height * 0.13)
+    case .brioBroadcastRail: CGPoint(x: size.width * 0.58, y: -size.height * 0.13)
+    case .recoverySideBay: CGPoint(x: -size.width * 0.72, y: size.height * 0.16)
     case .founderForegroundDesk: CGPoint(x: -size.width * 0.17, y: size.height * 0.31)
     }
   }
@@ -418,20 +469,16 @@ struct FounderEnvironmentControlLayer: View {
   var onCenter: () -> Void
 
   var body: some View {
-    VStack {
-      HStack {
-        Spacer()
-        if mode == .computerFocused {
-          Button("Look Around", systemImage: "view.3d") { onLookAround() }
-            .buttonStyle(.borderedProminent)
-            .tint(.black.opacity(0.72))
-            .accessibilityHint("Recedes the monitor and enables room camera controls.")
-        }
-      }
-      .padding(.horizontal, 16)
-      .padding(.top, 8)
-      Spacer()
-      if mode == .freeLook {
+    ZStack(alignment: .bottom) {
+      if mode == .computerFocused {
+        Button("Look Around", systemImage: "view.3d") { onLookAround() }
+          .buttonStyle(.borderedProminent)
+          .tint(.black.opacity(0.72))
+          .accessibilityHint("Recedes the monitor and enables room camera controls.")
+          .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+          .padding(.trailing, 14)
+          .padding(.top, 10)
+      } else {
         HStack(spacing: 10) {
           Button("Look Left", systemImage: "chevron.left") { onLook(-1, 0) }.labelStyle(.iconOnly)
           Button("Center", systemImage: "viewfinder") { onCenter() }.labelStyle(.iconOnly)
@@ -448,6 +495,5 @@ struct FounderEnvironmentControlLayer: View {
       }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .allowsHitTesting(true)
   }
 }
