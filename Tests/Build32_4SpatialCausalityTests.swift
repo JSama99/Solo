@@ -858,4 +858,189 @@ final class Build32_5FounderEnvironmentTests: XCTestCase {
     XCTAssertEqual(expected.count, FacilityUpgradeID.allCases.count)
     for anchor in expected.values { XCTAssertNotNil(layout.anchors[anchor]) }
   }
+
+  func testLivingGarageDeclaresAllFiveIndependentMotionLayers() {
+    let motion = livingMotion(agents: [])
+    XCTAssertEqual(Set(motion.layers), Set(FounderGarageMotionLayer.allCases))
+    XCTAssertEqual(motion.layers.count, 5)
+  }
+
+  func testRoleSpecificWorkingStatesUseDistinctSafeWorkflows() throws {
+    let motion = livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .working),
+      livingAgent(id: "stacks", role: .engineering, activity: .working),
+      livingAgent(id: "brio", role: .marketing, activity: .working)
+    ])
+    XCTAssertEqual(try XCTUnwrap(motion.station(for: "aurora")).workflow, .researchScan)
+    XCTAssertEqual(try XCTUnwrap(motion.station(for: "stacks")).workflow, .engineeringBuild)
+    XCTAssertEqual(try XCTUnwrap(motion.station(for: "brio")).workflow, .campaignDistribution)
+  }
+
+  func testAgentActivityChannelsRemainIndependent() throws {
+    let motion = livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .idle),
+      livingAgent(id: "stacks", role: .engineering, activity: .working),
+      livingAgent(id: "brio", role: .marketing, activity: .resting)
+    ])
+    XCTAssertEqual(try XCTUnwrap(motion.station(for: "aurora")).workflow, .idle)
+    XCTAssertEqual(try XCTUnwrap(motion.station(for: "stacks")).workflow, .engineeringBuild)
+    XCTAssertEqual(try XCTUnwrap(motion.station(for: "brio")).workflow, .resting)
+    XCTAssertTrue(try XCTUnwrap(motion.station(for: "stacks")).continuousMotionEnabled)
+    XCTAssertFalse(try XCTUnwrap(motion.station(for: "aurora")).continuousMotionEnabled)
+  }
+
+  func testReduceMotionStopsContinuousDecorationWithoutChangingEndpoints() {
+    let agent = livingAgent(id: "aurora", role: .research, activity: .working)
+    let standard = livingMotion(agents: [agent], reduceMotion: false)
+    let reduced = livingMotion(agents: [agent], reduceMotion: true)
+    XCTAssertTrue(standard.ambient.continuousMotionEnabled)
+    XCTAssertFalse(reduced.ambient.continuousMotionEnabled)
+    XCTAssertEqual(standard.station(for: "aurora")?.workflow, reduced.station(for: "aurora")?.workflow)
+    XCTAssertEqual(standard.station(for: "aurora")?.visibleProgress, reduced.station(for: "aurora")?.visibleProgress)
+  }
+
+  func testBackgroundedEnvironmentPausesAmbientAndStationLoops() throws {
+    let motion = livingMotion(
+      agents: [livingAgent(id: "stacks", role: .engineering, activity: .working)],
+      sceneActive: false
+    )
+    XCTAssertFalse(motion.ambient.continuousMotionEnabled)
+    XCTAssertFalse(try XCTUnwrap(motion.station(for: "stacks")).continuousMotionEnabled)
+  }
+
+  func testMotionProjectionRejectsHiddenTruthThroughReviewStepFour() throws {
+    let agent = livingAgent(
+      id: "aurora",
+      role: .research,
+      activity: .reviewing,
+      conditions: [.focused, .stressed, .verified, .drifting, .overclaimed, .evidenceIncomplete],
+      revealStep: 4
+    )
+    let station = try XCTUnwrap(livingMotion(agents: [agent]).station(for: "aurora"))
+    XCTAssertEqual(station.safeConditionSignals, [.focused, .stressed])
+  }
+
+  func testMotionProjectionAdmitsCanonicalPostReviewSignalsAtStepFive() throws {
+    let agent = livingAgent(
+      id: "aurora",
+      role: .research,
+      activity: .reviewed,
+      conditions: [.verified],
+      revealStep: 5
+    )
+    let station = try XCTUnwrap(livingMotion(agents: [agent]).station(for: "aurora"))
+    XCTAssertEqual(station.safeConditionSignals, [.verified])
+  }
+
+  func testReviewRequiredNotificationOutranksOtherVisibleEvents() {
+    let eventID = UUID(uuidString: "32510000-0000-0000-0000-000000000001")!
+    let agent = livingAgent(
+      id: "brio",
+      role: .marketing,
+      activity: .awaitingReview,
+      needsFounderAttention: true
+    )
+    let motion = livingMotion(
+      agents: [agent],
+      visibleEvent: .sprint(id: eventID)
+    )
+    XCTAssertEqual(motion.event.kind, .founderReviewRequired)
+    XCTAssertEqual(motion.event.agentID, "brio")
+    XCTAssertEqual(motion.event.priority, 5)
+    XCTAssertGreaterThanOrEqual(motion.event.duration, 0.4)
+    XCTAssertLessThanOrEqual(motion.event.duration, 1.2)
+  }
+
+  func testLightingUsesOnlyVisibleAtmosphereAndActivity() {
+    var stats = FounderStats()
+    stats.runway = 6
+    stats.momentum = 80
+    let atmosphere = CompanyAtmosphere.derive(
+      stats: stats,
+      facility: .founderGarage,
+      venture: 1
+    )
+    let environment = FounderEnvironmentProjection(
+      facility: .founderGarage,
+      atmosphere: atmosphere,
+      infrastructure: [],
+      agents: [livingAgent(id: "stacks", role: .engineering, activity: .working)]
+    )
+    let motion = FounderGarageMotionPresentation.derive(
+      environment: environment,
+      camera: FounderEnvironmentCameraState(),
+      reduceMotion: false,
+      sceneActive: true
+    )
+    XCTAssertGreaterThan(motion.lighting.warningIntensity, 0)
+    XCTAssertGreaterThan(motion.lighting.momentumConnectionIntensity, 0.5)
+    XCTAssertLessThan(motion.lighting.warningIntensity, 1)
+  }
+
+  func testCameraModeChangesOnlyTheCameraPresentationChannel() {
+    let agents = [livingAgent(id: "stacks", role: .engineering, activity: .working)]
+    let focused = livingMotion(agents: agents, mode: .computerFocused)
+    let freeLook = livingMotion(agents: agents, mode: .freeLook)
+    XCTAssertNotEqual(focused.camera, freeLook.camera)
+    XCTAssertEqual(focused.stations, freeLook.stations)
+    XCTAssertEqual(focused.lighting, freeLook.lighting)
+    XCTAssertTrue(focused.camera.computerIsInteractive)
+    XCTAssertFalse(freeLook.camera.computerIsInteractive)
+  }
+
+  func testLivingGarageProjectionIsDeterministicForIdenticalVisibleInputs() {
+    let agents = [livingAgent(id: "aurora", role: .research, activity: .assignmentReceived)]
+    XCTAssertEqual(livingMotion(agents: agents), livingMotion(agents: agents))
+  }
+
+  private func livingMotion(
+    agents: [LivingAgentProjection],
+    visibleEvent: FounderGarageVisibleEvent? = nil,
+    mode: FounderEnvironmentMode = .freeLook,
+    reduceMotion: Bool = false,
+    sceneActive: Bool = true
+  ) -> FounderGarageMotionPresentation {
+    let environment = FounderEnvironmentProjection(
+      facility: .founderGarage,
+      atmosphere: .derive(stats: FounderStats(), facility: .founderGarage, venture: 1),
+      infrastructure: [],
+      agents: agents,
+      visibleEvent: visibleEvent
+    )
+    return FounderGarageMotionPresentation.derive(
+      environment: environment,
+      camera: FounderEnvironmentCameraState(mode: mode),
+      reduceMotion: reduceMotion,
+      sceneActive: sceneActive
+    )
+  }
+
+  private func livingAgent(
+    id: String,
+    role: AgentRole,
+    activity: LivingAgentActivity,
+    conditions: Set<LivingAgentCondition> = [],
+    revealStep: Int = 0,
+    needsFounderAttention: Bool = false
+  ) -> LivingAgentProjection {
+    LivingAgentProjection(
+      agentID: id,
+      name: id.capitalized,
+      initials: String(id.prefix(2)).uppercased(),
+      role: role,
+      taskID: UUID(uuidString: "32510000-0000-0000-0000-000000000002"),
+      taskTitle: "Visible task",
+      activity: activity,
+      conditions: conditions,
+      emphasis: needsFounderAttention ? .founderAttention : .normal,
+      progress: activity == .working ? 0.52 : activity == .idle ? 0 : 1,
+      reviewRevealStep: revealStep,
+      stressLabel: conditions.contains(.stressed) ? "Stressed" : "Focused",
+      trustLabel: "Trusted",
+      level: 2,
+      needsFounderAttention: needsFounderAttention,
+      isResting: activity == .resting,
+      presentationSequenceID: UUID(uuidString: "32510000-0000-0000-0000-000000000003")
+    )
+  }
 }
