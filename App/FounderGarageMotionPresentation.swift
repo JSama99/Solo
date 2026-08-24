@@ -140,6 +140,7 @@ struct FounderGarageStationMotion: Equatable, Sendable {
       case .research: .researchScan
       case .engineering: .engineeringBuild
       case .marketing: .campaignDistribution
+      case .general: .engineeringBuild
       }
     case .workComplete, .awaitingReview: .artifactReady
     case .reviewing: .reviewing
