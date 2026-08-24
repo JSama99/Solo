@@ -661,3 +661,87 @@ final class Build32_4SpatialCausalityTests: XCTestCase {
     return store
   }
 }
+
+/// Build 32.5 regression coverage for the presentation-only environment shell.
+@MainActor
+final class Build32_5FounderEnvironmentTests: XCTestCase {
+  func testDefaultCameraIsComputerFocusedAndInteractive() {
+    let camera = FounderEnvironmentCameraState()
+    XCTAssertEqual(camera.mode, .computerFocused)
+    XCTAssertTrue(camera.computerAllowsHitTesting)
+    XCTAssertFalse(camera.environmentAllowsCameraGestures)
+  }
+
+  func testFreeLookTransfersInteractionOwnershipWithoutChangingCameraModelIdentity() {
+    var camera = FounderEnvironmentCameraState()
+    camera.mode = .freeLook
+    XCTAssertFalse(camera.computerAllowsHitTesting)
+    XCTAssertTrue(camera.environmentAllowsCameraGestures)
+    camera.mode = .computerFocused
+    XCTAssertTrue(camera.computerAllowsHitTesting)
+  }
+
+  func testCameraMovementIsBoundedAndPresentationOnly() {
+    var camera = FounderEnvironmentCameraState(mode: .freeLook)
+    camera.look(horizontal: 9, vertical: 9)
+    XCTAssertEqual(camera.horizontalLook, 1)
+    XCTAssertEqual(camera.verticalLook, 0.30)
+    camera.look(horizontal: -9, vertical: -9)
+    XCTAssertEqual(camera.horizontalLook, -1)
+    XCTAssertEqual(camera.verticalLook, -0.30)
+    camera.center()
+    XCTAssertEqual(camera.horizontalLook, 0)
+    XCTAssertEqual(camera.verticalLook, 0)
+  }
+
+  func testReduceMotionUsesStableCameraEndpoints() {
+    var camera = FounderEnvironmentCameraState(mode: .freeLook)
+    camera.setLook(horizontal: 0.5, vertical: 0.2, reduceMotion: true)
+    XCTAssertEqual(camera.horizontalLook, 1)
+    XCTAssertEqual(camera.verticalLook, 0.30)
+    camera.setLook(horizontal: 0.1, vertical: 0.02, reduceMotion: true)
+    XCTAssertEqual(camera.horizontalLook, 0)
+    XCTAssertEqual(camera.verticalLook, 0)
+  }
+
+  func testGarageAndLoftRemainStructurallyDistinctProjections() {
+    let stats = FounderStats()
+    let garage = FounderEnvironmentProjection(facility: .founderGarage, atmosphere: .derive(stats: stats, facility: .founderGarage, venture: 1), infrastructure: [], agents: [])
+    let loft = FounderEnvironmentProjection(facility: .founderLoft, atmosphere: .derive(stats: stats, facility: .founderLoft, venture: 1), infrastructure: [], agents: [])
+    XCTAssertEqual(garage.spatialPresentation, .improvisedGarage)
+    XCTAssertEqual(loft.spatialPresentation, .elevatedLoft)
+    XCTAssertNotEqual(garage.facility.accessibilityDescription, loft.facility.accessibilityDescription)
+  }
+
+  func testAllExistingUpgradesMapToPhysicalEnvironmentLocations() {
+    XCTAssertEqual(FounderEnvironmentProjection.physicalLocation(for: .developmentRig), .stacksBuildRail)
+    XCTAssertEqual(FounderEnvironmentProjection.physicalLocation(for: .verificationArray), .auroraFounderVerificationBridge)
+    XCTAssertEqual(FounderEnvironmentProjection.physicalLocation(for: .campaignStudio), .brioBroadcastRail)
+    XCTAssertEqual(FounderEnvironmentProjection.physicalLocation(for: .recoveryCorner), .recoverySideBay)
+    XCTAssertEqual(FounderEnvironmentProjection.physicalLocation(for: .founderCommandDesk), .founderForegroundDesk)
+  }
+
+  func testEnvironmentAccessibilityOmitsHiddenReviewTruth() {
+    let agent = LivingAgentProjection(
+      agentID: "aurora", name: "Aurora", initials: "AU", role: .research,
+      taskID: UUID(), taskTitle: "Visible task", activity: .awaitingReview,
+      conditions: [.overclaimed, .drifting, .evidenceIncomplete, .stressed], emphasis: .founderAttention,
+      progress: 1, reviewRevealStep: 4, stressLabel: "Pressured", trustLabel: "Trusted", level: 2,
+      needsFounderAttention: true, isResting: false
+    )
+    let projection = FounderEnvironmentProjection(
+      facility: .founderGarage,
+      atmosphere: .derive(stats: FounderStats(), facility: .founderGarage, venture: 1),
+      infrastructure: [], agents: [agent]
+    )
+    XCTAssertTrue(projection.agentAccessibilitySummary.contains("Awaiting Founder review"))
+    XCTAssertTrue(projection.agentAccessibilitySummary.contains("Stressed"))
+    XCTAssertFalse(projection.agentAccessibilitySummary.localizedCaseInsensitiveContains("overclaim"))
+    XCTAssertFalse(projection.agentAccessibilitySummary.localizedCaseInsensitiveContains("drift"))
+    XCTAssertFalse(projection.agentAccessibilitySummary.localizedCaseInsensitiveContains("evidence"))
+  }
+
+  func testEnvironmentRendererBoundaryIsNativeAndReplaceable() {
+    XCTAssertEqual(FounderEnvironmentRendererKind.native2D, .native2D)
+  }
+}
