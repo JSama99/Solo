@@ -993,6 +993,90 @@ final class Build32_5FounderEnvironmentTests: XCTestCase {
     XCTAssertEqual(livingMotion(agents: agents), livingMotion(agents: agents))
   }
 
+  func testPhysicalStationMapsVisibleLifecycleToNeutralArtifactFlow() throws {
+    let assignment = try XCTUnwrap(livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .assignmentReceived)
+    ]).station(for: "aurora"))
+    let working = try XCTUnwrap(livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .working)
+    ]).station(for: "aurora"))
+    let returned = try XCTUnwrap(livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .awaitingReview)
+    ]).station(for: "aurora"))
+
+    XCTAssertEqual(assignment.physical.artifactState, .inboundTask)
+    XCTAssertEqual(working.physical.artifactState, .assembling)
+    XCTAssertEqual(returned.physical.artifactState, .returnedForReview)
+  }
+
+  func testIdlePhysicalStationRetainsLifeWithoutClaimingWork() throws {
+    let station = try XCTUnwrap(livingMotion(agents: [
+      livingAgent(id: "stacks", role: .engineering, activity: .idle)
+    ]).station(for: "stacks"))
+    XCTAssertEqual(station.physical.artifactState, .none)
+    XCTAssertLessThan(station.physical.primaryDisplayIntensity, 0.5)
+    XCTAssertLessThan(station.physical.secondaryDisplayIntensity, 0.3)
+    XCTAssertLessThan(station.physical.indicatorActivity, 0.3)
+  }
+
+  func testWorkingPhysicalStationsOperateIndependently() throws {
+    let motion = livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .working),
+      livingAgent(id: "stacks", role: .engineering, activity: .idle),
+      livingAgent(id: "brio", role: .marketing, activity: .awaitingReview)
+    ])
+    let aurora = try XCTUnwrap(motion.station(for: "aurora"))
+    let stacks = try XCTUnwrap(motion.station(for: "stacks"))
+    let brio = try XCTUnwrap(motion.station(for: "brio"))
+    XCTAssertGreaterThan(aurora.physical.coolingActivity, stacks.physical.coolingActivity)
+    XCTAssertEqual(aurora.physical.artifactState, .assembling)
+    XCTAssertEqual(stacks.physical.artifactState, .none)
+    XCTAssertEqual(brio.physical.artifactState, .returnedForReview)
+  }
+
+  func testReduceMotionStopsPortraitCoolingAndArtifactFlourishInputs() throws {
+    let station = try XCTUnwrap(livingMotion(
+      agents: [livingAgent(id: "stacks", role: .engineering, activity: .working)],
+      reduceMotion: true
+    ).station(for: "stacks"))
+    XCTAssertFalse(station.physical.portraitMotionEnabled)
+    XCTAssertEqual(station.physical.coolingActivity, 0)
+    XCTAssertEqual(station.physical.artifactState, .assembling)
+    XCTAssertGreaterThan(station.physical.primaryDisplayIntensity, 0.8)
+  }
+
+  func testBackgroundingStopsPhysicalPresenceButPreservesVisibleState() throws {
+    let station = try XCTUnwrap(livingMotion(
+      agents: [livingAgent(id: "brio", role: .marketing, activity: .working)],
+      sceneActive: false
+    ).station(for: "brio"))
+    XCTAssertFalse(station.physical.portraitMotionEnabled)
+    XCTAssertEqual(station.physical.coolingActivity, 0)
+    XCTAssertEqual(station.physical.artifactState, .assembling)
+  }
+
+  func testHiddenConditionsCannotAlterPreReviewPhysicalPresentation() throws {
+    let neutral = livingAgent(id: "aurora", role: .research, activity: .working)
+    let hidden = livingAgent(
+      id: "aurora",
+      role: .research,
+      activity: .working,
+      conditions: [.verified, .drifting, .overclaimed, .evidenceIncomplete],
+      revealStep: 4
+    )
+    let neutralStation = try XCTUnwrap(livingMotion(agents: [neutral]).station(for: "aurora"))
+    let hiddenStation = try XCTUnwrap(livingMotion(agents: [hidden]).station(for: "aurora"))
+    XCTAssertEqual(neutralStation.physical, hiddenStation.physical)
+    XCTAssertEqual(hiddenStation.safeConditionSignals, [])
+  }
+
+  func testPhysicalPresentationDoesNotDependOnCameraMode() throws {
+    let agent = livingAgent(id: "brio", role: .marketing, activity: .working)
+    let focused = try XCTUnwrap(livingMotion(agents: [agent], mode: .computerFocused).station(for: "brio"))
+    let freeLook = try XCTUnwrap(livingMotion(agents: [agent], mode: .freeLook).station(for: "brio"))
+    XCTAssertEqual(focused.physical, freeLook.physical)
+  }
+
   private func livingMotion(
     agents: [LivingAgentProjection],
     visibleEvent: FounderGarageVisibleEvent? = nil,

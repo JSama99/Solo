@@ -395,6 +395,7 @@ struct FounderEnvironmentRendererView: View {
       practicalLighting(size: size, layout: layout)
       garageArchitecture(size: size, layout: layout)
       panoramicStations(size: size, layout: layout)
+      taskArtifactLayer(size: size, layout: layout)
       panoramicInfrastructure(size: size, layout: layout)
       founderDesk(size: size, layout: layout)
       ambientEquipmentLayer(size: size, layout: layout)
@@ -532,65 +533,77 @@ struct FounderEnvironmentRendererView: View {
     .allowsHitTesting(false)
   }
 
-  private enum EnvironmentStationKind { case research, engineering, campaign }
-
-  private func stationView(agentID: String, role: String, tone: Color, kind: EnvironmentStationKind) -> some View {
+  private func stationView(agentID: String, role: String, tone: Color, kind: FounderGarageStationKind) -> some View {
     let agent = projection.agents.first { $0.agentID == agentID }
     let stationMotion = motion.station(for: agentID)
-    return ZStack(alignment: .bottom) {
-      Circle()
-        .fill(tone.opacity(0.08 + (stationMotion?.localLightIntensity ?? 0.1) * 0.14))
-        .frame(width: 230, height: 230)
-        .blur(radius: 18)
-        .offset(y: -42)
-      stationBackboard(kind: kind, tone: tone)
-      if let stationMotion {
-        stationWorkflowOverlay(stationMotion, tone: tone)
-          .offset(y: -105)
-      }
-      if let portrait = AgentPortraitAsset.name(for: agentID) {
-        Image(portrait)
-          .resizable()
-          .scaledToFill()
-          .frame(width: 92, height: 116)
-          .clipShape(.rect(cornerRadius: 18))
-          .overlay { RoundedRectangle(cornerRadius: 18).stroke(tone.opacity(0.86), lineWidth: 3) }
-          .shadow(color: tone.opacity(0.38), radius: 10)
-          .offset(y: -60)
-      }
-      RoundedRectangle(cornerRadius: 12)
-        .fill(.black.opacity(0.88))
-        .frame(width: 190, height: 72)
-        .overlay(alignment: .top) {
-          VStack(spacing: 4) {
-            Text(role).font(.caption2.weight(.black)).tracking(0.8).foregroundStyle(tone)
-            HStack(spacing: 5) {
-              Circle()
-                .fill(tone)
-                .frame(width: 7, height: 7)
-                .phaseAnimator([0.65, 1.0, 0.65], trigger: stationMotion?.eventToken) { content, phase in
-                  content
-                    .opacity(stationMotion?.continuousMotionEnabled == true ? phase : 0.82)
-                    .scaleEffect(stationMotion?.needsFounderAttention == true ? phase : 1)
-                } animation: { _ in .smooth(duration: 0.28) }
-              Text(agent?.activity.label ?? "Ready").font(.caption2.weight(.semibold)).foregroundStyle(.white.opacity(0.82))
-            }
-          }.padding(.top, 9)
+    return FounderGaragePhysicalStationView(
+      agent: agent,
+      motion: stationMotion,
+      role: role,
+      tone: tone,
+      kind: kind,
+      increasedContrast: increasedContrast
+    )
+  }
+
+  private func taskArtifactLayer(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
+    let founder = layout.viewportPosition(for: .founderMonitor, camera: camera, layer: .foreground)
+    return ZStack {
+      ForEach(motion.stations, id: \.agentID) { station in
+        if station.physical.artifactState != .none {
+          let destination = artifactDestination(for: station.agentID, layout: layout)
+          let returning = station.physical.artifactState == .returnedForReview
+          let position = returning ? founder : destination
+          Path { path in
+            path.move(to: founder)
+            path.addCurve(
+              to: destination,
+              control1: CGPoint(x: founder.x, y: founder.y - 72),
+              control2: CGPoint(x: destination.x, y: destination.y + 72)
+            )
+          }
+          .trim(from: 0, to: station.physical.artifactState == .assembling ? 0.72 : 1)
+          .stroke(
+            stationTone(for: station.agentID).opacity(0.28),
+            style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [5, 6])
+          )
+
+          FounderGarageTaskArtifactView(
+            tone: stationTone(for: station.agentID),
+            state: station.physical.artifactState,
+            progress: station.physical.artifactProgress,
+            reduceMotion: !motion.ambient.continuousMotionEnabled,
+            eventToken: station.eventToken
+          )
+          .position(position)
+          .animation(.smooth(duration: 0.62), value: station.physical.artifactState)
         }
-      stationConsole(kind: kind, tone: tone)
-        .opacity(0.46 + (stationMotion?.activityIntensity ?? 0.1) * 0.54)
-        .offset(y: 18)
-      if stationMotion?.needsFounderAttention == true {
-        Image(systemName: "doc.badge.clock")
-          .font(.caption.weight(.black))
-          .foregroundStyle(tone)
-          .padding(7)
-          .background(.black.opacity(0.88), in: Circle())
-          .offset(x: 88, y: -72)
-          .accessibilityHidden(true)
       }
     }
-    .frame(width: 220, height: 238)
+    .frame(width: size.width, height: size.height)
+    .allowsHitTesting(false)
+  }
+
+  private func artifactDestination(
+    for agentID: String,
+    layout: FounderEnvironmentLayout
+  ) -> CGPoint {
+    let anchor: FounderEnvironmentWorldAnchor
+    switch agentID {
+    case "aurora": anchor = .auroraStation
+    case "brio": anchor = .brioStation
+    default: anchor = .stacksStation
+    }
+    let station = layout.viewportPosition(for: anchor, camera: camera, layer: .middleGround)
+    return CGPoint(x: station.x, y: station.y + 75)
+  }
+
+  private func stationTone(for agentID: String) -> Color {
+    switch agentID {
+    case "aurora": .cyan
+    case "brio": .pink
+    default: .orange
+    }
   }
 
   @ViewBuilder
@@ -660,7 +673,7 @@ struct FounderEnvironmentRendererView: View {
   }
 
   @ViewBuilder
-  private func stationBackboard(kind: EnvironmentStationKind, tone: Color) -> some View {
+  private func stationBackboard(kind: FounderGarageStationKind, tone: Color) -> some View {
     switch kind {
     case .research:
       HStack(spacing: 8) {
@@ -677,7 +690,7 @@ struct FounderEnvironmentRendererView: View {
     }
   }
 
-  private func stationConsole(kind: EnvironmentStationKind, tone: Color) -> some View {
+  private func stationConsole(kind: FounderGarageStationKind, tone: Color) -> some View {
     HStack(spacing: 6) {
       ForEach(0..<5, id: \.self) { index in
         RoundedRectangle(cornerRadius: kind == .research ? 8 : 3)
@@ -923,6 +936,25 @@ struct FounderEnvironmentRendererView: View {
         .position(layout.viewportPosition(worldPoint: point, camera: camera, layer: .background))
       }
 
+      stationLightSpill(
+        agentID: "aurora",
+        tone: .cyan,
+        worldPoint: CGPoint(x: 325, y: 315),
+        layout: layout
+      )
+      stationLightSpill(
+        agentID: "stacks",
+        tone: .orange,
+        worldPoint: CGPoint(x: 680, y: 300),
+        layout: layout
+      )
+      stationLightSpill(
+        agentID: "brio",
+        tone: .pink,
+        worldPoint: CGPoint(x: 1_035, y: 315),
+        layout: layout
+      )
+
       if motion.lighting.warningIntensity > 0 {
         Capsule()
           .fill(.orange.opacity(0.35 + motion.lighting.warningIntensity * 0.35))
@@ -939,6 +971,23 @@ struct FounderEnvironmentRendererView: View {
     .allowsHitTesting(false)
   }
 
+  private func stationLightSpill(
+    agentID: String,
+    tone: Color,
+    worldPoint: CGPoint,
+    layout: FounderEnvironmentLayout
+  ) -> some View {
+    let intensity = motion.station(for: agentID)?.localLightIntensity ?? 0.08
+    return RadialGradient(
+      colors: [tone.opacity(0.06 + intensity * 0.16), tone.opacity(intensity * 0.04), .clear],
+      center: .center,
+      startRadius: 8,
+      endRadius: 145
+    )
+    .frame(width: 290, height: 230)
+    .position(layout.viewportPosition(worldPoint: worldPoint, camera: camera, layer: .middleGround))
+  }
+
   private func ambientEquipmentLayer(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
     ZStack {
       ambientFan(
@@ -953,6 +1002,24 @@ struct FounderEnvironmentRendererView: View {
           layer: .middleGround
         )
       )
+
+      networkHardware
+        .position(
+          layout.viewportPosition(
+            worldPoint: CGPoint(x: 540, y: 365),
+            camera: camera,
+            layer: .middleGround
+          )
+        )
+
+      powerStrip
+        .position(
+          layout.viewportPosition(
+            worldPoint: CGPoint(x: 690, y: 575),
+            camera: camera,
+            layer: .foreground
+          )
+        )
 
       ambientFan(
         station: motion.station(for: "stacks"),
@@ -982,6 +1049,37 @@ struct FounderEnvironmentRendererView: View {
       )
     }
     .allowsHitTesting(false)
+  }
+
+  private var networkHardware: some View {
+    let active = motion.ambient.continuousMotionEnabled
+    return ZStack {
+      RoundedRectangle(cornerRadius: 5).fill(.black.opacity(0.92)).frame(width: 74, height: 32)
+      HStack(spacing: 5) {
+        ForEach(0..<7, id: \.self) { index in
+          Circle()
+            .fill(index.isMultiple(of: 3) ? Color.green : Color.cyan)
+            .frame(width: 4, height: 4)
+            .phaseAnimator(active ? [0.25, 0.95, 0.42] : [0.35]) { content, opacity in
+              content.opacity(index.isMultiple(of: 2) ? opacity : 0.62)
+            } animation: { _ in .easeInOut(duration: 1.15) }
+        }
+      }
+      Capsule().fill(.white.opacity(0.14)).frame(width: 48, height: 2).offset(y: 10)
+    }
+    .overlay { RoundedRectangle(cornerRadius: 5).stroke(.white.opacity(0.18), lineWidth: 1) }
+  }
+
+  private var powerStrip: some View {
+    HStack(spacing: 8) {
+      ForEach(0..<4, id: \.self) { index in
+        Circle().stroke(.white.opacity(0.28), lineWidth: 1).frame(width: 11, height: 11)
+        if index < 3 { Circle().fill(.green.opacity(0.66)).frame(width: 3, height: 3) }
+      }
+    }
+    .padding(.horizontal, 9)
+    .frame(height: 22)
+    .background(.black.opacity(0.88), in: Capsule())
   }
 
   private func ambientFan(
@@ -1058,8 +1156,17 @@ struct FounderPhysicalMonitorView<Content: View>: View {
 
   var body: some View {
     ZStack {
+      RoundedRectangle(cornerRadius: focused ? 19 : 13)
+        .fill(Color(red: 0.025, green: 0.028, blue: 0.032))
+        .offset(x: focused ? 3 : 5, y: focused ? 5 : 7)
+        .shadow(color: .black.opacity(0.78), radius: focused ? 14 : 8, y: 8)
+        .allowsHitTesting(false)
       RoundedRectangle(cornerRadius: focused ? 18 : 12)
-        .fill(.black)
+        .fill(LinearGradient(
+          colors: [Color(red: 0.12, green: 0.13, blue: 0.14), .black],
+          startPoint: .topLeading,
+          endPoint: .bottomTrailing
+        ))
         .overlay { RoundedRectangle(cornerRadius: focused ? 18 : 12).stroke(.white.opacity(increasedContrast ? 0.94 : 0.38), lineWidth: focused ? 3 : 2) }
         .shadow(
           color: .cyan.opacity((focused ? 0.20 : 0.08) * monitorGlowIntensity),
@@ -1072,6 +1179,28 @@ struct FounderPhysicalMonitorView<Content: View>: View {
         .clipShape(.rect(cornerRadius: focused ? 12 : 8))
         .padding(focused ? 9 : 7)
         .allowsHitTesting(false)
+      Rectangle()
+        .fill(
+          LinearGradient(
+            colors: [.clear, .white.opacity(0.055), .clear],
+            startPoint: .top,
+            endPoint: .bottom
+          )
+        )
+        .frame(height: max(18, height * 0.11))
+        .phaseAnimator(reduceMotion ? [0.0] : [-0.38, 0.38]) { content, phase in
+          content.offset(y: height * phase)
+        } animation: { _ in .linear(duration: 4.8) }
+        .clipShape(.rect(cornerRadius: focused ? 12 : 8))
+        .padding(focused ? 9 : 7)
+        .allowsHitTesting(false)
+      HStack(spacing: 4) {
+        ForEach(0..<5, id: \.self) { _ in
+          Capsule().fill(.white.opacity(0.16)).frame(width: focused ? 8 : 5, height: 2)
+        }
+      }
+      .position(x: width / 2, y: height - (focused ? 5 : 4))
+      .allowsHitTesting(false)
       Circle()
         .fill(notificationIntensity > 0 ? Color.orange : Color.white.opacity(0.24))
         .frame(width: 7, height: 7)
@@ -1088,6 +1217,13 @@ struct FounderPhysicalMonitorView<Content: View>: View {
     .frame(width: width, height: height)
     .scaleEffect(focused ? 1 : 0.98)
     .offset(x: worldOffset.width, y: focused ? -6 : worldOffset.height)
+    .overlay(alignment: .trailing) {
+      RoundedRectangle(cornerRadius: 2)
+        .fill(.black.opacity(0.88))
+        .frame(width: focused ? 3 : 5, height: height * 0.68)
+        .offset(x: focused ? 2 : 4)
+        .allowsHitTesting(false)
+    }
   }
 }
 

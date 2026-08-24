@@ -17,10 +17,14 @@ struct MotionVerificationScreen: View {
   @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
   @State private var fixtureID: LivingCompanyFixture.ID
   @State private var isPlayingCausalProof = false
-  @State private var showsPhysicalEnvironment = false
+  @State private var showsPhysicalEnvironment: Bool
+  @State private var proofComputerFocused: Bool
 
   init(initialFixture: LivingCompanyFixture.ID = .idleOverview) {
     _fixtureID = State(initialValue: initialFixture)
+    let physical = ProcessInfo.processInfo.arguments.contains("--motion-qa-physical")
+    _showsPhysicalEnvironment = State(initialValue: physical)
+    _proofComputerFocused = State(initialValue: physical)
   }
 
   var body: some View {
@@ -117,10 +121,22 @@ struct MotionVerificationScreen: View {
   private func playCausalProof() async {
     guard !isPlayingCausalProof else { return }
     isPlayingCausalProof = true
+    if showsPhysicalEnvironment {
+      fixtureID = .planningPhase
+      proofComputerFocused = true
+      try? await Task.sleep(for: .milliseconds(900))
+      proofComputerFocused = false
+      try? await Task.sleep(for: .milliseconds(1_150))
+    }
     for id in LivingCompanyFixture.causalProofSequence {
       guard !Task.isCancelled else { return }
       fixtureID = id
       try? await Task.sleep(for: .milliseconds(1_550))
+    }
+    if showsPhysicalEnvironment {
+      try? await Task.sleep(for: .milliseconds(650))
+      proofComputerFocused = true
+      try? await Task.sleep(for: .milliseconds(1_150))
     }
     isPlayingCausalProof = false
   }
@@ -160,7 +176,9 @@ struct MotionVerificationScreen: View {
 
   private func fixtureEnvironment(_ fixture: LivingCompanyFixture) -> some View {
     GeometryReader { proxy in
-      let camera = fixtureEnvironmentCamera(fixture)
+      let camera = proofComputerFocused
+        ? FounderEnvironmentCameraState(mode: .computerFocused)
+        : fixtureEnvironmentCamera(fixture)
       let projection = FounderEnvironmentProjection(
         facility: fixture.atmosphere.facility,
         atmosphere: fixture.atmosphere,
@@ -192,11 +210,13 @@ struct MotionVerificationScreen: View {
           increasedContrast: fixture.increasedContrast
         )
         FounderPhysicalMonitorView(
-          focused: false,
-          width: min(proxy.size.width * 0.58, 300),
-          height: min(proxy.size.height * 0.28, 260),
+          focused: proofComputerFocused,
+          width: proofComputerFocused ? proxy.size.width - 16 : min(proxy.size.width * 0.58, 300),
+          height: proofComputerFocused ? min(proxy.size.height * 0.82, 520) : min(proxy.size.height * 0.28, 260),
           camera: camera,
-          worldOffset: CGSize(width: monitorOffset.width, height: monitorOffset.height + 42),
+          worldOffset: proofComputerFocused
+            ? .zero
+            : CGSize(width: monitorOffset.width, height: monitorOffset.height + 42),
           increasedContrast: fixture.increasedContrast,
           monitorGlowIntensity: motion.lighting.founderMonitorGlow,
           notificationIntensity: motion.lighting.founderNotificationIntensity,
@@ -208,6 +228,10 @@ struct MotionVerificationScreen: View {
         }
       }
       .clipped()
+      .animation(
+        fixture.forceReduceMotion || systemReduceMotion ? nil : .smooth(duration: 0.38),
+        value: proofComputerFocused
+      )
     }
     .frame(height: 620)
     .environment(\.dynamicTypeSize, fixture.accessibilityLarge ? .accessibility3 : .large)
