@@ -255,6 +255,51 @@ struct FounderGarageLightingPresentation: Equatable, Sendable {
   }
 }
 
+enum FounderGarageEnvironmentDetail: Int, Equatable, Sendable {
+  case improvised
+  case equipped
+  case established
+}
+
+/// Static depth and material policy derived only from player-visible facility
+/// ownership. It never receives task results, review truth, or simulation RNG.
+struct FounderGarageEnvironmentPresentation: Equatable, Sendable {
+  var detail: FounderGarageEnvironmentDetail
+  var installedInfrastructureCount: Int
+  var rearContrast: Double
+  var middleContrast: Double
+  var foregroundContrast: Double
+  var atmosphericMotionEnabled: Bool
+  var atmosphericParticleCount: Int
+
+  static func derive(
+    facility: FacilityTier,
+    infrastructure: [InfrastructureVisual],
+    reduceMotion: Bool,
+    sceneActive: Bool
+  ) -> Self {
+    let installedCount = infrastructure.filter { $0.state != .uninstalled }.count
+    let detail: FounderGarageEnvironmentDetail
+    if facility != .founderGarage || installedCount >= 4 {
+      detail = .established
+    } else if installedCount >= 2 {
+      detail = .equipped
+    } else {
+      detail = .improvised
+    }
+    let atmosphericMotionEnabled = sceneActive && !reduceMotion
+    return Self(
+      detail: detail,
+      installedInfrastructureCount: installedCount,
+      rearContrast: 0.74,
+      middleContrast: 0.90,
+      foregroundContrast: 1,
+      atmosphericMotionEnabled: atmosphericMotionEnabled,
+      atmosphericParticleCount: atmosphericMotionEnabled ? 9 : 0
+    )
+  }
+}
+
 struct FounderGarageEventEmphasis: Equatable, Sendable {
   var kind: FounderGarageEventKind
   var agentID: String?
@@ -318,6 +363,7 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
   var ambient: FounderGarageAmbientMotion
   var stations: [FounderGarageStationMotion]
   var lighting: FounderGarageLightingPresentation
+  var environment: FounderGarageEnvironmentPresentation
   var event: FounderGarageEventEmphasis
 
   static func derive(
@@ -347,6 +393,12 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
       ),
       stations: stations,
       lighting: .derive(atmosphere: environment.atmosphere, stations: stations, event: event),
+      environment: .derive(
+        facility: environment.facility,
+        infrastructure: environment.infrastructure,
+        reduceMotion: reduceMotion,
+        sceneActive: sceneActive
+      ),
       event: event
     )
   }

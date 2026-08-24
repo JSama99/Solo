@@ -1209,6 +1209,94 @@ final class Build32_5FounderEnvironmentTests: XCTestCase {
     XCTAssertEqual(focused.physical, freeLook.physical)
   }
 
+  func testDepthLayersProducePhysicallyOrderedParallax() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    let center = FounderEnvironmentCameraState(mode: .freeLook)
+    let panned = FounderEnvironmentCameraState(horizontalLook: 0.65, mode: .freeLook)
+    let point = CGPoint(x: 680, y: 400)
+    let rearTravel = abs(
+      layout.viewportPosition(worldPoint: point, camera: panned, layer: .background).x
+        - layout.viewportPosition(worldPoint: point, camera: center, layer: .background).x
+    )
+    let middleTravel = abs(
+      layout.viewportPosition(worldPoint: point, camera: panned, layer: .middleGround).x
+        - layout.viewportPosition(worldPoint: point, camera: center, layer: .middleGround).x
+    )
+    let foregroundTravel = abs(
+      layout.viewportPosition(worldPoint: point, camera: panned, layer: .foreground).x
+        - layout.viewportPosition(worldPoint: point, camera: center, layer: .foreground).x
+    )
+    XCTAssertLessThan(rearTravel, middleTravel)
+    XCTAssertLessThan(middleTravel, foregroundTravel)
+  }
+
+  func testPerspectiveScalePlacesFounderDeskAheadOfWorkstations() {
+    let layout = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 620))
+    XCTAssertGreaterThan(layout.depthScale(for: .founderDesk), layout.depthScale(for: .auroraStation))
+    XCTAssertGreaterThan(layout.depthScale(for: .auroraStation), layout.depthScale(for: .garageEntrance))
+    XCTAssertGreaterThan(layout.depthScale(for: .brioStation), layout.depthScale(for: .stacksStation))
+  }
+
+  func testEnvironmentDetailUsesOnlyCanonicalInfrastructureOwnership() {
+    let uninstalled = InfrastructureVisual.map(
+      purchased: [],
+      facility: .founderGarage,
+      agents: [],
+      sprint: 1
+    )
+    let equipped = InfrastructureVisual.map(
+      purchased: [.developmentRig, .verificationArray],
+      facility: .founderGarage,
+      agents: [],
+      sprint: 1
+    )
+    let early = FounderGarageEnvironmentPresentation.derive(
+      facility: .founderGarage,
+      infrastructure: uninstalled,
+      reduceMotion: false,
+      sceneActive: true
+    )
+    let upgraded = FounderGarageEnvironmentPresentation.derive(
+      facility: .founderGarage,
+      infrastructure: equipped,
+      reduceMotion: false,
+      sceneActive: true
+    )
+    XCTAssertEqual(early.detail, .improvised)
+    XCTAssertEqual(upgraded.detail, .equipped)
+    XCTAssertEqual(upgraded.installedInfrastructureCount, 2)
+  }
+
+  func testReduceMotionRetainsDepthAndLightingWhileStoppingAtmosphere() {
+    let standard = livingMotion(agents: [])
+    let reduced = livingMotion(agents: [], reduceMotion: true)
+    XCTAssertTrue(standard.environment.atmosphericMotionEnabled)
+    XCTAssertFalse(reduced.environment.atmosphericMotionEnabled)
+    XCTAssertEqual(standard.environment.rearContrast, reduced.environment.rearContrast)
+    XCTAssertEqual(standard.environment.middleContrast, reduced.environment.middleContrast)
+    XCTAssertEqual(standard.environment.foregroundContrast, reduced.environment.foregroundContrast)
+    XCTAssertEqual(standard.lighting, reduced.lighting)
+  }
+
+  func testHiddenTruthCannotChangeEnvironmentalDepthOrMaterialPolicy() {
+    let neutral = livingAgent(id: "stacks", role: .engineering, activity: .working)
+    let hidden = livingAgent(
+      id: "stacks",
+      role: .engineering,
+      activity: .working,
+      conditions: [.verified, .drifting, .overclaimed, .evidenceIncomplete],
+      revealStep: 4
+    )
+    XCTAssertEqual(
+      livingMotion(agents: [neutral]).environment,
+      livingMotion(agents: [hidden]).environment
+    )
+    XCTAssertEqual(
+      livingMotion(agents: [neutral]).lighting,
+      livingMotion(agents: [hidden]).lighting
+    )
+  }
+
   private func livingMotion(
     agents: [LivingAgentProjection],
     visibleEvent: FounderGarageVisibleEvent? = nil,

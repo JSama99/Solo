@@ -143,8 +143,12 @@ struct MotionVerificationScreen: View {
     isPlayingCausalProof = true
     if showsPhysicalEnvironment {
       fixtureID = .planningPhase
+      proofMode = .computerFocused
+      try? await Task.sleep(for: .milliseconds(900))
+      proofMode = .transitioningToFreeLook
+      try? await Task.sleep(for: .milliseconds(520))
       proofMode = .freeLook
-      try? await Task.sleep(for: .milliseconds(850))
+      try? await Task.sleep(for: .milliseconds(700))
       fixtureID = .auroraWorking
       try? await Task.sleep(for: .milliseconds(900))
       fixtureID = .stacksWorking
@@ -284,6 +288,16 @@ struct MotionVerificationScreen: View {
           companyCommandViewport(fixture)
             .allowsHitTesting(false)
         }
+        if motion.camera.showsDeskHardware {
+          FounderGarageForegroundFramingView(
+            camera: camera,
+            monitorOffset: CGSize(width: monitorOffset.width, height: monitorOffset.height + 42),
+            monitorSize: monitorSize,
+            increasedContrast: fixture.increasedContrast
+          )
+          .allowsHitTesting(false)
+          .accessibilityHidden(true)
+        }
         FounderEnvironmentControlLayer(
           mode: proofMode,
           reduceMotion: fixture.forceReduceMotion || systemReduceMotion,
@@ -298,6 +312,10 @@ struct MotionVerificationScreen: View {
       .animation(
         fixture.forceReduceMotion || systemReduceMotion ? nil : .smooth(duration: 0.38),
         value: proofMode
+      )
+      .animation(
+        fixture.forceReduceMotion || systemReduceMotion ? nil : .smooth(duration: 0.62),
+        value: fixture.id
       )
     }
     .frame(height: fixedHeight)
