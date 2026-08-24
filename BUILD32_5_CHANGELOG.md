@@ -17,3 +17,5 @@
 ## Visual direction
 
 The native 2.5D pass establishes the physical Garage / Loft, desk, monitor, stations, equipment, and visible-safe operational atmosphere around Company Command. Honest direction estimate: **84%** toward the target; bespoke character assets, physical-device verification, and a more advanced renderer remain required to exceed 86%.
+
+Implementation commit: `f3ef006f2ec1fde01fdb7a52c993fc01bdee7205`.

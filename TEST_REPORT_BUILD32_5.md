@@ -20,4 +20,4 @@ After the requested iPhone 17 Pro switch, `simulator_list` returned no active si
 
 ## Git
 
-Implementation commit hash is recorded in the follow-up documentation commit and release handoff.
+Implementation commit: `f3ef006f2ec1fde01fdb7a52c993fc01bdee7205`.
