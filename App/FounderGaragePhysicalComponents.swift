@@ -9,9 +9,64 @@ enum FounderGarageStationKind: String, Equatable, Sendable {
 enum FounderGarageMaterial {
   static let powderCoat = Color(red: 0.035, green: 0.040, blue: 0.045)
   static let raisedMetal = Color(red: 0.075, green: 0.082, blue: 0.088)
-  static let deskTop = Color(red: 0.24, green: 0.15, blue: 0.09)
+  static let satinMetal = Color(red: 0.16, green: 0.17, blue: 0.17)
+  static let industrialPlastic = Color(red: 0.055, green: 0.060, blue: 0.064)
+  static let deskTop = Color(red: 0.255, green: 0.16, blue: 0.095)
   static let deskFront = Color(red: 0.095, green: 0.052, blue: 0.032)
-  static let materialEdge = Color.white.opacity(0.16)
+  static let glassTint = Color(red: 0.025, green: 0.055, blue: 0.065)
+  static let materialEdge = Color.white.opacity(0.13)
+  static let surfaceHighlight = Color.white.opacity(0.09)
+}
+
+enum FounderGarageSurfaceKind: Equatable, Sendable {
+  case powderCoat
+  case laminate
+  case glass
+}
+
+/// Deterministic, static surface breakup. A single Canvas replaces stacked
+/// blur/noise modifiers and consumes no simulation RNG or per-frame timeline.
+struct FounderGarageSurfaceTexture: View {
+  var kind: FounderGarageSurfaceKind
+  var strength: Double = 1
+
+  var body: some View {
+    Canvas { context, size in
+      switch kind {
+      case .powderCoat:
+        for index in 0..<14 {
+          let x = CGFloat((index * 37 + 11) % 101) / 101 * size.width
+          let y = CGFloat((index * 61 + 7) % 97) / 97 * size.height
+          context.fill(
+            Path(ellipseIn: CGRect(x: x, y: y, width: 1.2, height: 1.2)),
+            with: .color(.white.opacity(0.035 * strength))
+          )
+        }
+      case .laminate:
+        for index in 0..<7 {
+          let y = CGFloat(index + 1) / 8 * size.height
+          var grain = Path()
+          grain.move(to: CGPoint(x: 0, y: y))
+          grain.addCurve(
+            to: CGPoint(x: size.width, y: y + CGFloat(index % 3 - 1) * 1.5),
+            control1: CGPoint(x: size.width * 0.32, y: y + 2),
+            control2: CGPoint(x: size.width * 0.68, y: y - 2)
+          )
+          context.stroke(grain, with: .color(.white.opacity(0.026 * strength)), lineWidth: 0.7)
+        }
+      case .glass:
+        var glare = Path()
+        glare.move(to: CGPoint(x: size.width * 0.08, y: 0))
+        glare.addLine(to: CGPoint(x: size.width * 0.34, y: 0))
+        glare.addLine(to: CGPoint(x: size.width * 0.72, y: size.height))
+        glare.addLine(to: CGPoint(x: size.width * 0.48, y: size.height))
+        glare.closeSubpath()
+        context.fill(glare, with: .color(.white.opacity(0.045 * strength)))
+      }
+    }
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
+  }
 }
 
 private struct FounderGarageStationComposition {
@@ -78,8 +133,10 @@ struct FounderGaragePhysicalStationView: View {
   var body: some View {
     ZStack(alignment: .bottom) {
       contactShadow
+      stationValueMass
       localLightPool
       wallBackboard
+      authoredStationDetails
       stationSupports
       chairSilhouette
       agentContactShadow
@@ -131,7 +188,7 @@ struct FounderGaragePhysicalStationView: View {
   private var localLightPool: some View {
     ZStack {
       RadialGradient(
-        colors: [tone.opacity((0.07 + (motion?.localLightIntensity ?? 0.1) * 0.12) * perceivedLightBalance), tone.opacity(0.018 * perceivedLightBalance), .clear],
+        colors: [tone.opacity((0.05 + (motion?.physical.keyLightIntensity ?? 0.3) * 0.15) * perceivedLightBalance), tone.opacity(0.018 * perceivedLightBalance), .clear],
         center: .center,
         startRadius: 4,
         endRadius: 128
@@ -139,7 +196,7 @@ struct FounderGaragePhysicalStationView: View {
       .frame(width: stationWidth, height: 226)
       .offset(y: -34)
       RadialGradient(
-        colors: [tone.opacity((0.06 + (motion?.physical.portraitLightIntensity ?? 0.2) * 0.10) * perceivedLightBalance), .clear],
+        colors: [tone.opacity((0.04 + (motion?.physical.fillLightIntensity ?? 0.2) * 0.13) * perceivedLightBalance), .clear],
         center: .center,
         startRadius: 3,
         endRadius: 92
@@ -147,6 +204,20 @@ struct FounderGaragePhysicalStationView: View {
       .frame(width: 190, height: 82)
       .offset(y: 10)
     }
+  }
+
+  private var stationValueMass: some View {
+    RadialGradient(
+      colors: [
+        .clear,
+        .black.opacity(motion?.physical.shadowMassOpacity ?? 0.44)
+      ],
+      center: .center,
+      startRadius: 72,
+      endRadius: 164
+    )
+    .frame(width: stationWidth + 34, height: stationHeight - 8)
+    .offset(y: -18)
   }
 
   private var contactShadow: some View {
@@ -208,6 +279,10 @@ struct FounderGaragePhysicalStationView: View {
         }
       }
     }
+    .overlay {
+      FounderGarageSurfaceTexture(kind: .powderCoat, strength: 0.9)
+        .clipShape(.rect(cornerRadius: 7))
+    }
     .offset(y: -75)
     .overlay(alignment: .topTrailing) {
       ZStack {
@@ -216,6 +291,50 @@ struct FounderGaragePhysicalStationView: View {
       }
       .offset(x: -12, y: -151)
       .shadow(color: tone.opacity(0.14), radius: 5, y: 4)
+    }
+  }
+
+  @ViewBuilder
+  private var authoredStationDetails: some View {
+    switch kind {
+    case .research:
+      ZStack {
+        VStack(spacing: 3) {
+          ForEach(0..<3, id: \.self) { index in
+            RoundedRectangle(cornerRadius: 1)
+              .fill(Color(red: 0.72, green: 0.68, blue: 0.53).opacity(0.70 - Double(index) * 0.10))
+              .frame(width: 34 - CGFloat(index) * 3, height: 5)
+          }
+        }
+        .rotationEffect(.degrees(-4))
+        .offset(x: -90, y: -91)
+        RoundedRectangle(cornerRadius: 2)
+          .stroke(FounderGarageMaterial.satinMetal.opacity(0.75), lineWidth: 2)
+          .frame(width: 43, height: 30)
+          .overlay { Image(systemName: "point.3.connected.trianglepath.dotted").font(.caption2).foregroundStyle(tone.opacity(0.48)) }
+          .offset(x: 90, y: -92)
+      }
+    case .engineering:
+      HStack(spacing: 9) {
+        Image(systemName: "wrench.adjustable.fill")
+        Image(systemName: "memorychip.fill")
+        Image(systemName: "screwdriver.fill")
+      }
+      .font(.system(size: 11))
+      .foregroundStyle(.white.opacity(0.28))
+      .padding(6)
+      .background(FounderGarageMaterial.powderCoat.opacity(0.82), in: .rect(cornerRadius: 3))
+      .offset(x: -77, y: -109)
+    case .campaign:
+      HStack(alignment: .top, spacing: 5) {
+        ForEach(0..<3, id: \.self) { index in
+          RoundedRectangle(cornerRadius: 1)
+            .fill(index == 1 ? tone.opacity(0.40) : Color(red: 0.76, green: 0.68, blue: 0.45).opacity(0.58))
+            .frame(width: 22, height: CGFloat(25 + index % 2 * 7))
+            .rotationEffect(.degrees(Double(index - 1) * 3))
+        }
+      }
+      .offset(x: 82, y: -101)
     }
   }
 
@@ -306,7 +425,11 @@ struct FounderGaragePhysicalStationView: View {
         .fill(.black.opacity(0.66))
         .offset(x: 5, y: 6)
       RoundedRectangle(cornerRadius: 8)
-        .fill(FounderGarageMaterial.powderCoat)
+        .fill(LinearGradient(
+          colors: [FounderGarageMaterial.satinMetal, FounderGarageMaterial.powderCoat],
+          startPoint: .topLeading,
+          endPoint: .bottomTrailing
+        ))
         .overlay {
           RoundedRectangle(cornerRadius: 8)
             .stroke(.white.opacity(increasedContrast ? 0.72 : 0.24), lineWidth: 2)
@@ -316,15 +439,25 @@ struct FounderGaragePhysicalStationView: View {
         .padding(7)
         .opacity(0.26 + (motion?.physical.primaryDisplayIntensity ?? 0.2) * 0.74)
       LinearGradient(
-        colors: [.white.opacity(0.12), .clear],
+        colors: [.white.opacity(0.15), .clear],
         startPoint: .topLeading,
         endPoint: .center
       )
       .clipShape(.rect(cornerRadius: 7))
       .allowsHitTesting(false)
+      FounderGarageSurfaceTexture(
+        kind: .glass,
+        strength: 0.5 + (motion?.physical.primaryDisplayIntensity ?? 0.2) * 0.5
+      )
+      .clipShape(.rect(cornerRadius: 7))
     }
     .frame(width: kind == .engineering ? 106 : 100, height: kind == .engineering ? 80 : 76)
     .rotationEffect(.degrees(composition.monitorAngle))
+    .shadow(
+      color: tone.opacity((motion?.physical.keyLightIntensity ?? 0.3) * 0.16),
+      radius: 7,
+      y: 3
+    )
     .overlay(alignment: .bottom) {
       VStack(spacing: 0) {
         RoundedRectangle(cornerRadius: 2).fill(FounderGarageMaterial.powderCoat).frame(width: 8, height: 18)
@@ -336,7 +469,11 @@ struct FounderGaragePhysicalStationView: View {
 
   private var secondaryDisplay: some View {
     ZStack {
-      RoundedRectangle(cornerRadius: 6).fill(FounderGarageMaterial.powderCoat)
+      RoundedRectangle(cornerRadius: 6).fill(LinearGradient(
+        colors: [FounderGarageMaterial.satinMetal, FounderGarageMaterial.powderCoat],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+      ))
       secondaryDisplayContent
         .padding(6)
         .opacity(0.20 + (motion?.physical.secondaryDisplayIntensity ?? 0.15) * 0.80)
@@ -492,7 +629,7 @@ struct FounderGaragePhysicalStationView: View {
         LinearGradient(
           colors: [
             .clear,
-            tone.opacity((0.05 + (motion?.physical.portraitEdgeLightIntensity ?? 0.2) * 0.16) * perceivedLightBalance)
+            tone.opacity((0.04 + (motion?.physical.rimLightIntensity ?? 0.2) * 0.20) * perceivedLightBalance)
           ],
           startPoint: .topLeading,
           endPoint: .bottomTrailing
@@ -538,13 +675,17 @@ struct FounderGaragePhysicalStationView: View {
         path.closeSubpath()
       }
       .fill(LinearGradient(
-        colors: [FounderGarageMaterial.deskTop, FounderGarageMaterial.deskFront],
+        colors: [FounderGarageMaterial.deskTop, Color(red: 0.17, green: 0.095, blue: 0.055), FounderGarageMaterial.deskFront],
         startPoint: .top,
         endPoint: .bottom
       ))
       .frame(width: composition.deskWidth, height: 43)
       .overlay(alignment: .top) { Rectangle().fill(FounderGarageMaterial.materialEdge).frame(width: composition.deskWidth - 24, height: increasedContrast ? 2 : 1) }
       .shadow(color: .black.opacity(0.72), radius: 7, y: 8)
+      .overlay {
+        FounderGarageSurfaceTexture(kind: .laminate, strength: 0.8)
+          .clipShape(.rect(cornerRadius: 3))
+      }
       HStack(spacing: composition.deskWidth - 86) {
         Rectangle().fill(.black.opacity(0.94)).frame(width: 11, height: 55).rotationEffect(.degrees(3))
         Rectangle().fill(.black.opacity(0.94)).frame(width: 11, height: 55).rotationEffect(.degrees(-3))
@@ -572,7 +713,14 @@ struct FounderGaragePhysicalStationView: View {
     HStack(alignment: .bottom, spacing: 8) {
       switch kind {
       case .research:
-        RoundedRectangle(cornerRadius: 2).fill(Color(red: 0.76, green: 0.69, blue: 0.46)).frame(width: 29, height: 22)
+        ZStack(alignment: .bottomLeading) {
+          ForEach(0..<3, id: \.self) { index in
+            RoundedRectangle(cornerRadius: 2)
+              .fill(Color(red: 0.76, green: 0.69, blue: 0.46).opacity(1 - Double(index) * 0.15))
+              .frame(width: 29, height: 22)
+              .offset(x: CGFloat(index) * 3, y: CGFloat(index) * -2)
+          }
+        }
           .overlay { VStack(spacing: 3) { ForEach(0..<3, id: \.self) { _ in Rectangle().fill(.black.opacity(0.30)).frame(width: 19, height: 1) } } }
         Image(systemName: "externaldrive.connected.to.line.below.fill").font(.caption).foregroundStyle(tone.opacity(0.62))
         Spacer().frame(width: 55)
@@ -583,11 +731,13 @@ struct FounderGaragePhysicalStationView: View {
           }
         }
         Image(systemName: "screwdriver.fill").font(.caption2).foregroundStyle(.white.opacity(0.46)).rotationEffect(.degrees(20))
+        Capsule().fill(.black.opacity(0.82)).frame(width: 28, height: 4).rotationEffect(.degrees(-7))
         Spacer().frame(width: 36)
       case .campaign:
         Image(systemName: "waveform.path.ecg.rectangle.fill").font(.title3).foregroundStyle(tone.opacity(0.58))
         RoundedRectangle(cornerRadius: 2).fill(.white.opacity(0.16)).frame(width: 37, height: 24)
           .overlay { Image(systemName: "play.fill").font(.system(size: 8)).foregroundStyle(tone) }
+        Circle().stroke(tone.opacity(0.46), lineWidth: 2).frame(width: 15, height: 15)
         Spacer().frame(width: 44)
       }
     }

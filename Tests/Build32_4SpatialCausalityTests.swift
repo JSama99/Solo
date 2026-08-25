@@ -1373,6 +1373,74 @@ final class Build32_5FounderEnvironmentTests: XCTestCase {
     }
   }
 
+  func testCinematicFocalHierarchyUsesVisibleActivityOnly() throws {
+    let idle = try XCTUnwrap(livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .idle)
+    ]).station(for: "aurora")).physical
+    let working = try XCTUnwrap(livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .working)
+    ]).station(for: "aurora")).physical
+    XCTAssertGreaterThan(working.focalEmphasis, idle.focalEmphasis)
+    XCTAssertGreaterThan(working.keyLightIntensity, idle.keyLightIntensity)
+    XCTAssertGreaterThan(working.rimLightIntensity, idle.rimLightIntensity)
+    XCTAssertLessThan(working.shadowMassOpacity, idle.shadowMassOpacity)
+  }
+
+  func testReduceMotionPreservesCinematicMaterialsAndStopsReactionMotion() throws {
+    let agent = livingAgent(id: "stacks", role: .engineering, activity: .working)
+    let standard = try XCTUnwrap(livingMotion(agents: [agent]).station(for: "stacks")).physical
+    let reduced = try XCTUnwrap(livingMotion(
+      agents: [agent],
+      reduceMotion: true
+    ).station(for: "stacks")).physical
+    XCTAssertTrue(standard.reactionMotionEnabled)
+    XCTAssertFalse(reduced.reactionMotionEnabled)
+    XCTAssertEqual(standard.focalEmphasis, reduced.focalEmphasis)
+    XCTAssertEqual(standard.keyLightIntensity, reduced.keyLightIntensity)
+    XCTAssertEqual(standard.fillLightIntensity, reduced.fillLightIntensity)
+    XCTAssertEqual(standard.rimLightIntensity, reduced.rimLightIntensity)
+    XCTAssertEqual(standard.shadowMassOpacity, reduced.shadowMassOpacity)
+  }
+
+  func testHiddenTruthCannotAlterCinematicStaging() throws {
+    let neutral = livingAgent(id: "brio", role: .marketing, activity: .working)
+    let concealed = livingAgent(
+      id: "brio",
+      role: .marketing,
+      activity: .working,
+      conditions: [.verified, .drifting, .overclaimed, .evidenceIncomplete],
+      revealStep: 4
+    )
+    let neutralPhysical = try XCTUnwrap(livingMotion(agents: [neutral]).station(for: "brio")).physical
+    let concealedPhysical = try XCTUnwrap(livingMotion(agents: [concealed]).station(for: "brio")).physical
+    XCTAssertEqual(neutralPhysical, concealedPhysical)
+  }
+
+  func testAudioHooksAreRoleSpecificAndVisibleLifecycleOnly() {
+    let motion = livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .working),
+      livingAgent(id: "stacks", role: .engineering, activity: .working),
+      livingAgent(id: "brio", role: .marketing, activity: .working)
+    ])
+    XCTAssertEqual(
+      Set(motion.audioHooks.cues),
+      [.researchScanner, .buildActivity, .campaignActivity]
+    )
+  }
+
+  func testAudioHooksDoNotRevealConcealedOutcomeTruth() {
+    let neutral = livingAgent(id: "aurora", role: .research, activity: .awaitingReview)
+    let concealed = livingAgent(
+      id: "aurora",
+      role: .research,
+      activity: .awaitingReview,
+      conditions: [.verified, .drifting, .overclaimed, .evidenceIncomplete],
+      revealStep: 4
+    )
+    XCTAssertEqual(livingMotion(agents: [neutral]).audioHooks, livingMotion(agents: [concealed]).audioHooks)
+    XCTAssertEqual(livingMotion(agents: [neutral]).audioHooks.cues, [.reviewReady])
+  }
+
   private func livingMotion(
     agents: [LivingAgentProjection],
     visibleEvent: FounderGarageVisibleEvent? = nil,
