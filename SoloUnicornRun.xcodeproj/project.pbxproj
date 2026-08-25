@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		326100000000000000000001 /* Build32_6_1ProductionContinuityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 326100000000000000000002 /* Build32_6_1ProductionContinuityUITests.swift */; };
 		B32800000000000000000001 /* CompanyCommandScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32900000000000000000001 /* CompanyCommandScene.swift */; };
 		B32A00000000000000000001 /* Build32_4SpatialCausalityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32B00000000000000000001 /* Build32_4SpatialCausalityTests.swift */; };
 		B32000000000000000000001 /* CompanyCommandViewport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32100000000000000000001 /* CompanyCommandViewport.swift */; };
@@ -118,6 +119,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		326100000000000000000008 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8E6817BAF5AD4288F91B1938 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 574DB10F4C1A7535A2094038;
+			remoteInfo = "Solo Unicorn Run";
+		};
 		86A2B4AF5D561E1578E4ECD9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 8E6817BAF5AD4288F91B1938 /* Project object */;
@@ -128,6 +136,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		326100000000000000000002 /* Build32_6_1ProductionContinuityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_6_1ProductionContinuityUITests.swift; sourceTree = "<group>"; };
+		326100000000000000000003 /* Solo Unicorn Run UI Tests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = "Solo Unicorn Run UI Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B32900000000000000000001 /* CompanyCommandScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyCommandScene.swift; sourceTree = "<group>"; };
 		B32B00000000000000000001 /* Build32_4SpatialCausalityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_4SpatialCausalityTests.swift; sourceTree = "<group>"; };
 		B32100000000000000000001 /* CompanyCommandViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyCommandViewport.swift; sourceTree = "<group>"; };
@@ -240,6 +250,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		326100000000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B50000000000000000000001 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -255,6 +272,7 @@
 		3CEB5942FF350B9F97498E73 /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				326100000000000000000003 /* Solo Unicorn Run UI Tests.xctest */,
 				4FB3F3A34C09C15574734B61 /* Solo Unicorn Run Tests.xctest */,
 				AC4FEEA41FEA4B7CD5D02B29 /* Solo Unicorn Run.app */,
 			);
@@ -297,6 +315,14 @@
 				F31000000000000000000013 /* VentureScreenPresentationTests.swift */,
 			);
 			path = Tests;
+			sourceTree = "<group>";
+		};
+		326100000000000000000004 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				326100000000000000000002 /* Build32_6_1ProductionContinuityUITests.swift */,
+			);
+			path = UITests;
 			sourceTree = "<group>";
 		};
 		7775A9C13FE1CF8E12C7214B /* App */ = {
@@ -378,6 +404,7 @@
 			children = (
 				7775A9C13FE1CF8E12C7214B /* App */,
 				62FFB73B4F7FB65000C228B6 /* Tests */,
+				326100000000000000000004 /* UITests */,
 				3CEB5942FF350B9F97498E73 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -424,6 +451,25 @@
 			productReference = 4FB3F3A34C09C15574734B61 /* Solo Unicorn Run Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		326100000000000000000007 /* Solo Unicorn Run UI Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 32610000000000000000000C /* Build configuration list for PBXNativeTarget "Solo Unicorn Run UI Tests" */;
+			buildPhases = (
+				326100000000000000000006 /* Sources */,
+				326100000000000000000005 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				326100000000000000000009 /* PBXTargetDependency */,
+			);
+			name = "Solo Unicorn Run UI Tests";
+			packageProductDependencies = (
+			);
+			productName = "Solo Unicorn Run UI Tests";
+			productReference = 326100000000000000000003 /* Solo Unicorn Run UI Tests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -461,6 +507,7 @@
 			targets = (
 				574DB10F4C1A7535A2094038 /* Solo Unicorn Run */,
 				5A1E8F090551D4889E080ECD /* Solo Unicorn Run Tests */,
+				326100000000000000000007 /* Solo Unicorn Run UI Tests */,
 			);
 		};
 /* End PBXProject section */
@@ -477,6 +524,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		326100000000000000000006 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				326100000000000000000001 /* Build32_6_1ProductionContinuityUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		34F6B5B42C217D27944B1010 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -590,6 +645,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		326100000000000000000009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 574DB10F4C1A7535A2094038 /* Solo Unicorn Run */;
+			targetProxy = 326100000000000000000008 /* PBXContainerItemProxy */;
+		};
 		0CC3224B82E8319FF9ACB411 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 574DB10F4C1A7535A2094038 /* Solo Unicorn Run */;
@@ -598,6 +658,44 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		32610000000000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun.uitests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = "Solo Unicorn Run";
+			};
+			name = Debug;
+		};
+		32610000000000000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun.uitests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = "Solo Unicorn Run";
+			};
+			name = Release;
+		};
 		1F99DCF1F344076360DE634D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -808,6 +906,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		32610000000000000000000C /* Build configuration list for PBXNativeTarget "Solo Unicorn Run UI Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				32610000000000000000000A /* Debug */,
+				32610000000000000000000B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		511D8401912941A9D055894D /* Build configuration list for PBXNativeTarget "Solo Unicorn Run Tests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

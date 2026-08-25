@@ -24,20 +24,26 @@ struct MotionVerificationScreen: View {
     ProcessInfo.processInfo.arguments.contains("--motion-qa-command-focus-proof")
   }
 
+  private var isAgentCohesionProof: Bool {
+    ProcessInfo.processInfo.arguments.contains("--motion-qa-agent-cohesion-sequence")
+  }
+
   init(initialFixture: LivingCompanyFixture.ID = .idleOverview) {
     _fixtureID = State(initialValue: initialFixture)
     let physical = ProcessInfo.processInfo.arguments.contains("--motion-qa-physical")
+      || ProcessInfo.processInfo.arguments.contains("--motion-qa-agent-cohesion-sequence")
     let commandFocusProof = ProcessInfo.processInfo.arguments.contains("--motion-qa-command-focus-proof")
     _showsPhysicalEnvironment = State(initialValue: physical)
-    _proofMode = State(initialValue: physical && !commandFocusProof ? .computerFocused : .freeLook)
+    let startsInFreeLook = ProcessInfo.processInfo.arguments.contains("--motion-qa-agent-cohesion-sequence")
+    _proofMode = State(initialValue: startsInFreeLook || !physical || commandFocusProof ? .freeLook : .computerFocused)
   }
 
   var body: some View {
     Group {
-      if isCommandFocusProof {
+      if isCommandFocusProof || isAgentCohesionProof {
         fixtureEnvironment(LivingCompanyFixture.make(fixtureID), fixedHeight: nil)
           .overlay(alignment: .topTrailing) {
-            Text("DEBUG · CONTINUITY PROOF")
+            Text(isAgentCohesionProof ? "DEBUG · AGENT LIFECYCLE PROOF" : "DEBUG · CONTINUITY PROOF")
               .font(.caption2.monospaced().weight(.black))
               .foregroundStyle(SoloTheme.mint)
               .padding(.horizontal, 8)
@@ -51,7 +57,11 @@ struct MotionVerificationScreen: View {
       }
     }
     .task {
-      if ProcessInfo.processInfo.arguments.contains("--motion-qa-sequence")
+      if isAgentCohesionProof {
+        // External recorder launch settles before the four-state proof begins.
+        try? await Task.sleep(for: .seconds(3))
+        await playAgentCohesionProof()
+      } else if ProcessInfo.processInfo.arguments.contains("--motion-qa-sequence")
         || ProcessInfo.processInfo.environment["SOLO_MOTION_QA_SEQUENCE"] == "1" {
         try? await Task.sleep(for: .milliseconds(650))
         await playCausalProof()
@@ -77,6 +87,23 @@ struct MotionVerificationScreen: View {
     }
     .onReceive(NotificationCenter.default.publisher(for: motionQAProofNotification)) { _ in
       Task { await playCausalProof() }
+    }
+  }
+
+  @MainActor
+  private func playAgentCohesionProof() async {
+    let lifecycle: [(LivingCompanyFixture.ID, Duration)] = [
+      (.idleOverview, .seconds(2)),
+      (.auroraAssignment, .seconds(2)),
+      (.auroraWorking, .seconds(3)),
+      (.awaitingReview, .seconds(3))
+    ]
+    for _ in 0..<4 {
+      for (id, hold) in lifecycle {
+        guard !Task.isCancelled else { return }
+        fixtureID = id
+        try? await Task.sleep(for: hold)
+      }
     }
   }
 

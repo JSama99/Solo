@@ -11,6 +11,7 @@ struct SoloUnicornRunApp: App {
     #if DEBUG
     ProcessInfo.processInfo.arguments.contains("--motion-qa")
       || ProcessInfo.processInfo.arguments.contains("--motion-qa-physical")
+      || ProcessInfo.processInfo.arguments.contains("--motion-qa-agent-cohesion-sequence")
       || ProcessInfo.processInfo.environment["SOLO_MOTION_QA_FIXTURE"] != nil
       || ProcessInfo.processInfo.environment["SOLO_MOTION_QA_SEQUENCE"] == "1"
     #else
@@ -57,6 +58,9 @@ struct SoloUnicornRunApp: App {
     }
     if ProcessInfo.processInfo.arguments.contains("--motion-qa-command-focus-proof") {
       return .planningPhase
+    }
+    if ProcessInfo.processInfo.arguments.contains("--motion-qa-agent-cohesion-sequence") {
+      return .idleOverview
     }
     if ProcessInfo.processInfo.arguments.contains("--motion-qa-sequence")
       || ProcessInfo.processInfo.environment["SOLO_MOTION_QA_SEQUENCE"] == "1" {

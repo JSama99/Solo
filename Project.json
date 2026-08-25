@@ -19,6 +19,31 @@
     }
   },
   "settings": {},
+  "schemes": {
+    "Solo Unicorn Run": {
+      "build": {
+        "targets": {
+          "Solo Unicorn Run": "all",
+          "Solo Unicorn Run Tests": [
+            "test"
+          ],
+          "Solo Unicorn Run UI Tests": [
+            "test"
+          ]
+        }
+      },
+      "run": {
+        "config": "Debug"
+      },
+      "test": {
+        "config": "Debug",
+        "targets": [
+          "Solo Unicorn Run Tests",
+          "Solo Unicorn Run UI Tests"
+        ]
+      }
+    }
+  },
   "targets": {
     "Solo Unicorn Run": {
       "attributes": {
@@ -42,11 +67,13 @@
         "path": "App/Info.plist",
         "properties": {
           "CFBundleDisplayName": "SOLO: Unicorn Run",
-          "CFBundleShortVersionString": "1.0",
+          "CFBundleShortVersionString": "32.6.1",
           "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
           "ITSAppUsesNonExemptEncryption": false,
           "RevenueCatAPIKey": "$(REVENUECAT_API_KEY)",
-          "UILaunchScreen": {},
+          "UILaunchScreen": {
+            "UIColorName": "LaunchBackground"
+          },
           "UISupportedInterfaceOrientations": [
             "UIInterfaceOrientationPortrait",
             "UIInterfaceOrientationLandscapeLeft",
@@ -59,10 +86,10 @@
         "base": {
           "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
           "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
-          "CURRENT_PROJECT_VERSION": "32",
+          "CURRENT_PROJECT_VERSION": "32601",
           "CODE_SIGN_IDENTITY": "Apple Development",
           "CODE_SIGN_STYLE": "Automatic",
-          "MARKETING_VERSION": "1.0",
+          "MARKETING_VERSION": "32.6.1",
           "PRODUCT_BUNDLE_IDENTIFIER": "com.talonsight.solounicornrun",
           "PRODUCT_MODULE_NAME": "Solo_Unicorn_Run",
           "PRODUCT_NAME": "$(TARGET_NAME)",
@@ -101,6 +128,31 @@
         }
       ],
       "type": "bundle.unit-test"
+    },
+    "Solo Unicorn Run UI Tests": {
+      "dependencies": [
+        {
+          "target": "Solo Unicorn Run"
+        }
+      ],
+      "platform": "iOS",
+      "settings": {
+        "base": {
+          "CODE_SIGN_IDENTITY": "Apple Development",
+          "CODE_SIGN_STYLE": "Automatic",
+          "GENERATE_INFOPLIST_FILE": "YES",
+          "PRODUCT_BUNDLE_IDENTIFIER": "com.talonsight.solounicornrun.uitests",
+          "SWIFT_VERSION": "5.0",
+          "TARGETED_DEVICE_FAMILY": "1",
+          "TEST_TARGET_NAME": "Solo Unicorn Run"
+        }
+      },
+      "sources": [
+        {
+          "path": "UITests"
+        }
+      ],
+      "type": "bundle.ui-testing"
     }
   }
 }

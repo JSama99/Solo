@@ -139,6 +139,7 @@ struct FounderEnvironmentScreen: View {
             motion: garageMotion,
             increasedContrast: contrast == .increased
           )
+          .opacity(garageMotion.camera.environmentOpacity)
           .allowsHitTesting(false)
           .clipped()
 
@@ -160,6 +161,7 @@ struct FounderEnvironmentScreen: View {
               .accessibilityHidden(!camera.computerAllowsHitTesting)
               .accessibilityFocused($computerIsFocused)
           }
+          .opacity(garageMotion.camera.computerOpacity)
 
           if garageMotion.camera.showsDeskHardware {
             FounderGarageForegroundFramingView(
@@ -804,7 +806,7 @@ struct FounderEnvironmentRendererView: View {
     let founder = layout.viewportPosition(for: .founderMonitor, camera: camera, layer: .foreground)
     return ZStack {
       ForEach(motion.stations, id: \.agentID) { station in
-        if station.physical.artifactState != .none {
+        if [.inboundTask, .returnedForReview].contains(station.physical.artifactState) {
           let destination = artifactDestination(for: station.agentID, layout: layout)
           let returning = station.physical.artifactState == .returnedForReview
           let position = returning ? founder : destination
@@ -816,7 +818,7 @@ struct FounderEnvironmentRendererView: View {
               control2: CGPoint(x: destination.x, y: destination.y + 72)
             )
           }
-          .trim(from: 0, to: station.physical.artifactState == .assembling ? 0.72 : 1)
+          .trim(from: 0, to: 1)
           .stroke(
             stationTone(for: station.agentID).opacity(0.28),
             style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [5, 6])
@@ -1034,11 +1036,11 @@ struct FounderEnvironmentRendererView: View {
           path.closeSubpath()
         }
         .fill(LinearGradient(
-          colors: [Color(red: 0.24, green: 0.15, blue: 0.09), Color(red: 0.10, green: 0.055, blue: 0.035)],
+          colors: [FounderGarageMaterial.deskTop, FounderGarageMaterial.deskFront],
           startPoint: .top,
           endPoint: .bottom
         ))
-        .overlay(alignment: .top) { Rectangle().fill(.white.opacity(0.13)).frame(width: 370, height: 2).offset(y: 5) }
+        .overlay(alignment: .top) { Rectangle().fill(FounderGarageMaterial.materialEdge).frame(width: 370, height: 2).offset(y: 5) }
         RoundedRectangle(cornerRadius: 8).fill(.black.opacity(0.82)).frame(width: 164, height: 42).offset(x: -46, y: 5)
           .overlay { VStack(spacing: 5) { ForEach(0..<3, id: \.self) { _ in HStack(spacing: 7) { ForEach(0..<8, id: \.self) { _ in RoundedRectangle(cornerRadius: 1).fill(.white.opacity(0.25)).frame(width: 9, height: 3) } } } }.offset(x: -46, y: 5) }
         RoundedRectangle(cornerRadius: 14).fill(.black.opacity(0.72)).frame(width: 52, height: 38).offset(x: 92, y: 7)
