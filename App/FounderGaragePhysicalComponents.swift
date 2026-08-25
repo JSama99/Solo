@@ -18,19 +18,55 @@ struct FounderGaragePhysicalStationView: View {
 
   var body: some View {
     ZStack(alignment: .bottom) {
+      contactShadow
       localLightPool
+      wallBackboard
       stationSupports
-      physicalDisplays
-        .offset(y: -92)
+      chairSilhouette
       portraitPresence
-        .offset(y: -54)
+        .offset(x: portraitOffset, y: -58)
+      physicalDisplays
+        .offset(x: displayOffset, y: -39)
       physicalDesk
+      deskObjects
+        .offset(y: -31)
       workflowControls
         .offset(y: 11)
       attentionIndicator
     }
-    .frame(width: 242, height: 258)
+    .frame(width: stationWidth, height: stationHeight)
     .accessibilityHidden(true)
+  }
+
+  private var stationWidth: CGFloat {
+    switch kind {
+    case .research: 252
+    case .engineering: 282
+    case .campaign: 258
+    }
+  }
+
+  private var stationHeight: CGFloat {
+    switch kind {
+    case .engineering: 278
+    case .research, .campaign: 266
+    }
+  }
+
+  private var portraitOffset: CGFloat {
+    switch kind {
+    case .research: 18
+    case .engineering: -25
+    case .campaign: -8
+    }
+  }
+
+  private var displayOffset: CGFloat {
+    switch kind {
+    case .research: -12
+    case .engineering: 20
+    case .campaign: 13
+    }
   }
 
   private var isContinuouslyActive: Bool {
@@ -39,17 +75,95 @@ struct FounderGaragePhysicalStationView: View {
 
   private var localLightPool: some View {
     ZStack {
-      Ellipse()
-        .fill(tone.opacity(0.09 + (motion?.localLightIntensity ?? 0.1) * 0.13))
-        .frame(width: 244, height: 210)
-        .blur(radius: 18)
-        .offset(y: -34)
-      Ellipse()
-        .fill(tone.opacity(0.08 + (motion?.physical.portraitLightIntensity ?? 0.2) * 0.12))
-        .frame(width: 170, height: 62)
-        .blur(radius: 9)
-        .offset(y: 12)
+      RadialGradient(
+        colors: [tone.opacity(0.11 + (motion?.localLightIntensity ?? 0.1) * 0.16), tone.opacity(0.025), .clear],
+        center: .center,
+        startRadius: 4,
+        endRadius: 128
+      )
+      .frame(width: stationWidth, height: 226)
+      .offset(y: -34)
+      RadialGradient(
+        colors: [tone.opacity(0.09 + (motion?.physical.portraitLightIntensity ?? 0.2) * 0.13), .clear],
+        center: .center,
+        startRadius: 3,
+        endRadius: 92
+      )
+      .frame(width: 190, height: 82)
+      .offset(y: 10)
     }
+  }
+
+  private var contactShadow: some View {
+    Ellipse()
+      .fill(.black.opacity(0.58))
+      .frame(width: stationWidth * 0.92, height: 23)
+      .offset(x: 9, y: 7)
+  }
+
+  private var wallBackboard: some View {
+    ZStack {
+      switch kind {
+      case .research:
+        RoundedRectangle(cornerRadius: 5)
+          .fill(Color(red: 0.08, green: 0.12, blue: 0.13).opacity(0.76))
+          .frame(width: 210, height: 142)
+          .overlay {
+            HStack(spacing: 19) {
+              ForEach(0..<4, id: \.self) { _ in
+                VStack(spacing: 11) {
+                  ForEach(0..<6, id: \.self) { _ in Circle().fill(.white.opacity(0.10)).frame(width: 2, height: 2) }
+                }
+              }
+            }
+          }
+      case .engineering:
+        HStack(spacing: 7) {
+          ForEach(0..<4, id: \.self) { index in
+            RoundedRectangle(cornerRadius: 4)
+              .fill(Color.black.opacity(0.72))
+              .frame(width: 48, height: CGFloat(112 + index % 2 * 20))
+              .overlay(alignment: .bottom) {
+                VStack(spacing: 4) {
+                  ForEach(0..<5, id: \.self) { led in
+                    Capsule().fill(led == index ? tone.opacity(0.72) : .white.opacity(0.10)).frame(width: 28, height: 2)
+                  }
+                }
+                .padding(.bottom, 10)
+              }
+          }
+        }
+      case .campaign:
+        HStack(spacing: 7) {
+          ForEach(0..<3, id: \.self) { index in
+            RoundedRectangle(cornerRadius: 7)
+              .fill(tone.opacity(index == 1 ? 0.14 : 0.07))
+              .frame(width: 62, height: index == 1 ? 128 : 104)
+              .overlay { Image(systemName: index == 1 ? "waveform" : "dot.radiowaves.left.and.right").foregroundStyle(tone.opacity(0.42)) }
+          }
+        }
+      }
+    }
+    .offset(y: -75)
+    .overlay(alignment: .topTrailing) {
+      ZStack {
+        Capsule().fill(.black.opacity(0.82)).frame(width: 58, height: 9)
+        Capsule().fill(tone.opacity(0.72)).frame(width: 44, height: 3)
+      }
+      .offset(x: -12, y: -151)
+      .shadow(color: tone.opacity(0.22), radius: 7, y: 5)
+    }
+  }
+
+  private var chairSilhouette: some View {
+    ZStack {
+      RoundedRectangle(cornerRadius: 22)
+        .fill(Color.black.opacity(0.82))
+        .frame(width: 82, height: 112)
+      Capsule().fill(.white.opacity(0.07)).frame(width: 42, height: 4).offset(y: -38)
+      Rectangle().fill(.black.opacity(0.88)).frame(width: 9, height: 55).offset(y: 72)
+    }
+    .offset(x: portraitOffset * 0.45, y: -45)
   }
 
   private var stationSupports: some View {
@@ -69,6 +183,11 @@ struct FounderGaragePhysicalStationView: View {
         )
       }
       .stroke(tone.opacity(0.38), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+      Path { path in
+        path.move(to: CGPoint(x: 125, y: 84))
+        path.addCurve(to: CGPoint(x: 176, y: 211), control1: CGPoint(x: 152, y: 122), control2: CGPoint(x: 135, y: 182))
+      }
+      .stroke(.black.opacity(0.88), style: StrokeStyle(lineWidth: 5, lineCap: .round))
     }
   }
 
@@ -82,6 +201,9 @@ struct FounderGaragePhysicalStationView: View {
 
   private var primaryDisplay: some View {
     ZStack {
+      RoundedRectangle(cornerRadius: 8)
+        .fill(.black.opacity(0.76))
+        .offset(x: 5, y: 6)
       RoundedRectangle(cornerRadius: 8)
         .fill(Color(red: 0.025, green: 0.035, blue: 0.04))
         .overlay {
@@ -102,7 +224,11 @@ struct FounderGaragePhysicalStationView: View {
     }
     .frame(width: 98, height: 76)
     .overlay(alignment: .bottom) {
-      RoundedRectangle(cornerRadius: 2).fill(.black).frame(width: 7, height: 17).offset(y: 14)
+      VStack(spacing: 0) {
+        RoundedRectangle(cornerRadius: 2).fill(.black).frame(width: 8, height: 18)
+        Capsule().fill(.black).frame(width: 46, height: 6)
+      }
+      .offset(y: 20)
     }
   }
 
@@ -220,21 +346,32 @@ struct FounderGaragePhysicalStationView: View {
   @ViewBuilder
   private var portraitPresence: some View {
     if let portrait = AgentPortraitAsset.name(for: agent?.agentID ?? "") {
-      Image(portrait)
-        .resizable()
-        .scaledToFill()
-        .frame(width: 102, height: 128)
-        .clipShape(.rect(cornerRadius: 19))
-        .overlay {
-          LinearGradient(
-            colors: [.clear, tone.opacity(0.08 + (motion?.physical.portraitLightIntensity ?? 0.2) * 0.18)],
-            startPoint: .top,
-            endPoint: .bottom
-          )
+      ZStack {
+        RoundedRectangle(cornerRadius: 21)
+          .fill(.black.opacity(0.72))
+          .frame(width: 112, height: 140)
+          .offset(x: 7, y: 7)
+        Image(portrait)
+          .resizable()
+          .scaledToFill()
+          .frame(width: 106, height: 136)
           .clipShape(.rect(cornerRadius: 19))
-        }
-        .overlay { RoundedRectangle(cornerRadius: 19).stroke(tone.opacity(0.82), lineWidth: 2) }
-        .shadow(color: tone.opacity(0.32), radius: 8)
+          .overlay {
+            LinearGradient(
+              colors: [.white.opacity(0.06), .clear, tone.opacity(0.09 + (motion?.physical.portraitLightIntensity ?? 0.2) * 0.18)],
+              startPoint: .topLeading,
+              endPoint: .bottomTrailing
+            )
+            .clipShape(.rect(cornerRadius: 19))
+          }
+          .overlay(alignment: .trailing) {
+            LinearGradient(colors: [.clear, .black.opacity(0.27)], startPoint: .leading, endPoint: .trailing)
+              .frame(width: 28)
+              .clipShape(.rect(cornerRadius: 19))
+          }
+          .overlay { RoundedRectangle(cornerRadius: 19).stroke(tone.opacity(0.76), lineWidth: 2) }
+          .shadow(color: .black.opacity(0.56), radius: 6, x: 7, y: 8)
+      }
         .phaseAnimator(motion?.physical.portraitMotionEnabled == true ? [0.0, 1.5, 0.0] : [0.0]) { content, y in
           content
             .offset(x: y * 0.35, y: y)
@@ -245,17 +382,54 @@ struct FounderGaragePhysicalStationView: View {
 
   private var physicalDesk: some View {
     ZStack(alignment: .top) {
-      RoundedRectangle(cornerRadius: 7)
-        .fill(Color(red: 0.12, green: 0.075, blue: 0.045))
-        .frame(width: 216, height: 42)
-        .overlay(alignment: .top) { Rectangle().fill(.white.opacity(0.10)).frame(height: 2) }
-        .shadow(color: .black.opacity(0.72), radius: 9, y: 8)
+      Path { path in
+        path.move(to: CGPoint(x: 13, y: 0))
+        path.addLine(to: CGPoint(x: 215, y: 0))
+        path.addLine(to: CGPoint(x: 229, y: 43))
+        path.addLine(to: CGPoint(x: 0, y: 43))
+        path.closeSubpath()
+      }
+      .fill(LinearGradient(
+        colors: [Color(red: 0.23, green: 0.14, blue: 0.08), Color(red: 0.09, green: 0.05, blue: 0.03)],
+        startPoint: .top,
+        endPoint: .bottom
+      ))
+      .frame(width: 229, height: 43)
+      .overlay(alignment: .top) { Rectangle().fill(.white.opacity(0.12)).frame(width: 205, height: 2) }
+      .shadow(color: .black.opacity(0.72), radius: 7, y: 8)
       HStack(spacing: 102) {
-        Rectangle().fill(.black.opacity(0.94)).frame(width: 10, height: 48)
-        Rectangle().fill(.black.opacity(0.94)).frame(width: 10, height: 48)
+        Rectangle().fill(.black.opacity(0.94)).frame(width: 11, height: 55).rotationEffect(.degrees(3))
+        Rectangle().fill(.black.opacity(0.94)).frame(width: 11, height: 55).rotationEffect(.degrees(-3))
       }
       .offset(y: 31)
     }
+  }
+
+  @ViewBuilder
+  private var deskObjects: some View {
+    HStack(alignment: .bottom, spacing: 8) {
+      switch kind {
+      case .research:
+        RoundedRectangle(cornerRadius: 2).fill(Color(red: 0.76, green: 0.69, blue: 0.46)).frame(width: 29, height: 22)
+          .overlay { VStack(spacing: 3) { ForEach(0..<3, id: \.self) { _ in Rectangle().fill(.black.opacity(0.30)).frame(width: 19, height: 1) } } }
+        Image(systemName: "externaldrive.connected.to.line.below.fill").font(.caption).foregroundStyle(tone.opacity(0.62))
+        Spacer().frame(width: 55)
+      case .engineering:
+        HStack(spacing: 3) {
+          ForEach(0..<3, id: \.self) { index in
+            RoundedRectangle(cornerRadius: 2).fill(index == 1 ? tone.opacity(0.48) : .gray.opacity(0.36)).frame(width: 21, height: CGFloat(12 + index * 3))
+          }
+        }
+        Image(systemName: "screwdriver.fill").font(.caption2).foregroundStyle(.white.opacity(0.46)).rotationEffect(.degrees(20))
+        Spacer().frame(width: 36)
+      case .campaign:
+        Image(systemName: "waveform.path.ecg.rectangle.fill").font(.title3).foregroundStyle(tone.opacity(0.58))
+        RoundedRectangle(cornerRadius: 2).fill(.white.opacity(0.16)).frame(width: 37, height: 24)
+          .overlay { Image(systemName: "play.fill").font(.system(size: 8)).foregroundStyle(tone) }
+        Spacer().frame(width: 44)
+      }
+    }
+    .frame(width: 190, alignment: .leading)
   }
 
   private var workflowControls: some View {

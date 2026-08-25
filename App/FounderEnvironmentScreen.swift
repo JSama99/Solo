@@ -161,6 +161,18 @@ struct FounderEnvironmentScreen: View {
               .accessibilityFocused($computerIsFocused)
           }
 
+          if garageMotion.camera.showsDeskHardware {
+            FounderGarageForegroundFramingView(
+              camera: camera,
+              monitorOffset: monitorOffset,
+              monitorSize: monitorSize,
+              increasedContrast: contrast == .increased
+            )
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+            .zIndex(0.5)
+          }
+
           if camera.mode == .freeLook {
             Color.clear
               .contentShape(.rect)
@@ -365,9 +377,9 @@ enum FounderEnvironmentWorldAnchor: String, CaseIterable, Sendable {
 }
 
 enum FounderEnvironmentParallaxLayer: Double, Sendable {
-  case background = 0.72
-  case middleGround = 0.90
-  case foreground = 1.0
+  case background = 0.52
+  case middleGround = 0.80
+  case foreground = 1.12
 }
 
 /// Pure panoramic world projection. It owns no gameplay or persistence input.
@@ -398,6 +410,24 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
   var cameraCenterX: CGFloat { Self.worldSize.width / 2 }
   var cameraTravel: CGFloat { 390 }
   var scale: CGFloat { max(viewportSize.width / 430, 0.72) }
+  var floorHorizonY: CGFloat { viewportSize.height * 0.55 }
+
+  func depthScale(for anchor: FounderEnvironmentWorldAnchor) -> CGFloat {
+    switch anchor {
+    case .garageEntrance, .storage: 0.78
+    case .auroraStation: 0.90
+    case .stacksStation: 0.84
+    case .brioStation: 0.91
+    case .verificationArray, .developmentRig, .campaignStudio: 0.88
+    case .recoveryCorner: 0.94
+    case .founderCommandDesk: 1.03
+    case .founderDesk, .founderMonitor: 1.12
+    }
+  }
+
+  func contactShadowScale(for anchor: FounderEnvironmentWorldAnchor) -> CGFloat {
+    depthScale(for: anchor) * scale
+  }
 
   func clampedCamera(_ camera: FounderEnvironmentCameraState) -> FounderEnvironmentCameraState {
     var result = camera
@@ -493,6 +523,7 @@ struct FounderEnvironmentRendererView: View {
       panoramicBackground(size: size, layout: layout)
       practicalLighting(size: size, layout: layout)
       garageArchitecture(size: size, layout: layout)
+      groundingShadows(size: size, layout: layout)
       panoramicStations(size: size, layout: layout)
       taskArtifactLayer(size: size, layout: layout)
       panoramicInfrastructure(size: size, layout: layout)
@@ -522,37 +553,85 @@ struct FounderEnvironmentRendererView: View {
       .position(layout.viewportPosition(worldPoint: CGPoint(x: 680, y: 235), camera: camera, layer: .background))
     } else {
       LinearGradient(
-        colors: [Color(red: 0.10, green: 0.10, blue: 0.095), Color(red: 0.28, green: 0.26, blue: 0.22)],
+        colors: [
+          Color(red: 0.075, green: 0.077, blue: 0.074),
+          Color(red: 0.20, green: 0.185, blue: 0.16),
+          Color(red: 0.12, green: 0.105, blue: 0.09)
+        ],
         startPoint: .top,
         endPoint: .bottom
       )
-      VStack(spacing: 0) {
-        ForEach(0..<6, id: \.self) { _ in
-          Rectangle().fill(.black.opacity(0.28)).frame(height: 3)
-          Rectangle().fill(.white.opacity(0.025)).frame(height: size.height * 0.095)
-        }
-      }
+      garageWallMaterial(size: size)
       .frame(width: size.width * 2.35, height: size.height * 0.62)
       .position(layout.viewportPosition(worldPoint: CGPoint(x: 680, y: 230), camera: camera, layer: .background))
     }
 
-    Path { path in
-      path.move(to: CGPoint(x: 0, y: size.height * 0.57))
-      path.addLine(to: CGPoint(x: size.width, y: size.height * 0.57))
-      path.addLine(to: CGPoint(x: size.width, y: size.height))
-      path.addLine(to: CGPoint(x: 0, y: size.height))
-      path.closeSubpath()
-    }
-    .fill(LinearGradient(colors: [Color(red: 0.18, green: 0.16, blue: 0.13), .black], startPoint: .top, endPoint: .bottom))
+    garageFloorPlane(size: size, layout: layout)
+  }
 
-    ForEach(0..<7, id: \.self) { index in
-      Path { path in
-        let horizon = size.height * 0.57
-        let x = CGFloat(index) / 6 * size.width
-        path.move(to: CGPoint(x: size.width / 2, y: horizon))
-        path.addLine(to: CGPoint(x: x, y: size.height))
+  private func garageWallMaterial(size: CGSize) -> some View {
+    Canvas { context, canvasSize in
+      let panelWidth = canvasSize.width / 9
+      for index in 0..<10 {
+        let rect = CGRect(x: CGFloat(index) * panelWidth, y: 0, width: panelWidth - 2, height: canvasSize.height)
+        context.fill(Path(rect), with: .color(index.isMultiple(of: 3) ? .white.opacity(0.025) : .black.opacity(0.035)))
+        context.stroke(Path(CGRect(x: rect.minX, y: 0, width: 1, height: rect.height)), with: .color(.black.opacity(0.36)), lineWidth: 2)
       }
-      .stroke(.white.opacity(0.07), lineWidth: 1)
+      for row in 1..<6 {
+        let y = CGFloat(row) / 6 * canvasSize.height
+        var seam = Path()
+        seam.move(to: CGPoint(x: 0, y: y))
+        seam.addLine(to: CGPoint(x: canvasSize.width, y: y))
+        context.stroke(seam, with: .color(.black.opacity(0.30)), lineWidth: row.isMultiple(of: 2) ? 3 : 1)
+      }
+      for index in 0..<18 {
+        let x = CGFloat((index * 83) % 997) / 997 * canvasSize.width
+        let y = CGFloat((index * 47) % 311) / 311 * canvasSize.height
+        let scuff = CGRect(x: x, y: y, width: CGFloat(12 + index % 4 * 7), height: 2)
+        context.fill(Path(roundedRect: scuff, cornerRadius: 1), with: .color(.white.opacity(0.025)))
+      }
+    }
+    .opacity(motion.environment.rearContrast)
+  }
+
+  private func garageFloorPlane(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
+    let horizon = layout.floorHorizonY
+    let vanishingX = size.width / 2 - CGFloat(camera.horizontalLook) * size.width * 0.08
+    return Canvas { context, canvasSize in
+      var floor = Path()
+      floor.move(to: CGPoint(x: 0, y: horizon))
+      floor.addLine(to: CGPoint(x: canvasSize.width, y: horizon))
+      floor.addLine(to: CGPoint(x: canvasSize.width, y: canvasSize.height))
+      floor.addLine(to: CGPoint(x: 0, y: canvasSize.height))
+      floor.closeSubpath()
+      context.fill(
+        floor,
+        with: .linearGradient(
+          Gradient(colors: [Color(red: 0.145, green: 0.135, blue: 0.12), Color(red: 0.035, green: 0.032, blue: 0.03)]),
+          startPoint: CGPoint(x: canvasSize.width / 2, y: horizon),
+          endPoint: CGPoint(x: canvasSize.width / 2, y: canvasSize.height)
+        )
+      )
+      for index in 0...8 {
+        var seam = Path()
+        seam.move(to: CGPoint(x: vanishingX, y: horizon))
+        seam.addLine(to: CGPoint(x: CGFloat(index) / 8 * canvasSize.width, y: canvasSize.height))
+        context.stroke(seam, with: .color(.white.opacity(0.055)), lineWidth: 1)
+      }
+      for row in 1...5 {
+        let progress = CGFloat(row) / 5
+        let y = horizon + (canvasSize.height - horizon) * progress * progress
+        var seam = Path()
+        seam.move(to: CGPoint(x: 0, y: y))
+        seam.addLine(to: CGPoint(x: canvasSize.width, y: y))
+        context.stroke(seam, with: .color(.black.opacity(0.34)), lineWidth: 1.5)
+      }
+      for index in 0..<9 {
+        let x = CGFloat((index * 61) % 263) / 263 * canvasSize.width
+        let y = horizon + CGFloat((index * 43) % 137) / 137 * (canvasSize.height - horizon)
+        let scuff = CGRect(x: x, y: y, width: CGFloat(16 + index % 3 * 9), height: 2)
+        context.fill(Path(roundedRect: scuff, cornerRadius: 1), with: .color(.white.opacity(0.035)))
+      }
     }
   }
 
@@ -572,11 +651,16 @@ struct FounderEnvironmentRendererView: View {
 
       HStack(spacing: 80) {
         ForEach(0..<4, id: \.self) { _ in
-          Capsule().fill(.orange.opacity(0.72)).frame(width: 72, height: 9)
-            .shadow(color: .orange.opacity(0.35), radius: 12)
+          ZStack {
+            RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.86)).frame(width: 86, height: 15)
+            Capsule().fill(Color(red: 1, green: 0.78, blue: 0.48).opacity(0.82)).frame(width: 72, height: 6)
+          }
+          .shadow(color: .orange.opacity(0.24), radius: 9, y: 5)
         }
       }
       .position(layout.viewportPosition(worldPoint: CGPoint(x: 680, y: 105), camera: camera, layer: .background))
+
+      wallUtilityDetails(layout: layout)
 
       garageEntrance
         .position(layout.viewportPosition(for: .garageEntrance, camera: camera, layer: .middleGround))
@@ -592,6 +676,74 @@ struct FounderEnvironmentRendererView: View {
       .stroke(.orange.opacity(0.55), style: StrokeStyle(lineWidth: 4, lineCap: .round, dash: [10, 5]))
     }
     .allowsHitTesting(false)
+  }
+
+  private func wallUtilityDetails(layout: FounderEnvironmentLayout) -> some View {
+    ZStack {
+      HStack(spacing: 5) {
+        ForEach(0..<8, id: \.self) { index in
+          Circle().fill(index.isMultiple(of: 3) ? Color.orange.opacity(0.30) : Color.white.opacity(0.10))
+            .frame(width: 4, height: 4)
+        }
+      }
+      .padding(9)
+      .frame(width: 96, height: 70)
+      .background(Color.black.opacity(0.34), in: .rect(cornerRadius: 3))
+      .overlay { RoundedRectangle(cornerRadius: 3).stroke(.white.opacity(0.12), lineWidth: 1) }
+      .position(layout.viewportPosition(worldPoint: CGPoint(x: 410, y: 205), camera: camera, layer: .background))
+
+      HStack(spacing: 8) {
+        ForEach(0..<3, id: \.self) { index in
+          RoundedRectangle(cornerRadius: 2)
+            .fill(index == 1 ? Color.orange.opacity(0.20) : Color.white.opacity(0.08))
+            .frame(width: 42, height: 31)
+        }
+      }
+      .position(layout.viewportPosition(worldPoint: CGPoint(x: 980, y: 165), camera: camera, layer: .background))
+
+      Capsule().fill(.black.opacity(0.72)).frame(width: 250, height: 9)
+        .overlay(alignment: .top) { Capsule().fill(.white.opacity(0.08)).frame(height: 2) }
+        .position(layout.viewportPosition(worldPoint: CGPoint(x: 890, y: 250), camera: camera, layer: .background))
+
+      if motion.environment.detail != .improvised {
+        HStack(spacing: 6) {
+          ForEach(0..<5, id: \.self) { index in
+            RoundedRectangle(cornerRadius: 2)
+              .fill(index.isMultiple(of: 2) ? Color.gray.opacity(0.36) : Color.orange.opacity(0.24))
+              .frame(width: 34, height: CGFloat(20 + index % 3 * 7))
+          }
+        }
+        .position(layout.viewportPosition(worldPoint: CGPoint(x: 730, y: 190), camera: camera, layer: .background))
+      }
+    }
+    .opacity(motion.environment.rearContrast)
+  }
+
+  private func groundingShadows(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
+    ZStack {
+      contactShadow(anchor: .auroraStation, width: 205, layout: layout)
+      contactShadow(anchor: .stacksStation, width: 224, layout: layout)
+      contactShadow(anchor: .brioStation, width: 207, layout: layout)
+      contactShadow(anchor: .verificationArray, width: 105, layout: layout)
+      contactShadow(anchor: .developmentRig, width: 105, layout: layout)
+      contactShadow(anchor: .campaignStudio, width: 105, layout: layout)
+      contactShadow(anchor: .founderDesk, width: 390, layout: layout)
+    }
+    .frame(width: size.width, height: size.height)
+    .allowsHitTesting(false)
+  }
+
+  private func contactShadow(
+    anchor: FounderEnvironmentWorldAnchor,
+    width: CGFloat,
+    layout: FounderEnvironmentLayout
+  ) -> some View {
+    let position = layout.viewportPosition(for: anchor, camera: camera, layer: anchor == .founderDesk ? .foreground : .middleGround)
+    let scale = layout.contactShadowScale(for: anchor)
+    return Ellipse()
+      .fill(.black.opacity(0.48))
+      .frame(width: width * scale, height: 18 * scale)
+      .position(x: position.x + 8 * scale, y: position.y + 122 * scale)
   }
 
   private var garageEntrance: some View {
@@ -623,10 +775,13 @@ struct FounderEnvironmentRendererView: View {
   private func panoramicStations(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
     ZStack {
       stationView(agentID: "aurora", role: "RESEARCH / EVIDENCE", tone: .cyan, kind: .research)
+        .scaleEffect(layout.depthScale(for: .auroraStation) * layout.scale)
         .position(layout.viewportPosition(for: .auroraStation, camera: camera, layer: .middleGround))
       stationView(agentID: "stacks", role: "ENGINEERING / BUILD", tone: .orange, kind: .engineering)
+        .scaleEffect(layout.depthScale(for: .stacksStation) * layout.scale)
         .position(layout.viewportPosition(for: .stacksStation, camera: camera, layer: .middleGround))
       stationView(agentID: "brio", role: "CAMPAIGN / SIGNAL", tone: .pink, kind: .campaign)
+        .scaleEffect(layout.depthScale(for: .brioStation) * layout.scale)
         .position(layout.viewportPosition(for: .brioStation, camera: camera, layer: .middleGround))
     }
     .allowsHitTesting(false)
@@ -805,6 +960,7 @@ struct FounderEnvironmentRendererView: View {
     ZStack {
       ForEach(projection.infrastructure) { item in
         largeEquipment(item)
+          .scaleEffect(layout.depthScale(for: worldAnchor(for: item.id)) * layout.scale)
           .position(layout.viewportPosition(for: worldAnchor(for: item.id), camera: camera, layer: .middleGround))
       }
     }
@@ -833,6 +989,9 @@ struct FounderEnvironmentRendererView: View {
     }
     .overlay(alignment: .topTrailing) {
       Circle().fill(tone).frame(width: 9, height: 9).padding(8)
+    }
+    .background(alignment: .bottom) {
+      Ellipse().fill(.black.opacity(0.46)).frame(width: 104, height: 12).offset(y: 3)
     }
   }
 
@@ -866,14 +1025,33 @@ struct FounderEnvironmentRendererView: View {
       RoundedRectangle(cornerRadius: 4).fill(.black.opacity(0.90)).frame(width: 17, height: 118)
         .position(x: monitorPosition.x, y: monitorPosition.y + 88)
       ZStack {
-        RoundedRectangle(cornerRadius: 12).fill(Color(red: 0.16, green: 0.10, blue: 0.06)).frame(width: 390, height: 118)
+        Ellipse().fill(.black.opacity(0.62)).frame(width: 420, height: 25).offset(x: 16, y: 68)
+        Path { path in
+          path.move(to: CGPoint(x: 13, y: 5))
+          path.addLine(to: CGPoint(x: 377, y: 5))
+          path.addLine(to: CGPoint(x: 405, y: 108))
+          path.addLine(to: CGPoint(x: -15, y: 108))
+          path.closeSubpath()
+        }
+        .fill(LinearGradient(
+          colors: [Color(red: 0.24, green: 0.15, blue: 0.09), Color(red: 0.10, green: 0.055, blue: 0.035)],
+          startPoint: .top,
+          endPoint: .bottom
+        ))
+        .overlay(alignment: .top) { Rectangle().fill(.white.opacity(0.13)).frame(width: 370, height: 2).offset(y: 5) }
         RoundedRectangle(cornerRadius: 8).fill(.black.opacity(0.82)).frame(width: 164, height: 42).offset(x: -46, y: 5)
           .overlay { VStack(spacing: 5) { ForEach(0..<3, id: \.self) { _ in HStack(spacing: 7) { ForEach(0..<8, id: \.self) { _ in RoundedRectangle(cornerRadius: 1).fill(.white.opacity(0.25)).frame(width: 9, height: 3) } } } }.offset(x: -46, y: 5) }
         RoundedRectangle(cornerRadius: 14).fill(.black.opacity(0.72)).frame(width: 52, height: 38).offset(x: 92, y: 7)
         RoundedRectangle(cornerRadius: 5).stroke(.orange.opacity(0.70), lineWidth: 2).frame(width: 66, height: 44).offset(x: 153, y: -19)
           .overlay { Text("REVIEW").font(.system(size: 8, weight: .black)).foregroundStyle(.orange).offset(x: 153, y: -19) }
         Image(systemName: "mug.fill").foregroundStyle(.orange.opacity(0.78)).font(.title2).offset(x: -158, y: -9)
+        RoundedRectangle(cornerRadius: 2).fill(Color(red: 0.78, green: 0.70, blue: 0.48)).frame(width: 44, height: 31)
+          .overlay { VStack(spacing: 3) { ForEach(0..<3, id: \.self) { _ in Rectangle().fill(.black.opacity(0.28)).frame(width: 30, height: 1) } } }
+          .rotationEffect(.degrees(-7))
+          .offset(x: 118, y: 35)
       }
+      .frame(width: 420, height: 118)
+      .scaleEffect(layout.depthScale(for: .founderDesk) * layout.scale)
       .position(deskPosition)
     }
     .allowsHitTesting(false)
@@ -1035,12 +1213,41 @@ struct FounderEnvironmentRendererView: View {
         .position(layout.viewportPosition(worldPoint: point, camera: camera, layer: .background))
       }
 
+      ForEach([325.0, 680.0, 1_035.0], id: \.self) { worldX in
+        Path { path in
+          let source = layout.viewportPosition(
+            worldPoint: CGPoint(x: worldX, y: 108),
+            camera: camera,
+            layer: .background
+          )
+          path.move(to: CGPoint(x: source.x - 26, y: source.y + 4))
+          path.addLine(to: CGPoint(x: source.x - 94, y: size.height * 0.58))
+          path.addLine(to: CGPoint(x: source.x + 94, y: size.height * 0.58))
+          path.addLine(to: CGPoint(x: source.x + 26, y: source.y + 4))
+          path.closeSubpath()
+        }
+        .fill(LinearGradient(
+          colors: [Color.orange.opacity(0.055 * motion.lighting.practicalLightIntensity), .clear],
+          startPoint: .top,
+          endPoint: .bottom
+        ))
+      }
+
       stationLightSpill(
         agentID: "aurora",
         tone: .cyan,
         worldPoint: CGPoint(x: 325, y: 315),
         layout: layout
       )
+
+      RadialGradient(
+        colors: [Color.cyan.opacity(0.10 * motion.lighting.founderMonitorGlow), .clear],
+        center: .center,
+        startRadius: 8,
+        endRadius: 150
+      )
+      .frame(width: 300, height: 170)
+      .position(layout.viewportPosition(worldPoint: CGPoint(x: 680, y: 545), camera: camera, layer: .foreground))
       stationLightSpill(
         agentID: "stacks",
         tone: .orange,
@@ -1202,6 +1409,28 @@ struct FounderEnvironmentRendererView: View {
 
   private func atmosphere(size: CGSize) -> some View {
     ZStack {
+      LinearGradient(
+        colors: [.clear, Color(red: 0.13, green: 0.15, blue: 0.16).opacity(0.08), .clear],
+        startPoint: .top,
+        endPoint: .bottom
+      )
+      .frame(height: size.height * 0.62)
+      .offset(y: -size.height * 0.08)
+
+      ForEach(0..<9, id: \.self) { index in
+        Circle()
+          .fill(.white.opacity(index.isMultiple(of: 3) ? 0.15 : 0.08))
+          .frame(width: CGFloat(1 + index % 2), height: CGFloat(1 + index % 2))
+          .position(
+            x: CGFloat((index * 71 + 29) % 397) / 397 * size.width,
+            y: size.height * (0.16 + CGFloat((index * 41) % 53) / 100)
+          )
+          .phaseAnimator(motion.environment.atmosphericMotionEnabled ? [0.0, 1.0, 0.0] : [0.0]) { content, phase in
+            content.offset(x: CGFloat(index % 3 - 1) * 3 * phase, y: -6 * phase)
+          } animation: { _ in
+            .easeInOut(duration: 4.6 + Double(index % 4) * 0.8)
+          }
+      }
       if projection.atmosphere.isLowEnergy { Rectangle().fill(.black.opacity(0.20)) }
       if projection.atmosphere.isLowRunway {
         Image(systemName: "clock.badge.exclamationmark").foregroundStyle(.orange).font(.title3)
@@ -1237,6 +1466,74 @@ struct FounderEnvironmentRendererView: View {
       Image(systemName: "mug.fill").foregroundStyle(.orange.opacity(0.75)).offset(x: -size.width * 0.34, y: -size.height * 0.10)
     }
     .allowsHitTesting(false)
+  }
+}
+
+struct FounderGarageForegroundFramingView: View {
+  var camera: FounderEnvironmentCameraState
+  var monitorOffset: CGSize
+  var monitorSize: CGSize
+  var increasedContrast: Bool
+
+  var body: some View {
+    GeometryReader { proxy in
+      let size = proxy.size
+      ZStack {
+        Path { path in
+          path.move(to: CGPoint(x: -18, y: size.height * 0.91))
+          path.addLine(to: CGPoint(x: size.width + 18, y: size.height * 0.91))
+          path.addLine(to: CGPoint(x: size.width + 34, y: size.height + 8))
+          path.addLine(to: CGPoint(x: -34, y: size.height + 8))
+          path.closeSubpath()
+        }
+        .fill(LinearGradient(
+          colors: [Color(red: 0.19, green: 0.115, blue: 0.065), Color(red: 0.055, green: 0.035, blue: 0.025)],
+          startPoint: .top,
+          endPoint: .bottom
+        ))
+        .overlay(alignment: .top) {
+          Rectangle().fill(.white.opacity(increasedContrast ? 0.22 : 0.10)).frame(height: 2)
+            .offset(y: size.height * 0.91)
+        }
+
+        RoundedRectangle(cornerRadius: 18)
+          .stroke(.black.opacity(0.88), lineWidth: 13)
+          .frame(width: 74, height: 160)
+          .rotationEffect(.degrees(-8))
+          .position(x: -4 - CGFloat(camera.horizontalLook) * 22, y: size.height * 0.78)
+
+        RoundedRectangle(cornerRadius: 5)
+          .fill(LinearGradient(colors: [.black, Color(red: 0.09, green: 0.10, blue: 0.105)], startPoint: .leading, endPoint: .trailing))
+          .frame(width: 43, height: size.height * 0.47)
+          .overlay(alignment: .leading) { Rectangle().fill(.white.opacity(0.08)).frame(width: 2) }
+          .overlay(alignment: .center) {
+            VStack(spacing: 9) {
+              ForEach(0..<7, id: \.self) { index in
+                HStack(spacing: 4) {
+                  Circle().fill(index.isMultiple(of: 3) ? Color.green.opacity(0.72) : Color.cyan.opacity(0.45)).frame(width: 3, height: 3)
+                  Capsule().fill(.white.opacity(0.10)).frame(width: 21, height: 2)
+                }
+              }
+            }
+          }
+          .position(x: size.width + 13 - CGFloat(camera.horizontalLook) * 34, y: size.height * 0.66)
+
+        Path { path in
+          let start = CGPoint(
+            x: size.width / 2 + monitorOffset.width + monitorSize.width * 0.20,
+            y: size.height / 2 + monitorOffset.height + monitorSize.height * 0.47
+          )
+          path.move(to: start)
+          path.addCurve(
+            to: CGPoint(x: size.width * 0.71, y: size.height * 0.96),
+            control1: CGPoint(x: start.x + 15, y: start.y + 42),
+            control2: CGPoint(x: size.width * 0.63, y: size.height * 0.88)
+          )
+        }
+        .stroke(.black.opacity(0.88), style: StrokeStyle(lineWidth: 5, lineCap: .round))
+      }
+      .frame(width: size.width, height: size.height)
+    }
   }
 }
 

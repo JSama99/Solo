@@ -51,6 +51,10 @@ struct SoloUnicornRunApp: App {
 
   #if DEBUG
   private var motionQAFixture: LivingCompanyFixture.ID {
+    if let rawValue = ProcessInfo.processInfo.environment["SOLO_MOTION_QA_FIXTURE"],
+       let fixture = LivingCompanyFixture.ID(rawValue: rawValue) {
+      return fixture
+    }
     if ProcessInfo.processInfo.arguments.contains("--motion-qa-command-focus-proof") {
       return .planningPhase
     }
@@ -58,8 +62,7 @@ struct SoloUnicornRunApp: App {
       || ProcessInfo.processInfo.environment["SOLO_MOTION_QA_SEQUENCE"] == "1" {
       return .planningPhase
     }
-    guard let rawValue = ProcessInfo.processInfo.environment["SOLO_MOTION_QA_FIXTURE"] else { return .idleOverview }
-    return LivingCompanyFixture.ID(rawValue: rawValue) ?? .idleOverview
+    return .idleOverview
   }
   #endif
 }
