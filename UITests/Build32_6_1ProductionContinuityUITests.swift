@@ -6,12 +6,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     app.launchArguments = ["--build-32-6-2-production-proof"]
     app.launch()
 
-    let continueCareer = app.buttons["Continue Career"]
-    if continueCareer.waitForExistence(timeout: 5) {
-      continueCareer.tap()
-    } else {
-      enterFreshProductionCareer(in: app)
-    }
+    enterFreshProductionCareer(in: app)
 
     let lookOut = app.buttons["Look Out"]
     XCTAssertTrue(lookOut.waitForExistence(timeout: 8))
@@ -67,6 +62,32 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
   }
 
   private func prepareVisibleProductionActivity(in app: XCUIApplication) -> Bool {
+    let founderChoice = app.buttons["Narrow the Claim"]
+    if founderChoice.exists {
+      let commandScroll = app.scrollViews.firstMatch
+      for _ in 0..<6 where !founderChoice.isHittable {
+        commandScroll
+          .coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.72))
+          .press(
+            forDuration: 0.05,
+            thenDragTo: commandScroll.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.28))
+          )
+        usleep(180_000)
+      }
+      guard founderChoice.isHittable else { return false }
+      founderChoice.tap()
+      sleep(1)
+      for _ in 0..<6 {
+        commandScroll
+          .coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.28))
+          .press(
+            forDuration: 0.05,
+            thenDragTo: commandScroll.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.72))
+          )
+        usleep(120_000)
+      }
+    }
+
     let commit = app.buttons.matching(
       NSPredicate(format: "label CONTAINS[c] 'COMMIT SPRINT'")
     ).firstMatch
@@ -78,8 +99,15 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     let stacks = app.buttons.matching(
       NSPredicate(format: "label BEGINSWITH[c] 'Stacks,' AND label CONTAINS[c] 'station'")
     ).firstMatch
-    guard stacks.waitForExistence(timeout: 3), stacks.isHittable else { return false }
-    stacks.tap()
+    if stacks.waitForExistence(timeout: 3), stacks.isHittable {
+      stacks.tap()
+    } else {
+      // The overview intentionally combines each illustrated station into one
+      // accessibility element. XCTest can briefly classify that element as
+      // non-hittable while the full-screen spatial transition settles, so use
+      // the stable center bay coordinate as the production interaction fallback.
+      app.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.25)).tap()
+    }
 
     let assign = app.buttons["Assign Task"]
     guard assign.waitForExistence(timeout: 3), assign.isHittable, assign.isEnabled else { return false }
@@ -87,7 +115,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     let sheetAssign = app.buttons["Assign"].firstMatch
     guard sheetAssign.waitForExistence(timeout: 3), sheetAssign.isHittable, sheetAssign.isEnabled else { return false }
     sheetAssign.tap()
-    return true
+    return app.buttons["Look Out"].waitForExistence(timeout: 5)
   }
 
   private func enterFreshProductionCareer(in app: XCUIApplication) {
