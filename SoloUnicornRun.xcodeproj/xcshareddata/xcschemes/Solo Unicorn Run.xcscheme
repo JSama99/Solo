@@ -8,12 +8,18 @@
       <BuildActionEntry buildForTesting="YES" buildForRunning="NO" buildForProfiling="NO" buildForArchiving="NO" buildForAnalyzing="YES">
         <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="5A1E8F090551D4889E080ECD" BuildableName="Solo Unicorn Run Tests.xctest" BlueprintName="Solo Unicorn Run Tests" ReferencedContainer="container:SoloUnicornRun.xcodeproj"/>
       </BuildActionEntry>
+      <BuildActionEntry buildForTesting="YES" buildForRunning="NO" buildForProfiling="NO" buildForArchiving="NO" buildForAnalyzing="YES">
+        <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="326100000000000000000007" BuildableName="Solo Unicorn Run UI Tests.xctest" BlueprintName="Solo Unicorn Run UI Tests" ReferencedContainer="container:SoloUnicornRun.xcodeproj"/>
+      </BuildActionEntry>
     </BuildActionEntries>
   </BuildAction>
   <TestAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv="YES">
     <Testables>
       <TestableReference skipped="NO" parallelizable="NO">
         <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="5A1E8F090551D4889E080ECD" BuildableName="Solo Unicorn Run Tests.xctest" BlueprintName="Solo Unicorn Run Tests" ReferencedContainer="container:SoloUnicornRun.xcodeproj"/>
+      </TestableReference>
+      <TestableReference skipped="NO" parallelizable="NO">
+        <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="326100000000000000000007" BuildableName="Solo Unicorn Run UI Tests.xctest" BlueprintName="Solo Unicorn Run UI Tests" ReferencedContainer="container:SoloUnicornRun.xcodeproj"/>
       </TestableReference>
     </Testables>
   </TestAction>

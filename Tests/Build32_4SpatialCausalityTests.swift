@@ -1297,6 +1297,82 @@ final class Build32_5FounderEnvironmentTests: XCTestCase {
     )
   }
 
+  func testEveryCameraModeKeepsRoomAndComputerRendered() {
+    for mode in FounderEnvironmentMode.allCases {
+      let motion = FounderGarageCameraMotion.derive(mode: mode)
+      XCTAssertEqual(motion.environmentOpacity, 1, "Room blanked during \(mode)")
+      XCTAssertEqual(motion.computerOpacity, 1, "Computer blanked during \(mode)")
+    }
+  }
+
+  func testVisibleWorkStateDrivesPostureAndSharedStationLight() throws {
+    let idle = try XCTUnwrap(livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .idle)
+    ]).station(for: "aurora")).physical
+    let working = try XCTUnwrap(livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .working)
+    ]).station(for: "aurora")).physical
+    let awaiting = try XCTUnwrap(livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .awaitingReview)
+    ]).station(for: "aurora")).physical
+
+    XCTAssertGreaterThan(working.postureScale, idle.postureScale)
+    XCTAssertGreaterThan(working.postureOffsetY, idle.postureOffsetY)
+    XCTAssertGreaterThan(working.portraitLightIntensity, idle.portraitLightIntensity)
+    XCTAssertGreaterThan(working.deskLightIntensity, idle.deskLightIntensity)
+    XCTAssertLessThan(awaiting.deskLightIntensity, working.deskLightIntensity)
+    XCTAssertGreaterThan(awaiting.deskLightIntensity, idle.deskLightIntensity)
+  }
+
+  func testAwaitingReviewSettlesMotionWithoutRevealingOutcome() throws {
+    let neutral = livingAgent(id: "brio", role: .marketing, activity: .awaitingReview)
+    let concealed = livingAgent(
+      id: "brio",
+      role: .marketing,
+      activity: .awaitingReview,
+      conditions: [.verified, .drifting, .overclaimed, .evidenceIncomplete],
+      revealStep: 4
+    )
+    let neutralStation = try XCTUnwrap(livingMotion(agents: [neutral]).station(for: "brio"))
+    let concealedStation = try XCTUnwrap(livingMotion(agents: [concealed]).station(for: "brio"))
+    XCTAssertFalse(neutralStation.physical.portraitMotionEnabled)
+    XCTAssertEqual(neutralStation.physical.artifactState, .returnedForReview)
+    XCTAssertEqual(neutralStation.physical, concealedStation.physical)
+    XCTAssertEqual(concealedStation.safeConditionSignals, [])
+  }
+
+  func testReduceMotionRetainsEmbodimentAndSharedLight() throws {
+    let standard = try XCTUnwrap(livingMotion(agents: [
+      livingAgent(id: "stacks", role: .engineering, activity: .working)
+    ]).station(for: "stacks")).physical
+    let reduced = try XCTUnwrap(livingMotion(
+      agents: [livingAgent(id: "stacks", role: .engineering, activity: .working)],
+      reduceMotion: true
+    ).station(for: "stacks")).physical
+    XCTAssertGreaterThan(standard.breathingAmplitude, 0)
+    XCTAssertEqual(reduced.breathingAmplitude, 0)
+    XCTAssertFalse(reduced.portraitMotionEnabled)
+    XCTAssertEqual(reduced.postureScale, standard.postureScale)
+    XCTAssertEqual(reduced.portraitLightIntensity, standard.portraitLightIntensity)
+    XCTAssertEqual(reduced.deskLightIntensity, standard.deskLightIntensity)
+  }
+
+  func testNeutralArtifactLifecycleUsesOnlyVisibleActivity() throws {
+    let states: [(LivingAgentActivity, FounderGarageArtifactState)] = [
+      (.idle, .none),
+      (.assignmentReceived, .inboundTask),
+      (.working, .assembling),
+      (.workComplete, .returnedForReview),
+      (.awaitingReview, .returnedForReview)
+    ]
+    for (activity, expected) in states {
+      let station = try XCTUnwrap(livingMotion(agents: [
+        livingAgent(id: "stacks", role: .engineering, activity: activity)
+      ]).station(for: "stacks"))
+      XCTAssertEqual(station.physical.artifactState, expected)
+    }
+  }
+
   private func livingMotion(
     agents: [LivingAgentProjection],
     visibleEvent: FounderGarageVisibleEvent? = nil,

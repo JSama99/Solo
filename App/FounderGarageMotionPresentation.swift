@@ -37,6 +37,11 @@ enum FounderGarageArtifactState: String, Equatable, Sendable {
 struct FounderGarageStationPhysicalPresentation: Equatable, Sendable {
   var portraitMotionEnabled: Bool
   var portraitLightIntensity: Double
+  var portraitEdgeLightIntensity: Double
+  var postureOffsetY: Double
+  var postureScale: Double
+  var breathingAmplitude: Double
+  var deskLightIntensity: Double
   var primaryDisplayIntensity: Double
   var secondaryDisplayIntensity: Double
   var coolingActivity: Double
@@ -53,6 +58,7 @@ struct FounderGarageStationPhysicalPresentation: Equatable, Sendable {
     let active = sceneActive && !reduceMotion
     let isWorking = activity == .working
     let isOperating = [.assignmentReceived, .working, .reviewing, .resolving].contains(activity)
+    let isAwaitingReview = [.workComplete, .awaitingReview].contains(activity)
     let artifactState: FounderGarageArtifactState
     switch activity {
     case .assignmentReceived:
@@ -68,6 +74,11 @@ struct FounderGarageStationPhysicalPresentation: Equatable, Sendable {
     return Self(
       portraitMotionEnabled: active && [.idle, .working].contains(activity),
       portraitLightIntensity: isOperating ? 0.78 : activity == .awaitingReview ? 0.58 : 0.28,
+      portraitEdgeLightIntensity: isOperating ? 0.72 : isAwaitingReview ? 0.48 : 0.24,
+      postureOffsetY: isWorking ? 2.2 : activity == .assignmentReceived ? 1.2 : isAwaitingReview ? -0.4 : 0,
+      postureScale: isWorking ? 1.018 : activity == .assignmentReceived ? 1.009 : 1,
+      breathingAmplitude: active && [.idle, .working].contains(activity) ? (isWorking ? 0.72 : 1.05) : 0,
+      deskLightIntensity: isOperating ? 0.74 : isAwaitingReview ? 0.50 : 0.22,
       primaryDisplayIntensity: isOperating ? 0.94 : activity == .idle ? 0.24 : 0.62,
       secondaryDisplayIntensity: isWorking ? 0.84 : activity == .assignmentReceived ? 0.58 : 0.18,
       coolingActivity: active && isWorking ? 0.82 : active ? 0.12 : 0,
@@ -102,6 +113,8 @@ enum FounderGarageEventKind: String, Equatable, Sendable {
 struct FounderGarageCameraMotion: Equatable, Sendable {
   var mode: FounderEnvironmentMode
   var revealProgress: Double
+  var environmentOpacity: Double
+  var computerOpacity: Double
   var showsMonitorHardware: Bool
   var showsDeskHardware: Bool
   var computerIsInteractive: Bool
@@ -109,13 +122,13 @@ struct FounderGarageCameraMotion: Equatable, Sendable {
   static func derive(mode: FounderEnvironmentMode) -> Self {
     switch mode {
     case .computerFocused:
-      return Self(mode: mode, revealProgress: 0, showsMonitorHardware: false, showsDeskHardware: false, computerIsInteractive: true)
+      return Self(mode: mode, revealProgress: 0, environmentOpacity: 1, computerOpacity: 1, showsMonitorHardware: false, showsDeskHardware: false, computerIsInteractive: true)
     case .transitioningToComputerFocus:
-      return Self(mode: mode, revealProgress: 0, showsMonitorHardware: true, showsDeskHardware: true, computerIsInteractive: false)
+      return Self(mode: mode, revealProgress: 0, environmentOpacity: 1, computerOpacity: 1, showsMonitorHardware: true, showsDeskHardware: true, computerIsInteractive: false)
     case .freeLook:
-      return Self(mode: mode, revealProgress: 1, showsMonitorHardware: true, showsDeskHardware: true, computerIsInteractive: false)
+      return Self(mode: mode, revealProgress: 1, environmentOpacity: 1, computerOpacity: 1, showsMonitorHardware: true, showsDeskHardware: true, computerIsInteractive: false)
     case .transitioningToFreeLook:
-      return Self(mode: mode, revealProgress: 1, showsMonitorHardware: true, showsDeskHardware: true, computerIsInteractive: false)
+      return Self(mode: mode, revealProgress: 1, environmentOpacity: 1, computerOpacity: 1, showsMonitorHardware: true, showsDeskHardware: true, computerIsInteractive: false)
     }
   }
 }
