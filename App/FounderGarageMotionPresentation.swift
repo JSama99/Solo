@@ -48,6 +48,13 @@ struct FounderGarageStationPhysicalPresentation: Equatable, Sendable {
   var indicatorActivity: Double
   var artifactState: FounderGarageArtifactState
   var artifactProgress: Double
+  var focalEmphasis: Double
+  var keyLightIntensity: Double
+  var fillLightIntensity: Double
+  var rimLightIntensity: Double
+  var shadowMassOpacity: Double
+  var reactionIntensity: Double
+  var reactionMotionEnabled: Bool
 
   static func derive(
     activity: LivingAgentActivity,
@@ -84,8 +91,58 @@ struct FounderGarageStationPhysicalPresentation: Equatable, Sendable {
       coolingActivity: active && isWorking ? 0.82 : active ? 0.12 : 0,
       indicatorActivity: activity == .awaitingReview ? 1 : isOperating ? 0.72 : 0.18,
       artifactState: artifactState,
-      artifactProgress: min(1, max(0, visibleProgress))
+      artifactProgress: min(1, max(0, visibleProgress)),
+      focalEmphasis: isWorking ? 1 : isAwaitingReview ? 0.82 : isOperating ? 0.76 : 0.42,
+      keyLightIntensity: isOperating ? 0.88 : isAwaitingReview ? 0.70 : 0.42,
+      fillLightIntensity: isOperating ? 0.38 : 0.24,
+      rimLightIntensity: isOperating ? 0.62 : isAwaitingReview ? 0.48 : 0.26,
+      shadowMassOpacity: isOperating || isAwaitingReview ? 0.30 : 0.46,
+      reactionIntensity: isWorking ? 0.92 : activity == .assignmentReceived ? 0.72 : isAwaitingReview ? 0.58 : 0.16,
+      reactionMotionEnabled: active && [.assignmentReceived, .working, .workComplete, .awaitingReview].contains(activity)
     )
+  }
+}
+
+/// Presentation hook points for the existing lightweight audio engine. They
+/// contain only visible lifecycle and event semantics and do not play audio by
+/// themselves, keeping view rendering and simulation timing independent.
+enum FounderGarageAudioCue: String, CaseIterable, Equatable, Sendable {
+  case monitorWake
+  case researchScanner
+  case buildActivity
+  case campaignActivity
+  case reviewReady
+}
+
+struct FounderGarageAudioHookPresentation: Equatable, Sendable {
+  var cues: [FounderGarageAudioCue]
+  var eventToken: UUID?
+
+  static func derive(
+    stations: [FounderGarageStationMotion],
+    event: FounderGarageEventEmphasis
+  ) -> Self {
+    var cues: [FounderGarageAudioCue] = []
+    for station in stations {
+      switch station.workflow {
+      case .assignmentArrival:
+        cues.append(.monitorWake)
+      case .researchScan:
+        cues.append(.researchScanner)
+      case .engineeringBuild:
+        cues.append(.buildActivity)
+      case .campaignDistribution:
+        cues.append(.campaignActivity)
+      case .artifactReady:
+        cues.append(.reviewReady)
+      default:
+        break
+      }
+    }
+    if event.kind == .founderReviewRequired, !cues.contains(.reviewReady) {
+      cues.append(.reviewReady)
+    }
+    return Self(cues: cues, eventToken: event.token)
   }
 }
 
@@ -378,6 +435,7 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
   var lighting: FounderGarageLightingPresentation
   var environment: FounderGarageEnvironmentPresentation
   var event: FounderGarageEventEmphasis
+  var audioHooks: FounderGarageAudioHookPresentation
 
   static func derive(
     environment: FounderEnvironmentProjection,
@@ -412,7 +470,8 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
         reduceMotion: reduceMotion,
         sceneActive: sceneActive
       ),
-      event: event
+      event: event,
+      audioHooks: .derive(stations: stations, event: event)
     )
   }
 

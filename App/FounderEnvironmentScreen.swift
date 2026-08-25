@@ -523,6 +523,7 @@ struct FounderEnvironmentRendererView: View {
   private func panoramicScene(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
     ZStack {
       panoramicBackground(size: size, layout: layout)
+      cinematicValueShaping(size: size)
       practicalLighting(size: size, layout: layout)
       garageArchitecture(size: size, layout: layout)
       groundingShadows(size: size, layout: layout)
@@ -534,6 +535,30 @@ struct FounderEnvironmentRendererView: View {
       atmosphere(size: size)
     }
     .background(Color.black)
+  }
+
+  private func cinematicValueShaping(size: CGSize) -> some View {
+    ZStack {
+      RadialGradient(
+        colors: [.clear, .clear, .black.opacity(increasedContrast ? 0.38 : 0.28)],
+        center: UnitPoint(x: 0.5 - camera.horizontalLook * 0.10, y: 0.48),
+        startRadius: size.width * 0.14,
+        endRadius: size.width * 0.78
+      )
+      LinearGradient(
+        colors: [.black.opacity(0.20), .clear, .clear, .black.opacity(0.20)],
+        startPoint: .leading,
+        endPoint: .trailing
+      )
+      LinearGradient(
+        colors: [.black.opacity(0.16), .clear, .black.opacity(0.12)],
+        startPoint: .top,
+        endPoint: .bottom
+      )
+    }
+    .frame(width: size.width, height: size.height)
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
   }
 
   @ViewBuilder
@@ -592,6 +617,15 @@ struct FounderEnvironmentRendererView: View {
         let scuff = CGRect(x: x, y: y, width: CGFloat(12 + index % 4 * 7), height: 2)
         context.fill(Path(roundedRect: scuff, cornerRadius: 1), with: .color(.white.opacity(0.025)))
       }
+      for index in 0..<12 {
+        let x = CGFloat((index * 137 + 23) % 991) / 991 * canvasSize.width
+        let y = CGFloat((index * 71 + 19) % 307) / 307 * canvasSize.height
+        let radius = CGFloat(5 + index % 4 * 3)
+        context.fill(
+          Path(ellipseIn: CGRect(x: x, y: y, width: radius, height: radius * 0.42)),
+          with: .color(.black.opacity(0.025))
+        )
+      }
     }
     .opacity(motion.environment.rearContrast)
   }
@@ -640,9 +674,23 @@ struct FounderEnvironmentRendererView: View {
   private func garageArchitecture(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
     ZStack {
       ForEach(0..<7, id: \.self) { index in
-        Rectangle()
-          .fill(projection.spatialPresentation == .elevatedLoft ? .white.opacity(0.18) : .black.opacity(0.58))
+        RoundedRectangle(cornerRadius: 2)
+          .fill(LinearGradient(
+            colors: projection.spatialPresentation == .elevatedLoft
+              ? [.white.opacity(0.22), .black.opacity(0.38)]
+              : [FounderGarageMaterial.satinMetal.opacity(0.72), .black.opacity(0.78)],
+            startPoint: .leading,
+            endPoint: .trailing
+          ))
           .frame(width: projection.spatialPresentation == .elevatedLoft ? 7 : 12, height: size.height * 0.72)
+          .overlay(alignment: .top) {
+            VStack(spacing: 74) {
+              ForEach(0..<5, id: \.self) { _ in
+                Circle().fill(.white.opacity(0.16)).frame(width: 2.5, height: 2.5)
+              }
+            }
+            .padding(.top, 18)
+          }
           .position(layout.viewportPosition(worldPoint: CGPoint(x: CGFloat(index) * 220 + 20, y: 280), camera: camera, layer: .background))
       }
 
@@ -810,29 +858,30 @@ struct FounderEnvironmentRendererView: View {
           let destination = artifactDestination(for: station.agentID, layout: layout)
           let returning = station.physical.artifactState == .returnedForReview
           let position = returning ? founder : destination
-          Path { path in
-            path.move(to: founder)
-            path.addCurve(
-              to: destination,
-              control1: CGPoint(x: founder.x, y: founder.y - 72),
-              control2: CGPoint(x: destination.x, y: destination.y + 72)
+          ZStack {
+            RoundedRectangle(cornerRadius: 4)
+              .fill(FounderGarageMaterial.powderCoat.opacity(0.96))
+              .frame(width: 45, height: 28)
+              .overlay(alignment: .bottom) {
+                Capsule()
+                  .fill(stationTone(for: station.agentID).opacity(0.62))
+                  .frame(width: 29, height: 2)
+                  .offset(y: 3)
+              }
+              .shadow(color: .black.opacity(0.62), radius: 3, y: 3)
+            FounderGarageTaskArtifactView(
+              tone: stationTone(for: station.agentID),
+              state: station.physical.artifactState,
+              progress: station.physical.artifactProgress,
+              reduceMotion: !station.physical.reactionMotionEnabled,
+              eventToken: station.eventToken
             )
           }
-          .trim(from: 0, to: 1)
-          .stroke(
-            stationTone(for: station.agentID).opacity(0.28),
-            style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [5, 6])
-          )
-
-          FounderGarageTaskArtifactView(
-            tone: stationTone(for: station.agentID),
-            state: station.physical.artifactState,
-            progress: station.physical.artifactProgress,
-            reduceMotion: !motion.ambient.continuousMotionEnabled,
-            eventToken: station.eventToken
-          )
           .position(position)
-          .animation(.smooth(duration: 0.62), value: station.physical.artifactState)
+          .animation(
+            station.physical.reactionMotionEnabled ? .smooth(duration: 0.42) : nil,
+            value: station.physical.artifactState
+          )
         }
       }
     }
@@ -1036,11 +1085,22 @@ struct FounderEnvironmentRendererView: View {
           path.closeSubpath()
         }
         .fill(LinearGradient(
-          colors: [FounderGarageMaterial.deskTop, FounderGarageMaterial.deskFront],
+          colors: [FounderGarageMaterial.deskTop, Color(red: 0.16, green: 0.09, blue: 0.05), FounderGarageMaterial.deskFront],
           startPoint: .top,
           endPoint: .bottom
         ))
         .overlay(alignment: .top) { Rectangle().fill(FounderGarageMaterial.materialEdge).frame(width: 370, height: 2).offset(y: 5) }
+        .overlay {
+          FounderGarageSurfaceTexture(kind: .laminate, strength: 0.9)
+            .clipShape(.rect(cornerRadius: 4))
+        }
+        LinearGradient(
+          colors: [.clear, Color.cyan.opacity(0.10 * motion.lighting.founderMonitorGlow), .clear],
+          startPoint: .leading,
+          endPoint: .trailing
+        )
+        .frame(width: 230, height: 4)
+        .offset(x: 5, y: -44)
         RoundedRectangle(cornerRadius: 8).fill(.black.opacity(0.82)).frame(width: 164, height: 42).offset(x: -46, y: 5)
           .overlay { VStack(spacing: 5) { ForEach(0..<3, id: \.self) { _ in HStack(spacing: 7) { ForEach(0..<8, id: \.self) { _ in RoundedRectangle(cornerRadius: 1).fill(.white.opacity(0.25)).frame(width: 9, height: 3) } } } }.offset(x: -46, y: 5) }
         RoundedRectangle(cornerRadius: 14).fill(.black.opacity(0.72)).frame(width: 52, height: 38).offset(x: 92, y: 7)
@@ -1051,6 +1111,29 @@ struct FounderEnvironmentRendererView: View {
           .overlay { VStack(spacing: 3) { ForEach(0..<3, id: \.self) { _ in Rectangle().fill(.black.opacity(0.28)).frame(width: 30, height: 1) } } }
           .rotationEffect(.degrees(-7))
           .offset(x: 118, y: 35)
+        ZStack {
+          RoundedRectangle(cornerRadius: 3)
+            .fill(FounderGarageMaterial.industrialPlastic)
+            .frame(width: 48, height: 27)
+          HStack(spacing: 3) {
+            ForEach(0..<4, id: \.self) { index in
+              Circle()
+                .fill(index == 1 ? Color.cyan.opacity(0.68) : .green.opacity(0.40))
+                .frame(width: 3, height: 3)
+            }
+          }
+        }
+        .rotationEffect(.degrees(4))
+        .offset(x: -116, y: 34)
+        Path { path in
+          path.move(to: CGPoint(x: 39, y: 69))
+          path.addCurve(
+            to: CGPoint(x: 92, y: 92),
+            control1: CGPoint(x: 51, y: 84),
+            control2: CGPoint(x: 78, y: 75)
+          )
+        }
+        .stroke(.black.opacity(0.84), style: StrokeStyle(lineWidth: 3, lineCap: .round))
       }
       .frame(width: 420, height: 118)
       .scaleEffect(layout.depthScale(for: .founderDesk) * layout.scale)
@@ -1263,6 +1346,10 @@ struct FounderEnvironmentRendererView: View {
         layout: layout
       )
 
+      floorLightReflection(agentID: "aurora", tone: .cyan, worldX: 325, layout: layout)
+      floorLightReflection(agentID: "stacks", tone: .orange, worldX: 680, layout: layout)
+      floorLightReflection(agentID: "brio", tone: .pink, worldX: 1_035, layout: layout)
+
       if motion.lighting.warningIntensity > 0 {
         Capsule()
           .fill(.orange.opacity(0.35 + motion.lighting.warningIntensity * 0.35))
@@ -1285,15 +1372,39 @@ struct FounderEnvironmentRendererView: View {
     worldPoint: CGPoint,
     layout: FounderEnvironmentLayout
   ) -> some View {
-    let intensity = motion.station(for: agentID)?.localLightIntensity ?? 0.08
+    let station = motion.station(for: agentID)
+    let intensity = station?.physical.keyLightIntensity ?? 0.20
+    let focal = station?.physical.focalEmphasis ?? 0.35
     return RadialGradient(
-      colors: [tone.opacity(0.06 + intensity * 0.16), tone.opacity(intensity * 0.04), .clear],
+      colors: [tone.opacity(0.035 + intensity * 0.12 + focal * 0.035), tone.opacity(intensity * 0.032), .clear],
       center: .center,
       startRadius: 8,
       endRadius: 145
     )
     .frame(width: 290, height: 230)
     .position(layout.viewportPosition(worldPoint: worldPoint, camera: camera, layer: .middleGround))
+  }
+
+  private func floorLightReflection(
+    agentID: String,
+    tone: Color,
+    worldX: CGFloat,
+    layout: FounderEnvironmentLayout
+  ) -> some View {
+    let intensity = motion.station(for: agentID)?.physical.deskLightIntensity ?? 0.18
+    return Ellipse()
+      .fill(RadialGradient(
+        colors: [tone.opacity(intensity * 0.08), .clear],
+        center: .center,
+        startRadius: 2,
+        endRadius: 74
+      ))
+      .frame(width: 150, height: 31)
+      .position(layout.viewportPosition(
+        worldPoint: CGPoint(x: worldX, y: 555),
+        camera: camera,
+        layer: .middleGround
+      ))
   }
 
   private func ambientEquipmentLayer(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
@@ -1419,7 +1530,7 @@ struct FounderEnvironmentRendererView: View {
       .frame(height: size.height * 0.62)
       .offset(y: -size.height * 0.08)
 
-      ForEach(0..<9, id: \.self) { index in
+      ForEach(0..<motion.environment.atmosphericParticleCount, id: \.self) { index in
         Circle()
           .fill(.white.opacity(index.isMultiple(of: 3) ? 0.15 : 0.08))
           .frame(width: CGFloat(1 + index % 2), height: CGFloat(1 + index % 2))
