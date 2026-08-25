@@ -64,28 +64,19 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
   private func prepareVisibleProductionActivity(in app: XCUIApplication) -> Bool {
     let founderChoice = app.buttons["Narrow the Claim"]
     if founderChoice.exists {
-      let commandScroll = app.scrollViews.firstMatch
-      for _ in 0..<6 where !founderChoice.isHittable {
-        commandScroll
-          .coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.72))
-          .press(
-            forDuration: 0.05,
-            thenDragTo: commandScroll.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.28))
-          )
-        usleep(180_000)
+      let dragStart = app.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.74))
+      let dragEnd = app.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.38))
+      for _ in 0..<2 {
+        dragStart.press(forDuration: 0.05, thenDragTo: dragEnd)
+        usleep(220_000)
       }
-      guard founderChoice.isHittable else { return false }
-      founderChoice.tap()
+      app.coordinate(withNormalizedOffset: CGVector(dx: 0.26, dy: 0.46)).tap()
       sleep(1)
-      for _ in 0..<6 {
-        commandScroll
-          .coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.28))
-          .press(
-            forDuration: 0.05,
-            thenDragTo: commandScroll.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.72))
-          )
+      for _ in 0..<2 {
+        dragEnd.press(forDuration: 0.05, thenDragTo: dragStart)
         usleep(120_000)
       }
+      guard !founderChoice.exists else { return false }
     }
 
     let commit = app.buttons.matching(
