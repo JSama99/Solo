@@ -75,17 +75,13 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
       sleep(2)
     }
 
-    let stacks = app.descendants(matching: .any).matching(
-      NSPredicate(format: "label BEGINSWITH[c] 'Stacks,'")
+    let stacks = app.buttons.matching(
+      NSPredicate(format: "label BEGINSWITH[c] 'Stacks,' AND label CONTAINS[c] 'station'")
     ).firstMatch
-    for _ in 0..<6 where !stacks.isHittable {
-      app.swipeUp()
-      usleep(280_000)
-    }
-    guard stacks.exists, stacks.isHittable else { return false }
+    guard stacks.waitForExistence(timeout: 3), stacks.isHittable else { return false }
     stacks.tap()
 
-    let assign = app.buttons["Assign"].firstMatch
+    let assign = app.buttons["Assign Task"]
     guard assign.waitForExistence(timeout: 3), assign.isHittable, assign.isEnabled else { return false }
     assign.tap()
     let sheetAssign = app.buttons["Assign"].firstMatch
