@@ -44,6 +44,7 @@ struct FounderComputerScreen: View {
             focus: commandInteraction.focus,
             agentAvailability: agentAvailability,
             founderSummary: founderSummary,
+            founderDilemma: store.activeDilemma,
             reduceMotion: reduceMotion,
             onFocus: focusViewport,
             onAssign: beginAssignment,
@@ -52,6 +53,7 @@ struct FounderComputerScreen: View {
             onSkipAgentPresentation: skipPresentation,
             onOpenFullWorkstation: openFullWorkstation,
             onCommit: commit,
+            onSelectFounderDilemma: store.selectDilemmaChoice,
             onVisibilityChange: { isViewportVisible = $0 }
           )
           .id("viewport")
