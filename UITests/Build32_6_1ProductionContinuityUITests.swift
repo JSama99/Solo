@@ -98,6 +98,20 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     case server
   }
 
+  /// SwiftUI's scaled monitor can briefly report a visible nested button as
+  /// non-hittable even though its accessibility frame is on screen. Drive the
+  /// production control through that live frame instead of a brittle constant.
+  private func tapVisibleFrame(of element: XCUIElement, in app: XCUIApplication) -> Bool {
+    let frame = element.frame
+    let appFrame = app.frame
+    guard !frame.isEmpty, appFrame.intersects(frame), appFrame.width > 0, appFrame.height > 0 else { return false }
+    app.coordinate(withNormalizedOffset: CGVector(
+      dx: (frame.midX - appFrame.minX) / appFrame.width,
+      dy: (frame.midY - appFrame.minY) / appFrame.height
+    )).tap()
+    return true
+  }
+
   private func enterFreshProductionCareer(in app: XCUIApplication) {
     let chooseMode = app.buttons["Choose Mode"]
     XCTAssertTrue(chooseMode.waitForExistence(timeout: 5))
