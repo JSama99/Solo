@@ -11,7 +11,6 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     let lookOut = app.buttons["Look Out"]
     XCTAssertTrue(lookOut.waitForExistence(timeout: 8))
 
-    let activeStationPrepared = prepareVisibleProductionActivity(in: app)
     XCTAssertTrue(lookOut.waitForExistence(timeout: 5))
     capture("11_PRODUCTION_COMMAND_FOCUS", in: app)
     capture("14_PRODUCTION_ALL_THREE_COMMAND_MONITOR", in: app)
@@ -28,7 +27,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     sleep(1)
     capture("01_PRODUCTION_CENTERED_FREE_LOOK", in: app)
     capture("05_PRODUCTION_FOUNDER_DESK_STORYTELLING", in: app)
-    capture(activeStationPrepared ? "10_PRODUCTION_ACTIVE_FOCAL_HIERARCHY" : "09_PRODUCTION_IDLE_TONAL_HIERARCHY", in: app)
+    capture("09_PRODUCTION_IDLE_TONAL_HIERARCHY", in: app)
 
     let lookLeft = app.buttons["Look Left"]
     let center = app.buttons["Center"]
@@ -56,49 +55,41 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
 
     app.buttons["Return to Founder Computer"].tap()
     XCTAssertTrue(lookOut.waitForExistence(timeout: 5))
+
+    // Create activity exclusively through the production Founder Event and
+    // assignment UI. This deliberately avoids fixture arguments or save edits.
+    XCTAssertTrue(prepareVisibleProductionActivity(in: app))
+    XCTAssertTrue(lookOut.waitForExistence(timeout: 5))
+    lookOut.tap()
+    XCTAssertTrue(founderComputer.waitForExistence(timeout: 4))
+    sleep(1)
+    capture("10_PRODUCTION_ACTIVE_FOCAL_HIERARCHY", in: app)
+    sleep(2)
+    app.buttons["Return to Founder Computer"].tap()
+    XCTAssertTrue(lookOut.waitForExistence(timeout: 5))
     // Leave a stable focused tail so external recording can stop before the
     // XCTest host tears the production app down.
     sleep(8)
   }
 
   private func prepareVisibleProductionActivity(in app: XCUIApplication) -> Bool {
-    let founderChoice = app.buttons["Narrow the Claim"]
-    if founderChoice.exists {
-      let dragStart = app.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.74))
-      let dragEnd = app.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.38))
-      for _ in 0..<2 {
-        dragStart.press(forDuration: 0.05, thenDragTo: dragEnd)
-        usleep(220_000)
-      }
-      app.coordinate(withNormalizedOffset: CGVector(dx: 0.26, dy: 0.46)).tap()
-      sleep(1)
-      for _ in 0..<2 {
-        dragEnd.press(forDuration: 0.05, thenDragTo: dragStart)
-        usleep(120_000)
-      }
-      guard !founderChoice.exists else { return false }
-    }
+    let founderStation = app.buttons["Founder command station"]
+    guard founderStation.waitForExistence(timeout: 3), founderStation.isHittable else { return false }
+    founderStation.tap()
 
-    let commit = app.buttons.matching(
-      NSPredicate(format: "label CONTAINS[c] 'COMMIT SPRINT'")
-    ).firstMatch
-    if commit.waitForExistence(timeout: 2), commit.isHittable, commit.isEnabled {
-      commit.tap()
-      sleep(2)
-    }
+    let founderChoice = app.otherElements["Founder command focus"].buttons["Narrow the Claim"]
+    guard founderChoice.waitForExistence(timeout: 3), tapVisibleFrame(of: founderChoice, in: app) else { return false }
+    guard !founderChoice.waitForExistence(timeout: 1) else { return false }
+
+    let closeFocus = app.buttons["Close focus"]
+    guard closeFocus.waitForExistence(timeout: 3), closeFocus.isHittable else { return false }
+    closeFocus.tap()
 
     let stacks = app.buttons.matching(
       NSPredicate(format: "label BEGINSWITH[c] 'Stacks,' AND label CONTAINS[c] 'station'")
     ).firstMatch
-    if stacks.waitForExistence(timeout: 3), stacks.isHittable {
-      stacks.tap()
-    } else {
-      // The overview intentionally combines each illustrated station into one
-      // accessibility element. XCTest can briefly classify that element as
-      // non-hittable while the full-screen spatial transition settles, so use
-      // the stable center bay coordinate as the production interaction fallback.
-      app.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.25)).tap()
-    }
+    guard stacks.waitForExistence(timeout: 3), stacks.isHittable else { return false }
+    stacks.tap()
 
     let assign = app.buttons["Assign Task"]
     guard assign.waitForExistence(timeout: 3), assign.isHittable, assign.isEnabled else { return false }
@@ -107,6 +98,20 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     guard sheetAssign.waitForExistence(timeout: 3), sheetAssign.isHittable, sheetAssign.isEnabled else { return false }
     sheetAssign.tap()
     return app.buttons["Look Out"].waitForExistence(timeout: 5)
+  }
+
+  /// SwiftUI's scaled monitor can briefly report a visible nested button as
+  /// non-hittable even though its accessibility frame is on screen. Drive the
+  /// production control through that live frame instead of a brittle constant.
+  private func tapVisibleFrame(of element: XCUIElement, in app: XCUIApplication) -> Bool {
+    let frame = element.frame
+    let appFrame = app.frame
+    guard !frame.isEmpty, appFrame.intersects(frame), appFrame.width > 0, appFrame.height > 0 else { return false }
+    app.coordinate(withNormalizedOffset: CGVector(
+      dx: (frame.midX - appFrame.minX) / appFrame.width,
+      dy: (frame.midY - appFrame.minY) / appFrame.height
+    )).tap()
+    return true
   }
 
   private func enterFreshProductionCareer(in app: XCUIApplication) {

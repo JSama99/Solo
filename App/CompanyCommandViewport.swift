@@ -14,6 +14,7 @@ struct CompanyCommandViewport: View {
   var focus: CompanyCommandFocus?
   var agentAvailability: [String: CompanyCommandAgentAvailability]
   var founderSummary: CompanyCommandFounderSummary
+  var founderDilemma: FounderDilemma? = nil
   var reduceMotion: Bool
   var forceIncreasedContrast = false
   var onFocus: (CompanyCommandFocus) -> Void
@@ -23,6 +24,7 @@ struct CompanyCommandViewport: View {
   var onSkipAgentPresentation: (String) -> Void
   var onOpenFullWorkstation: (CompanyCommandFocus) -> Void
   var onCommit: () -> Void
+  var onSelectFounderDilemma: (String) -> Void = { _ in }
   var onVisibilityChange: (Bool) -> Void
 
   @Environment(\.colorSchemeContrast) private var contrast
@@ -163,7 +165,9 @@ struct CompanyCommandViewport: View {
           case .founder:
             FounderCommandFocusPanel(
               summary: founderSummary,
+              dilemma: founderDilemma,
               onCommit: onCommit,
+              onSelectDilemma: onSelectFounderDilemma,
               onFullWorkstation: { onOpenFullWorkstation(.founder) }
             )
             .transition(.opacity.combined(with: .scale(scale: 0.96)))
@@ -1329,7 +1333,9 @@ private struct RoleActivityMonitor: View {
 
 private struct FounderCommandFocusPanel: View {
   var summary: CompanyCommandFounderSummary
+  var dilemma: FounderDilemma?
   var onCommit: () -> Void
+  var onSelectDilemma: (String) -> Void
   var onFullWorkstation: () -> Void
 
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -1349,18 +1355,22 @@ private struct FounderCommandFocusPanel: View {
             .foregroundStyle(SoloTheme.amber)
         }
       }
-      LazyVGrid(columns: metricColumns, alignment: .leading, spacing: 8) {
-        metric("Work active", summary.workInProgressCount, "waveform.path.ecg")
-        metric("Reviews waiting", summary.reviewCount, "eye.fill")
-        metric("Resolutions", summary.resolutionCount, "lock.open.fill")
-        metric("Attention", summary.attentionRemaining, "eye.circle.fill", suffix: "/\(summary.attentionMaximum)")
+      if summary.sprintPhase == .founderEvent, let dilemma {
+        dilemmaChoices(dilemma)
+      } else {
+        LazyVGrid(columns: metricColumns, alignment: .leading, spacing: 8) {
+          metric("Work active", summary.workInProgressCount, "waveform.path.ecg")
+          metric("Reviews waiting", summary.reviewCount, "eye.fill")
+          metric("Resolutions", summary.resolutionCount, "lock.open.fill")
+          metric("Attention", summary.attentionRemaining, "eye.circle.fill", suffix: "/\(summary.attentionMaximum)")
+        }
+        Label(summary.nextAction, systemImage: summary.canCommit ? "checkmark.seal.fill" : "arrow.forward.circle.fill")
+          .font(.subheadline.weight(.semibold))
+          .foregroundStyle(summary.canCommit ? SoloTheme.mint : .primary)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .padding(10)
+          .background(.black.opacity(0.46), in: .rect(cornerRadius: 10))
       }
-      Label(summary.nextAction, systemImage: summary.canCommit ? "checkmark.seal.fill" : "arrow.forward.circle.fill")
-        .font(.subheadline.weight(.semibold))
-        .foregroundStyle(summary.canCommit ? SoloTheme.mint : .primary)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
-        .background(.black.opacity(0.46), in: .rect(cornerRadius: 10))
       VStack(spacing: 7) {
         if summary.canCommit {
           Button("Commit Sprint", systemImage: "arrow.forward.square.fill", action: onCommit)
@@ -1381,6 +1391,33 @@ private struct FounderCommandFocusPanel: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     .accessibilityElement(children: .contain)
     .accessibilityLabel("Founder command focus")
+  }
+
+  private func dilemmaChoices(_ dilemma: FounderDilemma) -> some View {
+    VStack(alignment: .leading, spacing: 7) {
+      Text(dilemma.title)
+        .font(.subheadline.weight(.black))
+        .lineLimit(1)
+      ForEach(dilemma.choices) { choice in
+        Button {
+          onSelectDilemma(choice.id)
+        } label: {
+          HStack(spacing: 8) {
+            Image(systemName: "arrow.right.circle.fill")
+            Text(choice.title).lineLimit(1)
+            Spacer(minLength: 0)
+          }
+          .font(.caption.weight(.bold))
+          .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
+          .padding(.horizontal, 10)
+          .background(SoloTheme.amber.opacity(0.13), in: .rect(cornerRadius: 9))
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint(choice.consequencePreview)
+      }
+    }
+    .padding(9)
+    .background(.black.opacity(0.48), in: .rect(cornerRadius: 11))
   }
 
   private var metricColumns: [GridItem] {
