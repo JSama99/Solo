@@ -4,6 +4,7 @@ import SwiftUI
 struct FounderComputerScreen: View {
   var store: GameStore
   var presentation: PresentationCoordinator
+  var workspaceRequest: FounderComputerWorkspaceRequest? = nil
 
   @Environment(FounderProgressionStore.self) private var progression
   @Environment(AppSettingsStore.self) private var settings
@@ -75,11 +76,14 @@ struct FounderComputerScreen: View {
             .opacity(isReviewFocused && expandedWorkstationAgentID != station.agentID ? 0.86 : 1)
             .founderEntrance(order: rank(station.agentID) + 2, alreadyPresented: hasPresentedRoster)
           }
-          evidenceDrawer.founderEntrance(order: 5, alreadyPresented: hasPresentedRoster)
+          evidenceDrawer
+            .id(FounderComputerWorkspaceTarget.evidence.rawValue)
+            .founderEntrance(order: 5, alreadyPresented: hasPresentedRoster)
           HindsightArchiveCard(
             precedents: store.precedents,
             divergences: store.divergenceRecords
           )
+          .id(FounderComputerWorkspaceTarget.hindsight.rawValue)
           .founderEntrance(order: 6, alreadyPresented: hasPresentedRoster)
         }
         .padding(16)
@@ -108,6 +112,14 @@ struct FounderComputerScreen: View {
           if !reduceMotion { try? await Task.sleep(for: .milliseconds(320)) }
           accessibilityWorkstationID = request.target.scrollID
         }
+      }
+      .onChange(of: workspaceRequest?.id, initial: true) { _, _ in
+        guard let request = workspaceRequest else { return }
+        if request.target == .evidence { evidenceExpanded = true }
+        withAnimation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion)) {
+          proxy.scrollTo(request.target.rawValue, anchor: .center)
+        }
+        announce("\(request.target.accessibilityTitle) opened on the Founder Computer.")
       }
       .onChange(of: agentLevelSnapshot) { _, levels in
         presentLevelUpIfNeeded(levels)

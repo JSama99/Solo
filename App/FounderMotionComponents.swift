@@ -103,6 +103,7 @@ struct EvidenceDrawerView: View {
       .accessibilityElement(children: .combine)
       .accessibilityLabel("Evidence ledger, \(evidence.count) entries")
     }
+    .accessibilityIdentifier("founder-computer-evidence")
     .padding(14)
     .background(SoloTheme.card, in: .rect(cornerRadius: 18))
     .phaseAnimator([0, 1, 2], trigger: evidence.count) { content, phase in

@@ -1,112 +1,86 @@
 import XCTest
 
 final class Build32_6_2ProductionContinuityUITests: XCTestCase {
-  func testProductionCommandFocusFreeLookContinuity() throws {
+  func testProductionFounderDeskDeviceContinuity() throws {
     let app = XCUIApplication()
-    app.launchArguments = ["--build-32-6-2-production-proof"]
+    app.launchArguments = ["--founder-desk-production-proof"]
     app.launch()
 
     enterFreshProductionCareer(in: app)
 
-    let lookOut = app.buttons["Look Out"]
-    XCTAssertTrue(lookOut.waitForExistence(timeout: 8))
+    let workspace = app.buttons["founder-desk-device-computer"]
+    XCTAssertTrue(workspace.waitForExistence(timeout: 8))
+    XCTAssertFalse(app.tabBars.firstMatch.exists)
+    capture("01_FOUNDER_DESK_OVERVIEW", in: app)
 
-    let activeStationPrepared = prepareVisibleProductionActivity(in: app)
-    XCTAssertTrue(lookOut.waitForExistence(timeout: 5))
-    capture("11_PRODUCTION_COMMAND_FOCUS", in: app)
-    capture("14_PRODUCTION_ALL_THREE_COMMAND_MONITOR", in: app)
+    focusDevice(.computer, expectedTitle: "Founder Computer", in: app)
+    XCTAssertTrue(app.staticTexts["Founder Computer"].exists)
+    capture("02_FOUNDER_COMPUTER_FOCUSED", in: app)
+    returnToDesk(from: .computer, in: app)
 
-    // Recording starts externally after launch stabilization and before this
-    // pause ends, keeping the production interaction free of launch snapshots.
-    sleep(20)
-    lookOut.tap()
-    usleep(140_000)
-    capture("12_PRODUCTION_LOOK_OUT_TRANSITION", in: app)
+    focusDevice(.phone, expectedTitle: "Tech.com iPhone", in: app)
+    XCTAssertTrue(app.navigationBars["Tech.com"].waitForExistence(timeout: 4))
+    capture("03_TECHCOM_IPHONE_FOCUSED", in: app)
+    returnToDesk(from: .phone, in: app)
 
-    let founderComputer = app.buttons["Founder Computer"]
-    XCTAssertTrue(founderComputer.waitForExistence(timeout: 4))
-    sleep(1)
-    capture("01_PRODUCTION_CENTERED_FREE_LOOK", in: app)
-    capture("05_PRODUCTION_FOUNDER_DESK_STORYTELLING", in: app)
-    capture(activeStationPrepared ? "10_PRODUCTION_ACTIVE_FOCAL_HIERARCHY" : "09_PRODUCTION_IDLE_TONAL_HIERARCHY", in: app)
+    focusDevice(.tablet, expectedTitle: "Venture iPad", in: app)
+    XCTAssertTrue(app.navigationBars.matching(NSPredicate(format: "identifier BEGINSWITH 'Venture'")).firstMatch.waitForExistence(timeout: 4))
+    capture("04_VENTURE_IPAD_FOCUSED", in: app)
+    returnToDesk(from: .tablet, in: app)
 
-    let lookLeft = app.buttons["Look Left"]
-    let center = app.buttons["Center"]
-    let lookRight = app.buttons["Look Right"]
-    XCTAssertTrue(lookLeft.exists)
-    XCTAssertTrue(center.exists)
-    XCTAssertTrue(lookRight.exists)
-
-    lookLeft.tap()
-    sleep(1)
-    capture("02_PRODUCTION_AURORA_AUTHORED_STATION", in: app)
-    capture("06_PRODUCTION_LOCAL_LIGHT_VALUE_HIERARCHY", in: app)
-    center.tap()
-    sleep(1)
-    capture("03_PRODUCTION_STACKS_AUTHORED_STATION", in: app)
-    capture("07_PRODUCTION_MATERIAL_SURFACE_BREAKUP", in: app)
-    capture("08_PRODUCTION_DIEGETIC_DEVICE_DOCKS", in: app)
-    lookRight.tap()
-    sleep(1)
-    capture("04_PRODUCTION_BRIO_AUTHORED_STATION", in: app)
-    capture("15_PRODUCTION_BACKGROUND_RECESSION", in: app)
-    center.tap()
-    sleep(1)
-    capture("13_PRODUCTION_RETURNED_FREE_LOOK", in: app)
-
-    app.buttons["Return to Founder Computer"].tap()
-    XCTAssertTrue(lookOut.waitForExistence(timeout: 5))
-    // Leave a stable focused tail so external recording can stop before the
-    // XCTest host tears the production app down.
-    sleep(8)
+    focusDevice(.server, expectedTitle: "Company Server", in: app)
+    let serverDestinations = [
+      "Evidence Ledger", "Agent Operations", "Achievements", "Headquarters Progress",
+      "Company Story", "Solo Pro", "Settings", "How to Play", "Restart Career"
+    ]
+    for destination in serverDestinations {
+      XCTAssertTrue(revealServerButton(named: destination, in: app), "Missing server module: \(destination)")
+    }
+    capture("05_COMPANY_SERVER_FOCUSED", in: app)
+    returnToDesk(from: .server, in: app)
+    XCTAssertTrue(app.buttons["founder-desk-device-computer"].exists)
   }
 
-  private func prepareVisibleProductionActivity(in app: XCUIApplication) -> Bool {
-    let founderChoice = app.buttons["Narrow the Claim"]
-    if founderChoice.exists {
-      let dragStart = app.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.74))
-      let dragEnd = app.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.38))
-      for _ in 0..<2 {
-        dragStart.press(forDuration: 0.05, thenDragTo: dragEnd)
-        usleep(220_000)
-      }
-      app.coordinate(withNormalizedOffset: CGVector(dx: 0.26, dy: 0.46)).tap()
-      sleep(1)
-      for _ in 0..<2 {
-        dragEnd.press(forDuration: 0.05, thenDragTo: dragStart)
-        usleep(120_000)
-      }
-      guard !founderChoice.exists else { return false }
-    }
+  private func focusDevice(_ target: FocusedDevice, expectedTitle: String, in app: XCUIApplication) {
+    let device = app.buttons["founder-desk-device-\(target.rawValue)"]
+    XCTAssertTrue(device.waitForExistence(timeout: 5), "Missing \(expectedTitle) desk object")
+    device.tap()
+    XCTAssertTrue(waitUntilHittable(app.buttons["return-to-founder-desk-\(target.rawValue)"]))
+    XCTAssertTrue(app.staticTexts[expectedTitle].waitForExistence(timeout: 5))
+  }
 
-    let commit = app.buttons.matching(
-      NSPredicate(format: "label CONTAINS[c] 'COMMIT SPRINT'")
-    ).firstMatch
-    if commit.waitForExistence(timeout: 2), commit.isHittable, commit.isEnabled {
-      commit.tap()
-      sleep(2)
-    }
+  private func returnToDesk(from device: FocusedDevice, in app: XCUIApplication) {
+    let close = app.buttons["return-to-founder-desk-\(device.rawValue)"]
+    XCTAssertTrue(waitUntilHittable(close))
+    close.tap()
+    XCTAssertTrue(app.buttons["founder-desk-device-computer"].waitForExistence(timeout: 4))
+  }
 
-    let stacks = app.buttons.matching(
-      NSPredicate(format: "label BEGINSWITH[c] 'Stacks,' AND label CONTAINS[c] 'station'")
-    ).firstMatch
-    if stacks.waitForExistence(timeout: 3), stacks.isHittable {
-      stacks.tap()
-    } else {
-      // The overview intentionally combines each illustrated station into one
-      // accessibility element. XCTest can briefly classify that element as
-      // non-hittable while the full-screen spatial transition settles, so use
-      // the stable center bay coordinate as the production interaction fallback.
-      app.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.25)).tap()
-    }
+  private func waitUntilHittable(_ element: XCUIElement, timeout: TimeInterval = 5) -> Bool {
+    let expectation = XCTNSPredicateExpectation(
+      predicate: NSPredicate(format: "exists == true AND hittable == true"),
+      object: element
+    )
+    return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
+  }
 
-    let assign = app.buttons["Assign Task"]
-    guard assign.waitForExistence(timeout: 3), assign.isHittable, assign.isEnabled else { return false }
-    assign.tap()
-    let sheetAssign = app.buttons["Assign"].firstMatch
-    guard sheetAssign.waitForExistence(timeout: 3), sheetAssign.isHittable, sheetAssign.isEnabled else { return false }
-    sheetAssign.tap()
-    return app.buttons["Look Out"].waitForExistence(timeout: 5)
+  private func serverButton(named name: String, in app: XCUIApplication) -> XCUIElement {
+    app.buttons.matching(NSPredicate(format: "label BEGINSWITH[c] %@", name)).firstMatch
+  }
+
+  private func revealServerButton(named name: String, in app: XCUIApplication) -> Bool {
+    let button = serverButton(named: name, in: app)
+    for _ in 0..<5 where !button.exists {
+      app.swipeUp()
+    }
+    return button.exists
+  }
+
+  private enum FocusedDevice: String {
+    case computer
+    case phone
+    case tablet
+    case server
   }
 
   private func enterFreshProductionCareer(in app: XCUIApplication) {

@@ -67,7 +67,7 @@
         "path": "App/Info.plist",
         "properties": {
           "CFBundleDisplayName": "SOLO: Unicorn Run",
-          "CFBundleShortVersionString": "32.6.2",
+          "CFBundleShortVersionString": "32.7.0",
           "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
           "ITSAppUsesNonExemptEncryption": false,
           "RevenueCatAPIKey": "$(REVENUECAT_API_KEY)",
@@ -86,16 +86,16 @@
         "base": {
           "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
           "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
-          "CURRENT_PROJECT_VERSION": "32602",
+          "CURRENT_PROJECT_VERSION": "32700",
           "CODE_SIGN_IDENTITY": "Apple Development",
           "CODE_SIGN_STYLE": "Automatic",
-          "MARKETING_VERSION": "32.6.2",
+          "MARKETING_VERSION": "32.7.0",
           "PRODUCT_BUNDLE_IDENTIFIER": "com.talonsight.solounicornrun",
           "PRODUCT_MODULE_NAME": "Solo_Unicorn_Run",
           "PRODUCT_NAME": "$(TARGET_NAME)",
           "REVENUECAT_API_KEY": "appl_RstJigxejEkEbYZmARYTVpcBoxY",
           "SWIFT_VERSION": "5.0",
-          "TARGETED_DEVICE_FAMILY": "1"
+          "TARGETED_DEVICE_FAMILY": "1,2"
         }
       },
       "sources": [
@@ -119,7 +119,7 @@
           "CODE_SIGN_STYLE": "Automatic",
           "PRODUCT_BUNDLE_IDENTIFIER": "com.talonsight.solounicornrun.tests",
           "SWIFT_VERSION": "5.0",
-          "TARGETED_DEVICE_FAMILY": "1"
+          "TARGETED_DEVICE_FAMILY": "1,2"
         }
       },
       "sources": [
@@ -143,7 +143,7 @@
           "GENERATE_INFOPLIST_FILE": "YES",
           "PRODUCT_BUNDLE_IDENTIFIER": "com.talonsight.solounicornrun.uitests",
           "SWIFT_VERSION": "5.0",
-          "TARGETED_DEVICE_FAMILY": "1",
+          "TARGETED_DEVICE_FAMILY": "1,2",
           "TEST_TARGET_NAME": "Solo Unicorn Run"
         }
       },

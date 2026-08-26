@@ -475,26 +475,12 @@ private struct GameDashboard: View {
       if let recall = store.activeRecall {
         HindsightRecallCard(recall: recall) { store.dismissRecall() }
       }
-      dashboardTabs
+      workspace
     }
   }
 
-  private var dashboardTabs: some View {
-    TabView {
-      Tab("Garage", systemImage: "house.fill") {
-        FounderEnvironmentScreen(store: store, presentation: presentation)
-      }
-      Tab("Venture", systemImage: "chart.line.uptrend.xyaxis") {
-        VentureScreen(store: store)
-      }
-      Tab("Tech.com", systemImage: "newspaper.fill") {
-        TechComScreen(store: store)
-      }
-      Tab("More", systemImage: "ellipsis") {
-        RecordsScreen(store: store)
-      }
-    }
-    .tint(SoloTheme.cyan)
+  private var workspace: some View {
+    FounderDeskWorkspace(store: store, presentation: presentation)
     .sheet(item: Binding(
       get: { store.pendingDivergenceOffer },
       set: { if $0 == nil { store.pendingDivergenceOffer = nil } }
@@ -529,8 +515,9 @@ private struct GameDashboard: View {
   }
 }
 
-private struct RecordsScreen: View {
+struct CompanyServerScreen: View {
   var store: GameStore
+  var onOpenComputerModule: (FounderComputerWorkspaceTarget) -> Void
   @Environment(FounderProgressionStore.self) private var progression
   @Environment(AchievementStore.self) private var achievements
 
@@ -538,19 +525,26 @@ private struct RecordsScreen: View {
     NavigationStack {
       ScrollView {
         VStack(alignment: .leading, spacing: 16) {
-          NavigationLink {
-            EvidenceScreen(entries: store.evidence)
+          serverSection("OPERATIONS", subtitle: "Canonical Founder Computer modules")
+
+          Button {
+            onOpenComputerModule(.evidence)
           } label: {
             RecordLink(title: "Evidence Ledger", subtitle: "Verified work and unresolved uncertainty", symbol: "checkmark.seal.fill", count: store.evidence.count)
           }
           .buttonStyle(SoloPressStyle())
+          .accessibilityIdentifier("server-module-evidence")
+          .accessibilityHint("Opens the canonical Evidence drawer on the Founder Computer")
 
-          NavigationLink {
-            AgentOperationsScreen(store: store)
+          Button {
+            onOpenComputerModule(.operations)
           } label: {
             RecordLink(title: "Agent Operations", subtitle: "Trust, reliability, and model-family exposure", symbol: "cpu.fill", count: store.agents.count)
           }
           .buttonStyle(SoloPressStyle())
+          .accessibilityHint("Opens canonical workforce operations on the Founder Computer")
+
+          serverSection("COMPANY RECORDS", subtitle: "Progress, identity, and administration")
 
           NavigationLink {
             AchievementsScreen(store: store)
@@ -604,6 +598,8 @@ private struct RecordsScreen: View {
           }
           .buttonStyle(SoloPressStyle())
 
+          serverSection("SYSTEM CONTROL", subtitle: "Career-level actions")
+
           Button(role: .destructive) {
             store.resetCareer()
           } label: {
@@ -616,8 +612,23 @@ private struct RecordsScreen: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
       }
-      .navigationTitle("Garage Records")
+      .navigationTitle("Company Server")
+      .navigationBarTitleDisplayMode(.inline)
     }
+  }
+
+  private func serverSection(_ title: String, subtitle: String) -> some View {
+    VStack(alignment: .leading, spacing: 2) {
+      Text(title)
+        .font(.caption2.weight(.black))
+        .tracking(1.5)
+        .foregroundStyle(SoloTheme.mint)
+      Text(subtitle)
+        .font(.caption)
+        .foregroundStyle(.secondary)
+    }
+    .padding(.top, 6)
+    .accessibilityElement(children: .combine)
   }
 }
 
