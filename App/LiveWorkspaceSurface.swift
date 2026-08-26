@@ -6,6 +6,7 @@ struct LiveWorkspaceSurface: View {
   var phase: PresentationCoordinator.AgentPhase
   var progress: Double
   var reduceMotion: Bool
+  var isActive = true
   var expanded = false
 
   private var accent: Color {
@@ -24,7 +25,7 @@ struct LiveWorkspaceSurface: View {
   private var isSettled: Bool { phase == .reviewed || phase == .resolved }
 
   var body: some View {
-    TimelineView(.animation(minimumInterval: 1 / 24, paused: reduceMotion)) { context in
+    TimelineView(.animation(minimumInterval: 1 / 24, paused: reduceMotion || !isActive)) { context in
       let time = context.date.timeIntervalSinceReferenceDate
       VStack(alignment: .leading, spacing: 10) {
         HStack {
@@ -118,14 +119,13 @@ struct LiveWorkspaceSurface: View {
   }
 
   private var completionOverlay: some View {
-    Label("WORK COMPLETE", systemImage: "checkmark.seal.fill")
+    Label("READY FOR REVIEW", systemImage: "doc.text.fill")
       .font(.subheadline.weight(.black))
       .foregroundStyle(.white)
       .padding(.horizontal, 16)
       .padding(.vertical, 10)
-      .background(SoloTheme.mint.gradient, in: Capsule())
-      .symbolEffect(.bounce)
-      .transition(.scale(scale: 0.72).combined(with: .opacity))
+      .background(.gray.gradient, in: Capsule())
+      .transition(reduceMotion ? .opacity : .scale(scale: 0.84).combined(with: .opacity))
   }
 
   private var attentionOverlay: some View {

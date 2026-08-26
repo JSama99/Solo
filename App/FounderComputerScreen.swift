@@ -5,6 +5,7 @@ struct FounderComputerScreen: View {
   var store: GameStore
   var presentation: PresentationCoordinator
   var workspaceRequest: FounderComputerWorkspaceRequest? = nil
+  var isWorkspaceActive = true
 
   @Environment(FounderProgressionStore.self) private var progression
   @Environment(AppSettingsStore.self) private var settings
@@ -29,6 +30,7 @@ struct FounderComputerScreen: View {
   @State private var commitInProgress = false
   @State private var observedAgentLevels: [String: Int] = [:]
   @State private var levelUpAgentID: String?
+  @State private var causalRecap: LivingCausalRecap?
   #if DEBUG
   @State private var showsMotionVerification = false
   #endif
@@ -47,6 +49,7 @@ struct FounderComputerScreen: View {
             founderSummary: founderSummary,
             founderDilemma: store.activeDilemma,
             reduceMotion: reduceMotion,
+            presentationActive: isWorkspaceActive,
             onFocus: focusViewport,
             onAssign: beginAssignment,
             onReview: review,
@@ -133,6 +136,19 @@ struct FounderComputerScreen: View {
     .sensoryFeedback(.impact(weight: .medium), trigger: assignmentArrivalAgentID)
     .sensoryFeedback(.success, trigger: activeReviewTaskID)
     .sensoryFeedback(.success, trigger: levelUpAgentID)
+    .overlay(alignment: .top) {
+      if let causalRecap {
+        LivingCausalRecapBanner(recap: causalRecap) {
+          withAnimation(MotionKind.state.resolved(reduceMotion: reduceMotion)) {
+            self.causalRecap = nil
+          }
+        }
+        .padding(.horizontal, 12)
+        .padding(.top, 8)
+        .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
+        .zIndex(20)
+      }
+    }
     .onChange(of: presentation.latestEvent?.id) { _, _ in handlePresentationEvent() }
     .onChange(of: assignmentIdentity) { _, _ in reconcilePresentationAfterAssignmentChange() }
     .sheet(item: $assignmentDestination) { destination in
@@ -306,6 +322,7 @@ struct FounderComputerScreen: View {
       reviewStage: currentReviewStage,
       resolutionFocus: resolutionFocus,
       reduceMotion: reduceMotion,
+      isWorkspaceActive: isWorkspaceActive,
       action: { selectCanonicalWorkstation(agentID) },
       onAssign: { beginAssignment(agentID) },
       onReview: { review(agentID) },
@@ -427,13 +444,44 @@ struct FounderComputerScreen: View {
   }
 
   private func resolve(taskID: UUID, choice: TaskResolutionChoice) {
+    guard let taskBefore = store.tasks.first(where: { $0.id == taskID }),
+          let agentID = taskBefore.assignedAgentID,
+          let agentBefore = store.agents.first(where: { $0.id == agentID }),
+          taskBefore.isReviewed,
+          !taskBefore.resolutionLocked else { return }
+    let statsBefore = VisibleCompanySnapshot(stats: store.stats)
+    let relationshipBefore = agentBefore.relationship
     resolutionFocus = choice
     resolutionTick += 1
     withAnimation(MotionKind.celebration.resolved(reduceMotion: reduceMotion)) {
       presentation.resolve(taskID: taskID, choice: choice, in: store)
     }
-    announce("\(choice.title) selected.")
+    guard let taskAfter = store.tasks.first(where: { $0.id == taskID }),
+          taskAfter.resolutionLocked,
+          taskAfter.resolution == choice,
+          let agentAfter = store.agents.first(where: { $0.id == agentID }) else { return }
+    let recap = LivingCausalRecap.derive(
+      taskID: taskID,
+      taskTitle: taskBefore.title,
+      agentName: agentBefore.name,
+      choice: choice,
+      before: statsBefore,
+      after: VisibleCompanySnapshot(stats: store.stats),
+      relationshipBefore: relationshipBefore,
+      relationshipAfter: agentAfter.relationship
+    )
+    withAnimation(MotionKind.impact.resolved(reduceMotion: reduceMotion)) {
+      causalRecap = recap
+    }
+    announce(recap.accessibilityAnnouncement)
     settings.playFeedback(.resolutionLock)
+    Task { @MainActor in
+      try? await Task.sleep(for: .seconds(reduceMotion ? 4 : 5))
+      guard causalRecap?.id == recap.id else { return }
+      withAnimation(MotionKind.state.resolved(reduceMotion: reduceMotion)) {
+        causalRecap = nil
+      }
+    }
   }
 
   private func commit() {
@@ -476,6 +524,51 @@ struct FounderComputerScreen: View {
   /// discover by exploring the screen again.
   private func announce(_ text: String) {
     AccessibilityNotification.Announcement(text).post()
+  }
+}
+
+private struct LivingCausalRecapBanner: View {
+  var recap: LivingCausalRecap
+  var dismiss: () -> Void
+
+  var body: some View {
+    HStack(spacing: 10) {
+      Image(systemName: recap.choice.symbol)
+        .font(.headline.weight(.black))
+        .foregroundStyle(SoloTheme.cyan)
+        .frame(width: 36, height: 36)
+        .background(SoloTheme.cyan.opacity(0.14), in: .rect(cornerRadius: 10))
+      VStack(alignment: .leading, spacing: 2) {
+        Text(recap.title)
+          .font(.subheadline.weight(.black))
+        Text(recap.artifactLine)
+          .font(.caption.weight(.semibold))
+          .lineLimit(2)
+        Text(recap.visibleConsequences.joined(separator: " · "))
+          .font(.caption2.monospacedDigit().weight(.bold))
+          .foregroundStyle(.secondary)
+          .lineLimit(2)
+        if let reaction = recap.agentReaction {
+          Label(reaction, systemImage: "person.crop.circle.badge.checkmark")
+            .font(.caption2.weight(.bold))
+            .foregroundStyle(SoloTheme.mint)
+        }
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+      Button("Dismiss", systemImage: "xmark") { dismiss() }
+        .labelStyle(.iconOnly)
+        .frame(width: 44, height: 44)
+        .contentShape(.rect)
+    }
+    .padding(10)
+    .background(.thickMaterial, in: .rect(cornerRadius: 16))
+    .overlay {
+      RoundedRectangle(cornerRadius: 16)
+        .stroke(SoloTheme.cyan.opacity(0.72), lineWidth: 1.5)
+    }
+    .shadow(color: .black.opacity(0.34), radius: 12, y: 6)
+    .accessibilityElement(children: .combine)
+    .accessibilityLabel(recap.accessibilityAnnouncement)
   }
 }
 
@@ -529,6 +622,7 @@ struct AgentWorkspaceCard: View {
   var reviewStage: Int
   var resolutionFocus: TaskResolutionChoice?
   var reduceMotion: Bool
+  var isWorkspaceActive: Bool
   var action: () -> Void
   var onAssign: () -> Void
   var onReview: () -> Void
@@ -743,7 +837,7 @@ struct AgentWorkspaceCard: View {
 
   private var expandedContent: some View {
     VStack(alignment: .leading, spacing: 14) {
-      LiveWorkspaceSurface(agentID: station.agentID, taskTitle: task?.title, phase: isResting ? .idle : effectivePhase, progress: presentation?.progress ?? (station.semanticState == .working ? 0.45 : 0), reduceMotion: reduceMotion, expanded: true)
+      LiveWorkspaceSurface(agentID: station.agentID, taskTitle: task?.title, phase: isResting ? .idle : effectivePhase, progress: presentation?.progress ?? (station.semanticState == .working ? 0.45 : 0), reduceMotion: reduceMotion, isActive: isWorkspaceActive, expanded: true)
       if let task, let result = task.result, canRevealResult {
         VStack(alignment: .leading, spacing: 8) {
           Text("RESULT / EVIDENCE").font(.caption2.weight(.black)).foregroundStyle(.secondary)

@@ -603,6 +603,7 @@ struct CompanyCausalObject: Identifiable, Equatable, Sendable {
   /// Visible travel time. Presentation only — canonical results are immediate.
   var travelDuration: TimeInterval
   var settleDuration: TimeInterval
+  var resolutionChoice: TaskResolutionChoice? = nil
 
   var accessibilityJourney: String {
     "\(kind.accessibilityName) from \(start.accessibilityName) to \(end.accessibilityName)"
@@ -658,7 +659,7 @@ struct CompanyCausalObject: Identifiable, Equatable, Sendable {
       stage = reduceMotion ? .resolutionSettled : .resolutionDispatch
       settled = reduceMotion
       start = .founderCommand
-      end = .companySystem(.affectedSystem(forAgentID: agent.agentID))
+      end = resolutionEndpoint(for: agent)
       travel = 0.72
       settle = 0.24
     case .resolved:
@@ -666,7 +667,7 @@ struct CompanyCausalObject: Identifiable, Equatable, Sendable {
       stage = .resolutionSettled
       settled = true
       start = .founderCommand
-      end = .companySystem(.affectedSystem(forAgentID: agent.agentID))
+      end = resolutionEndpoint(for: agent)
       travel = 0.72
       settle = 0.24
     default:
@@ -685,8 +686,20 @@ struct CompanyCausalObject: Identifiable, Equatable, Sendable {
       start: start,
       end: end,
       travelDuration: travel,
-      settleDuration: settle
+      settleDuration: settle,
+      resolutionChoice: kind == .resolutionResponse ? agent.resolutionChoice : nil
     )
+  }
+
+  private static func resolutionEndpoint(for agent: LivingAgentProjection) -> CompanySceneAnchor {
+    switch agent.resolutionChoice {
+    case .rework:
+      .roleMonitor(agent.agentID)
+    case .escalate:
+      .companySystem(.auroraFounderVerificationBridge)
+    case .approve, .shipAnyway, nil:
+      .companySystem(.affectedSystem(forAgentID: agent.agentID))
+    }
   }
 }
 

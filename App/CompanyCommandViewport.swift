@@ -16,6 +16,7 @@ struct CompanyCommandViewport: View {
   var founderSummary: CompanyCommandFounderSummary
   var founderDilemma: FounderDilemma? = nil
   var reduceMotion: Bool
+  var presentationActive = true
   var forceIncreasedContrast = false
   var onFocus: (CompanyCommandFocus) -> Void
   var onAssign: (String) -> Void
@@ -90,7 +91,7 @@ struct CompanyCommandViewport: View {
   }
 
   private var motionPaused: Bool {
-    reduceMotion || !isVisible || scenePhase != .active
+    reduceMotion || !presentationActive || !isVisible || scenePhase != .active
   }
 
   private func focusCanonicalAgent(_ id: String) {
@@ -2136,7 +2137,7 @@ private struct CausalJourney: View {
         .stroke(journeyColor, lineWidth: 2.5)
         .frame(width: 40, height: 30)
       Rectangle().fill(journeyColor.opacity(0.55)).frame(width: 40, height: 2).offset(y: -6)
-      Image(systemName: "checkmark.circle.fill")
+      Image(systemName: object.visualLanguage.symbol)
         .font(.system(size: 13, weight: .black))
         .foregroundStyle(journeyColor)
         .offset(y: 3)
@@ -2156,7 +2157,7 @@ private struct CausalJourney: View {
           .rotationEffect(.degrees(Double(index) * 45))
       }
       Circle().stroke(journeyColor, lineWidth: 2).frame(width: 30, height: 30)
-      Image(systemName: "seal.fill")
+      Image(systemName: object.visualLanguage.symbol)
         .font(.system(size: 13, weight: .black))
         .foregroundStyle(journeyColor)
     }
@@ -2166,7 +2167,7 @@ private struct CausalJourney: View {
   private var journeyColor: Color {
     switch object.kind {
     case .assignmentPacket: accent
-    case .completedArtifact: SoloTheme.mint
+    case .completedArtifact: .white
     case .resolutionResponse: SoloTheme.purple
     }
   }

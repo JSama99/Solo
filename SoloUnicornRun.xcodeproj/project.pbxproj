@@ -15,7 +15,9 @@
 		B32A00000000000000000001 /* Build32_4SpatialCausalityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32B00000000000000000001 /* Build32_4SpatialCausalityTests.swift */; };
 		B32000000000000000000001 /* CompanyCommandViewport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32100000000000000000001 /* CompanyCommandViewport.swift */; };
 		B32000000000000000000002 /* LivingCompanyPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32100000000000000000002 /* LivingCompanyPresentation.swift */; };
+		B32800000000000000000002 /* LivingSimulationVisualPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32900000000000000000002 /* LivingSimulationVisualPolicy.swift */; };
 		B32000000000000000000003 /* Build32LivingCompanyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32100000000000000000003 /* Build32LivingCompanyTests.swift */; };
+		B32800000000000000000003 /* Build32_8LivingSimulationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32900000000000000000003 /* Build32_8LivingSimulationTests.swift */; };
 		B32200000000000000000001 /* Build32_1ViewportInteractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */; };
 		B32400000000000000000001 /* Build32_2VisualBehaviorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32500000000000000000001 /* Build32_2VisualBehaviorTests.swift */; };
 		B32600000000000000000001 /* Build32_3SpatialViewportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32700000000000000000001 /* Build32_3SpatialViewportTests.swift */; };
@@ -148,7 +150,9 @@
 		B32B00000000000000000001 /* Build32_4SpatialCausalityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_4SpatialCausalityTests.swift; sourceTree = "<group>"; };
 		B32100000000000000000001 /* CompanyCommandViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyCommandViewport.swift; sourceTree = "<group>"; };
 		B32100000000000000000002 /* LivingCompanyPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivingCompanyPresentation.swift; sourceTree = "<group>"; };
+		B32900000000000000000002 /* LivingSimulationVisualPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivingSimulationVisualPolicy.swift; sourceTree = "<group>"; };
 		B32100000000000000000003 /* Build32LivingCompanyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32LivingCompanyTests.swift; sourceTree = "<group>"; };
+		B32900000000000000000003 /* Build32_8LivingSimulationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_8LivingSimulationTests.swift; sourceTree = "<group>"; };
 		B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_1ViewportInteractionTests.swift; sourceTree = "<group>"; };
 		B32500000000000000000001 /* Build32_2VisualBehaviorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_2VisualBehaviorTests.swift; sourceTree = "<group>"; };
 		B32700000000000000000001 /* Build32_3SpatialViewportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_3SpatialViewportTests.swift; sourceTree = "<group>"; };
@@ -290,6 +294,7 @@
 			children = (
 				FD3270000000000000000013 /* FounderDeskWorkspaceTests.swift */,
 				B32100000000000000000003 /* Build32LivingCompanyTests.swift */,
+				B32900000000000000000003 /* Build32_8LivingSimulationTests.swift */,
 				B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */,
 				B32500000000000000000001 /* Build32_2VisualBehaviorTests.swift */,
 				B32B00000000000000000001 /* Build32_4SpatialCausalityTests.swift */,
@@ -340,6 +345,7 @@
 				B32900000000000000000001 /* CompanyCommandScene.swift */,
 				B32100000000000000000001 /* CompanyCommandViewport.swift */,
 				B32100000000000000000002 /* LivingCompanyPresentation.swift */,
+				B32900000000000000000002 /* LivingSimulationVisualPolicy.swift */,
 				AA1000000000000000000001 /* Divergence.swift */,
 				AA1000000000000000000002 /* ForkPromptView.swift */,
 				C10000000000000000000014 /* AchievementStore.swift */,
@@ -547,6 +553,7 @@
 			files = (
 				FD3270000000000000000003 /* FounderDeskWorkspaceTests.swift in Sources */,
 				B32000000000000000000003 /* Build32LivingCompanyTests.swift in Sources */,
+				B32800000000000000000003 /* Build32_8LivingSimulationTests.swift in Sources */,
 				B32200000000000000000001 /* Build32_1ViewportInteractionTests.swift in Sources */,
 				B32400000000000000000001 /* Build32_2VisualBehaviorTests.swift in Sources */,
 				B32A00000000000000000001 /* Build32_4SpatialCausalityTests.swift in Sources */,
@@ -589,6 +596,7 @@
 				B32800000000000000000001 /* CompanyCommandScene.swift in Sources */,
 				B32000000000000000000001 /* CompanyCommandViewport.swift in Sources */,
 				B32000000000000000000002 /* LivingCompanyPresentation.swift in Sources */,
+				B32800000000000000000002 /* LivingSimulationVisualPolicy.swift in Sources */,
 				AA0000000000000000000001 /* Divergence.swift in Sources */,
 				AA0000000000000000000002 /* ForkPromptView.swift in Sources */,
 				C20000000000000000000001 /* AgentVisualState.swift in Sources */,
@@ -715,13 +723,13 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 32701;
+				CURRENT_PROJECT_VERSION = 32800;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 32.7.1;
+				MARKETING_VERSION = 32.8.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun;
 				PRODUCT_MODULE_NAME = Solo_Unicorn_Run;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -739,13 +747,13 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 32701;
+				CURRENT_PROJECT_VERSION = 32800;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 32.7.1;
+				MARKETING_VERSION = 32.8.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun;
 				PRODUCT_MODULE_NAME = Solo_Unicorn_Run;
 				PRODUCT_NAME = "$(TARGET_NAME)";

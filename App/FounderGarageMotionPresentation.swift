@@ -219,6 +219,7 @@ struct FounderGarageAmbientMotion: Equatable, Sendable {
 struct FounderGarageStationMotion: Equatable, Sendable {
   var agentID: String
   var role: AgentRole
+  var signature: AgentMotionSignature
   var activity: LivingAgentActivity
   var workflow: FounderGarageStationWorkflow
   var activityIntensity: Double
@@ -227,6 +228,7 @@ struct FounderGarageStationMotion: Equatable, Sendable {
   var visibleProgress: Double
   var safeConditionSignals: Set<LivingAgentCondition>
   var needsFounderAttention: Bool
+  var resolutionChoice: TaskResolutionChoice?
   var continuousMotionEnabled: Bool
   var eventToken: UUID?
   var physical: FounderGarageStationPhysicalPresentation
@@ -245,6 +247,7 @@ struct FounderGarageStationMotion: Equatable, Sendable {
     return Self(
       agentID: agent.agentID,
       role: agent.role,
+      signature: .derive(role: agent.role),
       activity: agent.activity,
       workflow: workflow,
       activityIntensity: intensity,
@@ -253,6 +256,7 @@ struct FounderGarageStationMotion: Equatable, Sendable {
       visibleProgress: min(1, max(0, agent.progress)),
       safeConditionSignals: visibleConditions,
       needsFounderAttention: agent.needsFounderAttention,
+      resolutionChoice: agent.resolutionChoice,
       continuousMotionEnabled: sceneActive && !reduceMotion && agent.activity == .working,
       eventToken: agent.presentationSequenceID,
       physical: .derive(
@@ -435,6 +439,7 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
   var lighting: FounderGarageLightingPresentation
   var environment: FounderGarageEnvironmentPresentation
   var event: FounderGarageEventEmphasis
+  var priority: LivingMotionPrioritySelection
   var audioHooks: FounderGarageAudioHookPresentation
 
   static func derive(
@@ -443,7 +448,7 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
     reduceMotion: Bool,
     sceneActive: Bool
   ) -> Self {
-    let stations = environment.agents.map {
+    var stations = environment.agents.map {
       FounderGarageStationMotion.derive(
         agent: $0,
         reduceMotion: reduceMotion,
@@ -454,14 +459,44 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
       agents: environment.agents,
       visibleEvent: environment.visibleEvent
     )
+    let priority = LivingMotionPriorityPolicy.select(
+      motionCandidates(stations: stations, event: event)
+    )
+    if let dominantAgentID = priority.dominant?.agentID,
+       priority.dominant?.purpose ?? .ambient >= .interactive {
+      stations = stations.map { station in
+        var result = station
+        if station.agentID != dominantAgentID {
+          result.continuousMotionEnabled = false
+          result.physical.reactionMotionEnabled = false
+        }
+        return result
+      }
+    }
+    var ambient = FounderGarageAmbientMotion.derive(
+      agents: environment.agents,
+      reduceMotion: reduceMotion,
+      sceneActive: sceneActive
+    )
+    switch priority.ambientIntensity {
+    case .paused:
+      ambient.continuousMotionEnabled = false
+      ambient.fanActivity = 0
+      ambient.ledBreathing = 0
+      ambient.scanNoise = 0
+      ambient.particleDensity = 0
+    case .subdued:
+      ambient.fanActivity *= 0.35
+      ambient.ledBreathing *= 0.35
+      ambient.scanNoise *= 0.25
+      ambient.particleDensity *= 0.30
+    case .normal, .dominant:
+      break
+    }
     return Self(
       layers: FounderGarageMotionLayer.allCases,
       camera: .derive(mode: camera.mode),
-      ambient: .derive(
-        agents: environment.agents,
-        reduceMotion: reduceMotion,
-        sceneActive: sceneActive
-      ),
+      ambient: ambient,
       stations: stations,
       lighting: .derive(atmosphere: environment.atmosphere, stations: stations, event: event),
       environment: .derive(
@@ -471,11 +506,54 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
         sceneActive: sceneActive
       ),
       event: event,
+      priority: priority,
       audioHooks: .derive(stations: stations, event: event)
     )
   }
 
   func station(for agentID: String) -> FounderGarageStationMotion? {
     stations.first { $0.agentID == agentID }
+  }
+
+  private static func motionCandidates(
+    stations: [FounderGarageStationMotion],
+    event: FounderGarageEventEmphasis
+  ) -> [LivingMotionCandidate] {
+    var values = [LivingMotionCandidate(kind: .roomAtmosphere, stableID: "room", agentID: nil)]
+    values += stations.compactMap { station in
+      guard [.assignmentReceived, .working, .workComplete, .awaitingReview].contains(station.activity) else {
+        return nil
+      }
+      let kind: LivingMotionEventKind = station.needsFounderAttention ? .founderAttention : .workInProgress
+      return LivingMotionCandidate(
+        kind: kind,
+        stableID: "\(kind.rawValue)-\(station.agentID)",
+        agentID: station.agentID
+      )
+    }
+    let eventCandidate: LivingMotionCandidate?
+    switch event.kind {
+    case .none:
+      eventCandidate = nil
+    case .assignmentArrived:
+      eventCandidate = .init(kind: .assignmentDispatch, stableID: event.token?.uuidString ?? "assignment", agentID: event.agentID)
+    case .founderReviewRequired, .reviewCompleted:
+      eventCandidate = .init(kind: .reviewOpened, stableID: event.token?.uuidString ?? "review", agentID: event.agentID)
+    case .resolutionLocked:
+      let station = stations.first(where: { $0.agentID == event.agentID })
+      let kind: LivingMotionEventKind
+      switch station?.resolutionChoice {
+      case .approve: kind = .approve
+      case .rework: kind = .rework
+      case .escalate: kind = .crossCheck
+      case .shipAnyway: kind = .shipAnyway
+      case nil: kind = .approve
+      }
+      eventCandidate = .init(kind: kind, stableID: event.token?.uuidString ?? "resolution", agentID: event.agentID)
+    case .sprintCommitted:
+      eventCandidate = .init(kind: .sprintCommitted, stableID: event.token?.uuidString ?? "sprint", agentID: nil)
+    }
+    if let eventCandidate { values.append(eventCandidate) }
+    return values
   }
 }

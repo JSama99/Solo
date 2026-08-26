@@ -26,7 +26,7 @@ struct FounderDeskWorkspace: View {
         environment: projection,
         camera: navigation.camera,
         reduceMotion: reduceMotion,
-        sceneActive: scenePhase == .active
+        sceneActive: scenePhase == .active && navigation.selection == .overview
       )
 
       ZStack {
@@ -289,7 +289,8 @@ struct FounderDeskWorkspace: View {
         FounderComputerScreen(
           store: store,
           presentation: presentation,
-          workspaceRequest: computerRequest
+          workspaceRequest: computerRequest,
+          isWorkspaceActive: navigation.selection == .device(.computer)
         )
       }
       focusedDevice(.phone, size: size) { TechComScreen(store: store) }
