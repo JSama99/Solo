@@ -14,9 +14,19 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     capture("01_FOUNDER_DESK_OVERVIEW", in: app)
 
     focusDevice(.computer, expectedTitle: "Founder Computer", in: app)
+    XCTAssertTrue(app.buttons["founder-computer-look-out"].isHittable)
     XCTAssertTrue(app.staticTexts["Founder Computer"].exists)
     capture("02_FOUNDER_COMPUTER_FOCUSED", in: app)
     returnToDesk(from: .computer, in: app)
+
+    for control in ["chevron.left", "viewfinder", "chevron.right", "desktopcomputer"] {
+      XCTAssertTrue(app.buttons[control].waitForExistence(timeout: 3), "Missing Look Out control: \(control)")
+    }
+    app.buttons["chevron.left"].tap()
+    XCTAssertTrue(app.buttons["viewfinder"].isHittable)
+    app.buttons["viewfinder"].tap()
+    app.buttons["chevron.right"].tap()
+    app.buttons["viewfinder"].tap()
 
     focusDevice(.phone, expectedTitle: "Tech.com iPhone", in: app)
     XCTAssertTrue(app.navigationBars["Tech.com"].waitForExistence(timeout: 4))
@@ -45,12 +55,17 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     let device = app.buttons["founder-desk-device-\(target.rawValue)"]
     XCTAssertTrue(device.waitForExistence(timeout: 5), "Missing \(expectedTitle) desk object")
     device.tap()
-    XCTAssertTrue(waitUntilHittable(app.buttons["return-to-founder-desk-\(target.rawValue)"]))
+    let close = target == .computer
+      ? app.buttons["founder-computer-look-out"]
+      : app.buttons["return-to-founder-desk-\(target.rawValue)"]
+    XCTAssertTrue(waitUntilHittable(close))
     XCTAssertTrue(app.staticTexts[expectedTitle].waitForExistence(timeout: 5))
   }
 
   private func returnToDesk(from device: FocusedDevice, in app: XCUIApplication) {
-    let close = app.buttons["return-to-founder-desk-\(device.rawValue)"]
+    let close = device == .computer
+      ? app.buttons["founder-computer-look-out"]
+      : app.buttons["return-to-founder-desk-\(device.rawValue)"]
     XCTAssertTrue(waitUntilHittable(close))
     close.tap()
     XCTAssertTrue(app.buttons["founder-desk-device-computer"].waitForExistence(timeout: 4))

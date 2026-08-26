@@ -52,13 +52,61 @@ enum FounderDeskLayoutPolicy {
 
 struct FounderDeskNavigationState: Equatable, Sendable {
   private(set) var selection: FounderDeskSelection = .overview
+  private(set) var camera = FounderEnvironmentCameraState(mode: .freeLook)
 
-  mutating func select(_ device: FounderDeskDevice) {
+  var lookOutActive: Bool { selection == .overview && camera.mode == .freeLook }
+  var cameraControlsActive: Bool { lookOutActive && camera.environmentAllowsCameraGestures }
+
+  @discardableResult
+  mutating func select(_ device: FounderDeskDevice) -> FounderEnvironmentMode? {
+    if device == .computer {
+      guard camera.mode == .freeLook else { return nil }
+      guard camera.beginComputerFocusTransition() else { return nil }
+      return .computerFocused
+    }
+    guard lookOutActive else { return nil }
     selection = .device(device)
+    return nil
   }
 
-  mutating func returnToDesk() {
+  @discardableResult
+  mutating func lookOut() -> FounderEnvironmentMode? {
+    guard selection == .device(.computer), camera.beginFreeLookTransition() else { return nil }
     selection = .overview
+    return .freeLook
+  }
+
+  mutating func closeSecondaryDevice() {
+    guard case .device(let device) = selection, device != .computer else { return }
+    selection = .overview
+  }
+
+  mutating func completeCameraTransition(to destination: FounderEnvironmentMode) {
+    switch destination {
+    case .computerFocused:
+      camera.completeComputerFocusTransition()
+      selection = .device(.computer)
+    case .freeLook:
+      camera.completeFreeLookTransition()
+      selection = .overview
+    case .transitioningToComputerFocus, .transitioningToFreeLook:
+      break
+    }
+  }
+
+  mutating func look(horizontal: Double, vertical: Double, reduceMotion: Bool) {
+    guard cameraControlsActive else { return }
+    camera.look(horizontal: horizontal, vertical: vertical, reduceMotion: reduceMotion)
+  }
+
+  mutating func setLook(horizontal: Double, vertical: Double, reduceMotion: Bool) {
+    guard cameraControlsActive else { return }
+    camera.setLook(horizontal: horizontal, vertical: vertical, reduceMotion: reduceMotion)
+  }
+
+  mutating func centerCamera() {
+    guard cameraControlsActive else { return }
+    camera.center()
   }
 
   func transitionStyle(reduceMotion: Bool) -> FounderDeskTransitionStyle {

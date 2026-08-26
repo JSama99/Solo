@@ -12,6 +12,8 @@ struct FounderDeskWorkspace: View {
   @Environment(\.scenePhase) private var scenePhase
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
   @State private var navigation = FounderDeskNavigationState()
+  @State private var dragStartCamera: FounderEnvironmentCameraState?
+  @State private var transitionID = UUID()
   @State private var computerRequest: FounderComputerWorkspaceRequest?
   @State private var selectionFeedback = 0
   @AccessibilityFocusState private var focusedDevice: FounderDeskDevice?
@@ -20,10 +22,9 @@ struct FounderDeskWorkspace: View {
   var body: some View {
     GeometryReader { geometry in
       let projection = environmentProjection
-      let camera = overviewCamera
       let motion = FounderGarageMotionPresentation.derive(
         environment: projection,
-        camera: camera,
+        camera: navigation.camera,
         reduceMotion: reduceMotion,
         sceneActive: scenePhase == .active
       )
@@ -31,13 +32,12 @@ struct FounderDeskWorkspace: View {
       ZStack {
         FounderEnvironmentRendererView(
           projection: projection,
-          camera: camera,
+          camera: navigation.camera,
           motion: motion,
           increasedContrast: contrast == .increased
         )
         .allowsHitTesting(false)
         .accessibilityHidden(navigation.selection != .overview)
-        .scaleEffect(environmentScale)
         .brightness(navigation.selection == .overview ? 0 : -0.16)
 
         if navigation.selection == .overview {
@@ -50,26 +50,18 @@ struct FounderDeskWorkspace: View {
       .frame(width: geometry.size.width, height: geometry.size.height)
       .clipped()
       .animation(reduceMotion ? .easeOut(duration: 0.14) : .smooth(duration: 0.38), value: navigation.selection)
+      .animation(reduceMotion ? nil : .smooth(duration: 0.34), value: navigation.camera)
       .sensoryFeedback(.selection, trigger: selectionFeedback)
       .onChange(of: store.stats.trackRecord, initial: true) { _, value in
         progression.observe(trackRecord: value)
       }
-      .accessibilityAction(named: Text("Return to Desk Overview")) { returnToDesk() }
+      .accessibilityAction(named: Text("Look Left")) { moveCamera(horizontal: -1, vertical: 0) }
+      .accessibilityAction(named: Text("Look Center")) { centerCamera() }
+      .accessibilityAction(named: Text("Look Right")) { moveCamera(horizontal: 1, vertical: 0) }
+      .accessibilityAction(named: Text("Look Up")) { moveCamera(horizontal: 0, vertical: 0.30) }
+      .accessibilityAction(named: Text("Look Down")) { moveCamera(horizontal: 0, vertical: -0.30) }
+      .accessibilityAction(named: Text("Return to Founder Computer")) { select(.computer) }
     }
-  }
-
-  private var environmentScale: CGFloat {
-    switch navigation.selection {
-    case .overview: 1
-    case .device: horizontalSizeClass == .regular ? 1.035 : 1.075
-    }
-  }
-
-  private var overviewCamera: FounderEnvironmentCameraState {
-    var camera = FounderEnvironmentCameraState()
-    camera.mode = .freeLook
-    camera.verticalLook = horizontalSizeClass == .regular ? -0.05 : -0.11
-    return camera
   }
 
   private var environmentProjection: FounderEnvironmentProjection {
@@ -151,6 +143,17 @@ struct FounderDeskWorkspace: View {
       VStack(alignment: .leading, spacing: 12) {
         overviewAccessibilityMarker
         deskHeading
+        Button("Return to Founder Computer", systemImage: "desktopcomputer") { select(.computer) }
+          .buttonStyle(.borderedProminent)
+          .tint(SoloTheme.cyan)
+        HStack {
+          Button("Look Left", systemImage: "chevron.left") { moveCamera(horizontal: -1, vertical: 0) }
+          Button("Center", systemImage: "viewfinder") { centerCamera() }
+          Button("Look Right", systemImage: "chevron.right") { moveCamera(horizontal: 1, vertical: 0) }
+        }
+        .labelStyle(.iconOnly)
+        .buttonStyle(.bordered)
+        .controlSize(.large)
         deviceButton(.computer, style: .wide)
         deviceButton(.phone, style: .wide)
         deviceButton(.tablet, style: .wide)
@@ -164,7 +167,11 @@ struct FounderDeskWorkspace: View {
   }
 
   private func spatialOverview(size: CGSize) -> some View {
-    ZStack {
+    let equipment = FounderDeskEquipmentLayout(
+      viewportSize: size,
+      regularWidth: horizontalSizeClass == .regular
+    )
+    return ZStack {
       overviewAccessibilityMarker
 
       LinearGradient(
@@ -174,37 +181,66 @@ struct FounderDeskWorkspace: View {
       )
       .allowsHitTesting(false)
 
+      Color.clear
+        .contentShape(.rect)
+        .gesture(freeLookDragGesture(in: size))
+        .accessibilityHidden(true)
+
       deskHeading
         .position(x: size.width / 2, y: max(54, size.height * 0.09))
 
-      deviceButton(.computer, style: .computer)
-        .frame(width: min(size.width * (horizontalSizeClass == .regular ? 0.54 : 0.66), 560))
-        .position(x: size.width * 0.50, y: size.height * 0.39)
+      ForEach(FounderDeskDevice.allCases) { device in
+        let visible = equipment.isVisible(device, camera: navigation.camera)
+        let deviceSize = equipment.deviceSize(for: device)
+        deviceButton(device, style: spatialStyle(for: device))
+          .frame(width: deviceSize.width, height: deviceSize.height)
+          .rotationEffect(rotation(for: device))
+          .position(equipment.viewportPosition(for: device, camera: navigation.camera))
+          .opacity(visible ? 1 : 0)
+          .allowsHitTesting(visible && navigation.lookOutActive)
+          .accessibilityHidden(!visible || !navigation.lookOutActive)
+      }
 
-      deviceButton(.phone, style: .phone)
-        .frame(width: horizontalSizeClass == .regular ? 150 : 112)
-        .rotationEffect(.degrees(-7))
-        .position(x: size.width * (horizontalSizeClass == .regular ? 0.24 : 0.18), y: size.height * 0.73)
+      FounderEnvironmentControlLayer(
+        mode: navigation.camera.mode,
+        reduceMotion: reduceMotion,
+        onLookAround: {},
+        onFocusComputer: { select(.computer) },
+        onLook: { horizontal, vertical in
+          moveCamera(horizontal: horizontal, vertical: vertical)
+        },
+        onCenter: centerCamera
+      )
+      .frame(width: size.width, height: size.height)
+      .accessibilityFocused($deskIsFocused)
 
-      deviceButton(.tablet, style: .tablet)
-        .frame(width: min(size.width * (horizontalSizeClass == .regular ? 0.32 : 0.38), 310))
-        .rotationEffect(.degrees(3))
-        .position(x: size.width * (horizontalSizeClass == .regular ? 0.74 : 0.77), y: size.height * 0.68)
-
-      deviceButton(.server, style: .server)
-        .frame(width: horizontalSizeClass == .regular ? 168 : 118)
-        .position(x: size.width * (horizontalSizeClass == .regular ? 0.89 : 0.88), y: size.height * 0.37)
-
-      Text("Select equipment to focus")
+      Text("Drag to look around · select equipment to focus")
         .font(.caption.weight(.semibold))
         .foregroundStyle(.white.opacity(0.72))
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
         .background(.black.opacity(0.52), in: .capsule)
-        .position(x: size.width / 2, y: size.height - 24)
+        .position(x: size.width / 2, y: size.height - 82)
+        .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
-    .accessibilityFocused($deskIsFocused)
+  }
+
+  private func spatialStyle(for device: FounderDeskDevice) -> DeskDeviceStyle {
+    switch device {
+    case .computer: .computer
+    case .phone: .phone
+    case .tablet: .tablet
+    case .server: .server
+    }
+  }
+
+  private func rotation(for device: FounderDeskDevice) -> Angle {
+    switch device {
+    case .computer, .server: .zero
+    case .phone: .degrees(-7)
+    case .tablet: .degrees(3)
+    }
   }
 
   private var deskHeading: some View {
@@ -279,7 +315,7 @@ struct FounderDeskWorkspace: View {
       regularWidth: horizontalSizeClass == .regular,
       increasedContrast: contrast == .increased,
       isFocused: selected,
-      onClose: returnToDesk,
+      onClose: { close(device) },
       content: content
     )
     return frame
@@ -291,24 +327,89 @@ struct FounderDeskWorkspace: View {
   }
 
   private func select(_ device: FounderDeskDevice) {
-    withAnimation(navigation.transitionStyle(reduceMotion: reduceMotion) == .crossfade ? .easeOut(duration: 0.14) : .smooth(duration: 0.38)) {
-      navigation.select(device)
+    var transition: FounderEnvironmentMode?
+    withAnimation(workspaceAnimation) {
+      transition = navigation.select(device)
     }
     selectionFeedback += 1
+    if let transition {
+      beginTransition(completing: transition)
+      return
+    }
     Task { @MainActor in
       if !reduceMotion { try? await Task.sleep(for: .milliseconds(360)) }
       focusedDevice = device
     }
   }
 
-  private func returnToDesk() {
-    withAnimation(navigation.transitionStyle(reduceMotion: reduceMotion) == .crossfade ? .easeOut(duration: 0.14) : .smooth(duration: 0.34)) {
-      navigation.returnToDesk()
+  private func close(_ device: FounderDeskDevice) {
+    if device == .computer {
+      var transition: FounderEnvironmentMode?
+      withAnimation(workspaceAnimation) {
+        transition = navigation.lookOut()
+      }
+      if let transition { beginTransition(completing: transition) }
+      return
+    }
+    withAnimation(workspaceAnimation) {
+      navigation.closeSecondaryDevice()
     }
     selectionFeedback += 1
     Task { @MainActor in
       if !reduceMotion { try? await Task.sleep(for: .milliseconds(300)) }
       deskIsFocused = true
+    }
+  }
+
+  private var workspaceAnimation: Animation {
+    navigation.transitionStyle(reduceMotion: reduceMotion) == .crossfade
+      ? .easeOut(duration: 0.14)
+      : .smooth(duration: 0.38)
+  }
+
+  private func freeLookDragGesture(in size: CGSize) -> some Gesture {
+    DragGesture(minimumDistance: 8)
+      .onChanged { value in
+        guard navigation.cameraControlsActive else { return }
+        if dragStartCamera == nil { dragStartCamera = navigation.camera }
+        guard let start = dragStartCamera else { return }
+        let horizontal = start.horizontalLook + Double(value.translation.width / max(size.width * 0.42, 1))
+        let vertical = start.verticalLook + Double(-value.translation.height / max(size.height * 0.72, 1))
+        navigation.setLook(horizontal: horizontal, vertical: vertical, reduceMotion: reduceMotion)
+      }
+      .onEnded { _ in dragStartCamera = nil }
+  }
+
+  private func moveCamera(horizontal: Double, vertical: Double) {
+    withAnimation(reduceMotion ? nil : .smooth(duration: 0.28)) {
+      navigation.look(horizontal: horizontal, vertical: vertical, reduceMotion: reduceMotion)
+    }
+  }
+
+  private func centerCamera() {
+    withAnimation(reduceMotion ? nil : .smooth(duration: 0.28)) {
+      navigation.centerCamera()
+    }
+  }
+
+  private func beginTransition(completing destination: FounderEnvironmentMode) {
+    let id = UUID()
+    transitionID = id
+    dragStartCamera = nil
+    Task { @MainActor in
+      if !reduceMotion { try? await Task.sleep(for: .milliseconds(520)) }
+      guard transitionID == id else { return }
+      withAnimation(workspaceAnimation) {
+        navigation.completeCameraTransition(to: destination)
+      }
+      switch destination {
+      case .computerFocused:
+        focusedDevice = .computer
+      case .freeLook:
+        deskIsFocused = true
+      case .transitioningToComputerFocus, .transitioningToFreeLook:
+        break
+      }
     }
   }
 }
@@ -329,37 +430,64 @@ private struct FounderDeskDeviceObject: View {
   var increasedContrast: Bool
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 7) {
-      HStack {
-        Image(systemName: device.symbol)
-        Text(preview.title)
-          .lineLimit(1)
-        Spacer(minLength: 2)
-        if preview.signal != nil {
-          signalLanguage
+    deviceFace
+      .frame(maxWidth: .infinity, minHeight: minimumHeight, alignment: .topLeading)
+      .padding(contentPadding)
+      .background(deviceBody)
+      .overlay { deviceHardware }
+      .shadow(color: .black.opacity(0.72), radius: 9, y: 7)
+      .overlay(alignment: .bottom) {
+        if style == .computer {
+          monitorStand
         }
       }
-      .font(.caption2.weight(.black))
-      .foregroundStyle(deviceTone)
+  }
 
-      Text(preview.primary)
-        .font(primaryFont)
-        .foregroundStyle(.white)
-        .lineLimit(style == .phone ? 3 : 2)
-        .minimumScaleFactor(0.72)
-      Text(preview.secondary)
-        .font(.caption2.weight(.semibold))
-        .foregroundStyle(.white.opacity(0.68))
-        .lineLimit(2)
-    }
-    .frame(maxWidth: .infinity, minHeight: minimumHeight, alignment: .topLeading)
-    .padding(contentPadding)
-    .background(deviceBody)
-    .overlay { deviceHardware }
-    .shadow(color: .black.opacity(0.72), radius: 9, y: 7)
-    .overlay(alignment: .bottom) {
-      if style == .computer {
-        monitorStand
+  @ViewBuilder
+  private var deviceFace: some View {
+    if style == .server {
+      VStack(alignment: .leading, spacing: 7) {
+        Label("SERVER", systemImage: device.symbol)
+          .font(.caption2.weight(.black))
+          .foregroundStyle(deviceTone)
+        VStack(spacing: 7) {
+          ForEach(0..<4, id: \.self) { index in
+            HStack(spacing: 4) {
+              Circle()
+                .fill(index == 0 && preview.signal != nil ? SoloTheme.mint : .white.opacity(0.28))
+                .frame(width: 5, height: 5)
+              Capsule().fill(.white.opacity(0.16)).frame(maxWidth: .infinity).frame(height: 3)
+            }
+          }
+        }
+        Text(preview.primary)
+          .font(.system(size: 8, weight: .bold))
+          .foregroundStyle(.white.opacity(0.74))
+          .lineLimit(1)
+      }
+    } else {
+      VStack(alignment: .leading, spacing: 7) {
+        HStack {
+          Image(systemName: device.symbol)
+          Text(preview.title)
+            .lineLimit(1)
+          Spacer(minLength: 2)
+          if preview.signal != nil {
+            signalLanguage
+          }
+        }
+        .font(.caption2.weight(.black))
+        .foregroundStyle(deviceTone)
+
+        Text(preview.primary)
+          .font(primaryFont)
+          .foregroundStyle(.white)
+          .lineLimit(style == .phone ? 2 : style == .tablet ? 1 : 2)
+          .minimumScaleFactor(0.72)
+        Text(preview.secondary)
+          .font(.caption2.weight(.semibold))
+          .foregroundStyle(.white.opacity(0.68))
+          .lineLimit(2)
       }
     }
   }
@@ -376,10 +504,10 @@ private struct FounderDeskDeviceObject: View {
   private var primaryFont: Font { style == .computer || style == .wide ? .subheadline.weight(.bold) : .caption.weight(.bold) }
   private var minimumHeight: CGFloat {
     switch style {
-    case .computer: 116
-    case .phone: 150
-    case .tablet: 112
-    case .server: 162
+    case .computer: 78
+    case .phone: 86
+    case .tablet: 58
+    case .server: 126
     case .compact: 110
     case .wide: 96
     }
@@ -462,12 +590,31 @@ private struct FounderFocusedDeviceFrame<Content: View>: View {
   var body: some View {
     VStack(spacing: 0) {
       HStack(spacing: 10) {
-        Button("Return to Founder Desk", systemImage: "xmark") { onClose() }
-          .labelStyle(.iconOnly)
-          .buttonStyle(.bordered)
-          .accessibilityIdentifier("return-to-founder-desk-\(device.rawValue)")
-          .accessibilityHidden(!isFocused)
-          .accessibilityHint("Returns to the spatial desk overview without resetting this device")
+        if device == .computer {
+          Button { onClose() } label: {
+            Label("LOOK OUT", systemImage: "binoculars.fill")
+              .font(.caption2.weight(.black))
+              .frame(minWidth: 104, minHeight: 44)
+              .background(.white.opacity(0.09), in: .capsule)
+              .contentShape(.capsule)
+          }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("founder-computer-look-out")
+            .accessibilityHidden(!isFocused)
+            .accessibilityHint("Pulls away from the Founder Computer into the physical Founder environment")
+        } else {
+          Button { onClose() } label: {
+            Image(systemName: "xmark")
+              .frame(width: 44, height: 44)
+              .background(.white.opacity(0.09), in: .circle)
+              .contentShape(.circle)
+          }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Return to Founder Desk")
+            .accessibilityIdentifier("return-to-founder-desk-\(device.rawValue)")
+            .accessibilityHidden(!isFocused)
+            .accessibilityHint("Returns to Look Out at the previous camera orientation")
+        }
         Label(device.title, systemImage: device.symbol)
           .font(.caption.weight(.black))
           .lineLimit(1)
@@ -481,6 +628,7 @@ private struct FounderFocusedDeviceFrame<Content: View>: View {
       .frame(height: 48)
       .background(.black.opacity(0.94))
       .accessibilityHidden(!isFocused)
+      .zIndex(2)
 
       content
         .frame(maxWidth: .infinity, maxHeight: .infinity)

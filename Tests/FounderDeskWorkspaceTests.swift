@@ -3,24 +3,132 @@ import XCTest
 
 final class FounderDeskWorkspaceTests: XCTestCase {
   func testDefaultSelectionIsDeskOverview() {
-    XCTAssertEqual(FounderDeskNavigationState().selection, .overview)
+    let state = FounderDeskNavigationState()
+    XCTAssertEqual(state.selection, .overview)
+    XCTAssertEqual(state.camera.mode, .freeLook)
+    XCTAssertTrue(state.lookOutActive)
   }
 
   func testEveryPhysicalDeviceCanBeSelectedAndClosed() {
-    for device in FounderDeskDevice.allCases {
+    for device in FounderDeskDevice.allCases where device != .computer {
       var state = FounderDeskNavigationState()
-      state.select(device)
+      XCTAssertNil(state.select(device))
       XCTAssertEqual(state.selection, .device(device))
-      state.returnToDesk()
+      state.closeSecondaryDevice()
       XCTAssertEqual(state.selection, .overview)
     }
+
+    var computer = FounderDeskNavigationState()
+    XCTAssertEqual(computer.select(.computer), .computerFocused)
+    XCTAssertEqual(computer.camera.mode, .transitioningToComputerFocus)
+    computer.completeCameraTransition(to: .computerFocused)
+    XCTAssertEqual(computer.selection, .device(.computer))
   }
 
   func testSwitchingDevicesUsesOneExclusiveSelection() {
     var state = FounderDeskNavigationState()
     state.select(.phone)
     state.select(.tablet)
+    XCTAssertEqual(state.selection, .device(.phone))
+    state.closeSecondaryDevice()
+    state.select(.tablet)
     XCTAssertEqual(state.selection, .device(.tablet))
+  }
+
+  func testLookOutBeginsAndCompletesEstablishedFreeLookTransition() {
+    var state = focusedComputerState()
+    XCTAssertEqual(state.lookOut(), .freeLook)
+    XCTAssertEqual(state.camera.mode, .transitioningToFreeLook)
+    XCTAssertEqual(state.selection, .overview)
+    XCTAssertFalse(state.cameraControlsActive)
+    state.completeCameraTransition(to: .freeLook)
+    XCTAssertEqual(state.camera.mode, .freeLook)
+    XCTAssertTrue(state.cameraControlsActive)
+  }
+
+  func testCameraGesturesAndManualControlsWorkOnlyInLookOut() {
+    var state = FounderDeskNavigationState()
+    state.look(horizontal: 0.4, vertical: 0.1, reduceMotion: false)
+    XCTAssertEqual(state.camera.horizontalLook, 0.4)
+    XCTAssertEqual(state.camera.verticalLook, 0.1)
+    state.centerCamera()
+    XCTAssertEqual(state.camera.horizontalLook, 0)
+    state.select(.phone)
+    state.look(horizontal: 1, vertical: 0.3, reduceMotion: false)
+    XCTAssertEqual(state.camera.horizontalLook, 0)
+    XCTAssertEqual(state.camera.verticalLook, 0)
+  }
+
+  func testSelectingMonitorReturnsToComputerFocus() {
+    var state = FounderDeskNavigationState()
+    XCTAssertEqual(state.select(.computer), .computerFocused)
+    XCTAssertEqual(state.camera.mode, .transitioningToComputerFocus)
+    state.completeCameraTransition(to: .computerFocused)
+    XCTAssertEqual(state.selection, .device(.computer))
+    XCTAssertEqual(state.camera.mode, .computerFocused)
+  }
+
+  func testSecondaryDevicesOpenOnlyFromLookOutAndCloseBackToLookOut() {
+    for device in [FounderDeskDevice.phone, .tablet, .server] {
+      var state = FounderDeskNavigationState()
+      XCTAssertNil(state.select(device))
+      XCTAssertEqual(state.selection, .device(device))
+      XCTAssertFalse(state.cameraControlsActive)
+      state.closeSecondaryDevice()
+      XCTAssertTrue(state.lookOutActive)
+    }
+  }
+
+  func testSecondaryDeviceRoundTripRetainsCameraOrientation() {
+    var state = FounderDeskNavigationState()
+    state.setLook(horizontal: 0.55, vertical: -0.12, reduceMotion: false)
+    let orientation = state.camera
+    state.select(.tablet)
+    state.closeSecondaryDevice()
+    XCTAssertEqual(state.camera, orientation)
+  }
+
+  func testProjectedHitRegionsFollowPhysicalWorldAnchors() {
+    let equipment = FounderDeskEquipmentLayout(viewportSize: CGSize(width: 402, height: 874), regularWidth: false)
+    let center = FounderEnvironmentCameraState(mode: .freeLook)
+    let right = FounderEnvironmentCameraState(horizontalLook: 0.6, mode: .freeLook)
+    for device in FounderDeskDevice.allCases {
+      let centerRegion = equipment.hitRegion(for: device, camera: center)
+      let rightRegion = equipment.hitRegion(for: device, camera: right)
+      XCTAssertEqual(centerRegion.midX, equipment.viewportPosition(for: device, camera: center).x, accuracy: 0.001)
+      XCTAssertNotEqual(centerRegion.midX, rightRegion.midX)
+      XCTAssertGreaterThanOrEqual(centerRegion.width, 44)
+      XCTAssertGreaterThanOrEqual(centerRegion.height, 44)
+    }
+  }
+
+  func testDeskAnchorsGroundServerBesideDeskOnFloor() throws {
+    let anchors = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 874)).anchors
+    let server = try XCTUnwrap(anchors[.companyServer])
+    let deskRight = try XCTUnwrap(anchors[.founderDeskRightEdge])
+    let surface = try XCTUnwrap(anchors[.founderDeskSurface])
+    let floorSide = try XCTUnwrap(anchors[.founderDeskFloorSide])
+    XCTAssertGreaterThan(server.x, deskRight.x)
+    XCTAssertGreaterThan(floorSide.y, surface.y)
+    XCTAssertEqual(server.x, floorSide.x)
+  }
+
+  func testCompactAndRegularEquipmentGeometryIsDistinct() {
+    let compact = FounderDeskEquipmentLayout(viewportSize: CGSize(width: 402, height: 874), regularWidth: false)
+    let regular = FounderDeskEquipmentLayout(viewportSize: CGSize(width: 1_024, height: 1_366), regularWidth: true)
+    XCTAssertLessThan(compact.deviceSize(for: .tablet).width, regular.deviceSize(for: .tablet).width)
+    XCTAssertLessThan(compact.deviceSize(for: .server).height, regular.deviceSize(for: .server).height)
+  }
+
+  func testReduceMotionKeepsEstablishedWorkspaceTransitionEndpoints() {
+    var state = FounderDeskNavigationState()
+    XCTAssertEqual(state.transitionStyle(reduceMotion: true), .crossfade)
+    XCTAssertEqual(state.select(.computer), .computerFocused)
+    state.completeCameraTransition(to: .computerFocused)
+    XCTAssertEqual(state.camera.mode, .computerFocused)
+    XCTAssertEqual(state.lookOut(), .freeLook)
+    state.completeCameraTransition(to: .freeLook)
+    XCTAssertEqual(state.camera.mode, .freeLook)
   }
 
   func testNormalMotionUsesSpatialFocus() {
@@ -166,6 +274,13 @@ final class FounderDeskWorkspaceTests: XCTestCase {
       achievementCount: 3,
       ownedFacilityCount: ownedFacilityCount
     )
+  }
+
+  private func focusedComputerState() -> FounderDeskNavigationState {
+    var state = FounderDeskNavigationState()
+    _ = state.select(.computer)
+    state.completeCameraTransition(to: .computerFocused)
+    return state
   }
 
   private func assertNoHiddenTruth(in preview: FounderDeskPreview, file: StaticString = #filePath, line: UInt = #line) {
