@@ -375,6 +375,13 @@ enum FounderEnvironmentWorldAnchor: String, CaseIterable, Sendable {
   case recoveryCorner
   case founderDesk
   case founderMonitor
+  case founderPhone
+  case founderTablet
+  case companyServer
+  case founderDeskLeftEdge
+  case founderDeskRightEdge
+  case founderDeskSurface
+  case founderDeskFloorSide
   case founderCommandDesk
 }
 
@@ -404,14 +411,24 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       .campaignStudio: CGPoint(x: 1_185, y: 485),
       .recoveryCorner: CGPoint(x: 1_285, y: 565),
       .founderDesk: CGPoint(x: 680, y: 650),
-      .founderMonitor: CGPoint(x: 680, y: 455),
+      .founderMonitor: CGPoint(x: 680, y: 480),
+      .founderPhone: CGPoint(x: 500, y: 600),
+      .founderTablet: CGPoint(x: 775, y: 600),
+      .companyServer: CGPoint(x: 885, y: 660),
+      .founderDeskLeftEdge: CGPoint(x: 470, y: 650),
+      .founderDeskRightEdge: CGPoint(x: 840, y: 650),
+      .founderDeskSurface: CGPoint(x: 680, y: 590),
+      .founderDeskFloorSide: CGPoint(x: 885, y: 710),
       .founderCommandDesk: CGPoint(x: 535, y: 635)
     ]
   }
 
   var cameraCenterX: CGFloat { Self.worldSize.width / 2 }
   var cameraTravel: CGFloat { 390 }
-  var scale: CGFloat { max(viewportSize.width / 430, 0.72) }
+  var scale: CGFloat {
+    let referenceWidth: CGFloat = viewportSize.width >= 700 ? 760 : 520
+    return max(viewportSize.width / referenceWidth, 0.72)
+  }
   var floorHorizonY: CGFloat { viewportSize.height * 0.55 }
 
   func depthScale(for anchor: FounderEnvironmentWorldAnchor) -> CGFloat {
@@ -423,7 +440,9 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
     case .verificationArray, .developmentRig, .campaignStudio: 0.88
     case .recoveryCorner: 0.94
     case .founderCommandDesk: 1.03
-    case .founderDesk, .founderMonitor: 1.12
+    case .founderPhone, .founderTablet, .companyServer,
+         .founderDeskLeftEdge, .founderDeskRightEdge, .founderDeskSurface,
+         .founderDeskFloorSide, .founderDesk, .founderMonitor: 1.12
     }
   }
 
@@ -470,6 +489,61 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
   func zoneIsVisible(_ anchor: FounderEnvironmentWorldAnchor, camera: FounderEnvironmentCameraState, margin: CGFloat = 92) -> Bool {
     let point = viewportPosition(for: anchor, camera: camera, layer: .middleGround)
     return point.x >= -margin && point.x <= viewportSize.width + margin
+  }
+}
+
+/// Projects the four Founder Desk devices from the same world anchors as the
+/// room renderer. Visual bodies and interactive regions therefore travel as a
+/// single physical object when the Founder looks around.
+struct FounderDeskEquipmentLayout: Equatable, Sendable {
+  var viewportSize: CGSize
+  var regularWidth: Bool
+
+  func worldAnchor(for device: FounderDeskDevice) -> FounderEnvironmentWorldAnchor {
+    switch device {
+    case .computer: .founderMonitor
+    case .phone: .founderPhone
+    case .tablet: .founderTablet
+    case .server: .companyServer
+    }
+  }
+
+  func viewportPosition(for device: FounderDeskDevice, camera: FounderEnvironmentCameraState) -> CGPoint {
+    FounderEnvironmentLayout(viewportSize: viewportSize).viewportPosition(
+      for: worldAnchor(for: device),
+      camera: camera,
+      layer: .foreground
+    )
+  }
+
+  func deviceSize(for device: FounderDeskDevice) -> CGSize {
+    switch (device, regularWidth) {
+    case (.computer, false): CGSize(width: min(viewportSize.width * 0.53, 214), height: 100)
+    case (.computer, true): CGSize(width: min(viewportSize.width * 0.39, 410), height: 158)
+    case (.phone, false): CGSize(width: 72, height: 104)
+    case (.phone, true): CGSize(width: 104, height: 142)
+    case (.tablet, false): CGSize(width: 104, height: 78)
+    case (.tablet, true): CGSize(width: 220, height: 128)
+    case (.server, false): CGSize(width: 78, height: 150)
+    case (.server, true): CGSize(width: 104, height: 202)
+    }
+  }
+
+  func hitRegion(for device: FounderDeskDevice, camera: FounderEnvironmentCameraState) -> CGRect {
+    let position = viewportPosition(for: device, camera: camera)
+    let size = deviceSize(for: device)
+    return CGRect(
+      x: position.x - max(size.width, 44) / 2,
+      y: position.y - max(size.height, 44) / 2,
+      width: max(size.width, 44),
+      height: max(size.height, 44)
+    )
+  }
+
+  func isVisible(_ device: FounderDeskDevice, camera: FounderEnvironmentCameraState) -> Bool {
+    hitRegion(for: device, camera: camera).intersects(
+      CGRect(origin: .zero, size: viewportSize).insetBy(dx: -28, dy: -28)
+    )
   }
 }
 
@@ -1076,12 +1150,26 @@ struct FounderEnvironmentRendererView: View {
       RoundedRectangle(cornerRadius: 4).fill(.black.opacity(0.90)).frame(width: 17, height: 118)
         .position(x: monitorPosition.x, y: monitorPosition.y + 88)
       ZStack {
-        Ellipse().fill(.black.opacity(0.62)).frame(width: 420, height: 25).offset(x: 16, y: 68)
+        Ellipse()
+          .fill(.black.opacity(0.64))
+          .frame(width: 486, height: 28)
+          .offset(x: 10, y: 91)
+        HStack(spacing: 326) {
+          RoundedRectangle(cornerRadius: 5)
+            .fill(LinearGradient(colors: [.black, FounderGarageMaterial.deskFront], startPoint: .top, endPoint: .bottom))
+            .frame(width: 23, height: 104)
+            .rotationEffect(.degrees(4))
+          RoundedRectangle(cornerRadius: 5)
+            .fill(LinearGradient(colors: [.black, FounderGarageMaterial.deskFront], startPoint: .top, endPoint: .bottom))
+            .frame(width: 23, height: 104)
+            .rotationEffect(.degrees(-4))
+        }
+        .offset(y: 67)
         Path { path in
-          path.move(to: CGPoint(x: 13, y: 5))
-          path.addLine(to: CGPoint(x: 377, y: 5))
-          path.addLine(to: CGPoint(x: 405, y: 108))
-          path.addLine(to: CGPoint(x: -15, y: 108))
+          path.move(to: CGPoint(x: -8, y: 3))
+          path.addLine(to: CGPoint(x: 426, y: 3))
+          path.addLine(to: CGPoint(x: 460, y: 118))
+          path.addLine(to: CGPoint(x: -38, y: 118))
           path.closeSubpath()
         }
         .fill(LinearGradient(
@@ -1089,7 +1177,12 @@ struct FounderEnvironmentRendererView: View {
           startPoint: .top,
           endPoint: .bottom
         ))
-        .overlay(alignment: .top) { Rectangle().fill(FounderGarageMaterial.materialEdge).frame(width: 370, height: 2).offset(y: 5) }
+        .overlay(alignment: .top) {
+          Rectangle()
+            .fill(FounderGarageMaterial.materialEdge)
+            .frame(width: 438, height: 3)
+            .offset(y: 3)
+        }
         .overlay {
           FounderGarageSurfaceTexture(kind: .laminate, strength: 0.9)
             .clipShape(.rect(cornerRadius: 4))
@@ -1101,16 +1194,16 @@ struct FounderEnvironmentRendererView: View {
         )
         .frame(width: 230, height: 4)
         .offset(x: 5, y: -44)
-        RoundedRectangle(cornerRadius: 8).fill(.black.opacity(0.82)).frame(width: 164, height: 42).offset(x: -46, y: 5)
-          .overlay { VStack(spacing: 5) { ForEach(0..<3, id: \.self) { _ in HStack(spacing: 7) { ForEach(0..<8, id: \.self) { _ in RoundedRectangle(cornerRadius: 1).fill(.white.opacity(0.25)).frame(width: 9, height: 3) } } } }.offset(x: -46, y: 5) }
-        RoundedRectangle(cornerRadius: 14).fill(.black.opacity(0.72)).frame(width: 52, height: 38).offset(x: 92, y: 7)
-        RoundedRectangle(cornerRadius: 5).stroke(.orange.opacity(0.70), lineWidth: 2).frame(width: 66, height: 44).offset(x: 153, y: -19)
-          .overlay { Text("REVIEW").font(.system(size: 8, weight: .black)).foregroundStyle(.orange).offset(x: 153, y: -19) }
-        Image(systemName: "mug.fill").foregroundStyle(.orange.opacity(0.78)).font(.title2).offset(x: -158, y: -9)
+        RoundedRectangle(cornerRadius: 8).fill(.black.opacity(0.82)).frame(width: 184, height: 43).offset(x: -22, y: 11)
+          .overlay { VStack(spacing: 5) { ForEach(0..<3, id: \.self) { _ in HStack(spacing: 7) { ForEach(0..<9, id: \.self) { _ in RoundedRectangle(cornerRadius: 1).fill(.white.opacity(0.25)).frame(width: 9, height: 3) } } } }.offset(x: -22, y: 11) }
+        RoundedRectangle(cornerRadius: 14).fill(.black.opacity(0.72)).frame(width: 52, height: 38).offset(x: 108, y: 13)
+        RoundedRectangle(cornerRadius: 5).stroke(.orange.opacity(0.70), lineWidth: 2).frame(width: 66, height: 44).offset(x: 180, y: -16)
+          .overlay { Text("REVIEW").font(.system(size: 8, weight: .black)).foregroundStyle(.orange).offset(x: 180, y: -16) }
+        Image(systemName: "mug.fill").foregroundStyle(.orange.opacity(0.78)).font(.title2).offset(x: -196, y: -6)
         RoundedRectangle(cornerRadius: 2).fill(Color(red: 0.78, green: 0.70, blue: 0.48)).frame(width: 44, height: 31)
           .overlay { VStack(spacing: 3) { ForEach(0..<3, id: \.self) { _ in Rectangle().fill(.black.opacity(0.28)).frame(width: 30, height: 1) } } }
           .rotationEffect(.degrees(-7))
-          .offset(x: 118, y: 35)
+          .offset(x: 148, y: 42)
         ZStack {
           RoundedRectangle(cornerRadius: 3)
             .fill(FounderGarageMaterial.industrialPlastic)
@@ -1124,7 +1217,7 @@ struct FounderEnvironmentRendererView: View {
           }
         }
         .rotationEffect(.degrees(4))
-        .offset(x: -116, y: 34)
+        .offset(x: -152, y: 41)
         Path { path in
           path.move(to: CGPoint(x: 39, y: 69))
           path.addCurve(
@@ -1135,7 +1228,7 @@ struct FounderEnvironmentRendererView: View {
         }
         .stroke(.black.opacity(0.84), style: StrokeStyle(lineWidth: 3, lineCap: .round))
       }
-      .frame(width: 420, height: 118)
+      .frame(width: 470, height: 170)
       .scaleEffect(layout.depthScale(for: .founderDesk) * layout.scale)
       .position(deskPosition)
     }
@@ -1804,7 +1897,10 @@ struct FounderEnvironmentControlLayer: View {
         .padding(7)
         .background(.black.opacity(0.72), in: Capsule())
         .overlay { Capsule().stroke(.white.opacity(0.22), lineWidth: 1) }
-        .position(x: proxy.size.width / 2, y: proxy.size.height - 34)
+        .position(
+          x: proxy.size.width / 2 - (proxy.size.width < 600 ? 22 : 0),
+          y: proxy.size.height - 34
+        )
       }
     }
   }

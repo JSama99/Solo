@@ -1,0 +1,295 @@
+import XCTest
+@testable import Solo_Unicorn_Run
+
+final class FounderDeskWorkspaceTests: XCTestCase {
+  func testDefaultSelectionIsDeskOverview() {
+    let state = FounderDeskNavigationState()
+    XCTAssertEqual(state.selection, .overview)
+    XCTAssertEqual(state.camera.mode, .freeLook)
+    XCTAssertTrue(state.lookOutActive)
+  }
+
+  func testEveryPhysicalDeviceCanBeSelectedAndClosed() {
+    for device in FounderDeskDevice.allCases where device != .computer {
+      var state = FounderDeskNavigationState()
+      XCTAssertNil(state.select(device))
+      XCTAssertEqual(state.selection, .device(device))
+      state.closeSecondaryDevice()
+      XCTAssertEqual(state.selection, .overview)
+    }
+
+    var computer = FounderDeskNavigationState()
+    XCTAssertEqual(computer.select(.computer), .computerFocused)
+    XCTAssertEqual(computer.camera.mode, .transitioningToComputerFocus)
+    computer.completeCameraTransition(to: .computerFocused)
+    XCTAssertEqual(computer.selection, .device(.computer))
+  }
+
+  func testSwitchingDevicesUsesOneExclusiveSelection() {
+    var state = FounderDeskNavigationState()
+    state.select(.phone)
+    state.select(.tablet)
+    XCTAssertEqual(state.selection, .device(.phone))
+    state.closeSecondaryDevice()
+    state.select(.tablet)
+    XCTAssertEqual(state.selection, .device(.tablet))
+  }
+
+  func testLookOutBeginsAndCompletesEstablishedFreeLookTransition() {
+    var state = focusedComputerState()
+    XCTAssertEqual(state.lookOut(), .freeLook)
+    XCTAssertEqual(state.camera.mode, .transitioningToFreeLook)
+    XCTAssertEqual(state.selection, .overview)
+    XCTAssertFalse(state.cameraControlsActive)
+    state.completeCameraTransition(to: .freeLook)
+    XCTAssertEqual(state.camera.mode, .freeLook)
+    XCTAssertTrue(state.cameraControlsActive)
+  }
+
+  func testCameraGesturesAndManualControlsWorkOnlyInLookOut() {
+    var state = FounderDeskNavigationState()
+    state.look(horizontal: 0.4, vertical: 0.1, reduceMotion: false)
+    XCTAssertEqual(state.camera.horizontalLook, 0.4)
+    XCTAssertEqual(state.camera.verticalLook, 0.1)
+    state.centerCamera()
+    XCTAssertEqual(state.camera.horizontalLook, 0)
+    state.select(.phone)
+    state.look(horizontal: 1, vertical: 0.3, reduceMotion: false)
+    XCTAssertEqual(state.camera.horizontalLook, 0)
+    XCTAssertEqual(state.camera.verticalLook, 0)
+  }
+
+  func testSelectingMonitorReturnsToComputerFocus() {
+    var state = FounderDeskNavigationState()
+    XCTAssertEqual(state.select(.computer), .computerFocused)
+    XCTAssertEqual(state.camera.mode, .transitioningToComputerFocus)
+    state.completeCameraTransition(to: .computerFocused)
+    XCTAssertEqual(state.selection, .device(.computer))
+    XCTAssertEqual(state.camera.mode, .computerFocused)
+  }
+
+  func testSecondaryDevicesOpenOnlyFromLookOutAndCloseBackToLookOut() {
+    for device in [FounderDeskDevice.phone, .tablet, .server] {
+      var state = FounderDeskNavigationState()
+      XCTAssertNil(state.select(device))
+      XCTAssertEqual(state.selection, .device(device))
+      XCTAssertFalse(state.cameraControlsActive)
+      state.closeSecondaryDevice()
+      XCTAssertTrue(state.lookOutActive)
+    }
+  }
+
+  func testSecondaryDeviceRoundTripRetainsCameraOrientation() {
+    var state = FounderDeskNavigationState()
+    state.setLook(horizontal: 0.55, vertical: -0.12, reduceMotion: false)
+    let orientation = state.camera
+    state.select(.tablet)
+    state.closeSecondaryDevice()
+    XCTAssertEqual(state.camera, orientation)
+  }
+
+  func testProjectedHitRegionsFollowPhysicalWorldAnchors() {
+    let equipment = FounderDeskEquipmentLayout(viewportSize: CGSize(width: 402, height: 874), regularWidth: false)
+    let center = FounderEnvironmentCameraState(mode: .freeLook)
+    let right = FounderEnvironmentCameraState(horizontalLook: 0.6, mode: .freeLook)
+    for device in FounderDeskDevice.allCases {
+      let centerRegion = equipment.hitRegion(for: device, camera: center)
+      let rightRegion = equipment.hitRegion(for: device, camera: right)
+      XCTAssertEqual(centerRegion.midX, equipment.viewportPosition(for: device, camera: center).x, accuracy: 0.001)
+      XCTAssertNotEqual(centerRegion.midX, rightRegion.midX)
+      XCTAssertGreaterThanOrEqual(centerRegion.width, 44)
+      XCTAssertGreaterThanOrEqual(centerRegion.height, 44)
+    }
+  }
+
+  func testDeskAnchorsGroundServerBesideDeskOnFloor() throws {
+    let anchors = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 874)).anchors
+    let server = try XCTUnwrap(anchors[.companyServer])
+    let deskRight = try XCTUnwrap(anchors[.founderDeskRightEdge])
+    let surface = try XCTUnwrap(anchors[.founderDeskSurface])
+    let floorSide = try XCTUnwrap(anchors[.founderDeskFloorSide])
+    XCTAssertGreaterThan(server.x, deskRight.x)
+    XCTAssertGreaterThan(floorSide.y, surface.y)
+    XCTAssertEqual(server.x, floorSide.x)
+  }
+
+  func testCompactAndRegularEquipmentGeometryIsDistinct() {
+    let compact = FounderDeskEquipmentLayout(viewportSize: CGSize(width: 402, height: 874), regularWidth: false)
+    let regular = FounderDeskEquipmentLayout(viewportSize: CGSize(width: 1_024, height: 1_366), regularWidth: true)
+    XCTAssertLessThan(compact.deviceSize(for: .tablet).width, regular.deviceSize(for: .tablet).width)
+    XCTAssertLessThan(compact.deviceSize(for: .server).height, regular.deviceSize(for: .server).height)
+  }
+
+  func testReduceMotionKeepsEstablishedWorkspaceTransitionEndpoints() {
+    var state = FounderDeskNavigationState()
+    XCTAssertEqual(state.transitionStyle(reduceMotion: true), .crossfade)
+    XCTAssertEqual(state.select(.computer), .computerFocused)
+    state.completeCameraTransition(to: .computerFocused)
+    XCTAssertEqual(state.camera.mode, .computerFocused)
+    XCTAssertEqual(state.lookOut(), .freeLook)
+    state.completeCameraTransition(to: .freeLook)
+    XCTAssertEqual(state.camera.mode, .freeLook)
+  }
+
+  func testNormalMotionUsesSpatialFocus() {
+    XCTAssertEqual(FounderDeskNavigationState().transitionStyle(reduceMotion: false), .spatialFocus)
+  }
+
+  func testReduceMotionUsesCrossfade() {
+    XCTAssertEqual(FounderDeskNavigationState().transitionStyle(reduceMotion: true), .crossfade)
+  }
+
+  func testCompactAndRegularSizeClassesHaveDistinctSpatialLayouts() {
+    XCTAssertEqual(FounderDeskLayoutPolicy.layout(regularWidth: false, accessibilityText: false, height: 800), .spatialCompact)
+    XCTAssertEqual(FounderDeskLayoutPolicy.layout(regularWidth: true, accessibilityText: false, height: 800), .spatialRegular)
+  }
+
+  func testAccessibilityTextUsesReadableListLayout() {
+    XCTAssertEqual(FounderDeskLayoutPolicy.layout(regularWidth: false, accessibilityText: true, height: 800), .accessibleList)
+    XCTAssertEqual(FounderDeskLayoutPolicy.layout(regularWidth: true, accessibilityText: true, height: 1_100), .accessibleList)
+  }
+
+  func testCompactHeightUsesReadableListLayout() {
+    XCTAssertEqual(FounderDeskLayoutPolicy.layout(regularWidth: false, accessibilityText: false, height: 520), .accessibleList)
+  }
+
+  func testFormerMoreInventoryIsCompleteAndUnique() {
+    XCTAssertEqual(CompanyServerDestination.allCases.count, 9)
+    XCTAssertEqual(Set(CompanyServerDestination.allCases.map(\.id)).count, 9)
+    XCTAssertEqual(Set(CompanyServerDestination.allCases.map(\.title)).count, 9)
+  }
+
+  func testFormerMoreInventoryRetainsEveryCanonicalDestination() {
+    XCTAssertEqual(Set(CompanyServerDestination.allCases), Set([
+      .evidence, .agentOperations, .achievements, .headquarters, .companyStory,
+      .soloPro, .settings, .howToPlay, .restartCareer
+    ]))
+  }
+
+  func testEvidenceAndAgentOperationsHandoffToCanonicalComputerTargets() {
+    XCTAssertEqual(FounderComputerWorkspaceTarget.evidence.rawValue, "evidence")
+    XCTAssertEqual(FounderComputerWorkspaceTarget.operations.rawValue, "viewport")
+  }
+
+  func testFounderComputerPreviewUsesOnlyVisibleLifecycleCounts() {
+    let preview = FounderDeskPreviewPolicy.preview(for: .computer, input: input(
+      visibleWorkCount: 2,
+      visibleReviewCount: 0,
+      canCommit: false
+    ))
+    XCTAssertEqual(preview.secondary, "2 active workstations")
+    XCTAssertNil(preview.signal)
+    assertNoHiddenTruth(in: preview)
+  }
+
+  func testFounderReviewSignalIsLifecycleDriven() {
+    let preview = FounderDeskPreviewPolicy.preview(for: .computer, input: input(visibleReviewCount: 2))
+    XCTAssertEqual(preview.secondary, "2 awaiting Founder review")
+    XCTAssertEqual(preview.signal, "Review tray ready")
+    assertNoHiddenTruth(in: preview)
+  }
+
+  func testSprintReadySignalDoesNotClaimOutcome() {
+    let preview = FounderDeskPreviewPolicy.preview(for: .computer, input: input(canCommit: true))
+    XCTAssertEqual(preview.signal, "Sprint ready")
+    assertNoHiddenTruth(in: preview)
+  }
+
+  func testPhoneWithoutCanonicalHeadlineCreatesNoAlert() {
+    let preview = FounderDeskPreviewPolicy.preview(for: .phone, input: input(latestPublishedHeadline: nil))
+    XCTAssertEqual(preview.primary, "No new published stories")
+    XCTAssertNil(preview.signal)
+    assertNoHiddenTruth(in: preview)
+  }
+
+  func testPhoneSignalUsesCanonicalPublishedHeadline() {
+    let preview = FounderDeskPreviewPolicy.preview(for: .phone, input: input(latestPublishedHeadline: "A published market story"))
+    XCTAssertEqual(preview.primary, "A published market story")
+    XCTAssertEqual(preview.signal, "Published update")
+    XCTAssertTrue(preview.accessibilityLabel.contains("A published market story"))
+  }
+
+  func testTabletPreviewUsesVisibleObjectiveWithoutConsequences() {
+    let preview = FounderDeskPreviewPolicy.preview(for: .tablet, input: input(
+      ventureObjective: "Ship the visible prototype",
+      ventureObjectiveComplete: false
+    ))
+    XCTAssertEqual(preview.primary, "Ship the visible prototype")
+    XCTAssertNil(preview.signal)
+    assertNoHiddenTruth(in: preview)
+  }
+
+  func testTabletMilestoneSignalRequiresVisibleCompletion() {
+    let preview = FounderDeskPreviewPolicy.preview(for: .tablet, input: input(ventureObjectiveComplete: true))
+    XCTAssertEqual(preview.signal, "Objective milestone")
+  }
+
+  func testServerSignalReflectsOwnedFacilityState() {
+    let startup = FounderDeskPreviewPolicy.preview(for: .server, input: input(ownedFacilityCount: 1))
+    let progressed = FounderDeskPreviewPolicy.preview(for: .server, input: input(ownedFacilityCount: 2))
+    XCTAssertNil(startup.signal)
+    XCTAssertEqual(progressed.signal, "Facilities available")
+    assertNoHiddenTruth(in: progressed)
+  }
+
+  func testFacilityVariationKeepsStableDeviceIdentity() {
+    let garage = FounderDeskPreviewPolicy.preview(for: .server, input: input(facilityName: "Founder Garage"))
+    let office = FounderDeskPreviewPolicy.preview(for: .server, input: input(facilityName: "Office Suite"))
+    XCTAssertEqual(garage.title, office.title)
+    XCTAssertNotEqual(garage.primary, office.primary)
+    XCTAssertEqual(FounderDeskDevice.server.title, "Company Server")
+  }
+
+  func testDeviceAccessibilityLabelsAreNamedAndTruthSafe() {
+    for device in FounderDeskDevice.allCases {
+      let preview = FounderDeskPreviewPolicy.preview(for: device, input: input())
+      XCTAssertTrue(preview.accessibilityLabel.localizedCaseInsensitiveContains(device.title.components(separatedBy: " ").last ?? device.title))
+      assertNoHiddenTruth(in: preview)
+    }
+  }
+
+  private func input(
+    visibleWorkCount: Int = 0,
+    visibleReviewCount: Int = 0,
+    canCommit: Bool = false,
+    latestPublishedHeadline: String? = nil,
+    ventureObjective: String = "Complete the visible objective",
+    ventureObjectiveComplete: Bool = false,
+    facilityName: String = "Founder Garage",
+    ownedFacilityCount: Int = 1
+  ) -> FounderDeskPreviewInput {
+    FounderDeskPreviewInput(
+      sprint: 3,
+      venture: 1,
+      sprintPhase: visibleReviewCount > 0 ? .reviewAndResolve : .chooseCommitments,
+      visibleWorkCount: visibleWorkCount,
+      visibleReviewCount: visibleReviewCount,
+      evidenceCount: 2,
+      canCommit: canCommit,
+      latestPublishedHeadline: latestPublishedHeadline,
+      marketRank: 4,
+      ventureObjective: ventureObjective,
+      ventureObjectiveComplete: ventureObjectiveComplete,
+      facilityName: facilityName,
+      achievementCount: 3,
+      ownedFacilityCount: ownedFacilityCount
+    )
+  }
+
+  private func focusedComputerState() -> FounderDeskNavigationState {
+    var state = FounderDeskNavigationState()
+    _ = state.select(.computer)
+    state.completeCameraTransition(to: .computerFocused)
+    return state
+  }
+
+  private func assertNoHiddenTruth(in preview: FounderDeskPreview, file: StaticString = #filePath, line: UInt = #line) {
+    let text = [preview.title, preview.primary, preview.secondary, preview.signal, preview.accessibilityLabel]
+      .compactMap { $0 }
+      .joined(separator: " ")
+      .lowercased()
+    for forbidden in ["actual quality", "correctness", "overclaim", "drift", "hidden risk", "evidence complete", "verified outcome"] {
+      XCTAssertFalse(text.contains(forbidden), "Desk chrome leaked \(forbidden)", file: file, line: line)
+    }
+  }
+}
