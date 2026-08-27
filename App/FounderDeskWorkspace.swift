@@ -506,6 +506,8 @@ private struct FounderMonitorHardware: View {
             RoundedRectangle(cornerRadius: 10)
               .stroke(increasedContrast ? .white : .white.opacity(0.20), lineWidth: increasedContrast ? 2 : 1)
           }
+        FounderGarageSurfaceTexture(kind: .powderCoat, strength: 0.70)
+          .clipShape(.rect(cornerRadius: 10))
         FounderHardwareScreen(tone: SoloTheme.cyan, preview: preview, layout: .monitor)
           .phaseAnimator(reduceMotion ? [1.0] : [0.97, 1.0, 0.985]) { content, luminance in
             content.brightness((luminance - 1) * 0.42)
@@ -549,6 +551,8 @@ private struct FounderPhoneHardware: View {
           RoundedRectangle(cornerRadius: 18)
             .stroke(increasedContrast ? .white : FounderDeskHardwareMaterial.metalHighlight, lineWidth: increasedContrast ? 2 : 1)
         }
+      LinearGradient(colors: [.white.opacity(0.22), .clear], startPoint: .topLeading, endPoint: .bottomTrailing)
+        .clipShape(.rect(cornerRadius: 18))
       FounderHardwareScreen(tone: .white, preview: preview, layout: .phone)
         .phaseAnimator(reduceMotion ? [1.0] : [0.985, 1.0, 0.99]) { content, luminance in
           content.brightness((luminance - 1) * 0.34)
@@ -586,6 +590,8 @@ private struct FounderTabletHardware: View {
               RoundedRectangle(cornerRadius: 10)
                 .stroke(increasedContrast ? .white : FounderDeskHardwareMaterial.metalHighlight, lineWidth: increasedContrast ? 2 : 1)
             }
+          FounderGarageSurfaceTexture(kind: .powderCoat, strength: 0.45)
+            .clipShape(.rect(cornerRadius: 10))
           FounderHardwareScreen(tone: SoloTheme.amber, preview: preview, layout: .tablet)
             .phaseAnimator(reduceMotion ? [1.0] : [0.98, 1.0, 0.988]) { content, luminance in
               content.brightness((luminance - 1) * 0.36)
@@ -631,6 +637,8 @@ private struct FounderServerHardware: View {
           RoundedRectangle(cornerRadius: 7)
             .stroke(increasedContrast ? .white : .white.opacity(0.18), lineWidth: increasedContrast ? 2 : 1)
         }
+      FounderGarageSurfaceTexture(kind: .powderCoat, strength: 1.30)
+        .clipShape(.rect(cornerRadius: 7))
       VStack(spacing: 6) {
         HStack(spacing: 5) {
           Circle().fill(SoloTheme.mint.opacity(0.82)).frame(width: 6, height: 6)
@@ -670,17 +678,23 @@ private struct FounderServerHardware: View {
         }
         .padding(.horizontal, 7)
         HStack(spacing: 3) {
-          ForEach(0..<7, id: \.self) { _ in
-            Capsule().fill(.white.opacity(0.12)).frame(width: 3, height: 9)
+          ForEach(0..<5, id: \.self) { _ in
+            Capsule().fill(.white.opacity(0.12)).frame(width: 3, height: 12)
           }
-          Image(systemName: "fanblades.fill")
-            .font(.system(size: 10))
-            .foregroundStyle(.white.opacity(0.24))
-            .phaseAnimator(reduceMotion ? [0.0] : [0.0, 360.0]) { content, angle in
-              content.rotationEffect(.degrees(angle))
-            } animation: { _ in
-              .linear(duration: FounderGarageAmbientRhythm.profile(for: .serverCooling).duration)
-            }
+          ZStack {
+            Circle().fill(.black.opacity(0.72)).frame(width: 25, height: 25)
+            Image(systemName: "fanblades.fill")
+              .font(.system(size: 17))
+              .foregroundStyle(.white.opacity(preview.signal == nil ? 0.34 : 0.52))
+              .phaseAnimator(reduceMotion ? [22.0] : [0.0, 360.0]) { content, angle in
+                content.rotationEffect(.degrees(angle))
+              } animation: { _ in
+                .linear(duration: preview.signal == nil ? 10.8 : 7.1)
+              }
+            Circle().stroke(.white.opacity(0.22), lineWidth: 1).frame(width: 25, height: 25)
+            Capsule().fill(.white.opacity(0.13)).frame(width: 25, height: 1)
+            Capsule().fill(.white.opacity(0.13)).frame(width: 25, height: 1).rotationEffect(.degrees(90))
+          }
         }
       }
       .padding(.vertical, 8)

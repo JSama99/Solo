@@ -69,6 +69,104 @@ struct FounderGarageSurfaceTexture: View {
   }
 }
 
+/// A physically mounted ventilation assembly: powder-coated housing, blade
+/// plane, hub, guard, fasteners, support bracket, contact shadow, and a local
+/// activity lamp. Rotation is presentation-only and accessibility-aware.
+struct FounderGarageVentilationFanView: View {
+  var mechanical: FounderGarageMechanicalPresentation
+  var increasedContrast: Bool
+
+  var body: some View {
+    ZStack {
+      Ellipse()
+        .fill(.black.opacity(0.40))
+        .frame(width: 116, height: 24)
+        .offset(x: 8, y: 61)
+
+      HStack(spacing: 74) {
+        RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.88)).frame(width: 8, height: 38)
+        RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.88)).frame(width: 8, height: 38)
+      }
+      .offset(y: 55)
+
+      RoundedRectangle(cornerRadius: 12)
+        .fill(LinearGradient(
+          colors: [FounderGarageMaterial.raisedMetal, FounderGarageMaterial.powderCoat, .black],
+          startPoint: .topLeading,
+          endPoint: .bottomTrailing
+        ))
+        .frame(width: 112, height: 112)
+        .overlay {
+          FounderGarageSurfaceTexture(kind: .powderCoat, strength: 1.15)
+            .clipShape(.rect(cornerRadius: 12))
+        }
+        .overlay {
+          RoundedRectangle(cornerRadius: 12)
+            .stroke(.white.opacity(increasedContrast ? 0.66 : 0.20), lineWidth: increasedContrast ? 2 : 1)
+        }
+
+      Circle().fill(.black.opacity(0.82)).frame(width: 91, height: 91)
+
+      Image(systemName: "fanblades.fill")
+        .font(.system(size: 55, weight: .regular))
+        .foregroundStyle(.white.opacity(0.30 + mechanical.rearVentilationActivity * 0.30))
+        .phaseAnimator(
+          mechanical.continuousRotationEnabled ? [0.0, 360.0] : [24.0]
+        ) { content, angle in
+          content.rotationEffect(.degrees(angle))
+        } animation: { _ in
+          .linear(duration: mechanical.rearVentilationRotationDuration)
+        }
+
+      Image(systemName: "fanblades.fill")
+        .font(.system(size: 55, weight: .regular))
+        .foregroundStyle(.black.opacity(0.12))
+        .offset(x: 4, y: 5)
+        .phaseAnimator(
+          mechanical.continuousRotationEnabled ? [18.0, 378.0] : [42.0]
+        ) { content, angle in
+          content.rotationEffect(.degrees(angle))
+        } animation: { _ in
+          .linear(duration: mechanical.rearVentilationRotationDuration)
+        }
+
+      Circle().fill(FounderGarageMaterial.satinMetal).frame(width: 21, height: 21)
+        .overlay { Circle().fill(.black.opacity(0.50)).frame(width: 8, height: 8) }
+
+      ZStack {
+        Circle().stroke(.white.opacity(0.20), lineWidth: 2).frame(width: 94, height: 94)
+        Circle().stroke(.white.opacity(0.13), lineWidth: 1).frame(width: 66, height: 66)
+        ForEach(0..<4, id: \.self) { index in
+          Capsule()
+            .fill(.white.opacity(0.14))
+            .frame(width: 94, height: 2)
+            .rotationEffect(.degrees(Double(index) * 45))
+        }
+      }
+
+      ForEach(0..<4, id: \.self) { index in
+        Circle()
+          .fill(.white.opacity(0.35))
+          .frame(width: 4, height: 4)
+          .offset(y: -48)
+          .rotationEffect(.degrees(Double(index) * 90 + 45))
+      }
+
+      HStack(spacing: 5) {
+        Circle()
+          .fill(mechanical.staticActivityIndicationVisible ? Color.green.opacity(0.78) : .gray.opacity(0.42))
+          .frame(width: 5, height: 5)
+        Capsule().fill(.white.opacity(0.20)).frame(width: 20, height: 2)
+      }
+      .offset(x: 29, y: 48)
+    }
+    .frame(width: 128, height: 142)
+    .shadow(color: .black.opacity(0.46), radius: 8, y: 6)
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
+  }
+}
+
 private struct FounderGarageStationComposition {
   var width: CGFloat
   var height: CGFloat
