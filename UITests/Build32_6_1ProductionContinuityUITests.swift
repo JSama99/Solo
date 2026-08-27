@@ -1,6 +1,29 @@
 import XCTest
 
 final class Build32_6_2ProductionContinuityUITests: XCTestCase {
+  func testIdleGarageAmbientLifeHold() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--founder-desk-production-proof"]
+    app.launch()
+
+    let continueCareer = app.buttons["Continue Career"]
+    XCTAssertTrue(continueCareer.waitForExistence(timeout: 5))
+    continueCareer.tap()
+
+    let computer = app.buttons["founder-desk-device-computer"]
+    let lookOut = app.buttons["founder-computer-look-out"]
+    if lookOut.waitForExistence(timeout: 4) {
+      lookOut.tap()
+    }
+    XCTAssertTrue(computer.waitForExistence(timeout: 6))
+    capture("10_IDLE_GARAGE_RUNTIME_HOLD", in: app)
+
+    // Purposefully perform no gameplay action. External simulator recording
+    // captures the independent fan, LED, screen, light, and agent rhythms.
+    sleep(12)
+    XCTAssertTrue(computer.exists)
+  }
+
   func testProductionFounderDeskDeviceContinuity() throws {
     let app = XCUIApplication()
     app.launchArguments = ["--founder-desk-production-proof"]
@@ -19,6 +42,11 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     capture("02_FOUNDER_COMPUTER_FOCUSED", in: app)
     returnToDesk(from: .computer, in: app)
 
+    // Hold on the production Garage long enough to prove the independent,
+    // presentation-only idle rhythms in a continuous simulator recording.
+    capture("06_CENTERED_IDLE_GARAGE", in: app)
+    sleep(7)
+
     let dragStart = app.coordinate(withNormalizedOffset: CGVector(dx: 0.48, dy: 0.44))
     let dragEnd = app.coordinate(withNormalizedOffset: CGVector(dx: 0.66, dy: 0.48))
     dragStart.press(forDuration: 0.08, thenDragTo: dragEnd)
@@ -30,12 +58,15 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
       XCTAssertTrue(app.buttons[control].waitForExistence(timeout: 3), "Missing Look Out control: \(control)")
     }
     app.buttons["chevron.left"].tap()
+    capture("07_LEFT_AURORA_VIEW", in: app)
     XCTAssertTrue(cameraControls.waitForExistence(timeout: 3))
     cameraControls.tap()
     app.buttons["viewfinder"].tap()
+    capture("08_CENTER_STACKS_VIEW", in: app)
     XCTAssertTrue(cameraControls.waitForExistence(timeout: 3))
     cameraControls.tap()
     app.buttons["chevron.right"].tap()
+    capture("09_RIGHT_BRIO_SERVER_VIEW", in: app)
     XCTAssertTrue(cameraControls.waitForExistence(timeout: 3))
     cameraControls.tap()
     app.buttons["viewfinder"].tap()
@@ -50,6 +81,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     capture("04_VENTURE_IPAD_FOCUSED", in: app)
     returnToDesk(from: .tablet, in: app)
 
+    revealCameraPosition("chevron.right", in: app)
     focusDevice(.server, expectedTitle: "Company Server", in: app)
     let serverDestinations = [
       "Evidence Ledger", "Agent Operations", "Achievements", "Headquarters Progress",
@@ -60,6 +92,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     }
     capture("05_COMPANY_SERVER_FOCUSED", in: app)
     returnToDesk(from: .server, in: app)
+    revealCameraPosition("viewfinder", in: app)
     XCTAssertTrue(app.buttons["founder-desk-device-computer"].exists)
   }
 
@@ -115,6 +148,14 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
       app.swipeUp()
     }
     return button.exists
+  }
+
+  private func revealCameraPosition(_ control: String, in app: XCUIApplication) {
+    let cameraControls = app.buttons["free-look-camera-controls"]
+    XCTAssertTrue(cameraControls.waitForExistence(timeout: 3))
+    cameraControls.tap()
+    XCTAssertTrue(app.buttons[control].waitForExistence(timeout: 3))
+    app.buttons[control].tap()
   }
 
   private enum FocusedDevice: String {

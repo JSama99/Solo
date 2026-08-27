@@ -120,6 +120,84 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     XCTAssertLessThan(compact.deviceSize(for: .server).height, regular.deviceSize(for: .server).height)
   }
 
+  func testCompactAndRegularUseIntentionalCameraCompositions() {
+    let compact = FounderEnvironmentLayout(viewportSize: CGSize(width: 402, height: 874))
+    let regular = FounderEnvironmentLayout(viewportSize: CGSize(width: 1_024, height: 1_366))
+    XCTAssertEqual(compact.composition, .compactCockpit)
+    XCTAssertEqual(regular.composition, .regularEstablishing)
+    XCTAssertLessThan(
+      compact.visibleWorldBounds(camera: .init(mode: .freeLook)).width,
+      regular.visibleWorldBounds(camera: .init(mode: .freeLook)).width
+    )
+    XCTAssertNotEqual(compact.anchors[.stacksStation], regular.anchors[.stacksStation])
+    XCTAssertNotEqual(compact.floorHorizonY / compact.viewportSize.height, regular.floorHorizonY / regular.viewportSize.height)
+  }
+
+  func testCompactCockpitCentersFounderComputerAndUsesPanningForServer() {
+    let layout = FounderDeskEquipmentLayout(viewportSize: CGSize(width: 402, height: 874), regularWidth: false)
+    let center = FounderEnvironmentCameraState(mode: .freeLook)
+    let right = FounderEnvironmentCameraState(horizontalLook: 0.62, mode: .freeLook)
+    XCTAssertTrue(layout.isVisible(.computer, camera: center))
+    XCTAssertTrue(layout.isVisible(.phone, camera: center))
+    XCTAssertTrue(layout.isVisible(.tablet, camera: center))
+    XCTAssertFalse(layout.isVisible(.server, camera: center))
+    XCTAssertTrue(layout.isVisible(.server, camera: right))
+  }
+
+  func testFounderMonitorUsesSubstantialWorkstationProportion() {
+    let compact = FounderDeskEquipmentLayout(viewportSize: CGSize(width: 402, height: 874), regularWidth: false)
+    let regular = FounderDeskEquipmentLayout(viewportSize: CGSize(width: 1_024, height: 1_366), regularWidth: true)
+    for layout in [compact, regular] {
+      let size = layout.deviceSize(for: .computer)
+      let ratio = size.width / size.height
+      XCTAssertGreaterThan(ratio, 1.5)
+      XCTAssertLessThan(ratio, 1.65)
+    }
+    XCTAssertGreaterThan(compact.deviceSize(for: .computer).height, 112)
+    XCTAssertGreaterThan(regular.deviceSize(for: .computer).height, 170)
+  }
+
+  func testAmbientGarageHasIndependentIdleBaselineWithoutGameplayRNG() {
+    let first = FounderGarageAmbientMotion.derive(agents: [], reduceMotion: false, sceneActive: true)
+    let second = FounderGarageAmbientMotion.derive(agents: [], reduceMotion: false, sceneActive: true)
+    XCTAssertEqual(first, second)
+    XCTAssertTrue(first.continuousMotionEnabled)
+    XCTAssertGreaterThanOrEqual(first.perceptibleChannelCount, 8)
+    XCTAssertGreaterThan(first.fanActivity, 0)
+    XCTAssertGreaterThan(first.screenLife, 0)
+    XCTAssertGreaterThan(first.serverActivity, 0)
+    XCTAssertGreaterThan(first.lightingDrift, 0)
+  }
+
+  func testAmbientRhythmsAreFixedAndUnsynchronized() {
+    let profiles = FounderGarageAmbientChannel.allCases.map(FounderGarageAmbientRhythm.profile)
+    XCTAssertEqual(profiles.count, 9)
+    XCTAssertEqual(Set(profiles.map(\.channel)).count, profiles.count)
+    XCTAssertEqual(Set(profiles.map(\.duration)).count, profiles.count)
+    XCTAssertTrue(profiles.allSatisfy { $0.amplitude <= 0.05 })
+    XCTAssertEqual(
+      FounderGarageAmbientRhythm.profile(for: .serverCooling),
+      FounderGarageAmbientRhythm.profile(for: .serverCooling)
+    )
+  }
+
+  func testReduceMotionRetainsAmbientStateButStopsContinuousTravel() {
+    let reduced = FounderGarageAmbientMotion.derive(agents: [], reduceMotion: true, sceneActive: true)
+    XCTAssertFalse(reduced.continuousMotionEnabled)
+    XCTAssertEqual(reduced.fanActivity, 0)
+    XCTAssertGreaterThanOrEqual(reduced.perceptibleChannelCount, 5)
+    XCTAssertGreaterThan(reduced.screenLife, 0)
+    XCTAssertGreaterThan(reduced.serverActivity, 0)
+    XCTAssertGreaterThan(reduced.lightingDrift, 0)
+  }
+
+  func testAmbientAudioHooksRemainPresentationOnly() {
+    let hooks = FounderGarageAudioHookPresentation.derive(stations: [], event: .none)
+    XCTAssertEqual(hooks.cues, [])
+    XCTAssertEqual(hooks.ambientCues, [.garageVentilation, .serverHum, .distantGarage])
+    XCTAssertNil(hooks.eventToken)
+  }
+
   func testPhysicalDeviceSilhouettesRemainDistinctWithoutLabels() {
     for regularWidth in [false, true] {
       let viewport = regularWidth ? CGSize(width: 1_024, height: 1_366) : CGSize(width: 402, height: 874)

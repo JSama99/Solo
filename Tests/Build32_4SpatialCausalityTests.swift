@@ -1295,6 +1295,14 @@ final class Build32_5FounderEnvironmentTests: XCTestCase {
       livingMotion(agents: [neutral]).lighting,
       livingMotion(agents: [hidden]).lighting
     )
+    XCTAssertEqual(
+      livingMotion(agents: [neutral]).ambient,
+      livingMotion(agents: [hidden]).ambient
+    )
+    XCTAssertEqual(
+      livingMotion(agents: [neutral]).audioHooks,
+      livingMotion(agents: [hidden]).audioHooks
+    )
   }
 
   func testEveryCameraModeKeepsRoomAndComputerRendered() {
