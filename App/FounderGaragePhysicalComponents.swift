@@ -177,6 +177,18 @@ struct FounderGaragePhysicalStationView: View {
     motion?.continuousMotionEnabled == true
   }
 
+  private var isAmbientlyAlive: Bool {
+    motion?.physical.portraitMotionEnabled == true
+  }
+
+  private var ambientRhythm: FounderGarageAmbientRhythm {
+    switch kind {
+    case .research: .profile(for: .auroraPresence)
+    case .engineering: .profile(for: .stacksPresence)
+    case .campaign: .profile(for: .brioPresence)
+    }
+  }
+
   private var perceivedLightBalance: Double {
     switch kind {
     case .research: 0.94
@@ -490,6 +502,9 @@ struct FounderGaragePhysicalStationView: View {
       RoundedRectangle(cornerRadius: 5).fill(FounderGarageMaterial.powderCoat)
       VStack(spacing: 5) {
         Capsule().fill(tone.opacity(0.50)).frame(width: 27, height: 2)
+          .phaseAnimator(isAmbientlyAlive ? [0.56, 0.86, 0.62] : [0.56]) { content, opacity in
+            content.opacity(opacity)
+          } animation: { _ in .easeInOut(duration: ambientRhythm.duration * 0.48) }
         Image(systemName: "viewfinder")
           .font(.system(size: 15, weight: .medium))
           .foregroundStyle(tone.opacity(0.42))
@@ -509,6 +524,9 @@ struct FounderGaragePhysicalStationView: View {
         HStack(spacing: 3) {
           ForEach(0..<3, id: \.self) { index in
             Circle().fill(index == 1 ? tone.opacity(0.62) : .white.opacity(0.14)).frame(width: 3, height: 3)
+              .phaseAnimator(isAmbientlyAlive ? [0.56, 0.92, 0.68] : [0.56]) { content, opacity in
+                content.opacity(index == 1 ? opacity : 0.72)
+              } animation: { _ in .easeInOut(duration: ambientRhythm.duration * 0.42 + Double(index) * 0.18) }
           }
         }
       }
@@ -529,9 +547,9 @@ struct FounderGaragePhysicalStationView: View {
             .offset(x: CGFloat(index - 2) * 8, y: CGFloat(index.isMultiple(of: 2) ? -8 : 7))
         }
         Capsule().fill(tone).frame(width: 72, height: 2)
-          .phaseAnimator(isContinuouslyActive ? [-18.0, 18.0] : [0.0]) { content, y in
+          .phaseAnimator(isAmbientlyAlive ? (isContinuouslyActive ? [-18.0, 18.0] : [-4.0, 4.0]) : [0.0]) { content, y in
             content.offset(y: y)
-          } animation: { _ in .linear(duration: 1.7) }
+          } animation: { _ in .linear(duration: isContinuouslyActive ? 1.7 : ambientRhythm.duration) }
       }
     case .engineering:
       VStack(alignment: .leading, spacing: 5) {
@@ -540,9 +558,9 @@ struct FounderGaragePhysicalStationView: View {
             Capsule().fill(tone.opacity(0.8)).frame(width: CGFloat(8 + line * 3), height: 2)
             Capsule().fill(.white.opacity(0.28)).frame(width: CGFloat(28 - line * 2), height: 2)
           }
-          .phaseAnimator(isContinuouslyActive ? [0.42, 1.0] : [0.58]) { content, opacity in
+          .phaseAnimator(isAmbientlyAlive ? (isContinuouslyActive ? [0.42, 1.0] : [0.66, 0.82]) : [0.66]) { content, opacity in
             content.opacity(line.isMultiple(of: 2) ? opacity : 0.72)
-          } animation: { _ in .easeInOut(duration: 0.72) }
+          } animation: { _ in .easeInOut(duration: isContinuouslyActive ? 0.72 : ambientRhythm.duration + Double(line) * 0.13) }
         }
       }
     case .campaign:
@@ -560,9 +578,9 @@ struct FounderGaragePhysicalStationView: View {
         ForEach(0..<4, id: \.self) { index in
           Circle().fill(tone.opacity(0.45 + Double(index) * 0.12)).frame(width: 6, height: 6)
             .offset(x: CGFloat(index * 19 - 29), y: CGFloat(20 - index * 9))
-            .phaseAnimator(isContinuouslyActive ? [0.82, 1.14, 0.82] : [1.0]) { content, scale in
+            .phaseAnimator(isAmbientlyAlive ? (isContinuouslyActive ? [0.82, 1.14, 0.82] : [0.96, 1.02, 0.96]) : [1.0]) { content, scale in
               content.scaleEffect(scale)
-            } animation: { _ in .smooth(duration: 1.1) }
+            } animation: { _ in .smooth(duration: isContinuouslyActive ? 1.1 : ambientRhythm.duration + Double(index) * 0.17) }
         }
       }
     }
@@ -602,9 +620,11 @@ struct FounderGaragePhysicalStationView: View {
       Image(systemName: "fanblades.fill")
         .font(.system(size: 17))
         .foregroundStyle(tone.opacity(0.38 + (motion?.physical.coolingActivity ?? 0) * 0.50))
-        .phaseAnimator(motion?.physical.coolingActivity ?? 0 > 0.4 ? [0.0, 360.0] : [0.0]) { content, angle in
+        .phaseAnimator(motion?.physical.coolingActivity ?? 0 > 0.08 ? [0.0, 360.0] : [0.0]) { content, angle in
           content.rotationEffect(.degrees(angle))
-        } animation: { _ in .linear(duration: 3.1) }
+        } animation: { _ in
+          .linear(duration: max(3.1, 8.2 - (motion?.physical.coolingActivity ?? 0) * 5.1))
+        }
     }
     .frame(width: 42, height: 50)
     .overlay(alignment: .bottom) {
@@ -657,11 +677,11 @@ struct FounderGaragePhysicalStationView: View {
       }
       .offset(y: motion?.physical.postureOffsetY ?? 0)
       .scaleEffect(motion?.physical.postureScale ?? 1, anchor: .bottom)
-      .phaseAnimator(motion?.physical.portraitMotionEnabled == true ? [0.0, motion?.physical.breathingAmplitude ?? 0, 0.0] : [0.0]) { content, y in
+      .phaseAnimator(motion?.physical.portraitMotionEnabled == true ? [ambientRhythm.phase, motion?.physical.breathingAmplitude ?? 0, 0.0] : [0.0]) { content, y in
           content
-            .offset(x: y * 0.12, y: y)
+            .offset(x: y * (kind == .campaign ? -0.14 : 0.12), y: y)
             .scaleEffect(1 + y * 0.00045, anchor: .bottom)
-      } animation: { _ in .easeInOut(duration: 4.4) }
+      } animation: { _ in .easeInOut(duration: ambientRhythm.duration) }
     }
   }
 

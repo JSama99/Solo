@@ -391,6 +391,15 @@ enum FounderEnvironmentParallaxLayer: Double, Sendable {
   case foreground = 1.12
 }
 
+enum FounderEnvironmentComposition: String, Equatable, Sendable {
+  case compactCockpit
+  case regularEstablishing
+
+  static func resolve(viewportWidth: CGFloat) -> Self {
+    viewportWidth >= 700 ? .regularEstablishing : .compactCockpit
+  }
+}
+
 /// Pure panoramic world projection. It owns no gameplay or persistence input.
 struct FounderEnvironmentLayout: Equatable, Sendable {
   static let worldSize = CGSize(width: 1_360, height: 760)
@@ -399,8 +408,12 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
 
   var viewportSize: CGSize
 
+  var composition: FounderEnvironmentComposition {
+    .resolve(viewportWidth: viewportSize.width)
+  }
+
   var anchors: [FounderEnvironmentWorldAnchor: CGPoint] {
-    [
+    var result: [FounderEnvironmentWorldAnchor: CGPoint] = [
       .garageEntrance: CGPoint(x: 82, y: 350),
       .storage: CGPoint(x: 225, y: 320),
       .auroraStation: CGPoint(x: 325, y: 300),
@@ -421,15 +434,38 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       .founderDeskFloorSide: CGPoint(x: 870, y: 710),
       .founderCommandDesk: CGPoint(x: 535, y: 635)
     ]
+    if composition == .compactCockpit {
+      result[.auroraStation] = CGPoint(x: 245, y: 315)
+      // Keep Stacks readable beside the taller foreground monitor. The compact
+      // camera is centered on the Founder workstation, not on the character.
+      result[.stacksStation] = CGPoint(x: 575, y: 225)
+      result[.brioStation] = CGPoint(x: 1_105, y: 315)
+      result[.founderDesk] = CGPoint(x: 680, y: 660)
+      result[.founderMonitor] = CGPoint(x: 680, y: 455)
+      result[.founderPhone] = CGPoint(x: 500, y: 620)
+      result[.founderTablet] = CGPoint(x: 830, y: 615)
+      result[.companyServer] = CGPoint(x: 900, y: 675)
+      result[.founderDeskLeftEdge] = CGPoint(x: 455, y: 660)
+      result[.founderDeskRightEdge] = CGPoint(x: 855, y: 660)
+      result[.founderDeskSurface] = CGPoint(x: 680, y: 600)
+      result[.founderDeskFloorSide] = CGPoint(x: 900, y: 720)
+    }
+    return result
   }
 
   var cameraCenterX: CGFloat { Self.worldSize.width / 2 }
-  var cameraTravel: CGFloat { 390 }
+  var cameraTravel: CGFloat { composition == .compactCockpit ? 410 : 390 }
   var scale: CGFloat {
-    let referenceWidth: CGFloat = viewportSize.width >= 700 ? 760 : 520
-    return max(viewportSize.width / referenceWidth, 0.72)
+    switch composition {
+    case .compactCockpit:
+      return max(viewportSize.width / 430, 0.86)
+    case .regularEstablishing:
+      return max(viewportSize.width / 760, 0.90)
+    }
   }
-  var floorHorizonY: CGFloat { viewportSize.height * 0.55 }
+  var floorHorizonY: CGFloat {
+    viewportSize.height * (composition == .compactCockpit ? 0.58 : 0.55)
+  }
 
   func depthScale(for anchor: FounderEnvironmentWorldAnchor) -> CGFloat {
     switch anchor {
@@ -518,8 +554,8 @@ struct FounderDeskEquipmentLayout: Equatable, Sendable {
 
   func deviceSize(for device: FounderDeskDevice) -> CGSize {
     switch (device, regularWidth) {
-    case (.computer, false): CGSize(width: min(viewportSize.width * 0.54, 218), height: 112)
-    case (.computer, true): CGSize(width: min(viewportSize.width * 0.38, 390), height: 170)
+    case (.computer, false): CGSize(width: min(viewportSize.width * 0.62, 250), height: 158)
+    case (.computer, true): CGSize(width: min(viewportSize.width * 0.38, 390), height: 244)
     case (.phone, false): CGSize(width: 68, height: 112)
     case (.phone, true): CGSize(width: 98, height: 146)
     case (.tablet, false): CGSize(width: 116, height: 88)
@@ -541,9 +577,9 @@ struct FounderDeskEquipmentLayout: Equatable, Sendable {
   }
 
   func isVisible(_ device: FounderDeskDevice, camera: FounderEnvironmentCameraState) -> Bool {
-    hitRegion(for: device, camera: camera).intersects(
-      CGRect(origin: .zero, size: viewportSize).insetBy(dx: -28, dy: -28)
-    )
+    let intersection = hitRegion(for: device, camera: camera)
+      .intersection(CGRect(origin: .zero, size: viewportSize))
+    return intersection.width >= 44 && intersection.height >= 44
   }
 }
 
@@ -599,6 +635,7 @@ struct FounderEnvironmentRendererView: View {
       panoramicBackground(size: size, layout: layout)
       cinematicValueShaping(size: size)
       practicalLighting(size: size, layout: layout)
+      livingElectricalLayer(size: size, layout: layout)
       garageArchitecture(size: size, layout: layout)
       groundingShadows(size: size, layout: layout)
       panoramicStations(size: size, layout: layout)
@@ -898,15 +935,21 @@ struct FounderEnvironmentRendererView: View {
 
   private func panoramicStations(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
     ZStack {
-      stationView(agentID: "aurora", role: "RESEARCH / EVIDENCE", tone: .cyan, kind: .research)
-        .scaleEffect(layout.depthScale(for: .auroraStation) * layout.scale)
-        .position(layout.viewportPosition(for: .auroraStation, camera: camera, layer: .middleGround))
-      stationView(agentID: "stacks", role: "ENGINEERING / BUILD", tone: .orange, kind: .engineering)
-        .scaleEffect(layout.depthScale(for: .stacksStation) * layout.scale)
-        .position(layout.viewportPosition(for: .stacksStation, camera: camera, layer: .middleGround))
-      stationView(agentID: "brio", role: "CAMPAIGN / SIGNAL", tone: .pink, kind: .campaign)
-        .scaleEffect(layout.depthScale(for: .brioStation) * layout.scale)
-        .position(layout.viewportPosition(for: .brioStation, camera: camera, layer: .middleGround))
+      if layout.zoneIsVisible(.auroraStation, camera: camera, margin: 190) {
+        stationView(agentID: "aurora", role: "RESEARCH / EVIDENCE", tone: .cyan, kind: .research)
+          .scaleEffect(layout.depthScale(for: .auroraStation) * layout.scale)
+          .position(layout.viewportPosition(for: .auroraStation, camera: camera, layer: .middleGround))
+      }
+      if layout.zoneIsVisible(.stacksStation, camera: camera, margin: 190) {
+        stationView(agentID: "stacks", role: "ENGINEERING / BUILD", tone: .orange, kind: .engineering)
+          .scaleEffect(layout.depthScale(for: .stacksStation) * layout.scale)
+          .position(layout.viewportPosition(for: .stacksStation, camera: camera, layer: .middleGround))
+      }
+      if layout.zoneIsVisible(.brioStation, camera: camera, margin: 190) {
+        stationView(agentID: "brio", role: "CAMPAIGN / SIGNAL", tone: .pink, kind: .campaign)
+          .scaleEffect(layout.depthScale(for: .brioStation) * layout.scale)
+          .position(layout.viewportPosition(for: .brioStation, camera: camera, layer: .middleGround))
+      }
     }
     .allowsHitTesting(false)
   }
@@ -1459,6 +1502,71 @@ struct FounderEnvironmentRendererView: View {
     .allowsHitTesting(false)
   }
 
+  private func livingElectricalLayer(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
+    let active = motion.ambient.continuousMotionEnabled
+    let ventilation = FounderGarageAmbientRhythm.profile(for: .ventilation)
+    let lighting = FounderGarageAmbientRhythm.profile(for: .environmentalLight)
+    let display = FounderGarageAmbientRhythm.profile(for: .founderDisplay)
+    return ZStack {
+      Path { path in
+        let source = layout.viewportPosition(
+          worldPoint: CGPoint(x: 680, y: 104),
+          camera: camera,
+          layer: .background
+        )
+        path.move(to: CGPoint(x: source.x - 22, y: source.y + 4))
+        path.addLine(to: CGPoint(x: source.x - 78, y: size.height * 0.60))
+        path.addLine(to: CGPoint(x: source.x + 88, y: size.height * 0.60))
+        path.addLine(to: CGPoint(x: source.x + 22, y: source.y + 4))
+        path.closeSubpath()
+      }
+      .fill(LinearGradient(
+        colors: [Color.orange.opacity(0.020), Color.cyan.opacity(0.010), .clear],
+        startPoint: .top,
+        endPoint: .bottom
+      ))
+      .phaseAnimator(active ? [0.88, 1.04, 0.94] : [0.94]) { content, opacity in
+        content.opacity(opacity)
+      } animation: { _ in .easeInOut(duration: lighting.duration) }
+
+      ZStack {
+        Circle().fill(.black.opacity(0.70)).frame(width: 58, height: 58)
+        Circle().stroke(.white.opacity(0.15), lineWidth: 3).frame(width: 52, height: 52)
+        Image(systemName: "fanblades.fill")
+          .font(.system(size: 27))
+          .foregroundStyle(.white.opacity(0.25 + motion.ambient.fanActivity * 0.18))
+          .phaseAnimator(active ? [0.0, 360.0] : [0.0]) { content, angle in
+            content.rotationEffect(.degrees(angle))
+          } animation: { _ in .linear(duration: ventilation.duration) }
+        Circle().fill(.green.opacity(0.62)).frame(width: 4, height: 4).offset(x: 19, y: 18)
+      }
+      .shadow(color: .black.opacity(0.38), radius: 7, y: 5)
+      .position(layout.viewportPosition(
+        worldPoint: CGPoint(x: 680, y: 175),
+        camera: camera,
+        layer: .background
+      ))
+
+      RadialGradient(
+        colors: [Color.cyan.opacity(0.035 + motion.ambient.screenLife * 0.055), .clear],
+        center: .center,
+        startRadius: 4,
+        endRadius: 115
+      )
+      .frame(width: 230, height: 110)
+      .phaseAnimator(active ? [0.96, 1.03, 0.98] : [1.0]) { content, scale in
+        content.scaleEffect(scale)
+      } animation: { _ in .easeInOut(duration: display.duration) }
+      .position(layout.viewportPosition(
+        worldPoint: CGPoint(x: 680, y: 520),
+        camera: camera,
+        layer: .foreground
+      ))
+    }
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
+  }
+
   private func stationLightSpill(
     agentID: String,
     tone: Color,
@@ -1574,7 +1682,9 @@ struct FounderEnvironmentRendererView: View {
             .frame(width: 4, height: 4)
             .phaseAnimator(active ? [0.25, 0.95, 0.42] : [0.35]) { content, opacity in
               content.opacity(index.isMultiple(of: 2) ? opacity : 0.62)
-            } animation: { _ in .easeInOut(duration: 1.15) }
+            } animation: { _ in
+              .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .router).duration + Double(index % 3) * 0.21)
+            }
         }
       }
       Capsule().fill(.white.opacity(0.14)).frame(width: 48, height: 2).offset(y: 10)
@@ -1599,7 +1709,8 @@ struct FounderEnvironmentRendererView: View {
     tone: Color,
     active: Bool
   ) -> some View {
-    let rotates = active && station?.continuousMotionEnabled == true
+    let cooling = station?.physical.coolingActivity ?? 0
+    let rotates = active && cooling > 0.08
     return ZStack {
       Circle().stroke(.white.opacity(0.18), lineWidth: 2).frame(width: 30, height: 30)
       Image(systemName: "fanblades.fill")
@@ -1608,7 +1719,7 @@ struct FounderEnvironmentRendererView: View {
         .phaseAnimator(rotates ? [0.0, 360.0] : [0.0]) { content, angle in
           content.rotationEffect(.degrees(angle))
         } animation: { _ in
-          .linear(duration: max(2.6, 6.0 - (station?.equipmentActivity ?? 0) * 3.2))
+          .linear(duration: max(3.0, 7.8 - (station?.equipmentActivity ?? 0) * 4.2))
         }
     }
   }

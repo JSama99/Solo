@@ -1,0 +1,17 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "0190D2CC-BFD8-4066-B94F-06484AE2FEA4.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "10_IDLE_GARAGE_RUNTIME_HOLD_0_1C67FAE5-11CC-48E0-BF55-30D07E7934C3.png",
+        "timestamp" : 1787865286.336
+      }
+    ],
+    "testIdentifier" : "Build32_6_2ProductionContinuityUITests/testIdleGarageAmbientLifeHold()",
+    "testIdentifierURL" : "test://com.apple.xcode/SoloUnicornRun/Solo%20Unicorn%20Run%20UI%20Tests/Build32_6_2ProductionContinuityUITests/testIdleGarageAmbientLifeHold"
+  }
+]

@@ -112,10 +112,14 @@ enum FounderGarageAudioCue: String, CaseIterable, Equatable, Sendable {
   case buildActivity
   case campaignActivity
   case reviewReady
+  case garageVentilation
+  case serverHum
+  case distantGarage
 }
 
 struct FounderGarageAudioHookPresentation: Equatable, Sendable {
   var cues: [FounderGarageAudioCue]
+  var ambientCues: [FounderGarageAudioCue]
   var eventToken: UUID?
 
   static func derive(
@@ -142,7 +146,11 @@ struct FounderGarageAudioHookPresentation: Equatable, Sendable {
     if event.kind == .founderReviewRequired, !cues.contains(.reviewReady) {
       cues.append(.reviewReady)
     }
-    return Self(cues: cues, eventToken: event.token)
+    return Self(
+      cues: cues,
+      ambientCues: [.garageVentilation, .serverHum, .distantGarage],
+      eventToken: event.token
+    )
   }
 }
 
@@ -196,6 +204,10 @@ struct FounderGarageAmbientMotion: Equatable, Sendable {
   var ledBreathing: Double
   var scanNoise: Double
   var particleDensity: Double
+  var screenLife: Double
+  var serverActivity: Double
+  var lightingDrift: Double
+  var perceptibleChannelCount: Int
 
   static func derive(
     agents: [LivingAgentProjection],
@@ -211,8 +223,47 @@ struct FounderGarageAmbientMotion: Equatable, Sendable {
       fanActivity: enabled ? min(1, 0.16 + Double(workingCount) * 0.24) : 0,
       ledBreathing: enabled ? (workingCount == 0 ? 0.18 : 0.48) : 0,
       scanNoise: enabled ? min(0.42, Double(workingCount) * 0.12) : 0,
-      particleDensity: enabled ? (workingCount == 0 ? 0.04 : 0.09) : 0
+      particleDensity: enabled ? (workingCount == 0 ? 0.04 : 0.09) : 0,
+      screenLife: enabled ? (workingCount == 0 ? 0.22 : 0.52) : 0.16,
+      serverActivity: enabled ? (workingCount == 0 ? 0.30 : 0.62) : 0.24,
+      lightingDrift: enabled ? 0.20 : 0.12,
+      perceptibleChannelCount: enabled ? 8 : 5
     )
+  }
+}
+
+/// Fixed presentation rhythms keep tertiary systems independent without
+/// touching gameplay RNG or creating another simulation clock.
+enum FounderGarageAmbientChannel: String, CaseIterable, Equatable, Sendable {
+  case ventilation
+  case router
+  case founderDisplay
+  case serverCooling
+  case serverNetwork
+  case auroraPresence
+  case stacksPresence
+  case brioPresence
+  case environmentalLight
+}
+
+struct FounderGarageAmbientRhythm: Equatable, Sendable {
+  var channel: FounderGarageAmbientChannel
+  var duration: Double
+  var phase: Double
+  var amplitude: Double
+
+  static func profile(for channel: FounderGarageAmbientChannel) -> Self {
+    switch channel {
+    case .ventilation: Self(channel: channel, duration: 8.4, phase: 0.11, amplitude: 0.028)
+    case .router: Self(channel: channel, duration: 1.7, phase: 0.47, amplitude: 0.045)
+    case .founderDisplay: Self(channel: channel, duration: 6.8, phase: 0.29, amplitude: 0.032)
+    case .serverCooling: Self(channel: channel, duration: 7.3, phase: 0.63, amplitude: 0.035)
+    case .serverNetwork: Self(channel: channel, duration: 2.3, phase: 0.19, amplitude: 0.050)
+    case .auroraPresence: Self(channel: channel, duration: 5.1, phase: 0.07, amplitude: 0.018)
+    case .stacksPresence: Self(channel: channel, duration: 5.9, phase: 0.38, amplitude: 0.016)
+    case .brioPresence: Self(channel: channel, duration: 6.7, phase: 0.74, amplitude: 0.019)
+    case .environmentalLight: Self(channel: channel, duration: 12.6, phase: 0.52, amplitude: 0.030)
+    }
   }
 }
 

@@ -440,11 +440,11 @@ private struct FounderDeskDeviceObject: View {
   var body: some View {
     switch style {
     case .computer:
-      FounderMonitorHardware(preview: preview, increasedContrast: increasedContrast)
+      FounderMonitorHardware(preview: preview, increasedContrast: increasedContrast, reduceMotion: reduceMotion)
     case .phone:
-      FounderPhoneHardware(preview: preview, increasedContrast: increasedContrast)
+      FounderPhoneHardware(preview: preview, increasedContrast: increasedContrast, reduceMotion: reduceMotion)
     case .tablet:
-      FounderTabletHardware(preview: preview, increasedContrast: increasedContrast)
+      FounderTabletHardware(preview: preview, increasedContrast: increasedContrast, reduceMotion: reduceMotion)
     case .server:
       FounderServerHardware(
         preview: preview,
@@ -492,6 +492,7 @@ private struct FounderDeskDeviceObject: View {
 private struct FounderMonitorHardware: View {
   var preview: FounderDeskPreview
   var increasedContrast: Bool
+  var reduceMotion: Bool
 
   var body: some View {
     VStack(spacing: 0) {
@@ -506,6 +507,11 @@ private struct FounderMonitorHardware: View {
               .stroke(increasedContrast ? .white : .white.opacity(0.20), lineWidth: increasedContrast ? 2 : 1)
           }
         FounderHardwareScreen(tone: SoloTheme.cyan, preview: preview, layout: .monitor)
+          .phaseAnimator(reduceMotion ? [1.0] : [0.97, 1.0, 0.985]) { content, luminance in
+            content.brightness((luminance - 1) * 0.42)
+          } animation: { _ in
+            .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .founderDisplay).duration)
+          }
           .padding(7)
         FounderDeskGlassReflection(cornerRadius: 6)
           .padding(7)
@@ -513,10 +519,10 @@ private struct FounderMonitorHardware: View {
       .shadow(color: SoloTheme.cyan.opacity(preview.signal == nil ? 0.10 : 0.20), radius: 9, y: 4)
       Rectangle()
         .fill(FounderDeskHardwareMaterial.metalEdge)
-        .frame(width: 18, height: 12)
+        .frame(width: 22, height: 17)
       ZStack {
-        Capsule().fill(.black.opacity(0.48)).frame(width: 78, height: 8).offset(y: 4)
-        Capsule().fill(FounderDeskHardwareMaterial.metalEdge).frame(width: 66, height: 6)
+        Capsule().fill(.black.opacity(0.48)).frame(width: 92, height: 9).offset(y: 4)
+        Capsule().fill(FounderDeskHardwareMaterial.metalEdge).frame(width: 78, height: 7)
       }
     }
     .overlay(alignment: .bottomTrailing) {
@@ -529,6 +535,7 @@ private struct FounderMonitorHardware: View {
 private struct FounderPhoneHardware: View {
   var preview: FounderDeskPreview
   var increasedContrast: Bool
+  var reduceMotion: Bool
 
   var body: some View {
     ZStack {
@@ -543,6 +550,9 @@ private struct FounderPhoneHardware: View {
             .stroke(increasedContrast ? .white : FounderDeskHardwareMaterial.metalHighlight, lineWidth: increasedContrast ? 2 : 1)
         }
       FounderHardwareScreen(tone: .white, preview: preview, layout: .phone)
+        .phaseAnimator(reduceMotion ? [1.0] : [0.985, 1.0, 0.99]) { content, luminance in
+          content.brightness((luminance - 1) * 0.34)
+        } animation: { _ in .easeInOut(duration: 7.7) }
         .clipShape(.rect(cornerRadius: 14))
         .padding(5)
       FounderDeskGlassReflection(cornerRadius: 14)
@@ -560,6 +570,7 @@ private struct FounderPhoneHardware: View {
 private struct FounderTabletHardware: View {
   var preview: FounderDeskPreview
   var increasedContrast: Bool
+  var reduceMotion: Bool
 
   var body: some View {
     ZStack(alignment: .bottom) {
@@ -576,6 +587,9 @@ private struct FounderTabletHardware: View {
                 .stroke(increasedContrast ? .white : FounderDeskHardwareMaterial.metalHighlight, lineWidth: increasedContrast ? 2 : 1)
             }
           FounderHardwareScreen(tone: SoloTheme.amber, preview: preview, layout: .tablet)
+            .phaseAnimator(reduceMotion ? [1.0] : [0.98, 1.0, 0.988]) { content, luminance in
+              content.brightness((luminance - 1) * 0.36)
+            } animation: { _ in .easeInOut(duration: 8.9) }
             .clipShape(.rect(cornerRadius: 7))
             .padding(5)
           FounderDeskGlassReflection(cornerRadius: 7)
@@ -621,6 +635,9 @@ private struct FounderServerHardware: View {
         HStack(spacing: 5) {
           Circle().fill(SoloTheme.mint.opacity(0.82)).frame(width: 6, height: 6)
           FounderHardwareScreen(tone: SoloTheme.mint, preview: preview, layout: .server)
+            .phaseAnimator(reduceMotion ? [1.0] : [0.96, 1.0, 0.98]) { content, luminance in
+              content.brightness((luminance - 1) * 0.42)
+            } animation: { _ in .easeInOut(duration: 6.3) }
             .frame(height: 25)
         }
         .padding(.horizontal, 6)
@@ -631,11 +648,11 @@ private struct FounderServerHardware: View {
                 .fill(serverLight(index: index))
                 .frame(width: 4, height: 4)
                 .phaseAnimator(
-                  reduceMotion || index != 2 || preview.signal == nil ? [1.0] : [0.52, 1.0, 0.70]
+                  serverLightPhases(index: index)
                 ) { content, phase in
                   content.opacity(phase)
                 } animation: { _ in
-                  .easeInOut(duration: 0.65)
+                  .easeInOut(duration: serverLightDuration(index: index))
                 }
               RoundedRectangle(cornerRadius: 2)
                 .fill(.black.opacity(0.72))
@@ -653,9 +670,17 @@ private struct FounderServerHardware: View {
         }
         .padding(.horizontal, 7)
         HStack(spacing: 3) {
-          ForEach(0..<9, id: \.self) { _ in
+          ForEach(0..<7, id: \.self) { _ in
             Capsule().fill(.white.opacity(0.12)).frame(width: 3, height: 9)
           }
+          Image(systemName: "fanblades.fill")
+            .font(.system(size: 10))
+            .foregroundStyle(.white.opacity(0.24))
+            .phaseAnimator(reduceMotion ? [0.0] : [0.0, 360.0]) { content, angle in
+              content.rotationEffect(.degrees(angle))
+            } animation: { _ in
+              .linear(duration: FounderGarageAmbientRhythm.profile(for: .serverCooling).duration)
+            }
         }
       }
       .padding(.vertical, 8)
@@ -678,7 +703,23 @@ private struct FounderServerHardware: View {
   private func serverLight(index: Int) -> Color {
     if index == 0 { return SoloTheme.mint.opacity(0.82) }
     if index == 2 && preview.signal != nil { return SoloTheme.amber.opacity(reduceMotion ? 0.62 : 0.90) }
+    if index == 1 { return .cyan.opacity(0.62) }
+    if index == 3 { return SoloTheme.mint.opacity(0.54) }
     return .white.opacity(0.20)
+  }
+
+  private func serverLightPhases(index: Int) -> [Double] {
+    guard !reduceMotion else { return [1.0] }
+    if index == 1 { return [0.42, 0.92, 0.58] }
+    if index == 3 { return [0.68, 0.38, 0.84] }
+    if index == 2 && preview.signal != nil { return [0.52, 1.0, 0.70] }
+    return [1.0]
+  }
+
+  private func serverLightDuration(index: Int) -> Double {
+    if index == 1 { return FounderGarageAmbientRhythm.profile(for: .serverNetwork).duration }
+    if index == 3 { return FounderGarageAmbientRhythm.profile(for: .serverNetwork).duration + 0.73 }
+    return 0.65
   }
 }
 
