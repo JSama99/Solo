@@ -19,13 +19,25 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     capture("02_FOUNDER_COMPUTER_FOCUSED", in: app)
     returnToDesk(from: .computer, in: app)
 
-    for control in ["chevron.left", "viewfinder", "chevron.right", "desktopcomputer"] {
+    let dragStart = app.coordinate(withNormalizedOffset: CGVector(dx: 0.48, dy: 0.44))
+    let dragEnd = app.coordinate(withNormalizedOffset: CGVector(dx: 0.66, dy: 0.48))
+    dragStart.press(forDuration: 0.08, thenDragTo: dragEnd)
+
+    let cameraControls = app.buttons["free-look-camera-controls"]
+    XCTAssertTrue(cameraControls.waitForExistence(timeout: 3))
+    cameraControls.tap()
+    for control in ["chevron.left", "viewfinder", "chevron.right", "free-look-return-computer"] {
       XCTAssertTrue(app.buttons[control].waitForExistence(timeout: 3), "Missing Look Out control: \(control)")
     }
     app.buttons["chevron.left"].tap()
-    XCTAssertTrue(app.buttons["viewfinder"].isHittable)
+    XCTAssertTrue(cameraControls.waitForExistence(timeout: 3))
+    cameraControls.tap()
     app.buttons["viewfinder"].tap()
+    XCTAssertTrue(cameraControls.waitForExistence(timeout: 3))
+    cameraControls.tap()
     app.buttons["chevron.right"].tap()
+    XCTAssertTrue(cameraControls.waitForExistence(timeout: 3))
+    cameraControls.tap()
     app.buttons["viewfinder"].tap()
 
     focusDevice(.phone, expectedTitle: "Tech.com iPhone", in: app)
@@ -58,7 +70,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     let close = target == .computer
       ? app.buttons["founder-computer-look-out"]
       : app.buttons["return-to-founder-desk-\(target.rawValue)"]
-    XCTAssertTrue(waitUntilHittable(close))
+    assertAccessibleTouchTarget(close)
     XCTAssertTrue(app.staticTexts[expectedTitle].waitForExistence(timeout: 5))
   }
 
@@ -66,17 +78,31 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     let close = device == .computer
       ? app.buttons["founder-computer-look-out"]
       : app.buttons["return-to-founder-desk-\(device.rawValue)"]
-    XCTAssertTrue(waitUntilHittable(close))
+    assertAccessibleTouchTarget(close)
     close.tap()
     XCTAssertTrue(app.buttons["founder-desk-device-computer"].waitForExistence(timeout: 4))
   }
 
-  private func waitUntilHittable(_ element: XCUIElement, timeout: TimeInterval = 5) -> Bool {
-    let expectation = XCTNSPredicateExpectation(
-      predicate: NSPredicate(format: "exists == true AND hittable == true"),
+  private func assertAccessibleTouchTarget(
+    _ element: XCUIElement,
+    timeout: TimeInterval = 5,
+    file: StaticString = #filePath,
+    line: UInt = #line
+  ) {
+    XCTAssertTrue(element.waitForExistence(timeout: timeout), file: file, line: line)
+    let settledTarget = XCTNSPredicateExpectation(
+      predicate: NSPredicate { object, _ in
+        guard let candidate = object as? XCUIElement else { return false }
+        return candidate.exists
+          && candidate.isEnabled
+          && candidate.frame.width >= 44
+          && candidate.frame.height >= 44
+      },
       object: element
     )
-    return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
+    XCTAssertEqual(XCTWaiter.wait(for: [settledTarget], timeout: timeout), .completed, file: file, line: line)
+    XCTAssertGreaterThanOrEqual(element.frame.width, 44, file: file, line: line)
+    XCTAssertGreaterThanOrEqual(element.frame.height, 44, file: file, line: line)
   }
 
   private func serverButton(named name: String, in app: XCUIApplication) -> XCUIElement {

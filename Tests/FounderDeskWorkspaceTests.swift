@@ -120,6 +120,25 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     XCTAssertLessThan(compact.deviceSize(for: .server).height, regular.deviceSize(for: .server).height)
   }
 
+  func testPhysicalDeviceSilhouettesRemainDistinctWithoutLabels() {
+    for regularWidth in [false, true] {
+      let viewport = regularWidth ? CGSize(width: 1_024, height: 1_366) : CGSize(width: 402, height: 874)
+      let layout = FounderDeskEquipmentLayout(viewportSize: viewport, regularWidth: regularWidth)
+      XCTAssertGreaterThan(layout.deviceSize(for: .computer).width, layout.deviceSize(for: .computer).height)
+      XCTAssertGreaterThan(layout.deviceSize(for: .phone).height, layout.deviceSize(for: .phone).width)
+      XCTAssertGreaterThan(layout.deviceSize(for: .tablet).width, layout.deviceSize(for: .tablet).height)
+      XCTAssertGreaterThan(layout.deviceSize(for: .server).height, layout.deviceSize(for: .server).width)
+    }
+  }
+
+  func testCameraChromeCollapsesAfterDiscoveryWithoutRemovingAccessibilityAlternatives() {
+    XCTAssertFalse(FounderDeskCameraChromePolicy.exposesManualControls(expanded: false, accessibilityText: false))
+    XCTAssertTrue(FounderDeskCameraChromePolicy.exposesManualControls(expanded: true, accessibilityText: false))
+    XCTAssertTrue(FounderDeskCameraChromePolicy.exposesManualControls(expanded: false, accessibilityText: true))
+    XCTAssertTrue(FounderDeskCameraChromePolicy.showsInstruction(hasUsedFreeLook: false))
+    XCTAssertFalse(FounderDeskCameraChromePolicy.showsInstruction(hasUsedFreeLook: true))
+  }
+
   func testReduceMotionKeepsEstablishedWorkspaceTransitionEndpoints() {
     var state = FounderDeskNavigationState()
     XCTAssertEqual(state.transitionStyle(reduceMotion: true), .crossfade)

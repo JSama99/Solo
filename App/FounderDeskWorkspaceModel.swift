@@ -50,6 +50,16 @@ enum FounderDeskLayoutPolicy {
   }
 }
 
+enum FounderDeskCameraChromePolicy {
+  static func exposesManualControls(expanded: Bool, accessibilityText: Bool) -> Bool {
+    expanded || accessibilityText
+  }
+
+  static func showsInstruction(hasUsedFreeLook: Bool) -> Bool {
+    !hasUsedFreeLook
+  }
+}
+
 struct FounderDeskNavigationState: Equatable, Sendable {
   private(set) var selection: FounderDeskSelection = .overview
   private(set) var camera = FounderEnvironmentCameraState(mode: .freeLook)
