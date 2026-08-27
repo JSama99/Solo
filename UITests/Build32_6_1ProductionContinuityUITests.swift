@@ -16,11 +16,14 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
       lookOut.tap()
     }
     XCTAssertTrue(computer.waitForExistence(timeout: 6))
-    capture("10_IDLE_GARAGE_RUNTIME_HOLD", in: app)
+    capture("10A_IDLE_LIGHTING_EARLY", in: app)
 
     // Purposefully perform no gameplay action. External simulator recording
-    // captures the independent fan, LED, screen, light, and agent rhythms.
-    sleep(12)
+    // captures the independent fan, LED, screen, light, air, and agent rhythms.
+    sleep(8)
+    capture("10B_IDLE_LIGHTING_MIDDLE", in: app)
+    sleep(8)
+    capture("10C_IDLE_LIGHTING_LATE", in: app)
     XCTAssertTrue(computer.exists)
   }
 
@@ -41,11 +44,15 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     XCTAssertTrue(app.staticTexts["Founder Computer"].exists)
     capture("02_FOUNDER_COMPUTER_FOCUSED", in: app)
     returnToDesk(from: .computer, in: app)
+    capture("02B_LOOK_OUT_CONTINUITY", in: app)
 
     // Hold on the production Garage long enough to prove the independent,
     // presentation-only idle rhythms in a continuous simulator recording.
-    capture("06_CENTERED_IDLE_GARAGE", in: app)
-    sleep(7)
+    capture("06A_CENTERED_IDLE_EARLY", in: app)
+    sleep(8)
+    capture("06B_CENTERED_IDLE_MIDDLE", in: app)
+    sleep(8)
+    capture("06C_CENTERED_IDLE_LATE", in: app)
 
     let dragStart = app.coordinate(withNormalizedOffset: CGVector(dx: 0.48, dy: 0.44))
     let dragEnd = app.coordinate(withNormalizedOffset: CGVector(dx: 0.66, dy: 0.48))
@@ -94,6 +101,9 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     returnToDesk(from: .server, in: app)
     revealCameraPosition("viewfinder", in: app)
     XCTAssertTrue(app.buttons["founder-desk-device-computer"].exists)
+    capture("10_RETURNED_FREE_LOOK", in: app)
+    focusDevice(.computer, expectedTitle: "Founder Computer", in: app)
+    capture("11_RETURNED_COMMAND_FOCUS", in: app)
   }
 
   private func focusDevice(_ target: FocusedDevice, expectedTitle: String, in app: XCUIApplication) {

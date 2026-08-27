@@ -726,7 +726,7 @@ struct FounderEnvironmentRendererView: View {
         let x = CGFloat((index * 83) % 997) / 997 * canvasSize.width
         let y = CGFloat((index * 47) % 311) / 311 * canvasSize.height
         let scuff = CGRect(x: x, y: y, width: CGFloat(12 + index % 4 * 7), height: 2)
-        context.fill(Path(roundedRect: scuff, cornerRadius: 1), with: .color(.white.opacity(0.025)))
+        context.fill(Path(roundedRect: scuff, cornerRadius: 1), with: .color(.white.opacity(0.038)))
       }
       for index in 0..<12 {
         let x = CGFloat((index * 137 + 23) % 991) / 991 * canvasSize.width
@@ -734,7 +734,21 @@ struct FounderEnvironmentRendererView: View {
         let radius = CGFloat(5 + index % 4 * 3)
         context.fill(
           Path(ellipseIn: CGRect(x: x, y: y, width: radius, height: radius * 0.42)),
-          with: .color(.black.opacity(0.025))
+          with: .color(.black.opacity(0.050))
+        )
+      }
+      for index in 0..<8 {
+        let x = CGFloat((index * 191 + 41) % 983) / 983 * canvasSize.width
+        let y = CGFloat((index * 101 + 17) % 293) / 293 * canvasSize.height
+        let patch = CGRect(x: x, y: y, width: CGFloat(46 + index % 3 * 22), height: CGFloat(22 + index % 4 * 8))
+        context.fill(
+          Path(roundedRect: patch, cornerRadius: 12),
+          with: .radialGradient(
+            Gradient(colors: [.white.opacity(0.022), .clear]),
+            center: CGPoint(x: patch.midX, y: patch.midY),
+            startRadius: 2,
+            endRadius: patch.width * 0.62
+          )
         )
       }
     }
@@ -778,6 +792,15 @@ struct FounderEnvironmentRendererView: View {
         let y = horizon + CGFloat((index * 43) % 137) / 137 * (canvasSize.height - horizon)
         let scuff = CGRect(x: x, y: y, width: CGFloat(16 + index % 3 * 9), height: 2)
         context.fill(Path(roundedRect: scuff, cornerRadius: 1), with: .color(.white.opacity(0.035)))
+      }
+      for index in 0..<22 {
+        let x = CGFloat((index * 67 + 19) % 257) / 257 * canvasSize.width
+        let y = horizon + CGFloat((index * 37 + 13) % 131) / 131 * (canvasSize.height - horizon)
+        let radius = CGFloat(1 + index % 3)
+        context.fill(
+          Path(ellipseIn: CGRect(x: x, y: y, width: radius * 1.8, height: radius)),
+          with: .color(index.isMultiple(of: 4) ? .white.opacity(0.045) : .black.opacity(0.075))
+        )
       }
     }
   }
@@ -1188,6 +1211,13 @@ struct FounderEnvironmentRendererView: View {
         path.addCurve(to: CGPoint(x: deskPosition.x + 120, y: deskPosition.y + 28), control1: CGPoint(x: monitorPosition.x + 15, y: monitorPosition.y + 135), control2: CGPoint(x: deskPosition.x + 80, y: deskPosition.y - 5))
       }
       .stroke(.black.opacity(0.92), style: StrokeStyle(lineWidth: 7, lineCap: .round))
+      .phaseAnimator(
+        motion.environment.atmosphericMotionEnabled ? [-0.28, 0.24, -0.12] : [0.0]
+      ) { content, angle in
+        content.rotationEffect(.degrees(angle), anchor: UnitPoint(x: 0.50, y: 0.28))
+      } animation: { _ in
+        .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .cableAirflow).duration)
+      }
       Capsule().fill(.black.opacity(0.92)).frame(width: 132, height: 13)
         .position(x: monitorPosition.x, y: monitorPosition.y + 130)
       RoundedRectangle(cornerRadius: 4).fill(.black.opacity(0.90)).frame(width: 17, height: 118)
@@ -1245,7 +1275,13 @@ struct FounderEnvironmentRendererView: View {
         Image(systemName: "mug.fill").foregroundStyle(.orange.opacity(0.78)).font(.title2).offset(x: -196, y: -6)
         RoundedRectangle(cornerRadius: 2).fill(Color(red: 0.78, green: 0.70, blue: 0.48)).frame(width: 44, height: 31)
           .overlay { VStack(spacing: 3) { ForEach(0..<3, id: \.self) { _ in Rectangle().fill(.black.opacity(0.28)).frame(width: 30, height: 1) } } }
-          .rotationEffect(.degrees(-7))
+          .phaseAnimator(
+            motion.environment.atmosphericMotionEnabled ? [-7.0, -6.55, -7.15] : [-7.0]
+          ) { content, angle in
+            content.rotationEffect(.degrees(angle), anchor: .topLeading)
+          } animation: { _ in
+            .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .cableAirflow).duration + 2.3)
+          }
           .offset(x: 148, y: 42)
         ZStack {
           RoundedRectangle(cornerRadius: 3)
@@ -1504,7 +1540,6 @@ struct FounderEnvironmentRendererView: View {
 
   private func livingElectricalLayer(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
     let active = motion.ambient.continuousMotionEnabled
-    let ventilation = FounderGarageAmbientRhythm.profile(for: .ventilation)
     let lighting = FounderGarageAmbientRhythm.profile(for: .environmentalLight)
     let display = FounderGarageAmbientRhythm.profile(for: .founderDisplay)
     return ZStack {
@@ -1521,31 +1556,41 @@ struct FounderEnvironmentRendererView: View {
         path.closeSubpath()
       }
       .fill(LinearGradient(
-        colors: [Color.orange.opacity(0.020), Color.cyan.opacity(0.010), .clear],
+        colors: [Color.orange.opacity(0.060), Color.cyan.opacity(0.025), .clear],
         startPoint: .top,
         endPoint: .bottom
       ))
-      .phaseAnimator(active ? [0.88, 1.04, 0.94] : [0.94]) { content, opacity in
+      .phaseAnimator(active ? [0.74, 1.0, 0.82] : [0.80]) { content, opacity in
         content.opacity(opacity)
+          .offset(x: active ? (opacity - 0.86) * 16 : 0)
       } animation: { _ in .easeInOut(duration: lighting.duration) }
 
-      ZStack {
-        Circle().fill(.black.opacity(0.70)).frame(width: 58, height: 58)
-        Circle().stroke(.white.opacity(0.15), lineWidth: 3).frame(width: 52, height: 52)
-        Image(systemName: "fanblades.fill")
-          .font(.system(size: 27))
-          .foregroundStyle(.white.opacity(0.25 + motion.ambient.fanActivity * 0.18))
-          .phaseAnimator(active ? [0.0, 360.0] : [0.0]) { content, angle in
-            content.rotationEffect(.degrees(angle))
-          } animation: { _ in .linear(duration: ventilation.duration) }
-        Circle().fill(.green.opacity(0.62)).frame(width: 4, height: 4).offset(x: 19, y: 18)
-      }
-      .shadow(color: .black.opacity(0.38), radius: 7, y: 5)
+      FounderGarageVentilationFanView(
+        mechanical: motion.mechanical,
+        increasedContrast: increasedContrast
+      )
       .position(layout.viewportPosition(
-        worldPoint: CGPoint(x: 680, y: 175),
+        worldPoint: CGPoint(x: 680, y: 180),
         camera: camera,
         layer: .background
       ))
+
+      Ellipse()
+        .fill(.black.opacity(0.075))
+        .frame(width: 155, height: 42)
+        .phaseAnimator(
+          motion.mechanical.continuousRotationEnabled ? [-3.0, 3.0, -3.0] : [0.0]
+        ) { content, angle in
+          content.rotationEffect(.degrees(angle))
+            .offset(x: angle * 0.7)
+        } animation: { _ in
+          .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .ventilationShadow).duration)
+        }
+        .position(layout.viewportPosition(
+          worldPoint: CGPoint(x: 700, y: 272),
+          camera: camera,
+          layer: .background
+        ))
 
       RadialGradient(
         colors: [Color.cyan.opacity(0.035 + motion.ambient.screenLife * 0.055), .clear],
@@ -1576,6 +1621,11 @@ struct FounderEnvironmentRendererView: View {
     let station = motion.station(for: agentID)
     let intensity = station?.physical.keyLightIntensity ?? 0.20
     let focal = station?.physical.focalEmphasis ?? 0.35
+    let rhythm: FounderGarageAmbientRhythm = switch agentID {
+    case "aurora": .profile(for: .auroraPresence)
+    case "stacks": .profile(for: .stacksPresence)
+    default: .profile(for: .brioPresence)
+    }
     return RadialGradient(
       colors: [tone.opacity(0.035 + intensity * 0.12 + focal * 0.035), tone.opacity(intensity * 0.032), .clear],
       center: .center,
@@ -1583,6 +1633,9 @@ struct FounderEnvironmentRendererView: View {
       endRadius: 145
     )
     .frame(width: 290, height: 230)
+    .phaseAnimator(motion.ambient.continuousMotionEnabled ? [0.92, 1.05, 0.97] : [0.96]) { content, luminance in
+      content.opacity(luminance)
+    } animation: { _ in .easeInOut(duration: rhythm.duration) }
     .position(layout.viewportPosition(worldPoint: worldPoint, camera: camera, layer: .middleGround))
   }
 
@@ -1736,16 +1789,18 @@ struct FounderEnvironmentRendererView: View {
 
       ForEach(0..<motion.environment.atmosphericParticleCount, id: \.self) { index in
         Circle()
-          .fill(.white.opacity(index.isMultiple(of: 3) ? 0.15 : 0.08))
+          .fill(.white.opacity(index.isMultiple(of: 3) ? 0.13 : 0.065))
           .frame(width: CGFloat(1 + index % 2), height: CGFloat(1 + index % 2))
           .position(
-            x: CGFloat((index * 71 + 29) % 397) / 397 * size.width,
-            y: size.height * (0.16 + CGFloat((index * 41) % 53) / 100)
+            x: size.width * (0.39 + CGFloat((index * 37 + 11) % 97) / 97 * 0.22),
+            y: size.height * (0.18 + CGFloat((index * 41) % 47) / 100)
           )
-          .phaseAnimator(motion.environment.atmosphericMotionEnabled ? [0.0, 1.0, 0.0] : [0.0]) { content, phase in
-            content.offset(x: CGFloat(index % 3 - 1) * 3 * phase, y: -6 * phase)
+          .phaseAnimator(motion.environment.atmosphericMotionEnabled ? [0.0, 1.0, 0.15] : [0.0]) { content, phase in
+            content
+              .offset(x: CGFloat(index % 3 - 1) * 6 * phase, y: -12 * phase)
+              .opacity(0.42 + phase * 0.58)
           } animation: { _ in
-            .easeInOut(duration: 4.6 + Double(index % 4) * 0.8)
+            .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .atmosphericDust).duration + Double(index % 4) * 1.1)
           }
       }
       if projection.atmosphere.isLowEnergy { Rectangle().fill(.black.opacity(0.20)) }

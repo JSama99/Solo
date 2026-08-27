@@ -1027,6 +1027,9 @@ final class Build32_5FounderEnvironmentTests: XCTestCase {
     let reduced = livingMotion(agents: [agent], reduceMotion: true)
     XCTAssertTrue(standard.ambient.continuousMotionEnabled)
     XCTAssertFalse(reduced.ambient.continuousMotionEnabled)
+    XCTAssertTrue(standard.mechanical.continuousRotationEnabled)
+    XCTAssertFalse(reduced.mechanical.continuousRotationEnabled)
+    XCTAssertEqual(standard.mechanical.rearVentilationActivity, reduced.mechanical.rearVentilationActivity)
     XCTAssertEqual(standard.station(for: "aurora")?.workflow, reduced.station(for: "aurora")?.workflow)
     XCTAssertEqual(standard.station(for: "aurora")?.visibleProgress, reduced.station(for: "aurora")?.visibleProgress)
   }
@@ -1037,6 +1040,7 @@ final class Build32_5FounderEnvironmentTests: XCTestCase {
       sceneActive: false
     )
     XCTAssertFalse(motion.ambient.continuousMotionEnabled)
+    XCTAssertFalse(motion.mechanical.continuousRotationEnabled)
     XCTAssertFalse(try XCTUnwrap(motion.station(for: "stacks")).continuousMotionEnabled)
   }
 
@@ -1298,6 +1302,10 @@ final class Build32_5FounderEnvironmentTests: XCTestCase {
     XCTAssertEqual(
       livingMotion(agents: [neutral]).ambient,
       livingMotion(agents: [hidden]).ambient
+    )
+    XCTAssertEqual(
+      livingMotion(agents: [neutral]).mechanical,
+      livingMotion(agents: [hidden]).mechanical
     )
     XCTAssertEqual(
       livingMotion(agents: [neutral]).audioHooks,

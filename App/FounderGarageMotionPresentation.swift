@@ -114,6 +114,7 @@ enum FounderGarageAudioCue: String, CaseIterable, Equatable, Sendable {
   case reviewReady
   case garageVentilation
   case serverHum
+  case equipmentCooling
   case distantGarage
 }
 
@@ -148,7 +149,7 @@ struct FounderGarageAudioHookPresentation: Equatable, Sendable {
     }
     return Self(
       cues: cues,
-      ambientCues: [.garageVentilation, .serverHum, .distantGarage],
+      ambientCues: [.garageVentilation, .serverHum, .equipmentCooling, .distantGarage],
       eventToken: event.token
     )
   }
@@ -232,6 +233,37 @@ struct FounderGarageAmbientMotion: Equatable, Sendable {
   }
 }
 
+/// Safe, player-readable operating state for equipment that physically moves
+/// in the Garage. This projection deliberately knows only visible workload,
+/// lifecycle/accessibility state, and whether the scene can render.
+struct FounderGarageMechanicalPresentation: Equatable, Sendable {
+  var rearVentilationActivity: Double
+  var rearVentilationRotationDuration: Double
+  var serverCoolingActivity: Double
+  var serverCoolingRotationDuration: Double
+  var continuousRotationEnabled: Bool
+  var staticActivityIndicationVisible: Bool
+
+  static func derive(
+    agents: [LivingAgentProjection],
+    reduceMotion: Bool,
+    sceneActive: Bool
+  ) -> Self {
+    let operatingCount = agents.filter {
+      [.assignmentReceived, .working, .reviewing, .resolving].contains($0.activity)
+    }.count
+    let workload = min(1, Double(operatingCount) / 3)
+    return Self(
+      rearVentilationActivity: 0.36 + workload * 0.38,
+      rearVentilationRotationDuration: 15.2 - workload * 5.4,
+      serverCoolingActivity: 0.30 + workload * 0.46,
+      serverCoolingRotationDuration: 10.8 - workload * 3.7,
+      continuousRotationEnabled: sceneActive && !reduceMotion,
+      staticActivityIndicationVisible: true
+    )
+  }
+}
+
 /// Fixed presentation rhythms keep tertiary systems independent without
 /// touching gameplay RNG or creating another simulation clock.
 enum FounderGarageAmbientChannel: String, CaseIterable, Equatable, Sendable {
@@ -244,6 +276,9 @@ enum FounderGarageAmbientChannel: String, CaseIterable, Equatable, Sendable {
   case stacksPresence
   case brioPresence
   case environmentalLight
+  case atmosphericDust
+  case cableAirflow
+  case ventilationShadow
 }
 
 struct FounderGarageAmbientRhythm: Equatable, Sendable {
@@ -263,6 +298,9 @@ struct FounderGarageAmbientRhythm: Equatable, Sendable {
     case .stacksPresence: Self(channel: channel, duration: 5.9, phase: 0.38, amplitude: 0.016)
     case .brioPresence: Self(channel: channel, duration: 6.7, phase: 0.74, amplitude: 0.019)
     case .environmentalLight: Self(channel: channel, duration: 12.6, phase: 0.52, amplitude: 0.030)
+    case .atmosphericDust: Self(channel: channel, duration: 17.4, phase: 0.83, amplitude: 0.022)
+    case .cableAirflow: Self(channel: channel, duration: 13.9, phase: 0.33, amplitude: 0.012)
+    case .ventilationShadow: Self(channel: channel, duration: 15.2, phase: 0.68, amplitude: 0.018)
     }
   }
 }
@@ -416,7 +454,7 @@ struct FounderGarageEnvironmentPresentation: Equatable, Sendable {
       middleContrast: 0.90,
       foregroundContrast: 1,
       atmosphericMotionEnabled: atmosphericMotionEnabled,
-      atmosphericParticleCount: atmosphericMotionEnabled ? 9 : 0
+      atmosphericParticleCount: atmosphericMotionEnabled ? 7 : 0
     )
   }
 }
@@ -482,6 +520,7 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
   var layers: [FounderGarageMotionLayer]
   var camera: FounderGarageCameraMotion
   var ambient: FounderGarageAmbientMotion
+  var mechanical: FounderGarageMechanicalPresentation
   var stations: [FounderGarageStationMotion]
   var lighting: FounderGarageLightingPresentation
   var environment: FounderGarageEnvironmentPresentation
@@ -509,6 +548,11 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
       layers: FounderGarageMotionLayer.allCases,
       camera: .derive(mode: camera.mode),
       ambient: .derive(
+        agents: environment.agents,
+        reduceMotion: reduceMotion,
+        sceneActive: sceneActive
+      ),
+      mechanical: .derive(
         agents: environment.agents,
         reduceMotion: reduceMotion,
         sceneActive: sceneActive

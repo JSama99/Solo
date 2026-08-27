@@ -1,0 +1,167 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "2504EC19-FF4E-433B-9894-988BEDBEE950.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "10C_IDLE_LIGHTING_LATE_0_814E08D6-20FD-4EC0-9FFE-399988885EF9.png",
+        "timestamp" : 1787871501.732
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "D6365918-994A-4113-BAEB-A08B643348C0.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "10B_IDLE_LIGHTING_MIDDLE_0_7AF7DE93-051B-48DE-BE0E-706796A7801F.png",
+        "timestamp" : 1787871493.238
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "ABC6DC96-E5AF-44C4-9635-3E04B27D7A5F.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "10A_IDLE_LIGHTING_EARLY_0_F06C8F60-A24E-4C24-B993-1494F2EB7FD6.png",
+        "timestamp" : 1787871484.624
+      }
+    ],
+    "testIdentifier" : "Build32_6_2ProductionContinuityUITests/testIdleGarageAmbientLifeHold()",
+    "testIdentifierURL" : "test://com.apple.xcode/SoloUnicornRun/Solo%20Unicorn%20Run%20UI%20Tests/Build32_6_2ProductionContinuityUITests/testIdleGarageAmbientLifeHold"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "D5C96FAF-E88A-432F-BE16-A87DEEAC5A48.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "11_RETURNED_COMMAND_FOCUS_0_CAD00AC1-C976-453A-B27B-31ED926459D3.png",
+        "timestamp" : 1787871638.292
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "9B602131-BF55-40C1-A947-8174904EB43F.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "10_RETURNED_FREE_LOOK_0_2F774002-351E-4C17-A80D-84AA8FFE6170.png",
+        "timestamp" : 1787871626.815
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "327AD4BE-24BD-4788-804D-F9DA4D0F8CC7.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "05_COMPANY_SERVER_FOCUSED_0_2E08F647-E27E-4259-9942-CD1EDE8C7CA6.png",
+        "timestamp" : 1787871614.88
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "B0D38597-1E1B-469D-992C-9C12DAA458AF.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "04_VENTURE_IPAD_FOCUSED_0_5C276E6D-6321-4D5C-8BF5-99800121F758.png",
+        "timestamp" : 1787871591.263
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "55438469-DC52-4927-8A6B-41257C74D931.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "03_TECHCOM_IPHONE_FOCUSED_0_812CA356-C30C-4A79-9B24-B0407CA4B8D6.png",
+        "timestamp" : 1787871577.93
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "F5E262E8-C13A-453E-B753-A6D62D0010E2.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "09_RIGHT_BRIO_SERVER_VIEW_0_22DEEABF-146D-44D9-9E9A-14EDB3874CDB.png",
+        "timestamp" : 1787871566.877
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "A6026434-49BC-47EF-9EE4-D1CDC35364AD.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "08_CENTER_STACKS_VIEW_0_08235C1A-9458-49B0-B541-7C0AFE955FD9.png",
+        "timestamp" : 1787871563.796
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "AEF0D313-568B-4D8A-B8F3-5806665C0DC4.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "07_LEFT_AURORA_VIEW_0_65D9174F-0345-47C1-928A-80C7B2282C5D.png",
+        "timestamp" : 1787871560.133
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "F5380DFE-C3B9-40D1-B401-77654B97CE83.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "06C_CENTERED_IDLE_LATE_0_ECB3D9DB-C256-419C-9047-F934CB1A7451.png",
+        "timestamp" : 1787871550.85
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "BF3A70F2-6D18-4BAF-99A1-58917D9B8C18.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "06B_CENTERED_IDLE_MIDDLE_0_8CFD762B-B6E8-4764-A6D2-2C76F9E63B02.png",
+        "timestamp" : 1787871542.284
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "558080A6-236C-4C29-A956-4FB3DDF03353.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "06A_CENTERED_IDLE_EARLY_0_3A40C0D4-DC37-4921-A897-708EDA06BADB.png",
+        "timestamp" : 1787871533.563
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "2FE36B79-BAA3-47E4-9087-CED9BFF64C93.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "02B_LOOK_OUT_CONTINUITY_0_382F26F5-3B78-4570-B733-3BEF0489BAEB.png",
+        "timestamp" : 1787871533.003
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "E36A2D51-06D4-416D-BD93-D58F3206A7B3.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "02_FOUNDER_COMPUTER_FOCUSED_0_A36C9110-C13D-4890-A362-AFA6E0CF195D.png",
+        "timestamp" : 1787871526.958
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "9980AA32-F061-411A-AFE6-04EDBCF8C3D9",
+        "deviceName" : "iPad Pro 11-inch (M5)",
+        "exportedFileName" : "C6283855-4023-4F5F-BE11-849BA2237599.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "01_FOUNDER_DESK_OVERVIEW_0_948E43A2-171D-4CEC-8CE9-9A4BE3E43BB8.png",
+        "timestamp" : 1787871518.574
+      }
+    ],
+    "testIdentifier" : "Build32_6_2ProductionContinuityUITests/testProductionFounderDeskDeviceContinuity()",
+    "testIdentifierURL" : "test://com.apple.xcode/SoloUnicornRun/Solo%20Unicorn%20Run%20UI%20Tests/Build32_6_2ProductionContinuityUITests/testProductionFounderDeskDeviceContinuity"
+  }
+]

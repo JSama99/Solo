@@ -171,7 +171,7 @@ final class FounderDeskWorkspaceTests: XCTestCase {
 
   func testAmbientRhythmsAreFixedAndUnsynchronized() {
     let profiles = FounderGarageAmbientChannel.allCases.map(FounderGarageAmbientRhythm.profile)
-    XCTAssertEqual(profiles.count, 9)
+    XCTAssertEqual(profiles.count, 12)
     XCTAssertEqual(Set(profiles.map(\.channel)).count, profiles.count)
     XCTAssertEqual(Set(profiles.map(\.duration)).count, profiles.count)
     XCTAssertTrue(profiles.allSatisfy { $0.amplitude <= 0.05 })
@@ -179,6 +179,59 @@ final class FounderDeskWorkspaceTests: XCTestCase {
       FounderGarageAmbientRhythm.profile(for: .serverCooling),
       FounderGarageAmbientRhythm.profile(for: .serverCooling)
     )
+  }
+
+  func testMechanicalEquipmentUsesVisibleWorkloadAndNoRandomInput() {
+    let idle = FounderGarageMechanicalPresentation.derive(
+      agents: [],
+      reduceMotion: false,
+      sceneActive: true
+    )
+    let repeated = FounderGarageMechanicalPresentation.derive(
+      agents: [],
+      reduceMotion: false,
+      sceneActive: true
+    )
+    XCTAssertEqual(idle, repeated)
+    XCTAssertTrue(idle.continuousRotationEnabled)
+    XCTAssertGreaterThan(idle.rearVentilationActivity, 0)
+    XCTAssertGreaterThan(idle.serverCoolingActivity, 0)
+    XCTAssertGreaterThan(idle.rearVentilationRotationDuration, idle.serverCoolingRotationDuration)
+  }
+
+  func testReduceMotionKeepsMechanicalStateAndStopsRotation() {
+    let standard = FounderGarageMechanicalPresentation.derive(
+      agents: [],
+      reduceMotion: false,
+      sceneActive: true
+    )
+    let reduced = FounderGarageMechanicalPresentation.derive(
+      agents: [],
+      reduceMotion: true,
+      sceneActive: true
+    )
+    XCTAssertFalse(reduced.continuousRotationEnabled)
+    XCTAssertTrue(reduced.staticActivityIndicationVisible)
+    XCTAssertEqual(reduced.rearVentilationActivity, standard.rearVentilationActivity)
+    XCTAssertEqual(reduced.serverCoolingActivity, standard.serverCoolingActivity)
+  }
+
+  func testAtmosphereUsesSmallBoundedPresentationOnlyParticleBudget() {
+    let standard = FounderGarageEnvironmentPresentation.derive(
+      facility: .founderGarage,
+      infrastructure: [],
+      reduceMotion: false,
+      sceneActive: true
+    )
+    let reduced = FounderGarageEnvironmentPresentation.derive(
+      facility: .founderGarage,
+      infrastructure: [],
+      reduceMotion: true,
+      sceneActive: true
+    )
+    XCTAssertEqual(standard.atmosphericParticleCount, 7)
+    XCTAssertLessThanOrEqual(standard.atmosphericParticleCount, 8)
+    XCTAssertEqual(reduced.atmosphericParticleCount, 0)
   }
 
   func testReduceMotionRetainsAmbientStateButStopsContinuousTravel() {
@@ -194,7 +247,7 @@ final class FounderDeskWorkspaceTests: XCTestCase {
   func testAmbientAudioHooksRemainPresentationOnly() {
     let hooks = FounderGarageAudioHookPresentation.derive(stations: [], event: .none)
     XCTAssertEqual(hooks.cues, [])
-    XCTAssertEqual(hooks.ambientCues, [.garageVentilation, .serverHum, .distantGarage])
+    XCTAssertEqual(hooks.ambientCues, [.garageVentilation, .serverHum, .equipmentCooling, .distantGarage])
     XCTAssertNil(hooks.eventToken)
   }
 
