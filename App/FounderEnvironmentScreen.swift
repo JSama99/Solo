@@ -412,13 +412,13 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       .recoveryCorner: CGPoint(x: 1_285, y: 565),
       .founderDesk: CGPoint(x: 680, y: 650),
       .founderMonitor: CGPoint(x: 680, y: 480),
-      .founderPhone: CGPoint(x: 500, y: 600),
-      .founderTablet: CGPoint(x: 775, y: 600),
-      .companyServer: CGPoint(x: 885, y: 660),
+      .founderPhone: CGPoint(x: 525, y: 605),
+      .founderTablet: CGPoint(x: 765, y: 600),
+      .companyServer: CGPoint(x: 870, y: 660),
       .founderDeskLeftEdge: CGPoint(x: 470, y: 650),
       .founderDeskRightEdge: CGPoint(x: 840, y: 650),
       .founderDeskSurface: CGPoint(x: 680, y: 590),
-      .founderDeskFloorSide: CGPoint(x: 885, y: 710),
+      .founderDeskFloorSide: CGPoint(x: 870, y: 710),
       .founderCommandDesk: CGPoint(x: 535, y: 635)
     ]
   }
@@ -518,14 +518,14 @@ struct FounderDeskEquipmentLayout: Equatable, Sendable {
 
   func deviceSize(for device: FounderDeskDevice) -> CGSize {
     switch (device, regularWidth) {
-    case (.computer, false): CGSize(width: min(viewportSize.width * 0.53, 214), height: 100)
-    case (.computer, true): CGSize(width: min(viewportSize.width * 0.39, 410), height: 158)
-    case (.phone, false): CGSize(width: 72, height: 104)
-    case (.phone, true): CGSize(width: 104, height: 142)
-    case (.tablet, false): CGSize(width: 104, height: 78)
-    case (.tablet, true): CGSize(width: 220, height: 128)
-    case (.server, false): CGSize(width: 78, height: 150)
-    case (.server, true): CGSize(width: 104, height: 202)
+    case (.computer, false): CGSize(width: min(viewportSize.width * 0.54, 218), height: 112)
+    case (.computer, true): CGSize(width: min(viewportSize.width * 0.38, 390), height: 170)
+    case (.phone, false): CGSize(width: 68, height: 112)
+    case (.phone, true): CGSize(width: 98, height: 146)
+    case (.tablet, false): CGSize(width: 116, height: 88)
+    case (.tablet, true): CGSize(width: 214, height: 142)
+    case (.server, false): CGSize(width: 68, height: 154)
+    case (.server, true): CGSize(width: 96, height: 206)
     }
   }
 
@@ -1849,6 +1849,7 @@ struct FounderPhysicalMonitorView<Content: View>: View {
 
 struct FounderEnvironmentControlLayer: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @State private var cameraAlternativesExpanded = false
 
   var mode: FounderEnvironmentMode
   var reduceMotion: Bool
@@ -1885,22 +1886,57 @@ struct FounderEnvironmentControlLayer: View {
           .position(x: 112, y: 20)
           .accessibilityAddTraits(.isHeader)
 
-        HStack(spacing: 8) {
-          Button("Look Left", systemImage: "chevron.left") { onLook(-1, 0) }.labelStyle(.iconOnly)
-          Button("Center", systemImage: "viewfinder") { onCenter() }.labelStyle(.iconOnly)
-          Button("Look Right", systemImage: "chevron.right") { onLook(1, 0) }.labelStyle(.iconOnly)
-          Button("Return to Founder Computer", systemImage: "desktopcomputer") { onFocusComputer() }.labelStyle(.iconOnly)
+        HStack(spacing: 6) {
+          if FounderDeskCameraChromePolicy.exposesManualControls(
+            expanded: cameraAlternativesExpanded,
+            accessibilityText: dynamicTypeSize.isAccessibilitySize
+          ) {
+            Button("Look Left", systemImage: "chevron.left") {
+              onLook(-1, 0)
+              cameraAlternativesExpanded = false
+            }
+            .labelStyle(.iconOnly)
+            Button("Center", systemImage: "viewfinder") {
+              onCenter()
+              cameraAlternativesExpanded = false
+            }
+            .labelStyle(.iconOnly)
+            Button("Look Right", systemImage: "chevron.right") {
+              onLook(1, 0)
+              cameraAlternativesExpanded = false
+            }
+            .labelStyle(.iconOnly)
+          } else {
+            Button("Camera controls", systemImage: "move.3d") {
+              withAnimation(reduceMotion ? nil : .snappy(duration: 0.20)) {
+                cameraAlternativesExpanded = true
+              }
+            }
+            .labelStyle(.iconOnly)
+            .accessibilityIdentifier("free-look-camera-controls")
+            .accessibilityHint("Shows Look Left, Center, and Look Right controls")
+          }
         }
         .buttonStyle(.bordered)
         .controlSize(.large)
         .tint(.white)
-        .padding(7)
-        .background(.black.opacity(0.72), in: Capsule())
-        .overlay { Capsule().stroke(.white.opacity(0.22), lineWidth: 1) }
+        .padding(5)
+        .background(.black.opacity(0.58), in: Capsule())
+        .overlay { Capsule().stroke(.white.opacity(0.14), lineWidth: 1) }
         .position(
-          x: proxy.size.width / 2 - (proxy.size.width < 600 ? 22 : 0),
+          x: proxy.size.width / 2,
           y: proxy.size.height - 34
         )
+
+        Button("Return to Founder Computer", systemImage: "desktopcomputer") { onFocusComputer() }
+          .labelStyle(.iconOnly)
+          .buttonStyle(.bordered)
+          .controlSize(.large)
+          .tint(.white)
+          .frame(minWidth: 44, minHeight: 44)
+          .background(.black.opacity(0.54), in: .circle)
+          .accessibilityIdentifier("free-look-return-computer")
+          .position(x: proxy.size.width - 29, y: 24)
       }
     }
   }

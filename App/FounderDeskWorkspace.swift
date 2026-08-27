@@ -16,6 +16,7 @@ struct FounderDeskWorkspace: View {
   @State private var transitionID = UUID()
   @State private var computerRequest: FounderComputerWorkspaceRequest?
   @State private var selectionFeedback = 0
+  @State private var hasUsedFreeLook = false
   @AccessibilityFocusState private var focusedDevice: FounderDeskDevice?
   @AccessibilityFocusState private var deskIsFocused: Bool
 
@@ -207,6 +208,7 @@ struct FounderDeskWorkspace: View {
         onLookAround: {},
         onFocusComputer: { select(.computer) },
         onLook: { horizontal, vertical in
+          hasUsedFreeLook = true
           moveCamera(horizontal: horizontal, vertical: vertical)
         },
         onCenter: centerCamera
@@ -214,15 +216,18 @@ struct FounderDeskWorkspace: View {
       .frame(width: size.width, height: size.height)
       .accessibilityFocused($deskIsFocused)
 
-      Text("Drag to look around · select equipment to focus")
-        .font(.caption.weight(.semibold))
-        .foregroundStyle(.white.opacity(0.72))
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
-        .background(.black.opacity(0.52), in: .capsule)
-        .position(x: size.width / 2, y: size.height - 82)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
+      if FounderDeskCameraChromePolicy.showsInstruction(hasUsedFreeLook: hasUsedFreeLook) {
+        Text("Drag to look · tap equipment to focus")
+          .font(.caption2.weight(.semibold))
+          .foregroundStyle(.white.opacity(0.66))
+          .padding(.horizontal, 10)
+          .padding(.vertical, 5)
+          .background(.black.opacity(0.42), in: .capsule)
+          .position(x: size.width / 2, y: size.height - 72)
+          .allowsHitTesting(false)
+          .accessibilityHidden(true)
+          .transition(.opacity)
+      }
     }
   }
 
@@ -244,19 +249,14 @@ struct FounderDeskWorkspace: View {
   }
 
   private var deskHeading: some View {
-    VStack(spacing: 3) {
-      Text("\(progression.currentFacility.name.uppercased()) · FOUNDER DESK")
-        .font(.caption2.weight(.black))
-        .tracking(1.6)
-        .foregroundStyle(SoloTheme.cyan)
-      Text("Company workspace")
-        .font(.headline.weight(.bold))
-        .foregroundStyle(.white)
-        .accessibilityIdentifier("founder-desk-overview")
-    }
-    .padding(.horizontal, 16)
-    .padding(.vertical, 10)
-    .background(.black.opacity(0.58), in: .capsule)
+    Text("\(progression.currentFacility.name.uppercased()) · FOUNDER DESK")
+      .font(.caption2.weight(.black))
+      .tracking(1.5)
+      .foregroundStyle(.white.opacity(0.70))
+      .padding(.horizontal, 11)
+      .frame(minHeight: 28)
+      .background(.black.opacity(0.38), in: .capsule)
+      .accessibilityIdentifier("founder-desk-overview")
     .accessibilityElement(children: .combine)
   }
 
@@ -276,7 +276,7 @@ struct FounderDeskWorkspace: View {
       FounderDeskDeviceObject(device: device, preview: preview, style: style, increasedContrast: contrast == .increased)
         .contentShape(.rect)
     }
-    .buttonStyle(SoloPressStyle())
+    .buttonStyle(FounderEquipmentPressStyle(reduceMotion: reduceMotion))
     .accessibilityLabel(preview.accessibilityLabel)
     .accessibilityHint("Focuses this physical device. Close returns to the same Founder Desk.")
     .accessibilityIdentifier("founder-desk-device-\(device.rawValue)")
@@ -377,7 +377,12 @@ struct FounderDeskWorkspace: View {
         let vertical = start.verticalLook + Double(-value.translation.height / max(size.height * 0.72, 1))
         navigation.setLook(horizontal: horizontal, vertical: vertical, reduceMotion: reduceMotion)
       }
-      .onEnded { _ in dragStartCamera = nil }
+      .onEnded { value in
+        if abs(value.translation.width) > 8 || abs(value.translation.height) > 8 {
+          hasUsedFreeLook = true
+        }
+        dragStartCamera = nil
+      }
   }
 
   private func moveCamera(horizontal: Double, vertical: Double) {
@@ -429,66 +434,48 @@ private struct FounderDeskDeviceObject: View {
   var style: DeskDeviceStyle
   var increasedContrast: Bool
 
-  var body: some View {
-    deviceFace
-      .frame(maxWidth: .infinity, minHeight: minimumHeight, alignment: .topLeading)
-      .padding(contentPadding)
-      .background(deviceBody)
-      .overlay { deviceHardware }
-      .shadow(color: .black.opacity(0.72), radius: 9, y: 7)
-      .overlay(alignment: .bottom) {
-        if style == .computer {
-          monitorStand
-        }
-      }
-  }
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   @ViewBuilder
-  private var deviceFace: some View {
-    if style == .server {
-      VStack(alignment: .leading, spacing: 7) {
-        Label("SERVER", systemImage: device.symbol)
-          .font(.caption2.weight(.black))
-          .foregroundStyle(deviceTone)
-        VStack(spacing: 7) {
-          ForEach(0..<4, id: \.self) { index in
-            HStack(spacing: 4) {
-              Circle()
-                .fill(index == 0 && preview.signal != nil ? SoloTheme.mint : .white.opacity(0.28))
-                .frame(width: 5, height: 5)
-              Capsule().fill(.white.opacity(0.16)).frame(maxWidth: .infinity).frame(height: 3)
-            }
-          }
-        }
-        Text(preview.primary)
-          .font(.system(size: 8, weight: .bold))
-          .foregroundStyle(.white.opacity(0.74))
-          .lineLimit(1)
-      }
-    } else {
-      VStack(alignment: .leading, spacing: 7) {
-        HStack {
-          Image(systemName: device.symbol)
-          Text(preview.title)
-            .lineLimit(1)
-          Spacer(minLength: 2)
-          if preview.signal != nil {
-            signalLanguage
-          }
-        }
-        .font(.caption2.weight(.black))
-        .foregroundStyle(deviceTone)
+  var body: some View {
+    switch style {
+    case .computer:
+      FounderMonitorHardware(preview: preview, increasedContrast: increasedContrast)
+    case .phone:
+      FounderPhoneHardware(preview: preview, increasedContrast: increasedContrast)
+    case .tablet:
+      FounderTabletHardware(preview: preview, increasedContrast: increasedContrast)
+    case .server:
+      FounderServerHardware(
+        preview: preview,
+        increasedContrast: increasedContrast,
+        reduceMotion: reduceMotion
+      )
+    case .compact, .wide:
+      accessibleCard
+    }
+  }
 
-        Text(preview.primary)
-          .font(primaryFont)
-          .foregroundStyle(.white)
-          .lineLimit(style == .phone ? 2 : style == .tablet ? 1 : 2)
-          .minimumScaleFactor(0.72)
-        Text(preview.secondary)
-          .font(.caption2.weight(.semibold))
-          .foregroundStyle(.white.opacity(0.68))
-          .lineLimit(2)
+  private var accessibleCard: some View {
+    HStack(spacing: 12) {
+      Image(systemName: device.symbol)
+        .font(.title2.weight(.semibold))
+        .foregroundStyle(deviceTone)
+        .frame(width: 44, height: 44)
+        .background(deviceTone.opacity(0.10), in: .rect(cornerRadius: 10))
+      VStack(alignment: .leading, spacing: 4) {
+        Text(preview.title).font(.headline.weight(.bold))
+        Text(preview.primary).font(.subheadline.weight(.semibold)).lineLimit(2)
+        Text(preview.secondary).font(.caption).foregroundStyle(.secondary).lineLimit(2)
       }
+      Spacer(minLength: 0)
+    }
+    .padding(14)
+    .frame(maxWidth: .infinity, minHeight: style == .compact ? 92 : 104, alignment: .leading)
+    .background(FounderDeskHardwareMaterial.chassis, in: .rect(cornerRadius: 14))
+    .overlay {
+      RoundedRectangle(cornerRadius: 14)
+        .stroke(increasedContrast ? .white : .white.opacity(0.16), lineWidth: increasedContrast ? 2 : 1)
     }
   }
 
@@ -500,81 +487,328 @@ private struct FounderDeskDeviceObject: View {
     case .server: SoloTheme.mint
     }
   }
+}
 
-  private var primaryFont: Font { style == .computer || style == .wide ? .subheadline.weight(.bold) : .caption.weight(.bold) }
-  private var minimumHeight: CGFloat {
-    switch style {
-    case .computer: 78
-    case .phone: 86
-    case .tablet: 58
-    case .server: 126
-    case .compact: 110
-    case .wide: 96
+private struct FounderMonitorHardware: View {
+  var preview: FounderDeskPreview
+  var increasedContrast: Bool
+
+  var body: some View {
+    VStack(spacing: 0) {
+      ZStack {
+        RoundedRectangle(cornerRadius: 10)
+          .fill(.black.opacity(0.80))
+          .offset(x: 5, y: 5)
+        RoundedRectangle(cornerRadius: 10)
+          .fill(FounderDeskHardwareMaterial.chassis)
+          .overlay {
+            RoundedRectangle(cornerRadius: 10)
+              .stroke(increasedContrast ? .white : .white.opacity(0.20), lineWidth: increasedContrast ? 2 : 1)
+          }
+        FounderHardwareScreen(tone: SoloTheme.cyan, preview: preview, layout: .monitor)
+          .padding(7)
+        FounderDeskGlassReflection(cornerRadius: 6)
+          .padding(7)
+      }
+      .shadow(color: SoloTheme.cyan.opacity(preview.signal == nil ? 0.10 : 0.20), radius: 9, y: 4)
+      Rectangle()
+        .fill(FounderDeskHardwareMaterial.metalEdge)
+        .frame(width: 18, height: 12)
+      ZStack {
+        Capsule().fill(.black.opacity(0.48)).frame(width: 78, height: 8).offset(y: 4)
+        Capsule().fill(FounderDeskHardwareMaterial.metalEdge).frame(width: 66, height: 6)
+      }
+    }
+    .overlay(alignment: .bottomTrailing) {
+      Circle().fill(.green.opacity(0.62)).frame(width: 4, height: 4).padding(.trailing, 11).padding(.bottom, 18)
+    }
+    .accessibilityHidden(true)
+  }
+}
+
+private struct FounderPhoneHardware: View {
+  var preview: FounderDeskPreview
+  var increasedContrast: Bool
+
+  var body: some View {
+    ZStack {
+      Ellipse().fill(.black.opacity(0.48)).frame(width: 64, height: 14).offset(y: 47)
+      RoundedRectangle(cornerRadius: 18)
+        .fill(.black.opacity(0.72))
+        .offset(x: 4, y: 5)
+      RoundedRectangle(cornerRadius: 18)
+        .fill(FounderDeskHardwareMaterial.chassis)
+        .overlay {
+          RoundedRectangle(cornerRadius: 18)
+            .stroke(increasedContrast ? .white : FounderDeskHardwareMaterial.metalHighlight, lineWidth: increasedContrast ? 2 : 1)
+        }
+      FounderHardwareScreen(tone: .white, preview: preview, layout: .phone)
+        .clipShape(.rect(cornerRadius: 14))
+        .padding(5)
+      FounderDeskGlassReflection(cornerRadius: 14)
+        .padding(5)
+      Capsule().fill(.black.opacity(0.92)).frame(width: 24, height: 6).offset(y: -43)
+    }
+    .overlay(alignment: .trailing) {
+      Capsule().fill(.white.opacity(0.28)).frame(width: 2, height: 18).offset(x: 2, y: -13)
+    }
+    .shadow(color: .white.opacity(preview.signal == nil ? 0.04 : 0.12), radius: 7, y: 4)
+    .accessibilityHidden(true)
+  }
+}
+
+private struct FounderTabletHardware: View {
+  var preview: FounderDeskPreview
+  var increasedContrast: Bool
+
+  var body: some View {
+    ZStack(alignment: .bottom) {
+      Ellipse().fill(.black.opacity(0.50)).frame(width: 104, height: 15).offset(y: 8)
+      VStack(spacing: -1) {
+        ZStack {
+          RoundedRectangle(cornerRadius: 10)
+            .fill(.black.opacity(0.78))
+            .offset(x: 5, y: 5)
+          RoundedRectangle(cornerRadius: 10)
+            .fill(FounderDeskHardwareMaterial.chassis)
+            .overlay {
+              RoundedRectangle(cornerRadius: 10)
+                .stroke(increasedContrast ? .white : FounderDeskHardwareMaterial.metalHighlight, lineWidth: increasedContrast ? 2 : 1)
+            }
+          FounderHardwareScreen(tone: SoloTheme.amber, preview: preview, layout: .tablet)
+            .clipShape(.rect(cornerRadius: 7))
+            .padding(5)
+          FounderDeskGlassReflection(cornerRadius: 7)
+            .padding(5)
+          Circle().fill(.black.opacity(0.85)).frame(width: 4, height: 4).offset(x: 45)
+        }
+        ZStack {
+          Path { path in
+            path.move(to: CGPoint(x: 13, y: 0))
+            path.addLine(to: CGPoint(x: 29, y: 12))
+            path.addLine(to: CGPoint(x: 0, y: 12))
+            path.closeSubpath()
+          }
+          .fill(FounderDeskHardwareMaterial.metalEdge)
+          Capsule().fill(.black.opacity(0.75)).frame(width: 44, height: 5).offset(y: 10)
+        }
+        .frame(width: 30, height: 12)
+      }
+    }
+    .shadow(color: SoloTheme.amber.opacity(preview.signal == nil ? 0.07 : 0.15), radius: 7, y: 4)
+    .accessibilityHidden(true)
+  }
+}
+
+private struct FounderServerHardware: View {
+  var preview: FounderDeskPreview
+  var increasedContrast: Bool
+  var reduceMotion: Bool
+
+  var body: some View {
+    ZStack(alignment: .bottom) {
+      Ellipse().fill(.black.opacity(0.62)).frame(width: 78, height: 17).offset(y: 8)
+      RoundedRectangle(cornerRadius: 7)
+        .fill(.black.opacity(0.72))
+        .offset(x: 7, y: 5)
+      RoundedRectangle(cornerRadius: 7)
+        .fill(FounderDeskHardwareMaterial.serverChassis)
+        .overlay {
+          RoundedRectangle(cornerRadius: 7)
+            .stroke(increasedContrast ? .white : .white.opacity(0.18), lineWidth: increasedContrast ? 2 : 1)
+        }
+      VStack(spacing: 6) {
+        HStack(spacing: 5) {
+          Circle().fill(SoloTheme.mint.opacity(0.82)).frame(width: 6, height: 6)
+          FounderHardwareScreen(tone: SoloTheme.mint, preview: preview, layout: .server)
+            .frame(height: 25)
+        }
+        .padding(.horizontal, 6)
+        VStack(spacing: 5) {
+          ForEach(0..<5, id: \.self) { index in
+            HStack(spacing: 5) {
+              Circle()
+                .fill(serverLight(index: index))
+                .frame(width: 4, height: 4)
+                .phaseAnimator(
+                  reduceMotion || index != 2 || preview.signal == nil ? [1.0] : [0.52, 1.0, 0.70]
+                ) { content, phase in
+                  content.opacity(phase)
+                } animation: { _ in
+                  .easeInOut(duration: 0.65)
+                }
+              RoundedRectangle(cornerRadius: 2)
+                .fill(.black.opacity(0.72))
+                .overlay(alignment: .trailing) {
+                  HStack(spacing: 2) {
+                    ForEach(0..<3, id: \.self) { _ in
+                      Capsule().fill(.white.opacity(0.14)).frame(width: 7, height: 2)
+                    }
+                  }
+                  .padding(.trailing, 5)
+                }
+                .frame(height: 14)
+            }
+          }
+        }
+        .padding(.horizontal, 7)
+        HStack(spacing: 3) {
+          ForEach(0..<9, id: \.self) { _ in
+            Capsule().fill(.white.opacity(0.12)).frame(width: 3, height: 9)
+          }
+        }
+      }
+      .padding(.vertical, 8)
+    }
+    .overlay(alignment: .bottomLeading) {
+      Path { path in
+        path.move(to: CGPoint(x: 8, y: 0))
+        path.addCurve(
+          to: CGPoint(x: -17, y: 17),
+          control1: CGPoint(x: -2, y: 2),
+          control2: CGPoint(x: -7, y: 13)
+        )
+      }
+      .stroke(.black.opacity(0.78), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+    }
+    .shadow(color: SoloTheme.mint.opacity(preview.signal == nil ? 0.05 : 0.14), radius: 8, y: 5)
+    .accessibilityHidden(true)
+  }
+
+  private func serverLight(index: Int) -> Color {
+    if index == 0 { return SoloTheme.mint.opacity(0.82) }
+    if index == 2 && preview.signal != nil { return SoloTheme.amber.opacity(reduceMotion ? 0.62 : 0.90) }
+    return .white.opacity(0.20)
+  }
+}
+
+private enum FounderHardwareScreenLayout {
+  case monitor
+  case phone
+  case tablet
+  case server
+}
+
+private struct FounderHardwareScreen: View {
+  var tone: Color
+  var preview: FounderDeskPreview
+  var layout: FounderHardwareScreenLayout
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: screenSpacing) {
+      if layout != .server {
+        HStack(spacing: 4) {
+          Circle().fill(tone.opacity(preview.signal == nil ? 0.50 : 0.90)).frame(width: 4, height: 4)
+          Text(screenTitle)
+            .font(.system(size: titleSize, weight: .black, design: .rounded))
+            .tracking(0.5)
+            .lineLimit(1)
+        }
+        .foregroundStyle(tone.opacity(0.92))
+      }
+      Text(preview.primary)
+        .font(.system(size: primarySize, weight: .bold, design: .rounded))
+        .foregroundStyle(.white.opacity(0.92))
+        .lineLimit(layout == .phone ? 2 : 1)
+        .minimumScaleFactor(0.60)
+      if layout != .server {
+        Text(preview.secondary)
+          .font(.system(size: secondarySize, weight: .semibold, design: .rounded))
+          .foregroundStyle(.white.opacity(0.50))
+          .lineLimit(layout == .monitor ? 1 : 2)
+          .minimumScaleFactor(0.60)
+      }
+    }
+    .padding(screenPadding)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .background(
+      LinearGradient(
+        colors: [tone.opacity(0.11), Color(red: 0.015, green: 0.025, blue: 0.035), .black],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+      )
+    )
+    .overlay(alignment: .bottom) {
+      LinearGradient(colors: [.clear, tone.opacity(0.07)], startPoint: .top, endPoint: .bottom)
+        .frame(height: 12)
     }
   }
-  private var contentPadding: CGFloat { style == .phone ? 11 : 13 }
 
-  private var deviceBody: some ShapeStyle {
+  private var screenTitle: String {
+    switch layout {
+    case .monitor: "COMMAND"
+    case .phone: "TECH.COM"
+    case .tablet: "VENTURE"
+    case .server: "SYS"
+    }
+  }
+
+  private var titleSize: CGFloat { layout == .monitor ? 8 : 6 }
+  private var primarySize: CGFloat {
+    switch layout {
+    case .monitor: 11
+    case .phone: 8
+    case .tablet: 8
+    case .server: 5
+    }
+  }
+  private var secondarySize: CGFloat { layout == .monitor ? 7 : 6 }
+  private var screenSpacing: CGFloat { layout == .monitor ? 4 : 2 }
+  private var screenPadding: CGFloat { layout == .monitor ? 9 : layout == .server ? 3 : 5 }
+}
+
+private struct FounderDeskGlassReflection: View {
+  var cornerRadius: CGFloat
+
+  var body: some View {
+    RoundedRectangle(cornerRadius: cornerRadius)
+      .fill(
+        LinearGradient(
+          colors: [.white.opacity(0.14), .clear, .white.opacity(0.025)],
+          startPoint: .topLeading,
+          endPoint: .bottomTrailing
+        )
+      )
+      .mask {
+        LinearGradient(colors: [.white, .clear, .white.opacity(0.25)], startPoint: .topLeading, endPoint: .bottomTrailing)
+      }
+      .allowsHitTesting(false)
+  }
+}
+
+private enum FounderDeskHardwareMaterial {
+  static var chassis: LinearGradient {
     LinearGradient(
-      colors: [Color(red: 0.08, green: 0.10, blue: 0.12), Color.black.opacity(0.94)],
+      colors: [Color(red: 0.20, green: 0.21, blue: 0.23), Color(red: 0.055, green: 0.06, blue: 0.07), .black],
       startPoint: .topLeading,
       endPoint: .bottomTrailing
     )
   }
 
-  private var deviceHardware: some View {
-    RoundedRectangle(cornerRadius: cornerRadius)
-      .stroke(increasedContrast ? .white : deviceTone.opacity(0.72), lineWidth: increasedContrast ? 3 : 1.5)
-      .overlay(alignment: style == .server ? .leading : .top) {
-        hardwareDetail
-      }
+  static var serverChassis: LinearGradient {
+    LinearGradient(
+      colors: [Color(red: 0.13, green: 0.15, blue: 0.16), Color(red: 0.035, green: 0.04, blue: 0.045), .black],
+      startPoint: .topLeading,
+      endPoint: .bottomTrailing
+    )
   }
 
-  @ViewBuilder
-  private var hardwareDetail: some View {
-    if style == .phone {
-      Capsule().fill(.black).frame(width: 34, height: 8).padding(.top, 5)
-    } else if style == .server {
-      VStack(spacing: 8) {
-        ForEach(0..<4, id: \.self) { index in
-          HStack(spacing: 4) {
-            Circle().fill(index == 0 && preview.signal != nil ? SoloTheme.mint : .white.opacity(0.25)).frame(width: 5, height: 5)
-            Capsule().fill(.white.opacity(0.14)).frame(width: 28, height: 3)
-          }
-        }
-      }
-      .padding(8)
-    }
+  static var metalEdge: LinearGradient {
+    LinearGradient(colors: [.white.opacity(0.30), Color(red: 0.10, green: 0.11, blue: 0.12), .black], startPoint: .leading, endPoint: .trailing)
   }
 
-  private var signalLanguage: some View {
-    Group {
-      switch device {
-      case .computer: Image(systemName: "tray.full.fill")
-      case .phone: Image(systemName: "wave.3.right")
-      case .tablet: Image(systemName: "scope")
-      case .server: Image(systemName: "lightspectrum.horizontal")
-      }
-    }
-    .accessibilityHidden(true)
-  }
+  static var metalHighlight: Color { .white.opacity(0.24) }
+}
 
-  private var monitorStand: some View {
-    VStack(spacing: 0) {
-      Rectangle().fill(.black.opacity(0.86)).frame(width: 28, height: 13)
-      Capsule().fill(.black.opacity(0.92)).frame(width: 72, height: 7)
-    }
-    .offset(y: 18)
-    .accessibilityHidden(true)
-  }
+private struct FounderEquipmentPressStyle: ButtonStyle {
+  var reduceMotion: Bool
 
-  private var cornerRadius: CGFloat {
-    switch style {
-    case .phone: 22
-    case .tablet: 14
-    case .server: 8
-    default: 12
-    }
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
+      .scaleEffect(configuration.isPressed && !reduceMotion ? 0.965 : 1)
+      .brightness(configuration.isPressed ? 0.10 : 0)
+      .shadow(color: .white.opacity(configuration.isPressed ? 0.08 : 0), radius: 5)
+      .animation(reduceMotion ? nil : .snappy(duration: 0.16), value: configuration.isPressed)
   }
 }
 
@@ -594,7 +828,7 @@ private struct FounderFocusedDeviceFrame<Content: View>: View {
           Button { onClose() } label: {
             Label("LOOK OUT", systemImage: "binoculars.fill")
               .font(.caption2.weight(.black))
-              .frame(minWidth: 104, minHeight: 44)
+              .frame(minWidth: 112, minHeight: 60)
               .background(.white.opacity(0.09), in: .capsule)
               .contentShape(.capsule)
           }
@@ -605,7 +839,7 @@ private struct FounderFocusedDeviceFrame<Content: View>: View {
         } else {
           Button { onClose() } label: {
             Image(systemName: "xmark")
-              .frame(width: 44, height: 44)
+              .frame(width: 60, height: 60)
               .background(.white.opacity(0.09), in: .circle)
               .contentShape(.circle)
           }
@@ -625,7 +859,7 @@ private struct FounderFocusedDeviceFrame<Content: View>: View {
           .foregroundStyle(SoloTheme.cyan)
       }
       .padding(.horizontal, 12)
-      .frame(height: 48)
+      .frame(height: 64)
       .background(.black.opacity(0.94))
       .accessibilityHidden(!isFocused)
       .zIndex(2)
