@@ -932,11 +932,55 @@ struct FounderEnvironmentRendererView: View {
 
   private var garageEntrance: some View {
     ZStack {
-      RoundedRectangle(cornerRadius: 6).fill(.black.opacity(0.62)).frame(width: 128, height: 230)
-      RoundedRectangle(cornerRadius: 6).stroke(.orange.opacity(0.55), lineWidth: 5).frame(width: 128, height: 230)
-      VStack(spacing: 28) { ForEach(0..<5, id: \.self) { _ in Rectangle().fill(.white.opacity(0.13)).frame(width: 112, height: 3) } }
-      Image(systemName: "arrow.up.square.fill").foregroundStyle(.orange.opacity(0.8)).offset(y: 80)
+      RoundedRectangle(cornerRadius: 5)
+        .fill(.black.opacity(0.68))
+        .frame(width: 174, height: 238)
+        .shadow(color: .black.opacity(0.56), radius: 8, x: 5, y: 5)
+      RoundedRectangle(cornerRadius: 4)
+        .fill(LinearGradient(
+          colors: [Color(red: 0.27, green: 0.28, blue: 0.27), Color(red: 0.13, green: 0.14, blue: 0.14)],
+          startPoint: .top,
+          endPoint: .bottom
+        ))
+        .frame(width: 154, height: 222)
+      VStack(spacing: 0) {
+        ForEach(0..<5, id: \.self) { row in
+          HStack(spacing: 5) {
+            ForEach(0..<2, id: \.self) { _ in
+              RoundedRectangle(cornerRadius: 2)
+                .fill(LinearGradient(
+                  colors: [.white.opacity(0.10), .black.opacity(0.16)],
+                  startPoint: .top,
+                  endPoint: .bottom
+                ))
+                .overlay {
+                  RoundedRectangle(cornerRadius: 2)
+                    .stroke(.black.opacity(0.34), lineWidth: 1)
+                }
+            }
+          }
+          .padding(.horizontal, 7)
+          .padding(.vertical, 5)
+          .frame(height: 43)
+          if row < 4 {
+            Rectangle().fill(.black.opacity(0.72)).frame(height: 2)
+            Rectangle().fill(.white.opacity(0.08)).frame(height: 1)
+          }
+        }
+      }
+      .frame(width: 154, height: 222)
+      HStack(spacing: 150) {
+        Capsule().fill(FounderGarageMaterial.satinMetal).frame(width: 6, height: 234)
+        Capsule().fill(FounderGarageMaterial.satinMetal).frame(width: 6, height: 234)
+      }
+      HStack(spacing: 136) {
+        VStack(spacing: 34) { ForEach(0..<6, id: \.self) { _ in Circle().fill(.white.opacity(0.28)).frame(width: 5, height: 5) } }
+        VStack(spacing: 34) { ForEach(0..<6, id: \.self) { _ in Circle().fill(.white.opacity(0.28)).frame(width: 5, height: 5) } }
+      }
+      Capsule().fill(.black.opacity(0.96)).frame(width: 158, height: 7).offset(y: 112)
+      Capsule().fill(.white.opacity(0.30)).frame(width: 24, height: 5).offset(y: 61)
     }
+    .accessibilityHidden(true)
   }
 
   private var storageShelves: some View {
@@ -997,7 +1041,8 @@ struct FounderEnvironmentRendererView: View {
         if [.inboundTask, .returnedForReview].contains(station.physical.artifactState) {
           let destination = artifactDestination(for: station.agentID, layout: layout)
           let returning = station.physical.artifactState == .returnedForReview
-          let position = returning ? founder : destination
+          let origin = returning ? destination : founder
+          let destinationPosition = returning ? founder : destination
           ZStack {
             RoundedRectangle(cornerRadius: 4)
               .fill(FounderGarageMaterial.powderCoat.opacity(0.96))
@@ -1017,11 +1062,20 @@ struct FounderEnvironmentRendererView: View {
               eventToken: station.eventToken
             )
           }
-          .position(position)
-          .animation(
-            station.physical.reactionMotionEnabled ? .smooth(duration: 0.42) : nil,
-            value: station.physical.artifactState
-          )
+          .phaseAnimator(
+            station.physical.reactionMotionEnabled ? [0.0, 1.0] : [1.0],
+            trigger: station.eventToken
+          ) { content, progress in
+            content
+              .position(
+                x: origin.x + (destinationPosition.x - origin.x) * progress,
+                y: origin.y + (destinationPosition.y - origin.y) * progress
+              )
+              .opacity(0.58 + progress * 0.42)
+              .scaleEffect(0.92 + progress * 0.08)
+          } animation: { _ in
+            .smooth(duration: 0.46)
+          }
         }
       }
     }
@@ -1268,11 +1322,41 @@ struct FounderEnvironmentRendererView: View {
         .frame(width: 230, height: 4)
         .offset(x: 5, y: -44)
         RoundedRectangle(cornerRadius: 8).fill(.black.opacity(0.82)).frame(width: 184, height: 43).offset(x: -22, y: 11)
-          .overlay { VStack(spacing: 5) { ForEach(0..<3, id: \.self) { _ in HStack(spacing: 7) { ForEach(0..<9, id: \.self) { _ in RoundedRectangle(cornerRadius: 1).fill(.white.opacity(0.25)).frame(width: 9, height: 3) } } } }.offset(x: -22, y: 11) }
+          .overlay {
+            VStack(spacing: 5) {
+              ForEach(0..<3, id: \.self) { row in
+                HStack(spacing: 7) {
+                  ForEach(0..<9, id: \.self) { column in
+                    RoundedRectangle(cornerRadius: 1)
+                      .fill(Color.cyan.opacity(0.12 + motion.lighting.founderMonitorGlow * 0.24 + ((row + column).isMultiple(of: 7) ? 0.08 : 0)))
+                      .frame(width: 9, height: 3)
+                  }
+                }
+              }
+            }
+            .offset(x: -22, y: 11)
+          }
+          .shadow(color: .cyan.opacity(motion.lighting.founderMonitorGlow * 0.10), radius: 4)
         RoundedRectangle(cornerRadius: 14).fill(.black.opacity(0.72)).frame(width: 52, height: 38).offset(x: 108, y: 13)
-        RoundedRectangle(cornerRadius: 5).stroke(.orange.opacity(0.70), lineWidth: 2).frame(width: 66, height: 44).offset(x: 180, y: -16)
-          .overlay { Text("REVIEW").font(.system(size: 8, weight: .black)).foregroundStyle(.orange).offset(x: 180, y: -16) }
-        Image(systemName: "mug.fill").foregroundStyle(.orange.opacity(0.78)).font(.title2).offset(x: -196, y: -6)
+        RoundedRectangle(cornerRadius: 5)
+          .stroke(.orange.opacity(0.30 + motion.lighting.founderNotificationIntensity * 0.58), lineWidth: 2)
+          .frame(width: 66, height: 44)
+          .offset(x: 180, y: -16)
+          .overlay {
+            Text("REVIEW")
+              .font(.system(size: 8, weight: .black))
+              .foregroundStyle(.orange.opacity(0.42 + motion.lighting.founderNotificationIntensity * 0.58))
+              .offset(x: 180, y: -16)
+          }
+          .shadow(color: .orange.opacity(motion.lighting.founderNotificationIntensity * 0.26), radius: 6)
+          .phaseAnimator(
+            motion.lighting.founderNotificationIntensity > 0 && motion.ambient.continuousMotionEnabled ? [0.82, 1.0, 0.88] : [1.0],
+            trigger: motion.event.token
+          ) { content, opacity in
+            content.opacity(opacity)
+          } animation: { _ in .easeInOut(duration: 0.72) }
+        FounderCoffeeCupView(steamActive: motion.environment.atmosphericMotionEnabled)
+        .offset(x: -196, y: -6)
         RoundedRectangle(cornerRadius: 2).fill(Color(red: 0.78, green: 0.70, blue: 0.48)).frame(width: 44, height: 31)
           .overlay { VStack(spacing: 3) { ForEach(0..<3, id: \.self) { _ in Rectangle().fill(.black.opacity(0.28)).frame(width: 30, height: 1) } } }
           .phaseAnimator(
@@ -1725,7 +1809,8 @@ struct FounderEnvironmentRendererView: View {
   }
 
   private var networkHardware: some View {
-    let active = motion.ambient.continuousMotionEnabled
+    let active = motion.infrastructure.continuousMotionEnabled
+    let activity = motion.infrastructure.routerActivity
     return ZStack {
       RoundedRectangle(cornerRadius: 5).fill(.black.opacity(0.92)).frame(width: 74, height: 32)
       HStack(spacing: 5) {
@@ -1734,9 +1819,9 @@ struct FounderEnvironmentRendererView: View {
             .fill(index.isMultiple(of: 3) ? Color.green : Color.cyan)
             .frame(width: 4, height: 4)
             .phaseAnimator(active ? [0.25, 0.95, 0.42] : [0.35]) { content, opacity in
-              content.opacity(index.isMultiple(of: 2) ? opacity : 0.62)
+              content.opacity(index.isMultiple(of: 2) ? opacity * (0.55 + activity * 0.45) : 0.40 + activity * 0.38)
             } animation: { _ in
-              .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .router).duration + Double(index % 3) * 0.21)
+              .easeInOut(duration: max(0.72, FounderGarageAmbientRhythm.profile(for: .router).duration - activity * 0.44 + Double(index % 3) * 0.21))
             }
         }
       }
@@ -1838,6 +1923,40 @@ struct FounderEnvironmentRendererView: View {
       Image(systemName: "mug.fill").foregroundStyle(.orange.opacity(0.75)).offset(x: -size.width * 0.34, y: -size.height * 0.10)
     }
     .allowsHitTesting(false)
+  }
+}
+
+private struct FounderCoffeeCupView: View {
+  var steamActive: Bool
+
+  var body: some View {
+    ZStack {
+      Image(systemName: "mug.fill")
+        .foregroundStyle(.orange.opacity(0.78))
+        .font(.title2)
+      steamWisp(index: 0)
+      steamWisp(index: 1)
+    }
+    .accessibilityHidden(true)
+  }
+
+  private func steamWisp(index: Int) -> some View {
+    let restingX = CGFloat(index * 7 - 3)
+    let driftX: CGFloat = index == 0 ? -3 : 3
+    let opacity = 0.10 - Double(index) * 0.025
+    let duration = 5.8 + Double(index) * 1.2
+    return Capsule()
+      .fill(.white.opacity(opacity))
+      .frame(width: 3, height: 17)
+      .blur(radius: 1.2)
+      .offset(x: restingX, y: -17)
+      .phaseAnimator(steamActive ? [0.0, 1.0, 0.0] : [0.0]) { content, phase in
+        content
+          .offset(x: phase * driftX, y: -phase * 8)
+          .opacity(0.32 + phase * 0.42)
+      } animation: { _ in
+        .easeInOut(duration: duration)
+      }
   }
 }
 

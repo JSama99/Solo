@@ -10,6 +10,7 @@
 		FD3270000000000000000001 /* FounderDeskWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000011 /* FounderDeskWorkspace.swift */; };
 		FD3270000000000000000002 /* FounderDeskWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */; };
 		FD3270000000000000000003 /* FounderDeskWorkspaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000013 /* FounderDeskWorkspaceTests.swift */; };
+		FD3275000000000000000001 /* FounderDevicePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3275000000000000000011 /* FounderDevicePresentation.swift */; };
 		326100000000000000000001 /* Build32_6_1ProductionContinuityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 326100000000000000000002 /* Build32_6_1ProductionContinuityUITests.swift */; };
 		B32800000000000000000001 /* CompanyCommandScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32900000000000000000001 /* CompanyCommandScene.swift */; };
 		B32A00000000000000000001 /* Build32_4SpatialCausalityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32B00000000000000000001 /* Build32_4SpatialCausalityTests.swift */; };
@@ -142,6 +143,7 @@
 		FD3270000000000000000011 /* FounderDeskWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspace.swift; sourceTree = "<group>"; };
 		FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspaceModel.swift; sourceTree = "<group>"; };
 		FD3270000000000000000013 /* FounderDeskWorkspaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspaceTests.swift; sourceTree = "<group>"; };
+		FD3275000000000000000011 /* FounderDevicePresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDevicePresentation.swift; sourceTree = "<group>"; };
 		326100000000000000000002 /* Build32_6_1ProductionContinuityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_6_1ProductionContinuityUITests.swift; sourceTree = "<group>"; };
 		326100000000000000000003 /* Solo Unicorn Run UI Tests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = "Solo Unicorn Run UI Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B32900000000000000000001 /* CompanyCommandScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyCommandScene.swift; sourceTree = "<group>"; };
@@ -337,6 +339,7 @@
 			children = (
 				FD3270000000000000000011 /* FounderDeskWorkspace.swift */,
 				FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */,
+				FD3275000000000000000011 /* FounderDevicePresentation.swift */,
 				B32900000000000000000001 /* CompanyCommandScene.swift */,
 				B32100000000000000000001 /* CompanyCommandViewport.swift */,
 				B32100000000000000000002 /* LivingCompanyPresentation.swift */,
@@ -586,6 +589,7 @@
 			files = (
 				FD3270000000000000000001 /* FounderDeskWorkspace.swift in Sources */,
 				FD3270000000000000000002 /* FounderDeskWorkspaceModel.swift in Sources */,
+				FD3275000000000000000001 /* FounderDevicePresentation.swift in Sources */,
 				B32800000000000000000001 /* CompanyCommandScene.swift in Sources */,
 				B32000000000000000000001 /* CompanyCommandViewport.swift in Sources */,
 				B32000000000000000000002 /* LivingCompanyPresentation.swift in Sources */,

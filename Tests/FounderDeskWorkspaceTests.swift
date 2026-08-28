@@ -2,6 +2,86 @@ import XCTest
 @testable import Solo_Unicorn_Run
 
 final class FounderDeskWorkspaceTests: XCTestCase {
+  func testPhysicalDeviceWakeStateMappingHasClearLuminanceHierarchy() {
+    for device in FounderDeskDevice.allCases {
+      let asleep = devicePresentation(device: device, state: .asleep)
+      let idle = devicePresentation(device: device, state: .idle)
+      let waking = devicePresentation(device: device, state: .waking)
+      let active = devicePresentation(device: device, state: .active)
+      XCTAssertLessThan(asleep.screenLuminance, idle.screenLuminance)
+      XCTAssertLessThan(idle.screenLuminance, waking.screenLuminance)
+      XCTAssertLessThanOrEqual(waking.screenLuminance, active.screenLuminance)
+      XCTAssertTrue(waking.physicalResponseEnabled)
+      XCTAssertTrue(active.screenLifeEnabled)
+    }
+  }
+
+  func testDevicePresentationUsesOnlySafePendingBoolean() {
+    let quiet = devicePresentation(device: .phone, state: .idle, safePending: false)
+    let pending = devicePresentation(device: .phone, state: .idle, safePending: true)
+    XCTAssertFalse(quiet.safePendingIndicatorVisible)
+    XCTAssertTrue(pending.safePendingIndicatorVisible)
+    XCTAssertGreaterThan(pending.powerIndicatorIntensity, quiet.powerIndicatorIntensity)
+    XCTAssertEqual(pending.screenLuminance, quiet.screenLuminance)
+  }
+
+  func testReduceMotionKeepsDeviceStateAndLightingButRemovesPhysicalTravel() {
+    let standard = devicePresentation(device: .tablet, state: .waking)
+    let reduced = devicePresentation(device: .tablet, state: .waking, reduceMotion: true)
+    XCTAssertEqual(reduced.state, standard.state)
+    XCTAssertEqual(reduced.screenLuminance, standard.screenLuminance)
+    XCTAssertEqual(reduced.powerIndicatorIntensity, standard.powerIndicatorIntensity)
+    XCTAssertFalse(reduced.physicalResponseEnabled)
+    XCTAssertFalse(reduced.screenLifeEnabled)
+    XCTAssertEqual(reduced.reflectionOffset, 0)
+  }
+
+  func testOffscreenDeviceThrottlesDecorativeWorkWithoutChangingState() {
+    let visible = devicePresentation(device: .phone, state: .idle, visible: true)
+    let offscreen = devicePresentation(device: .phone, state: .idle, visible: false)
+    XCTAssertEqual(offscreen.state, visible.state)
+    XCTAssertEqual(offscreen.screenLuminance, visible.screenLuminance)
+    XCTAssertFalse(offscreen.screenLifeEnabled)
+    XCTAssertFalse(offscreen.physicalResponseEnabled)
+  }
+
+  func testFounderComputerRemainsActiveAfterLookOutWhileOtherDevicesIdle() {
+    XCTAssertEqual(FounderDeviceTransitionPolicy.restingState(afterClosing: .computer), .active)
+    XCTAssertEqual(FounderDeviceTransitionPolicy.restingState(afterClosing: .phone), .idle)
+    XCTAssertEqual(FounderDeviceTransitionPolicy.restingState(afterClosing: .tablet), .idle)
+    XCTAssertEqual(FounderDeviceTransitionPolicy.restingState(afterClosing: .server), .idle)
+  }
+
+  func testWakeDelayIsResponsiveAndReduceMotionIsImmediate() {
+    for device in FounderDeskDevice.allCases {
+      let delay = FounderDeviceTransitionPolicy.wakeDelayMilliseconds(for: device, reduceMotion: false)
+      XCTAssertGreaterThan(delay, 0)
+      XCTAssertLessThanOrEqual(delay, 155)
+      XCTAssertEqual(FounderDeviceTransitionPolicy.wakeDelayMilliseconds(for: device, reduceMotion: true), 0)
+    }
+  }
+
+  func testInfrastructureReactionIsDeterministicAndEventDriven() {
+    let event = FounderGarageEventEmphasis(kind: .assignmentArrived, agentID: "aurora", token: UUID(uuidString: "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"), priority: 2, duration: 0.58)
+    let first = FounderInfrastructureReactionPresentation.derive(stations: [], event: event, reduceMotion: false, sceneActive: true)
+    let second = FounderInfrastructureReactionPresentation.derive(stations: [], event: event, reduceMotion: false, sceneActive: true)
+    let idle = FounderInfrastructureReactionPresentation.derive(stations: [], event: .none, reduceMotion: false, sceneActive: true)
+    XCTAssertEqual(first, second)
+    XCTAssertGreaterThan(first.networkActivity, idle.networkActivity)
+    XCTAssertGreaterThan(first.storageActivity, idle.storageActivity)
+    XCTAssertGreaterThan(first.routerActivity, idle.routerActivity)
+    XCTAssertEqual(first.eventToken, event.token)
+  }
+
+  func testInfrastructureReduceMotionKeepsStatusAndStopsRotation() {
+    let standard = FounderInfrastructureReactionPresentation.derive(stations: [], event: .none, reduceMotion: false, sceneActive: true)
+    let reduced = FounderInfrastructureReactionPresentation.derive(stations: [], event: .none, reduceMotion: true, sceneActive: true)
+    XCTAssertEqual(reduced.serverFanActivity, standard.serverFanActivity)
+    XCTAssertEqual(reduced.storageActivity, standard.storageActivity)
+    XCTAssertEqual(reduced.networkActivity, standard.networkActivity)
+    XCTAssertFalse(reduced.continuousMotionEnabled)
+  }
+
   func testDefaultSelectionIsDeskOverview() {
     let state = FounderDeskNavigationState()
     XCTAssertEqual(state.selection, .overview)
@@ -441,5 +521,22 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     for forbidden in ["actual quality", "correctness", "overclaim", "drift", "hidden risk", "evidence complete", "verified outcome"] {
       XCTAssertFalse(text.contains(forbidden), "Desk chrome leaked \(forbidden)", file: file, line: line)
     }
+  }
+
+  private func devicePresentation(
+    device: FounderDeskDevice,
+    state: FounderPhysicalDeviceState,
+    safePending: Bool = false,
+    reduceMotion: Bool = false,
+    visible: Bool = true
+  ) -> FounderDevicePresentation {
+    FounderDevicePresentation.derive(
+      device: device,
+      state: state,
+      safePending: safePending,
+      reduceMotion: reduceMotion,
+      sceneActive: true,
+      visible: visible
+    )
   }
 }
