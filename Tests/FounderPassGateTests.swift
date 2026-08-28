@@ -162,7 +162,7 @@ final class PurchaseConfigurationTests: XCTestCase {
     // which never matched the one configured App Store product, so the paywall was
     // permanently empty and nothing could be bought. Access is entitlement-gated
     // now; this test exists to stop a product allow list being reintroduced.
-    XCTAssertEqual(RevenueCatConfiguration.entitlementIdentifier, "solo_unicorn_run_pro")
+    XCTAssertEqual(RevenueCatConfiguration.entitlementIdentifier, "Solo: Unicorn Run Pro")
     XCTAssertEqual(
       RevenueCatConfiguration.expectedStoreProductIdentifier,
       "com.talonsight.solounicornrun.founderpass.lifetime"

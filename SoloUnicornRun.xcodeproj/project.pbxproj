@@ -719,17 +719,17 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 32704;
+				CURRENT_PROJECT_VERSION = 32705;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 32.7.4;
+				MARKETING_VERSION = 32.7.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun;
 				PRODUCT_MODULE_NAME = Solo_Unicorn_Run;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				REVENUECAT_API_KEY = "";
+				REVENUECAT_API_KEY = appl_RstJigxejEkEbYZmARYTVpcBoxY;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -743,17 +743,17 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 32704;
+				CURRENT_PROJECT_VERSION = 32705;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 32.7.4;
+				MARKETING_VERSION = 32.7.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun;
 				PRODUCT_MODULE_NAME = Solo_Unicorn_Run;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				REVENUECAT_API_KEY = "";
+				REVENUECAT_API_KEY = appl_RstJigxejEkEbYZmARYTVpcBoxY;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

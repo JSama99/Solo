@@ -27,7 +27,7 @@ Exactly one string is shared between the app and the dashboard:
 
 | Thing | Value |
 |---|---|
-| Entitlement identifier | `solo_unicorn_run_pro` |
+| Entitlement identifier | `Solo: Unicorn Run Pro` |
 
 That's it. Product identifiers, package types, offering names, and prices are
 all read at runtime and never hardcoded.
@@ -38,7 +38,7 @@ all read at runtime and never hardcoded.
    `com.talonsight.solounicornrun.founderpass`.
    Type: **non-consumable** (matches `appStoreConnect/inAppPurchases/…/inAppPurchase.json`,
    which declares `NON_CONSUMABLE` at $4.99).
-2. **Entitlement** — Entitlements → New → identifier `solo_unicorn_run_pro`.
+2. **Entitlement** — Entitlements → New → identifier `Solo: Unicorn Run Pro`.
    Attach the product above. *This identifier must be exact.*
 3. **Offering** — Offerings → New → identifier `default`.
 4. **Package** — inside that offering, add a package. Type **Lifetime**
@@ -95,7 +95,7 @@ is idempotent and safe to call on every entitlement change.
 
 - [ ] Paid Applications Agreement active; tax and banking complete
 - [ ] `com.talonsight.solounicornrun.founderpass` approved in App Store Connect
-- [ ] Product imported into RevenueCat and attached to `solo_unicorn_run_pro`
+- [ ] Product imported into RevenueCat and attached to `Solo: Unicorn Run Pro`
 - [ ] Offering created, package attached, **offering marked Current**
 - [ ] `REVENUECAT_API_KEY` set to the public `appl_` key for Release
 - [ ] App Store Server Notifications configured

@@ -8,7 +8,7 @@ PURCHASES INCLUDED WITH THIS SUBMISSION
 - Founder Pass — $99.99, lifetime non-consumable purchase
   Product ID: com.talonsight.solounicornrun.founderpass.lifetime
 
-Every option activates the same RevenueCat entitlement, solo_unicorn_run_pro, and unlocks Venture 2, Continuous mode, Hindsight Recall, and the full career outcome. Subscription access continues while the subscription is active. The lifetime purchase does not renew. Eligible new US customers receive a seven-day introductory trial with the annual subscription.
+Every option activates the same RevenueCat entitlement, Solo: Unicorn Run Pro, and unlocks Venture 2, Continuous mode, Hindsight Recall, and the full career outcome. Subscription access continues while the subscription is active. The lifetime purchase does not renew. Eligible new US customers receive a seven-day introductory trial with the annual subscription.
 
 FASTEST PATH TO THE PURCHASE SCREEN
 1. Launch the app.
