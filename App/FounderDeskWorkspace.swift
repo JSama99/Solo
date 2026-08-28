@@ -17,6 +17,10 @@ struct FounderDeskWorkspace: View {
   @State private var computerRequest: FounderComputerWorkspaceRequest?
   @State private var selectionFeedback = 0
   @State private var hasUsedFreeLook = false
+  @State private var deviceStates = Dictionary(
+    uniqueKeysWithValues: FounderDeskDevice.allCases.map { ($0, FounderPhysicalDeviceState.idle) }
+  )
+  @State private var deviceActivationID = UUID()
   @AccessibilityFocusState private var focusedDevice: FounderDeskDevice?
   @AccessibilityFocusState private var deskIsFocused: Bool
 
@@ -42,7 +46,7 @@ struct FounderDeskWorkspace: View {
         .brightness(navigation.selection == .overview ? 0 : -0.16)
 
         if navigation.selection == .overview {
-          deskOverview(size: geometry.size)
+          deskOverview(size: geometry.size, motion: motion)
             .transition(reduceMotion ? .opacity : .scale(scale: 0.96).combined(with: .opacity))
         }
 
@@ -127,19 +131,19 @@ struct FounderDeskWorkspace: View {
   }
 
   @ViewBuilder
-  private func deskOverview(size: CGSize) -> some View {
+  private func deskOverview(size: CGSize, motion: FounderGarageMotionPresentation) -> some View {
     if FounderDeskLayoutPolicy.layout(
       regularWidth: horizontalSizeClass == .regular,
       accessibilityText: dynamicTypeSize.isAccessibilitySize,
       height: size.height
     ) == .accessibleList {
-      accessibleOverview
+      accessibleOverview(motion: motion)
     } else {
-      spatialOverview(size: size)
+      spatialOverview(size: size, motion: motion)
     }
   }
 
-  private var accessibleOverview: some View {
+  private func accessibleOverview(motion: FounderGarageMotionPresentation) -> some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 12) {
         overviewAccessibilityMarker
@@ -155,10 +159,10 @@ struct FounderDeskWorkspace: View {
         .labelStyle(.iconOnly)
         .buttonStyle(.bordered)
         .controlSize(.large)
-        deviceButton(.computer, style: .wide)
-        deviceButton(.phone, style: .wide)
-        deviceButton(.tablet, style: .wide)
-        deviceButton(.server, style: .wide)
+        deviceButton(.computer, style: .wide, visible: true, motion: motion)
+        deviceButton(.phone, style: .wide, visible: true, motion: motion)
+        deviceButton(.tablet, style: .wide, visible: true, motion: motion)
+        deviceButton(.server, style: .wide, visible: true, motion: motion)
       }
       .padding(18)
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -167,7 +171,7 @@ struct FounderDeskWorkspace: View {
     .accessibilityFocused($deskIsFocused)
   }
 
-  private func spatialOverview(size: CGSize) -> some View {
+  private func spatialOverview(size: CGSize, motion: FounderGarageMotionPresentation) -> some View {
     let equipment = FounderDeskEquipmentLayout(
       viewportSize: size,
       regularWidth: horizontalSizeClass == .regular
@@ -193,7 +197,7 @@ struct FounderDeskWorkspace: View {
       ForEach(FounderDeskDevice.allCases) { device in
         let visible = equipment.isVisible(device, camera: navigation.camera)
         let deviceSize = equipment.deviceSize(for: device)
-        deviceButton(device, style: spatialStyle(for: device))
+        deviceButton(device, style: spatialStyle(for: device), visible: visible, motion: motion)
           .frame(width: deviceSize.width, height: deviceSize.height)
           .rotationEffect(rotation(for: device))
           .position(equipment.viewportPosition(for: device, camera: navigation.camera))
@@ -268,15 +272,35 @@ struct FounderDeskWorkspace: View {
       .accessibilityIdentifier("founder-desk-overview")
   }
 
-  private func deviceButton(_ device: FounderDeskDevice, style: DeskDeviceStyle) -> some View {
+  private func deviceButton(
+    _ device: FounderDeskDevice,
+    style: DeskDeviceStyle,
+    visible: Bool,
+    motion: FounderGarageMotionPresentation
+  ) -> some View {
     let preview = FounderDeskPreviewPolicy.preview(for: device, input: previewInput)
+    let physical = FounderDevicePresentation.derive(
+      device: device,
+      state: deviceStates[device] ?? .idle,
+      safePending: preview.signal != nil,
+      reduceMotion: reduceMotion,
+      sceneActive: scenePhase == .active,
+      visible: visible
+    )
     return Button {
       select(device)
     } label: {
-      FounderDeskDeviceObject(device: device, preview: preview, style: style, increasedContrast: contrast == .increased)
+      FounderDeskDeviceObject(
+        device: device,
+        preview: preview,
+        style: style,
+        increasedContrast: contrast == .increased,
+        presentation: physical,
+        infrastructure: motion.infrastructure
+      )
         .contentShape(.rect)
     }
-    .buttonStyle(FounderEquipmentPressStyle(reduceMotion: reduceMotion))
+    .buttonStyle(FounderEquipmentPressStyle(device: device, reduceMotion: reduceMotion))
     .accessibilityLabel(preview.accessibilityLabel)
     .accessibilityHint("Focuses this physical device. Close returns to the same Founder Desk.")
     .accessibilityIdentifier("founder-desk-device-\(device.rawValue)")
@@ -327,11 +351,28 @@ struct FounderDeskWorkspace: View {
   }
 
   private func select(_ device: FounderDeskDevice) {
+    guard navigation.lookOutActive else { return }
+    guard deviceStates[device] != .waking else { return }
+    let activationID = UUID()
+    deviceActivationID = activationID
+    withAnimation(reduceMotion ? .easeOut(duration: 0.10) : .snappy(duration: 0.18)) {
+      deviceStates[device] = .waking
+    }
+    selectionFeedback += 1
+    Task { @MainActor in
+      let delay = FounderDeviceTransitionPolicy.wakeDelayMilliseconds(for: device, reduceMotion: reduceMotion)
+      if delay > 0 { try? await Task.sleep(for: .milliseconds(delay)) }
+      guard deviceActivationID == activationID else { return }
+      performSelection(device)
+    }
+  }
+
+  private func performSelection(_ device: FounderDeskDevice) {
     var transition: FounderEnvironmentMode?
     withAnimation(workspaceAnimation) {
       transition = navigation.select(device)
+      deviceStates[device] = .active
     }
-    selectionFeedback += 1
     if let transition {
       beginTransition(completing: transition)
       return
@@ -343,6 +384,10 @@ struct FounderDeskWorkspace: View {
   }
 
   private func close(_ device: FounderDeskDevice) {
+    deviceActivationID = UUID()
+    withAnimation(reduceMotion ? nil : .smooth(duration: 0.22)) {
+      deviceStates[device] = .settling
+    }
     if device == .computer {
       var transition: FounderEnvironmentMode?
       withAnimation(workspaceAnimation) {
@@ -356,7 +401,10 @@ struct FounderDeskWorkspace: View {
     }
     selectionFeedback += 1
     Task { @MainActor in
-      if !reduceMotion { try? await Task.sleep(for: .milliseconds(300)) }
+      if !reduceMotion { try? await Task.sleep(for: .milliseconds(260)) }
+      withAnimation(reduceMotion ? nil : .smooth(duration: 0.24)) {
+        deviceStates[device] = FounderDeviceTransitionPolicy.restingState(afterClosing: device)
+      }
       deskIsFocused = true
     }
   }
@@ -411,6 +459,9 @@ struct FounderDeskWorkspace: View {
       case .computerFocused:
         focusedDevice = .computer
       case .freeLook:
+        withAnimation(reduceMotion ? nil : .smooth(duration: 0.28)) {
+          deviceStates[.computer] = FounderDeviceTransitionPolicy.restingState(afterClosing: .computer)
+        }
         deskIsFocused = true
       case .transitioningToComputerFocus, .transitioningToFreeLook:
         break
@@ -433,6 +484,8 @@ private struct FounderDeskDeviceObject: View {
   var preview: FounderDeskPreview
   var style: DeskDeviceStyle
   var increasedContrast: Bool
+  var presentation: FounderDevicePresentation
+  var infrastructure: FounderInfrastructureReactionPresentation
 
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -440,16 +493,33 @@ private struct FounderDeskDeviceObject: View {
   var body: some View {
     switch style {
     case .computer:
-      FounderMonitorHardware(preview: preview, increasedContrast: increasedContrast, reduceMotion: reduceMotion)
+      FounderMonitorHardware(
+        preview: preview,
+        increasedContrast: increasedContrast,
+        reduceMotion: reduceMotion,
+        presentation: presentation
+      )
     case .phone:
-      FounderPhoneHardware(preview: preview, increasedContrast: increasedContrast, reduceMotion: reduceMotion)
+      FounderPhoneHardware(
+        preview: preview,
+        increasedContrast: increasedContrast,
+        reduceMotion: reduceMotion,
+        presentation: presentation
+      )
     case .tablet:
-      FounderTabletHardware(preview: preview, increasedContrast: increasedContrast, reduceMotion: reduceMotion)
+      FounderTabletHardware(
+        preview: preview,
+        increasedContrast: increasedContrast,
+        reduceMotion: reduceMotion,
+        presentation: presentation
+      )
     case .server:
       FounderServerHardware(
         preview: preview,
         increasedContrast: increasedContrast,
-        reduceMotion: reduceMotion
+        reduceMotion: reduceMotion,
+        presentation: presentation,
+        infrastructure: infrastructure
       )
     case .compact, .wide:
       accessibleCard
@@ -493,6 +563,7 @@ private struct FounderMonitorHardware: View {
   var preview: FounderDeskPreview
   var increasedContrast: Bool
   var reduceMotion: Bool
+  var presentation: FounderDevicePresentation
 
   var body: some View {
     VStack(spacing: 0) {
@@ -508,14 +579,25 @@ private struct FounderMonitorHardware: View {
           }
         FounderGarageSurfaceTexture(kind: .powderCoat, strength: 0.70)
           .clipShape(.rect(cornerRadius: 10))
-        FounderHardwareScreen(tone: SoloTheme.cyan, preview: preview, layout: .monitor)
+        FounderHardwareScreen(
+          tone: SoloTheme.cyan,
+          preview: preview,
+          layout: .monitor,
+          presentation: presentation,
+          reduceMotion: reduceMotion
+        )
           .phaseAnimator(reduceMotion ? [1.0] : [0.97, 1.0, 0.985]) { content, luminance in
             content.brightness((luminance - 1) * 0.42)
           } animation: { _ in
             .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .founderDisplay).duration)
           }
+          .brightness((presentation.screenLuminance - 1) * 0.30)
           .padding(7)
-        FounderDeskGlassReflection(cornerRadius: 6)
+        FounderDeskGlassReflection(
+          cornerRadius: 6,
+          reflectionOffset: presentation.reflectionOffset,
+          reduceMotion: reduceMotion
+        )
           .padding(7)
       }
       .shadow(color: SoloTheme.cyan.opacity(preview.signal == nil ? 0.10 : 0.20), radius: 9, y: 4)
@@ -528,8 +610,30 @@ private struct FounderMonitorHardware: View {
       }
     }
     .overlay(alignment: .bottomTrailing) {
-      Circle().fill(.green.opacity(0.62)).frame(width: 4, height: 4).padding(.trailing, 11).padding(.bottom, 18)
+      Circle()
+        .fill(presentation.safePendingIndicatorVisible ? SoloTheme.amber : .green)
+        .opacity(presentation.powerIndicatorIntensity)
+        .frame(width: 5, height: 5)
+        .padding(.trailing, 11)
+        .padding(.bottom, 18)
     }
+    .overlay(alignment: .bottom) {
+      FounderKeyboardPeripheral(
+        intensity: presentation.peripheralBacklightIntensity,
+        reviewPending: presentation.safePendingIndicatorVisible
+      )
+      .offset(y: 8)
+    }
+    .background {
+      RadialGradient(
+        colors: [SoloTheme.cyan.opacity(presentation.localGlowIntensity * 0.12), .clear],
+        center: .bottom,
+        startRadius: 2,
+        endRadius: 92
+      )
+      .scaleEffect(1.15)
+    }
+    .scaleEffect(presentation.physicalResponseEnabled ? 1.012 : 1)
     .accessibilityHidden(true)
   }
 }
@@ -538,6 +642,7 @@ private struct FounderPhoneHardware: View {
   var preview: FounderDeskPreview
   var increasedContrast: Bool
   var reduceMotion: Bool
+  var presentation: FounderDevicePresentation
 
   var body: some View {
     ZStack {
@@ -553,20 +658,44 @@ private struct FounderPhoneHardware: View {
         }
       LinearGradient(colors: [.white.opacity(0.22), .clear], startPoint: .topLeading, endPoint: .bottomTrailing)
         .clipShape(.rect(cornerRadius: 18))
-      FounderHardwareScreen(tone: .white, preview: preview, layout: .phone)
+      FounderHardwareScreen(
+        tone: .white,
+        preview: preview,
+        layout: .phone,
+        presentation: presentation,
+        reduceMotion: reduceMotion
+      )
         .phaseAnimator(reduceMotion ? [1.0] : [0.985, 1.0, 0.99]) { content, luminance in
           content.brightness((luminance - 1) * 0.34)
         } animation: { _ in .easeInOut(duration: 7.7) }
+        .brightness((presentation.screenLuminance - 1) * 0.44)
         .clipShape(.rect(cornerRadius: 14))
         .padding(5)
-      FounderDeskGlassReflection(cornerRadius: 14)
+      FounderDeskGlassReflection(
+        cornerRadius: 14,
+        reflectionOffset: presentation.reflectionOffset,
+        reduceMotion: reduceMotion
+      )
         .padding(5)
       Capsule().fill(.black.opacity(0.92)).frame(width: 24, height: 6).offset(y: -43)
+      Circle()
+        .fill(presentation.safePendingIndicatorVisible ? SoloTheme.amber : .green)
+        .opacity(presentation.powerIndicatorIntensity)
+        .frame(width: 4, height: 4)
+        .offset(x: 23, y: 40)
     }
     .overlay(alignment: .trailing) {
       Capsule().fill(.white.opacity(0.28)).frame(width: 2, height: 18).offset(x: 2, y: -13)
     }
     .shadow(color: .white.opacity(preview.signal == nil ? 0.04 : 0.12), radius: 7, y: 4)
+    .background {
+      Ellipse()
+        .fill(.white.opacity(presentation.localGlowIntensity * 0.08))
+        .frame(width: 78, height: 31)
+        .offset(y: 39)
+    }
+    .scaleEffect(presentation.physicalResponseEnabled ? 0.975 : 1)
+    .rotationEffect(.degrees(presentation.state == .settling && !reduceMotion ? 0.8 : 0))
     .accessibilityHidden(true)
   }
 }
@@ -575,6 +704,7 @@ private struct FounderTabletHardware: View {
   var preview: FounderDeskPreview
   var increasedContrast: Bool
   var reduceMotion: Bool
+  var presentation: FounderDevicePresentation
 
   var body: some View {
     ZStack(alignment: .bottom) {
@@ -592,15 +722,29 @@ private struct FounderTabletHardware: View {
             }
           FounderGarageSurfaceTexture(kind: .powderCoat, strength: 0.45)
             .clipShape(.rect(cornerRadius: 10))
-          FounderHardwareScreen(tone: SoloTheme.amber, preview: preview, layout: .tablet)
+          FounderHardwareScreen(
+            tone: SoloTheme.amber,
+            preview: preview,
+            layout: .tablet,
+            presentation: presentation,
+            reduceMotion: reduceMotion
+          )
             .phaseAnimator(reduceMotion ? [1.0] : [0.98, 1.0, 0.988]) { content, luminance in
               content.brightness((luminance - 1) * 0.36)
             } animation: { _ in .easeInOut(duration: 8.9) }
+            .brightness((presentation.screenLuminance - 1) * 0.40)
             .clipShape(.rect(cornerRadius: 7))
             .padding(5)
-          FounderDeskGlassReflection(cornerRadius: 7)
+          FounderDeskGlassReflection(
+            cornerRadius: 7,
+            reflectionOffset: presentation.reflectionOffset,
+            reduceMotion: reduceMotion
+          )
             .padding(5)
-          Circle().fill(.black.opacity(0.85)).frame(width: 4, height: 4).offset(x: 45)
+          Circle()
+            .fill(.green.opacity(presentation.powerIndicatorIntensity))
+            .frame(width: 4, height: 4)
+            .offset(x: 45)
         }
         ZStack {
           Path { path in
@@ -616,6 +760,14 @@ private struct FounderTabletHardware: View {
       }
     }
     .shadow(color: SoloTheme.amber.opacity(preview.signal == nil ? 0.07 : 0.15), radius: 7, y: 4)
+    .background {
+      Ellipse()
+        .fill(SoloTheme.amber.opacity(presentation.localGlowIntensity * 0.10))
+        .frame(width: 130, height: 32)
+        .offset(y: 26)
+    }
+    .scaleEffect(presentation.physicalResponseEnabled ? 0.988 : 1)
+    .rotationEffect(.degrees(presentation.state == .settling && !reduceMotion ? -0.45 : 0))
     .accessibilityHidden(true)
   }
 }
@@ -624,6 +776,8 @@ private struct FounderServerHardware: View {
   var preview: FounderDeskPreview
   var increasedContrast: Bool
   var reduceMotion: Bool
+  var presentation: FounderDevicePresentation
+  var infrastructure: FounderInfrastructureReactionPresentation
 
   var body: some View {
     ZStack(alignment: .bottom) {
@@ -642,10 +796,17 @@ private struct FounderServerHardware: View {
       VStack(spacing: 6) {
         HStack(spacing: 5) {
           Circle().fill(SoloTheme.mint.opacity(0.82)).frame(width: 6, height: 6)
-          FounderHardwareScreen(tone: SoloTheme.mint, preview: preview, layout: .server)
+          FounderHardwareScreen(
+            tone: SoloTheme.mint,
+            preview: preview,
+            layout: .server,
+            presentation: presentation,
+            reduceMotion: reduceMotion
+          )
             .phaseAnimator(reduceMotion ? [1.0] : [0.96, 1.0, 0.98]) { content, luminance in
               content.brightness((luminance - 1) * 0.42)
             } animation: { _ in .easeInOut(duration: 6.3) }
+            .brightness((presentation.screenLuminance - 1) * 0.36)
             .frame(height: 25)
         }
         .padding(.horizontal, 6)
@@ -686,10 +847,10 @@ private struct FounderServerHardware: View {
             Image(systemName: "fanblades.fill")
               .font(.system(size: 17))
               .foregroundStyle(.white.opacity(preview.signal == nil ? 0.34 : 0.52))
-              .phaseAnimator(reduceMotion ? [22.0] : [0.0, 360.0]) { content, angle in
+              .phaseAnimator(infrastructure.continuousMotionEnabled ? [0.0, 360.0] : [22.0]) { content, angle in
                 content.rotationEffect(.degrees(angle))
               } animation: { _ in
-                .linear(duration: preview.signal == nil ? 10.8 : 7.1)
+                .linear(duration: infrastructure.serverFanRotationDuration)
               }
             Circle().stroke(.white.opacity(0.22), lineWidth: 1).frame(width: 25, height: 25)
             Capsule().fill(.white.opacity(0.13)).frame(width: 25, height: 1)
@@ -711,6 +872,14 @@ private struct FounderServerHardware: View {
       .stroke(.black.opacity(0.78), style: StrokeStyle(lineWidth: 3, lineCap: .round))
     }
     .shadow(color: SoloTheme.mint.opacity(preview.signal == nil ? 0.05 : 0.14), radius: 8, y: 5)
+    .background {
+      RadialGradient(
+        colors: [SoloTheme.mint.opacity(presentation.localGlowIntensity * 0.09), .clear],
+        center: .center,
+        startRadius: 2,
+        endRadius: 74
+      )
+    }
     .accessibilityHidden(true)
   }
 
@@ -724,8 +893,8 @@ private struct FounderServerHardware: View {
 
   private func serverLightPhases(index: Int) -> [Double] {
     guard !reduceMotion else { return [1.0] }
-    if index == 1 { return [0.42, 0.92, 0.58] }
-    if index == 3 { return [0.68, 0.38, 0.84] }
+    if index == 1 { return [0.30, 0.46 + infrastructure.networkActivity * 0.54, 0.42] }
+    if index == 3 { return [0.44, 0.34, 0.46 + infrastructure.storageActivity * 0.48] }
     if index == 2 && preview.signal != nil { return [0.52, 1.0, 0.70] }
     return [1.0]
   }
@@ -748,6 +917,8 @@ private struct FounderHardwareScreen: View {
   var tone: Color
   var preview: FounderDeskPreview
   var layout: FounderHardwareScreenLayout
+  var presentation: FounderDevicePresentation
+  var reduceMotion: Bool
 
   var body: some View {
     VStack(alignment: .leading, spacing: screenSpacing) {
@@ -787,6 +958,31 @@ private struct FounderHardwareScreen: View {
       LinearGradient(colors: [.clear, tone.opacity(0.07)], startPoint: .top, endPoint: .bottom)
         .frame(height: 12)
     }
+    .overlay {
+      if layout == .tablet {
+        FounderNeutralTrace(
+          tone: tone,
+          active: presentation.screenLifeEnabled,
+          reduceMotion: reduceMotion
+        )
+        .padding(5)
+      }
+    }
+    .overlay(alignment: .bottomTrailing) {
+      if layout == .server {
+        HStack(alignment: .bottom, spacing: 1) {
+          ForEach(0..<4, id: \.self) { index in
+            Capsule()
+              .fill(tone.opacity(0.28 + Double(index) * 0.08))
+              .frame(width: 2, height: CGFloat(3 + index * 2))
+          }
+        }
+        .padding(3)
+        .phaseAnimator(presentation.screenLifeEnabled ? [0.62, 1.0, 0.76] : [0.72]) { content, opacity in
+          content.opacity(opacity)
+        } animation: { _ in .easeInOut(duration: 4.7) }
+      }
+    }
   }
 
   private var screenTitle: String {
@@ -814,6 +1010,8 @@ private struct FounderHardwareScreen: View {
 
 private struct FounderDeskGlassReflection: View {
   var cornerRadius: CGFloat
+  var reflectionOffset: Double
+  var reduceMotion: Bool
 
   var body: some View {
     RoundedRectangle(cornerRadius: cornerRadius)
@@ -827,7 +1025,56 @@ private struct FounderDeskGlassReflection: View {
       .mask {
         LinearGradient(colors: [.white, .clear, .white.opacity(0.25)], startPoint: .topLeading, endPoint: .bottomTrailing)
       }
+      .offset(x: reduceMotion ? 0 : reflectionOffset, y: reduceMotion ? 0 : -reflectionOffset * 0.35)
+      .animation(reduceMotion ? nil : .smooth(duration: 0.22), value: reflectionOffset)
       .allowsHitTesting(false)
+  }
+}
+
+private struct FounderNeutralTrace: View {
+  var tone: Color
+  var active: Bool
+  var reduceMotion: Bool
+
+  var body: some View {
+    GeometryReader { proxy in
+      Path { path in
+        path.move(to: CGPoint(x: 0, y: proxy.size.height * 0.72))
+        path.addCurve(
+          to: CGPoint(x: proxy.size.width, y: proxy.size.height * 0.48),
+          control1: CGPoint(x: proxy.size.width * 0.26, y: proxy.size.height * 0.58),
+          control2: CGPoint(x: proxy.size.width * 0.66, y: proxy.size.height * 0.80)
+        )
+      }
+      .trim(from: 0, to: active ? 1 : 0.78)
+      .stroke(tone.opacity(0.28), style: StrokeStyle(lineWidth: 1, lineCap: .round))
+      .phaseAnimator(active && !reduceMotion ? [0.72, 1.0, 0.84] : [0.82]) { content, opacity in
+        content.opacity(opacity)
+      } animation: { _ in
+        .easeInOut(duration: 8.6)
+      }
+    }
+    .accessibilityHidden(true)
+  }
+}
+
+private struct FounderKeyboardPeripheral: View {
+  var intensity: Double
+  var reviewPending: Bool
+
+  var body: some View {
+    HStack(spacing: 2) {
+      ForEach(0..<9, id: \.self) { index in
+        RoundedRectangle(cornerRadius: 0.8)
+          .fill((reviewPending && index == 8 ? SoloTheme.amber : SoloTheme.cyan).opacity(0.16 + intensity * 0.42))
+          .frame(width: 5, height: 2)
+      }
+    }
+    .padding(.horizontal, 6)
+    .frame(height: 9)
+    .background(.black.opacity(0.82), in: .rect(cornerRadius: 2))
+    .shadow(color: SoloTheme.cyan.opacity(intensity * 0.18), radius: 3)
+    .accessibilityHidden(true)
   }
 }
 
@@ -856,14 +1103,24 @@ private enum FounderDeskHardwareMaterial {
 }
 
 private struct FounderEquipmentPressStyle: ButtonStyle {
+  var device: FounderDeskDevice
   var reduceMotion: Bool
 
   func makeBody(configuration: Configuration) -> some View {
     configuration.label
-      .scaleEffect(configuration.isPressed && !reduceMotion ? 0.965 : 1)
+      .scaleEffect(configuration.isPressed && !reduceMotion ? pressedScale : 1)
       .brightness(configuration.isPressed ? 0.10 : 0)
       .shadow(color: .white.opacity(configuration.isPressed ? 0.08 : 0), radius: 5)
       .animation(reduceMotion ? nil : .snappy(duration: 0.16), value: configuration.isPressed)
+  }
+
+  private var pressedScale: CGFloat {
+    switch device {
+    case .computer: 0.982
+    case .phone: 0.948
+    case .tablet: 0.976
+    case .server: 0.986
+    }
   }
 }
 

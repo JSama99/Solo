@@ -525,6 +525,7 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
   var lighting: FounderGarageLightingPresentation
   var environment: FounderGarageEnvironmentPresentation
   var event: FounderGarageEventEmphasis
+  var infrastructure: FounderInfrastructureReactionPresentation
   var audioHooks: FounderGarageAudioHookPresentation
 
   static func derive(
@@ -566,6 +567,12 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
         sceneActive: sceneActive
       ),
       event: event,
+      infrastructure: .derive(
+        stations: stations,
+        event: event,
+        reduceMotion: reduceMotion,
+        sceneActive: sceneActive
+      ),
       audioHooks: .derive(stations: stations, event: event)
     )
   }
