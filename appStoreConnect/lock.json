@@ -8,7 +8,7 @@
             "fileName": "founder-garage-65.jpg",
             "fileSize": 449088,
             "id": "e5258c81-80a2-496c-ad5a-6c48692e9e4e",
-            "renditionChecksum": "892edf473d325efa114baa57d2ca23fe",
+            "renditionChecksum": "7c8d0d4004133f4d4ad4326e37292b86",
             "sourceFileChecksum": "a185443f5036fc5f5b7febe81e27e855"
           }
         ],
@@ -722,6 +722,7 @@
         "fileName": "SOURCE",
         "fileSize": 285944,
         "id": "134718d1-81d6-4849-9ccd-719179760e11",
+        "renditionChecksum": "8512b9c1fa36f50f8a09987b58d86242",
         "sourceFileChecksum": "52839883179f7ea3b93d91e2c6c39685"
       }
     },
@@ -1430,12 +1431,14 @@
         "fileName": "SOURCE",
         "fileSize": 290448,
         "id": "027ce892-ae48-42d5-81c2-8d7d90dab80f",
+        "renditionChecksum": "e96f160ee3953ce2890af6295d5aeed7",
         "sourceFileChecksum": "225051ffbec2ce9ae9958f13093faaae"
       },
       "com.talonsight.solounicornrun.founderpass.monthly": {
         "fileName": "SOURCE",
         "fileSize": 291407,
         "id": "ccda6536-240e-44e7-9e60-a8882cbb48b6",
+        "renditionChecksum": "b6c3e08ca82b801a07e44053b10fb1fc",
         "sourceFileChecksum": "5d675d0edbf35b5d67c66c8ffc901f78"
       }
     }
