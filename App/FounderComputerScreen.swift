@@ -1032,10 +1032,6 @@ private struct FounderWorkstationCard: View {
     .gameplayMotion(.emphasis, value: expanded)
     .gameplayMotion(value: summary)
     .accessibilityElement(children: .contain)
-    .accessibilityLabel("Founder workstation")
-    .accessibilityValue(summary.readiness.message)
-    .accessibilityAddTraits(expanded ? [.isButton, .isSelected] : .isButton)
-    .accessibilityAction { onSelect() }
   }
 
   private var identity: some View {

@@ -40,8 +40,6 @@ struct AIOperationsFloor: View {
     .clipShape(.rect(cornerRadius: 26))
     .overlay { RoundedRectangle(cornerRadius: 26).stroke(.white.opacity(0.13), lineWidth: 1) }
     .accessibilityElement(children: .contain)
-    .accessibilityLabel("AI Operations Floor")
-    .accessibilityValue("\(summary.nextAction). Company day \(calendar.totalDays), \(calendar.period.title).")
   }
 
   private var compactFloor: some View {
@@ -179,7 +177,7 @@ private struct OperationsStationCard: View {
     .padding(12).frame(maxWidth: .infinity, alignment: .leading)
     .background(accent.opacity(expanded ? 0.13 : 0.075), in: .rect(cornerRadius: 16))
     .overlay { RoundedRectangle(cornerRadius: 16).stroke(accent.opacity(expanded ? 0.82 : 0.42), lineWidth: expanded ? 1.5 : 1) }
-    .accessibilityElement(children: .contain).accessibilityLabel("\(agent.name), \(specialty)").accessibilityValue(agent.accessibilityValue)
+    .accessibilityElement(children: .contain)
   }
   private var portrait: some View { ZStack { Circle().fill(accent.opacity(0.2)); if let asset = AgentPortraitAsset.name(for: agent.agentID) { Image(asset).resizable().scaledToFill() } else { Text(agent.initials).font(.headline.weight(.black)) } }.frame(width: 48, height: 48).clipShape(.circle).overlay { Circle().stroke(accent.opacity(0.8), lineWidth: 1.5) } }
   private var handoffStrip: some View {

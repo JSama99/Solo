@@ -35,9 +35,11 @@ final class Build10HeadquartersTests: XCTestCase {
     progression.observe(trackRecord: 8)
     let store = GameStore()
     store.progressionStore = progression
-    store.stats.capital = 4_500
-    XCTAssertEqual(store.purchaseFacility(.founderLoft), .purchased(cost: 4_000))
+    store.finance = CompanyFinance(cash: OperatingCostTuning.founderLoftMoveIn + 500)
+    store.stats.capital = store.finance.cash
+    XCTAssertEqual(store.purchaseFacility(.founderLoft), .purchased(cost: OperatingCostTuning.founderLoftMoveIn))
     XCTAssertEqual(store.stats.capital, 500)
+    XCTAssertEqual(store.finance.cash, 500)
     XCTAssertTrue(FounderProgressionStore(defaults: defaults, saveKey: "progress").ownedFacilities.contains(.founderLoft))
   }
 
@@ -53,7 +55,7 @@ final class Build10HeadquartersTests: XCTestCase {
     _ = progression.purchaseUpgrade(.developmentRig, availableCapital: 800)
     XCTAssertEqual(progression.bonuses.engineeringQualityBonus, 4)
     progression.observe(trackRecord: 8)
-    _ = progression.purchase(.founderLoft, availableCapital: 4_000)
+    _ = progression.purchase(.founderLoft, availableCapital: OperatingCostTuning.founderLoftMoveIn)
     XCTAssertEqual(progression.bonuses.engineeringQualityBonus, 0)
     XCTAssertEqual(progression.bonuses.ventureEnergyBonus, 5)
     XCTAssertTrue(progression.activate(.founderGarage))
@@ -92,7 +94,7 @@ final class Build10HeadquartersTests: XCTestCase {
     XCTAssertEqual(progression.bonuses.agentXPBonusMultiplier, 1.1)
     XCTAssertEqual(progression.bonuses.stressAccumulationMultiplier, 1)
     progression.observe(trackRecord: 8)
-    _ = progression.purchase(.founderLoft, availableCapital: 4_000)
+    _ = progression.purchase(.founderLoft, availableCapital: OperatingCostTuning.founderLoftMoveIn)
     XCTAssertEqual(progression.bonuses.agentXPBonusMultiplier, 1)
     XCTAssertEqual(progression.bonuses.stressAccumulationMultiplier, 0.9)
   }
