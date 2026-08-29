@@ -22,7 +22,7 @@ struct HeadquartersProgressScreen: View {
     .alert(item: $pendingPurchase) { purchase in
       Alert(
         title: Text("Confirm purchase"),
-        message: Text("Spend \(purchase.cost.formatted(.currency(code: "USD").precision(.fractionLength(0))))? You will have \((store.stats.capital - purchase.cost).formatted(.currency(code: "USD").precision(.fractionLength(0)))) remaining."),
+        message: Text("Spend \(purchase.cost.formatted(.currency(code: "USD").precision(.fractionLength(0)))) cash? You will have \((store.finance.cash - purchase.cost).formatted(.currency(code: "USD").precision(.fractionLength(0)))) remaining."),
         primaryButton: .default(Text(purchase.actionTitle)) { complete(purchase) },
         secondaryButton: .cancel()
       )
@@ -31,13 +31,19 @@ struct HeadquartersProgressScreen: View {
 
   private var treasuryCard: some View {
     VStack(alignment: .leading, spacing: 8) {
-      Text("COMPANY TREASURY").font(.caption.weight(.black)).tracking(2).foregroundStyle(SoloTheme.cyan)
-      Text(store.stats.capital, format: .currency(code: "USD").precision(.fractionLength(0)))
+      Text("COMPANY CASH").font(.caption.weight(.black)).tracking(2).foregroundStyle(SoloTheme.cyan)
+      Text(store.finance.cash, format: .currency(code: "USD").precision(.fractionLength(0)))
         .font(.largeTitle.bold().monospacedDigit())
-        .contentTransition(.numericText(value: Double(store.stats.capital)))
-        .gameplayMotion(.celebration, value: store.stats.capital)
-      Text("Capital funds headquarters and infrastructure. Purchases are permanent and never take Capital below zero.")
+        .contentTransition(.numericText(value: Double(store.finance.cash)))
+        .gameplayMotion(.celebration, value: store.finance.cash)
+      Text("Capital raised \(store.finance.capitalRaised.formatted(.currency(code: "USD").precision(.fractionLength(0)))) • Runway \(store.finance.runwayLabel(fallbackDailyBurn: 120))")
+        .font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.mint)
+      Text("Cash is spendable. Capital Raised is financing history; it is not a second balance.")
         .font(.caption).foregroundStyle(.secondary)
+      if let latest = store.finance.transactions.last {
+        Label(latest.kind == .expense ? "Cash decreased by \(latest.amount.formatted(.currency(code: "USD").precision(.fractionLength(0)))) because \(latest.source)." : "Cash increased by \(latest.amount.formatted(.currency(code: "USD").precision(.fractionLength(0)))) from \(latest.source).", systemImage: latest.kind == .expense ? "arrow.down.right" : "arrow.up.right")
+          .font(.caption2).foregroundStyle(.secondary)
+      }
     }
     .soloCard()
   }
@@ -57,10 +63,10 @@ struct HeadquartersProgressScreen: View {
         Divider()
         Text("NEXT HQ").font(.caption.weight(.black)).foregroundStyle(SoloTheme.amber)
         Text(next.name).font(.headline)
-        Text("Cost: \(requirement.capitalCost.formatted(.currency(code: "USD").precision(.fractionLength(0)))) • Track Record \(requirement.minimumTrackRecord)")
+        Text(next == .founderLoft ? "Move-in: $7,500 • Then $3,400/month lease + utilities • Track Record \(requirement.minimumTrackRecord)" : "Cost: \(requirement.capitalCost.formatted(.currency(code: "USD").precision(.fractionLength(0)))) • Track Record \(requirement.minimumTrackRecord)")
           .font(.caption).foregroundStyle(.secondary)
         if next == .founderLoft {
-          let eligible = progression.purchaseResult(for: next, availableCapital: store.stats.capital)
+          let eligible = progression.purchaseResult(for: next, availableCapital: store.finance.cash)
           Button("Move Company", systemImage: "building.2.fill") {
             if case .purchased(let cost) = eligible { pendingPurchase = .facility(next, cost) }
             else { store.alertMessage = message(for: eligible) }
@@ -91,7 +97,7 @@ struct HeadquartersProgressScreen: View {
               .font(.caption2.weight(.semibold)).foregroundStyle(SoloTheme.cyan)
           } else {
             Button("Purchase", systemImage: "cart.fill") {
-              let result = progression.upgradePurchaseResult(for: upgrade.id, availableCapital: store.stats.capital)
+              let result = progression.upgradePurchaseResult(for: upgrade.id, availableCapital: store.finance.cash)
               if case .purchased(let cost) = result { pendingPurchase = .upgrade(upgrade.id, cost) }
               else { store.alertMessage = message(for: result) }
             }

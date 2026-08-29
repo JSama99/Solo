@@ -1314,6 +1314,8 @@ struct CareerSave: Codable {
   var rivalDiscontinuities: [RivalDiscontinuity]
   var publicMediaEvents: [PublicMediaEvent]
   var processedCoverageEventIDs: Set<String>
+  var finance: CompanyFinance
+  var operatingCalendar: OperatingCalendar
 
   private enum CodingKeys: String, CodingKey {
     case founderName, doctrine, productType, talentBoardRefreshes, sprint, venture, intent, stats, agents, tasks
@@ -1325,7 +1327,7 @@ struct CareerSave: Codable {
     case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, completedVentureObjectives, ventureObjective, thesis, thesisHistory, awaitingThesisSelection, pendingChapterMilestone
     case techComHeadlines, techComRivals, latentDefects, poachingOffer, exposedRivalIDs
     case activeDivergence, divergenceRecords, forksUsedThisVenture, doctrineProfile, unicornIdentity
-    case rivalDiscontinuities, publicMediaEvents, processedCoverageEventIDs
+    case rivalDiscontinuities, publicMediaEvents, processedCoverageEventIDs, finance, operatingCalendar
   }
 
   init(
@@ -1382,7 +1384,9 @@ struct CareerSave: Codable {
     unicornIdentity: UnicornIdentity? = nil,
     rivalDiscontinuities: [RivalDiscontinuity] = [],
     publicMediaEvents: [PublicMediaEvent] = [],
-    processedCoverageEventIDs: Set<String> = []
+    processedCoverageEventIDs: Set<String> = [],
+    finance: CompanyFinance? = nil,
+    operatingCalendar: OperatingCalendar = OperatingCalendar()
   ) {
     self.founderName = founderName
     self.doctrine = doctrine
@@ -1438,6 +1442,8 @@ struct CareerSave: Codable {
     self.rivalDiscontinuities = rivalDiscontinuities
     self.publicMediaEvents = publicMediaEvents
     self.processedCoverageEventIDs = processedCoverageEventIDs
+    self.finance = finance ?? CompanyFinance(cash: stats.capital, capitalRaised: stats.capital, lifetimeRevenue: stats.revenue)
+    self.operatingCalendar = operatingCalendar
   }
 
   init(from decoder: Decoder) throws {
@@ -1508,6 +1514,11 @@ struct CareerSave: Codable {
     rivalDiscontinuities = try container.decodeIfPresent([RivalDiscontinuity].self, forKey: .rivalDiscontinuities) ?? []
     publicMediaEvents = try container.decodeIfPresent([PublicMediaEvent].self, forKey: .publicMediaEvents) ?? []
     processedCoverageEventIDs = try container.decodeIfPresent(Set<String>.self, forKey: .processedCoverageEventIDs) ?? []
+    // Legacy `capital` was spendable cash. Seed the new ledger from it rather
+    // than redefining old careers or retroactively charging in-flight work.
+    finance = try container.decodeIfPresent(CompanyFinance.self, forKey: .finance)
+      ?? CompanyFinance(cash: stats.capital, capitalRaised: stats.capital, lifetimeRevenue: stats.revenue)
+    operatingCalendar = try container.decodeIfPresent(OperatingCalendar.self, forKey: .operatingCalendar) ?? OperatingCalendar()
   }
 }
 

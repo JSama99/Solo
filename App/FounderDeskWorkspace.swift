@@ -337,12 +337,16 @@ struct FounderDeskWorkspace: View {
   }
 
   private var deskHeading: some View {
-    Text("\(progression.currentFacility.name.uppercased()) · FOUNDER DESK")
-      .font(.caption2.weight(.black))
-      .tracking(1.5)
+    VStack(spacing: 2) {
+      Text("\(progression.currentFacility.name.uppercased()) · FOUNDER DESK")
+        .font(.caption2.weight(.black))
+        .tracking(1.5)
+      Label("Day \(store.operatingCalendar.totalDays) · Sprint \(store.sprint), Day \(store.operatingCalendar.dayOfSprint) of 7 · \(store.operatingCalendar.period.title)", systemImage: store.operatingCalendar.period.symbol)
+        .font(.caption2.weight(.semibold))
+    }
       .foregroundStyle(.white.opacity(0.70))
       .padding(.horizontal, 11)
-      .frame(minHeight: 28)
+      .padding(.vertical, 5)
       .background(.black.opacity(0.38), in: .capsule)
       .accessibilityIdentifier("founder-desk-overview")
     .accessibilityElement(children: .combine)
