@@ -1123,6 +1123,13 @@ final class GameStore {
     var acquisitionAccepted = false
     if let dilemmaChoice, let activeDilemma {
       effects = effects + dilemmaChoice.effects
+      if dilemmaChoice.id == "take", dilemmaChoice.title == "Take the Money" {
+        recordCapitalRaised(
+          id: "funding-v\(venture)-s\(sprint)-\(activeDilemma.id)",
+          amount: OperatingCostTuning.strategicFundingRound,
+          source: "Strategic funding round closed"
+        )
+      }
       acquisitionAccepted = applyPersistentConsequence(dilemma: activeDilemma, choice: dilemmaChoice)
       for (agentID, delta) in dilemmaChoice.relationshipDeltas {
         if let index = agents.firstIndex(where: { $0.id == agentID }) {
@@ -2024,6 +2031,11 @@ final class GameStore {
 
   func recordRevenue(id: String, amount: Int, source: String) {
     _ = finance.apply(.init(id: id, kind: .revenue, amount: amount, category: nil, simulationDay: operatingCalendar.totalDays, source: source, isRecurring: false, agentID: nil, headquarters: nil))
+    stats.capital = finance.cash
+  }
+
+  func recordCapitalRaised(id: String, amount: Int, source: String) {
+    _ = finance.apply(.init(id: id, kind: .capitalRaised, amount: amount, category: nil, simulationDay: operatingCalendar.totalDays, source: source, isRecurring: false, agentID: nil, headquarters: nil))
     stats.capital = finance.cash
   }
 

@@ -8,6 +8,8 @@
 - **Net Burn** is recent operating expenses minus revenue. Runway is a derived cash estimate; cash-flow-positive companies show that state instead of an absurd duration.
 - `FounderStats.capital` remains a compatibility projection of cash for established systems. It is not a second balance.
 
+When the established “Take the Money” strategic funding choice closes, it records a $25,000 financing transaction: Cash and Capital Raised increase together, while Revenue remains unchanged.
+
 ## Daily closeout
 
 Committing a sprint advances the operating calendar by seven days. Each day records AI workforce plans, hosting/storage/Company Server, and essential operations under stable day-based transaction IDs. The Loft lease is applied when any crossed day reaches the 30-day boundary, so a seven-day sprint can never skip the monthly obligation.

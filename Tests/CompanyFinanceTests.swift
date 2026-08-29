@@ -32,4 +32,10 @@ final class CompanyFinanceTests: XCTestCase {
     XCTAssertTrue(finance.apply(.init(id: "hosting", kind: .expense, amount: 200, category: .infrastructure, simulationDay: 1, source: "Hosting", isRecurring: true, agentID: nil, headquarters: nil)))
     XCTAssertEqual(finance.runwayLabel(fallbackDailyBurn: 100), "5 days")
   }
+
+  func testPositiveCashFlowDoesNotProduceInfiniteRunway() {
+    var finance = CompanyFinance(cash: 1_000)
+    XCTAssertTrue(finance.apply(.init(id: "sale", kind: .revenue, amount: 400, category: nil, simulationDay: 1, source: "Customer", isRecurring: false, agentID: nil, headquarters: nil)))
+    XCTAssertEqual(finance.runwayLabel(fallbackDailyBurn: 0), "Cash-flow positive")
+  }
 }
