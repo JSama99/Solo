@@ -73,6 +73,63 @@ final class GameStore {
   private var injectedFeedTaskTitle: String?
   private(set) var talentBoardRefreshes = 0
 
+  /// Physical Garage actions use this small versioned ledger so cooldowns do
+  /// not reset when the career save is reloaded. It is separate from the
+  /// career payload and never touches RevenueCat/StoreKit ownership state.
+  private var environmentalSave: FounderEnvironmentalSave {
+    get {
+      guard let data = UserDefaults.standard.data(forKey: Self.environmentalSaveKey),
+            let decoded = try? JSONDecoder().decode(FounderEnvironmentalSave.self, from: data)
+      else { return FounderEnvironmentalSave() }
+      return decoded
+    }
+    set {
+      if let data = try? JSONEncoder().encode(newValue) {
+        UserDefaults.standard.set(data, forKey: Self.environmentalSaveKey)
+      }
+    }
+  }
+
+  static let environmentalSaveKey = "solo-unicorn-run-environmental-v1"
+
+  func environmentalPreview(for action: FounderEnvironmentalAction, now: Date = .now) -> FounderEnvironmentalPreview {
+    let save = environmentalSave
+    let next = action == .rest ? save.nextRestAvailableAt : save.nextTrainingAvailableAt
+    let cooldown = next.map { $0 > now } ?? false
+    let insufficient: String?
+    switch action {
+    case .rest: insufficient = stats.runway > 0 ? nil : "Unavailable: no Runway remains for operating burn"
+    case .train: insufficient = stats.energy >= abs(FounderEnvironmentalTuning.trainingEnergy) ? nil : "Unavailable: not enough Energy to train"
+    }
+    let reason = cooldown ? "Unavailable: available again in \(next!.formatted(.relative(presentation: .named)))" : insufficient
+    switch action {
+    case .rest:
+      let burn = max(1, Int((Double(VentureEra.era(for: venture).runwayBurnPerSprint) * 0.25).rounded()))
+      return FounderEnvironmentalPreview(action: action, effects: SimulationEffects(momentum: FounderEnvironmentalTuning.restMomentum, energy: FounderEnvironmentalTuning.restEnergy, runway: -burn), durationHours: FounderEnvironmentalTuning.restHours, available: reason == nil, unavailableReason: reason)
+    case .train:
+      return FounderEnvironmentalPreview(action: action, effects: SimulationEffects(momentum: FounderEnvironmentalTuning.trainingMomentum, energy: FounderEnvironmentalTuning.trainingEnergy), durationHours: FounderEnvironmentalTuning.trainingHours, available: reason == nil, unavailableReason: reason)
+    }
+  }
+
+  @discardableResult
+  func performEnvironmentalAction(_ action: FounderEnvironmentalAction, now: Date = .now) -> Bool {
+    let preview = environmentalPreview(for: action, now: now)
+    guard preview.available else { alertMessage = preview.unavailableReason; return false }
+    // The preview is re-evaluated immediately before mutation: this is the
+    // single duplicate-action guard for rapid taps and interrupted sheets.
+    var save = environmentalSave
+    switch action {
+    case .rest: save.nextRestAvailableAt = now.addingTimeInterval(FounderEnvironmentalTuning.restCooldown)
+    case .train: save.nextTrainingAvailableAt = now.addingTimeInterval(FounderEnvironmentalTuning.trainingCooldown)
+    }
+    save.elapsedHours += preview.durationHours
+    environmentalSave = save
+    apply(preview.effects)
+    sanitizeState()
+    saveCareer()
+    return true
+  }
+
   // ── Build 3: career layer ─────────────────────────────────────────
   /// Precedents banked across the career. Recorded in every venture,
   /// including the free one — that is what makes the unlock meaningful.
@@ -1477,6 +1534,7 @@ final class GameStore {
 
   func resetCareer() {
     UserDefaults.standard.removeObject(forKey: Self.saveKey)
+    UserDefaults.standard.removeObject(forKey: Self.environmentalSaveKey)
     for key in Self.resetCareerPurgeKeys {
       UserDefaults.standard.removeObject(forKey: key)
     }

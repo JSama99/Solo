@@ -106,6 +106,7 @@ struct FounderEnvironmentScreen: View {
   @State private var camera = FounderEnvironmentCameraState()
   @State private var dragStartCamera: FounderEnvironmentCameraState?
   @State private var transitionID = UUID()
+  @State private var selectedEnvironmentalAction: FounderEnvironmentalAction?
   @AccessibilityFocusState private var environmentIsFocused: Bool
   @AccessibilityFocusState private var computerIsFocused: Bool
 
@@ -192,6 +193,9 @@ struct FounderEnvironmentScreen: View {
             .accessibilityLabel("Founder Computer")
             .accessibilityHint("Double tap to return to the Founder Computer.")
             .zIndex(2)
+
+            environmentalHotspots(in: geometry.size)
+              .zIndex(2.5)
           }
 
           FounderEnvironmentControlLayer(
@@ -230,6 +234,38 @@ struct FounderEnvironmentScreen: View {
       .onChange(of: store.stats.trackRecord, initial: true) { _, value in
         progression.observe(trackRecord: value)
       }
+      .sheet(item: $selectedEnvironmentalAction) { action in
+        FounderEnvironmentalActionCard(store: store, action: action) {
+          selectedEnvironmentalAction = nil
+        }
+        .presentationDetents([.height(310)])
+        .presentationDragIndicator(.visible)
+      }
+    }
+  }
+
+  @ViewBuilder
+  private func environmentalHotspots(in size: CGSize) -> some View {
+    let layout = FounderEnvironmentLayout(viewportSize: size)
+    ForEach([FounderEnvironmentalAction.rest, .train]) { action in
+      let anchor: FounderEnvironmentWorldAnchor = action == .rest ? .founderCouch : .workoutBench
+      let point = layout.viewportPosition(for: anchor, camera: camera, layer: .middleGround)
+      Button {
+        selectedEnvironmentalAction = action
+      } label: {
+        Label(action.object.title, systemImage: action.object.symbol)
+          .font(.caption.weight(.bold))
+          .foregroundStyle(.white)
+          .padding(.horizontal, 12)
+          .frame(minHeight: 44)
+          .background(.black.opacity(0.78), in: .capsule)
+          .overlay { Capsule().stroke(action == .rest ? .orange.opacity(0.72) : .cyan.opacity(0.72), lineWidth: 1) }
+      }
+      .buttonStyle(.plain)
+      .position(x: point.x, y: min(size.height - 98, point.y + 85))
+      .accessibilityLabel(action.object.title)
+      .accessibilityHint("Preview the cost, benefit, duration, and availability before confirming.")
+      .accessibilityIdentifier("garage-\(action.object.rawValue)-hotspot")
     }
   }
 
@@ -386,6 +422,8 @@ enum FounderEnvironmentWorldAnchor: String, CaseIterable, Sendable {
   case founderPhone
   case founderTablet
   case companyServer
+  case founderCouch
+  case workoutBench
   case founderDeskLeftEdge
   case founderDeskRightEdge
   case founderDeskSurface
@@ -437,6 +475,8 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       .founderPhone: CGPoint(x: 525, y: 605),
       .founderTablet: CGPoint(x: 765, y: 600),
       .companyServer: CGPoint(x: 870, y: 660),
+      .founderCouch: CGPoint(x: 1_095, y: 585),
+      .workoutBench: CGPoint(x: 285, y: 585),
       .founderDeskLeftEdge: CGPoint(x: 470, y: 650),
       .founderDeskRightEdge: CGPoint(x: 840, y: 650),
       .founderDeskSurface: CGPoint(x: 680, y: 590),
@@ -460,6 +500,8 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       result[.founderDeskSurface] = CGPoint(x: 680, y: 600)
       result[.founderDeskFloorSide] = CGPoint(x: 900, y: 720)
       result[.signalTV] = CGPoint(x: 840, y: 205)
+      result[.founderCouch] = CGPoint(x: 1_140, y: 585)
+      result[.workoutBench] = CGPoint(x: 250, y: 585)
     }
     return result
   }
@@ -485,6 +527,7 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
     case .stacksStation: 0.84
     case .brioStation: 0.91
     case .verificationArray, .developmentRig, .campaignStudio: 0.88
+    case .founderCouch, .workoutBench: 0.98
     case .recoveryCorner: 0.94
     case .founderCommandDesk: 1.03
     case .founderPhone, .founderTablet, .companyServer,
@@ -676,7 +719,7 @@ struct FounderEnvironmentRendererView: View {
       garageArchitecture(size: size, layout: layout)
       signalTVLayer(layout: layout)
       groundingShadows(size: size, layout: layout)
-      panoramicStations(size: size, layout: layout)
+      founderRecoveryZone(size: size, layout: layout)
       taskArtifactLayer(size: size, layout: layout)
       panoramicInfrastructure(size: size, layout: layout)
       founderDesk(size: size, layout: layout)
@@ -696,6 +739,47 @@ struct FounderEnvironmentRendererView: View {
     .scaleEffect(layout.depthScale(for: .signalTV) * layout.scale)
     .position(layout.viewportPosition(for: .signalTV, camera: camera, layer: .background))
     .allowsHitTesting(false)
+  }
+
+  private func founderRecoveryZone(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
+    ZStack {
+      couchView
+        .scaleEffect(layout.depthScale(for: .founderCouch) * layout.scale)
+        .position(layout.viewportPosition(for: .founderCouch, camera: camera, layer: .middleGround))
+      workoutBenchView
+        .scaleEffect(layout.depthScale(for: .workoutBench) * layout.scale)
+        .position(layout.viewportPosition(for: .workoutBench, camera: camera, layer: .middleGround))
+    }
+    .frame(width: size.width, height: size.height)
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
+  }
+
+  private var couchView: some View {
+    ZStack {
+      Ellipse().fill(.black.opacity(0.48)).frame(width: 250, height: 26).offset(y: 74)
+      RoundedRectangle(cornerRadius: 18).fill(LinearGradient(colors: [.brown.opacity(0.85), .black.opacity(0.9)], startPoint: .top, endPoint: .bottom)).frame(width: 230, height: 82).offset(y: 22)
+      RoundedRectangle(cornerRadius: 20).fill(Color(red: 0.20, green: 0.13, blue: 0.11)).frame(width: 218, height: 68).offset(y: -16)
+      HStack(spacing: 7) {
+        RoundedRectangle(cornerRadius: 14).fill(Color(red: 0.28, green: 0.18, blue: 0.15)).frame(width: 98, height: 57)
+        RoundedRectangle(cornerRadius: 14).fill(Color(red: 0.28, green: 0.18, blue: 0.15)).frame(width: 98, height: 57)
+      }.offset(y: -11)
+      HStack(spacing: 187) { Capsule().fill(.black.opacity(0.8)).frame(width: 10, height: 48); Capsule().fill(.black.opacity(0.8)).frame(width: 10, height: 48) }.offset(y: 55)
+    }.frame(width: 260, height: 160)
+  }
+
+  private var workoutBenchView: some View {
+    ZStack {
+      Ellipse().fill(.black.opacity(0.48)).frame(width: 230, height: 22).offset(y: 68)
+      RoundedRectangle(cornerRadius: 8).fill(FounderGarageMaterial.powderCoat).frame(width: 150, height: 29).rotationEffect(.degrees(-5)).offset(x: 8, y: 6)
+      RoundedRectangle(cornerRadius: 6).fill(Color(red: 0.18, green: 0.19, blue: 0.20)).frame(width: 102, height: 24).rotationEffect(.degrees(-5)).offset(x: 12, y: -5)
+      HStack(spacing: 98) { Capsule().fill(FounderGarageMaterial.satinMetal).frame(width: 8, height: 68); Capsule().fill(FounderGarageMaterial.satinMetal).frame(width: 8, height: 68) }.offset(y: 38)
+      Capsule().fill(.black.opacity(0.86)).frame(width: 170, height: 8).offset(y: -49)
+      ForEach([-1, 1], id: \.self) { side in
+        VStack(spacing: 2) { Circle().fill(.black).frame(width: 27, height: 27); Circle().fill(.black).frame(width: 20, height: 20) }.offset(x: CGFloat(side) * 93, y: -49)
+      }
+      Text("TRAIN").font(.system(size: 8, weight: .black, design: .monospaced)).foregroundStyle(.orange.opacity(0.8)).offset(y: 18)
+    }.frame(width: 245, height: 150)
   }
 
   private func cinematicValueShaping(size: CGSize) -> some View {
@@ -903,11 +987,11 @@ struct FounderEnvironmentRendererView: View {
 
       Path { path in
         let utility = layout.viewportPosition(worldPoint: CGPoint(x: 112, y: 250), camera: camera, layer: .middleGround)
-        let research = layout.viewportPosition(for: .auroraStation, camera: camera, layer: .middleGround)
+        let desk = layout.viewportPosition(for: .founderDesk, camera: camera, layer: .middleGround)
         path.move(to: utility)
-        path.addLine(to: CGPoint(x: research.x - 72, y: research.y - 55))
+        path.addLine(to: CGPoint(x: desk.x - 120, y: desk.y - 190))
       }
-      .stroke(.orange.opacity(0.55), style: StrokeStyle(lineWidth: 4, lineCap: .round, dash: [10, 5]))
+      .stroke(.orange.opacity(0.42), style: StrokeStyle(lineWidth: 4, lineCap: .round, dash: [10, 5]))
     }
     .allowsHitTesting(false)
   }
@@ -955,9 +1039,8 @@ struct FounderEnvironmentRendererView: View {
 
   private func groundingShadows(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
     ZStack {
-      contactShadow(anchor: .auroraStation, width: 205, layout: layout)
-      contactShadow(anchor: .stacksStation, width: 224, layout: layout)
-      contactShadow(anchor: .brioStation, width: 207, layout: layout)
+      contactShadow(anchor: .founderCouch, width: 225, layout: layout)
+      contactShadow(anchor: .workoutBench, width: 205, layout: layout)
       contactShadow(anchor: .verificationArray, width: 105, layout: layout)
       contactShadow(anchor: .developmentRig, width: 105, layout: layout)
       contactShadow(anchor: .campaignStudio, width: 105, layout: layout)
