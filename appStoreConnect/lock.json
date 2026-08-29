@@ -2,6 +2,17 @@
   "appId": "6797107175",
   "derived": {
     "appStoreVersionScreenshotSets": {
+      "IOS:32.7.5:en-US:APP_IPAD_PRO_3GEN_129": {
+        "screenshots": [
+          {
+            "fileName": "founder-garage-ipad-13.png",
+            "fileSize": 5331469,
+            "id": "edd9ba3d-09d0-4ef9-b7f0-af31b89e5084",
+            "sourceFileChecksum": "68a6ead428a2f37345d78733ebdaf314"
+          }
+        ],
+        "setID": "28aac639-d7f5-41b3-9a4e-3fa2b8868553"
+      },
       "IOS:32.7.5:en-US:APP_IPHONE_65": {
         "screenshots": [
           {
@@ -1569,6 +1580,19 @@
       },
       "id": "72fbe5d0-a4e7-40d9-9d25-f3e366903c02",
       "type": "appStoreVersionLocalizations"
+    },
+    "appStoreVersionScreenshotSet:IOS:32.7.5:en-US:APP_IPAD_PRO_3GEN_129": {
+      "fields": {
+        "screenshots": [
+          {
+            "file": "founder-garage-ipad-13.png",
+            "fileSize": 5331469,
+            "sourceFileChecksum": "68a6ead428a2f37345d78733ebdaf314"
+          }
+        ]
+      },
+      "id": "28aac639-d7f5-41b3-9a4e-3fa2b8868553",
+      "type": "appScreenshotSets"
     },
     "appStoreVersionScreenshotSet:IOS:32.7.5:en-US:APP_IPHONE_65": {
       "fields": {
