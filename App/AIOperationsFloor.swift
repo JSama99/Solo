@@ -159,6 +159,7 @@ private struct OperationsStationCard: View {
     VStack(alignment: .leading, spacing: 10) {
       Button(action: onToggle) { HStack(spacing: 10) { portrait; VStack(alignment: .leading, spacing: 2) { Text(agent.name.uppercased()).font(.subheadline.weight(.black)); Text(specialty).font(.caption2.weight(.bold)).foregroundStyle(accent); Text(agent.activity.label).font(.caption.weight(.semibold)).foregroundStyle(.primary) }; Spacer(); Image(systemName: expanded ? "chevron.up" : "chevron.down").font(.caption.weight(.bold)).foregroundStyle(.secondary) } }.buttonStyle(.plain)
       HStack(spacing: 6) { statusChip(agent.activity.label, agent.activity == .awaitingReview || agent.activity == .workComplete ? "tray.full.fill" : "waveform.path.ecg"); ForEach(agent.conditions.sorted { $0.rawValue < $1.rawValue }, id: \.self) { statusChip($0.label, "checkmark.shield") } }
+      handoffStrip
       Text(agent.taskTitle ?? "No assigned objective — available for a Founder priority.").font(.caption).foregroundStyle(.secondary).lineLimit(expanded ? nil : 2)
       if expanded { expandedSurface }
     }
@@ -168,6 +169,21 @@ private struct OperationsStationCard: View {
     .accessibilityElement(children: .contain).accessibilityLabel("\(agent.name), \(specialty)").accessibilityValue(agent.accessibilityValue)
   }
   private var portrait: some View { ZStack { Circle().fill(accent.opacity(0.2)); if let asset = AgentPortraitAsset.name(for: agent.agentID) { Image(asset).resizable().scaledToFill() } else { Text(agent.initials).font(.headline.weight(.black)) } }.frame(width: 48, height: 48).clipShape(.circle).overlay { Circle().stroke(accent.opacity(0.8), lineWidth: 1.5) } }
+  private var handoffStrip: some View {
+    let handoff = switch agent.activity {
+    case .assignmentReceived: "FOUNDER  →  \(agent.name.uppercased()) · assignment packet received"
+    case .working: "\(agent.name.uppercased()) · work surface active"
+    case .workComplete, .awaitingReview: "\(agent.name.uppercased())  →  FOUNDER REVIEW · reported artifact docked"
+    case .reviewing: "FOUNDER REVIEW  →  \(agent.name.uppercased()) · evidence inspection"
+    case .reviewed, .resolving, .resolved: "FOUNDER REVIEW  →  COMPANY SYSTEM · decision path"
+    case .idle, .resting: "OPERATIONAL LINK · standing by"
+    }
+    return Label(handoff, systemImage: "arrow.right.doc.on.clipboard")
+      .font(.caption2.weight(.semibold)).foregroundStyle(accent)
+      .frame(maxWidth: .infinity, alignment: .leading).padding(7)
+      .background(accent.opacity(0.10), in: .rect(cornerRadius: 8))
+      .accessibilityLabel(handoff)
+  }
   private var expandedSurface: some View { VStack(alignment: .leading, spacing: 9) { Label(workSurface, systemImage: agent.role.symbol).font(.caption.weight(.bold)); ProgressView(value: agent.progress).tint(accent).accessibilityLabel("Reported work progress").accessibilityValue("\(Int((agent.progress * 100).rounded())) percent") ; HStack { Text("Trust \(agent.trustLabel)").font(.caption2); Spacer(); Text("Level \(agent.level)").font(.caption2) }; Divider(); HStack { if availability.canAssign { Button("Assign", systemImage: "arrow.down.doc", action: onAssign).buttonStyle(.bordered).tint(accent) }; if availability.canReview { Button("Review", systemImage: "eye", action: onReview).buttonStyle(.borderedProminent).tint(accent) }; Button("Details", systemImage: "rectangle.expand.vertical", action: onOpenDetail).buttonStyle(.bordered) }.font(.caption.weight(.bold)) }.padding(10).background(.black.opacity(0.28), in: .rect(cornerRadius: 10)) }
   private func statusChip(_ title: String, _ symbol: String) -> some View { Label(title, systemImage: symbol).font(.caption2.weight(.semibold)).lineLimit(1).padding(.horizontal, 7).padding(.vertical, 4).background(.black.opacity(0.28), in: .capsule) }
 }
