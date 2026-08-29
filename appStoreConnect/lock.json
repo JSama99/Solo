@@ -17,13 +17,12 @@
         "screenshots": [
           {
             "fileName": "founder-garage-65.jpg",
-            "fileSize": 449088,
-            "id": "e0b95c77-7aad-44c1-b4b2-270ecf5115a3",
-            "renditionChecksum": "7c8d0d4004133f4d4ad4326e37292b86",
-            "sourceFileChecksum": "a185443f5036fc5f5b7febe81e27e855"
+            "fileSize": 447658,
+            "id": "0cb88998-5151-47fe-962c-dfc368b8328d",
+            "sourceFileChecksum": "7c8d0d4004133f4d4ad4326e37292b86"
           }
         ],
-        "setID": "d6b5370b-967b-4bcf-a7c5-a8372e601daf"
+        "setID": "308caeb9-836a-49be-8e56-b9fbf95a9bf4"
       },
       "IOS:32.7.5:en-US:APP_IPHONE_67": {
         "screenshots": [
@@ -1576,7 +1575,8 @@
         "description": "You are a solo founder. Your entire team is AI. They finish the work fast, they hand you a report — and the report is not always the truth.\n\nSOLO: Unicorn Run is a founder-life strategy game about the one problem nobody warns you about: when your workers are AI agents, the hardest job isn't doing the work. It's knowing which results you can actually trust.\n\nTHE CORE LOOP\nEvery sprint, five opportunities land on your desk and you can only commit to three. You assign your agents by role fit, model family, drift, and trust. Then each one reports back — and here's the catch: what an agent REPORTS and what it actually DID are two different numbers, and one of them is hidden from you. Spend your scarce Founder Attention to review a result and you'll learn the truth: solid work, quiet overclaim, or a correlated failure quietly spreading across every agent sharing the same model family. Then you decide. Approve it. Rework it. Cross-check it against a second model family. Or ship it anyway and pray.\n\nReview everything and you'll run out of energy and runway. Review nothing and you'll scale a company built on reports you never verified. That tension is the whole game.\n\nA COMPANY THAT REMEMBERS\nYour choices don't reset each sprint. Founder dilemmas — the custom feature that pays now but haunts your roadmap, the refund you fight or honor, the acquisition offer that could end the run today — leave permanent marks: company flags, recurring obligations, relationships that warm or sour, and a readable Company Story you can look back on. An evidence ledger records every verified and unverified claim. And in later ventures, Hindsight surfaces earlier moments that resemble the one you're in now — never telling you what to do, only what happened last time.\n\nTWO WAYS TO PLAY\n- Career — two ventures, twenty-four sprints, one complete story with a real ending.\n- Continuous — keep building through unlimited ventures under rising operating pressure, and retire on your own terms whenever you choose to stop.\n\nPick a founder doctrine — Pure Agent, Human-Guided, or Trust-First — that reshapes your attention budget, your risk, and how your agents behave.\n\nFEATURES\n- A verification mechanic you won't find in other tycoon games: hidden actual quality, reported quality, evidence completeness, and correlated model-family risk\n- 60 authored opportunities, 12 founder dilemmas, and branching consequences that persist across your whole career\n- Three AI agents with distinct archetypes, ambitions, and relationships that shift with your decisions\n- Deterministic simulation — the same seed always plays out the same way\n- Fully offline. No account, no sign-in, no ads.\n\nFREE AND PAID\nYour first venture is completely free — the full loop, a real ending, and every core mechanic. The optional Founder Pass is a one-time unlock (not a subscription) that opens the second venture, continuous mode, and Hindsight recall for the rest of your career.\n\nBuild the company. Verify the work. Find out whether you've got a unicorn — or a runway that's about to run out.\n\nTerms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/",
         "keywords": "startup,founder,AI agents,simulation,strategy,tycoon,business,management,indie,offline",
         "marketingUrl": "https://www.talonsight.com/solo",
-        "supportUrl": "https://www.talonsight.com/contact"
+        "supportUrl": "https://www.talonsight.com/contact",
+        "whatsNew": "Welcome to the Founder Desk.\n\n- Run your company from one living garage workspace\n- Focus the Founder Computer, Tech.com iPhone, Venture iPad, and Company Server directly\n- Keep reports, objectives, and company operations in place as you switch devices\n- Improved VoiceOver, Dynamic Type, contrast, and motion support\n\nBuild the company. Verify the work."
       },
       "id": "72fbe5d0-a4e7-40d9-9d25-f3e366903c02",
       "type": "appStoreVersionLocalizations"
@@ -1599,12 +1599,12 @@
         "screenshots": [
           {
             "file": "founder-garage-65.jpg",
-            "fileSize": 449088,
-            "sourceFileChecksum": "a185443f5036fc5f5b7febe81e27e855"
+            "fileSize": 447658,
+            "sourceFileChecksum": "7c8d0d4004133f4d4ad4326e37292b86"
           }
         ]
       },
-      "id": "d6b5370b-967b-4bcf-a7c5-a8372e601daf",
+      "id": "308caeb9-836a-49be-8e56-b9fbf95a9bf4",
       "type": "appScreenshotSets"
     },
     "appStoreVersionScreenshotSet:IOS:32.7.5:en-US:APP_IPHONE_67": {
