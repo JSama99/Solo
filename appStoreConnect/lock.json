@@ -2,17 +2,17 @@
   "appId": "6797107175",
   "derived": {
     "appStoreVersionScreenshotSets": {
-      "IOS:1.0:en-US:APP_IPHONE_65": {
+      "IOS:32.7.5:en-US:APP_IPHONE_65": {
         "screenshots": [
           {
             "fileName": "founder-garage-65.jpg",
             "fileSize": 449088,
-            "id": "e5258c81-80a2-496c-ad5a-6c48692e9e4e",
+            "id": "e0b95c77-7aad-44c1-b4b2-270ecf5115a3",
             "renditionChecksum": "7c8d0d4004133f4d4ad4326e37292b86",
             "sourceFileChecksum": "a185443f5036fc5f5b7febe81e27e855"
           }
         ],
-        "setID": "9704cd2a-a1e9-4b11-923e-af15b2ee8c5f"
+        "setID": "d6b5370b-967b-4bcf-a7c5-a8372e601daf"
       }
     },
     "inAppPurchasePricing": {
@@ -1528,39 +1528,38 @@
       "id": "783c7ec9-0e87-418b-a1bb-de572eaab12c",
       "type": "appInfoLocalizations"
     },
-    "appStoreReviewDetail:IOS:1.0": {
+    "appStoreReviewDetail:IOS:32.7.5": {
       "fields": {
         "contactEmail": "jsama999@talonsight.com",
         "contactFirstName": "Jermaine",
         "contactLastName": "Nelson",
         "contactPhone": "+1 678 847 8569",
         "demoAccountRequired": false,
-        "notes": "SOLO: Unicorn Run is an offline single-player startup strategy simulation. No account or sign-in is required. Network access is used only for App Store purchase information and transactions.\n\nPURCHASES INCLUDED WITH THIS SUBMISSION\n- Founder Pass Monthly — $9.99, auto-renewable monthly subscription\n  Product ID: com.talonsight.solounicornrun.founderpass.monthly\n- Founder Pass Annual — $79.99, auto-renewable yearly subscription\n  Product ID: com.talonsight.solounicornrun.founderpass.annual\n- Founder Pass — $99.99, lifetime non-consumable purchase\n  Product ID: com.talonsight.solounicornrun.founderpass.lifetime\n\nEvery option activates the same RevenueCat entitlement, solo_unicorn_run_pro, and unlocks Venture 2, Continuous mode, Hindsight Recall, and the full career outcome. Subscription access continues while the subscription is active. The lifetime purchase does not renew. Eligible new US customers receive a seven-day introductory trial with the annual subscription.\n\nFASTEST PATH TO THE PURCHASE SCREEN\n1. Launch the app.\n2. Tap Continue Career. If no saved career is available, tap Choose Mode and start any career.\n3. Tap More in the bottom tab bar.\n4. Tap Solo Pro.\n5. Tap Monthly, Annual, or Lifetime to select it, then tap the Continue button.\n\nThe same purchase screen also appears after Venture 1 at the Venture 2 checkpoint. Venture 1 is fully playable for free. Restore Purchases is directly below the purchase button on the Solo Pro screen.\n\nCONTACT\nJermaine Nelson, jsama999@talonsight.com, +1 678 847 8569"
+        "notes": "SOLO: Unicorn Run is an offline single-player startup strategy simulation. No account or sign-in is required. Network access is used only for App Store purchase information and transactions.\n\nPURCHASES INCLUDED WITH THIS SUBMISSION\n- Founder Pass Monthly — $9.99, auto-renewable monthly subscription\n  Product ID: com.talonsight.solounicornrun.founderpass.monthly\n- Founder Pass Annual — $79.99, auto-renewable yearly subscription\n  Product ID: com.talonsight.solounicornrun.founderpass.annual\n- Founder Pass — $99.99, lifetime non-consumable purchase\n  Product ID: com.talonsight.solounicornrun.founderpass.lifetime\n\nEvery option activates the same RevenueCat entitlement, Solo: Unicorn Run Pro, and unlocks Venture 2, Continuous mode, Hindsight Recall, and the full career outcome. Subscription access continues while the subscription is active. The lifetime purchase does not renew. Eligible new US customers receive a seven-day introductory trial with the annual subscription.\n\nFASTEST PATH TO THE PURCHASE SCREEN\n1. Launch the app.\n2. Tap Continue Career. If no saved career is available, tap Choose Mode and start any career.\n3. Tap More in the bottom tab bar.\n4. Tap Solo Pro.\n5. Tap Monthly, Annual, or Lifetime to select it, then tap the Continue button.\n\nThe same purchase screen also appears after Venture 1 at the Venture 2 checkpoint. Venture 1 is fully playable for free. Restore Purchases is directly below the purchase button on the Solo Pro screen.\n\nCONTACT\nJermaine Nelson, jsama999@talonsight.com, +1 678 847 8569"
       },
-      "id": "34dcdcac-504f-4744-a426-48d6fba45a88",
+      "id": "914e8462-5736-40e2-a462-cc0f793b04b3",
       "type": "appStoreReviewDetails"
     },
-    "appStoreVersion:IOS:1.0": {
+    "appStoreVersion:IOS:32.7.5": {
       "fields": {
-        "copyright": "2026 TalonSight",
+        "copyright": "2026 TalonSight Technologies",
         "releaseType": "AFTER_APPROVAL",
-        "versionString": "1.0"
+        "versionString": "32.7.5"
       },
-      "id": "97484cc8-07fc-46bf-ac98-056e59b3e726",
+      "id": "87abbd83-a593-49fc-86c1-d792eea393ec",
       "type": "appStoreVersions"
     },
-    "appStoreVersionLocalization:IOS:1.0:en-US": {
+    "appStoreVersionLocalization:IOS:32.7.5:en-US": {
       "fields": {
         "description": "You are a solo founder. Your entire team is AI. They finish the work fast, they hand you a report — and the report is not always the truth.\n\nSOLO: Unicorn Run is a founder-life strategy game about the one problem nobody warns you about: when your workers are AI agents, the hardest job isn't doing the work. It's knowing which results you can actually trust.\n\nTHE CORE LOOP\nEvery sprint, five opportunities land on your desk and you can only commit to three. You assign your agents by role fit, model family, drift, and trust. Then each one reports back — and here's the catch: what an agent REPORTS and what it actually DID are two different numbers, and one of them is hidden from you. Spend your scarce Founder Attention to review a result and you'll learn the truth: solid work, quiet overclaim, or a correlated failure quietly spreading across every agent sharing the same model family. Then you decide. Approve it. Rework it. Cross-check it against a second model family. Or ship it anyway and pray.\n\nReview everything and you'll run out of energy and runway. Review nothing and you'll scale a company built on reports you never verified. That tension is the whole game.\n\nA COMPANY THAT REMEMBERS\nYour choices don't reset each sprint. Founder dilemmas — the custom feature that pays now but haunts your roadmap, the refund you fight or honor, the acquisition offer that could end the run today — leave permanent marks: company flags, recurring obligations, relationships that warm or sour, and a readable Company Story you can look back on. An evidence ledger records every verified and unverified claim. And in later ventures, Hindsight surfaces earlier moments that resemble the one you're in now — never telling you what to do, only what happened last time.\n\nTWO WAYS TO PLAY\n- Career — two ventures, twenty-four sprints, one complete story with a real ending.\n- Continuous — keep building through unlimited ventures under rising operating pressure, and retire on your own terms whenever you choose to stop.\n\nPick a founder doctrine — Pure Agent, Human-Guided, or Trust-First — that reshapes your attention budget, your risk, and how your agents behave.\n\nFEATURES\n- A verification mechanic you won't find in other tycoon games: hidden actual quality, reported quality, evidence completeness, and correlated model-family risk\n- 60 authored opportunities, 12 founder dilemmas, and branching consequences that persist across your whole career\n- Three AI agents with distinct archetypes, ambitions, and relationships that shift with your decisions\n- Deterministic simulation — the same seed always plays out the same way\n- Fully offline. No account, no sign-in, no ads.\n\nFREE AND PAID\nYour first venture is completely free — the full loop, a real ending, and every core mechanic. The optional Founder Pass is a one-time unlock (not a subscription) that opens the second venture, continuous mode, and Hindsight recall for the rest of your career.\n\nBuild the company. Verify the work. Find out whether you've got a unicorn — or a runway that's about to run out.\n\nTerms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/",
         "keywords": "startup,founder,AI agents,simulation,strategy,tycoon,business,management,indie,offline",
         "marketingUrl": "https://www.talonsight.com/solo",
-        "promotionalText": "Your team is AI. The work comes back fast but the report isn't always true. Review it, cross-check it, or ship it and pray. First venture free.",
         "supportUrl": "https://www.talonsight.com/contact"
       },
-      "id": "e7f5c61d-b566-4683-b1bd-740e13017dd2",
+      "id": "72fbe5d0-a4e7-40d9-9d25-f3e366903c02",
       "type": "appStoreVersionLocalizations"
     },
-    "appStoreVersionScreenshotSet:IOS:1.0:en-US:APP_IPHONE_65": {
+    "appStoreVersionScreenshotSet:IOS:32.7.5:en-US:APP_IPHONE_65": {
       "fields": {
         "screenshots": [
           {
@@ -1570,7 +1569,7 @@
           }
         ]
       },
-      "id": "9704cd2a-a1e9-4b11-923e-af15b2ee8c5f",
+      "id": "d6b5370b-967b-4bcf-a7c5-a8372e601daf",
       "type": "appScreenshotSets"
     },
     "availability": {
