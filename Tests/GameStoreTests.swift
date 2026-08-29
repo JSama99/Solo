@@ -13,7 +13,7 @@ final class GameStoreTests: XCTestCase {
 
   func testResetAndSavePurgeIdenticalLegacyKeySets() {
     XCTAssertEqual(GameStore.resetCareerPurgeKeys, GameStore.saveCareerPurgeKeys)
-    XCTAssertEqual(GameStore.resetCareerPurgeKeys.count, 16)
+    XCTAssertEqual(GameStore.resetCareerPurgeKeys.count, 17)
 
     for key in GameStore.resetCareerPurgeKeys {
       UserDefaults.standard.set(Data([0x1]), forKey: key)
@@ -680,7 +680,7 @@ final class GameStoreTests: XCTestCase {
   }
 
   func testRevenueCatCatalogIdentifiers() {
-    XCTAssertEqual(RevenueCatConfiguration.entitlementIdentifier, "solo_unicorn_run_pro")
+    XCTAssertEqual(RevenueCatConfiguration.entitlementIdentifier, "Solo: Unicorn Run Pro")
     XCTAssertEqual(RevenueCatConfiguration.entitlementDisplayName, "Founder Pass")
     XCTAssertEqual(
       RevenueCatConfiguration.expectedStoreProductIdentifier,

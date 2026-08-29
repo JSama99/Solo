@@ -983,6 +983,8 @@ private struct FounderWorkstationCard: View {
 
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @Environment(AppSettingsStore.self) private var settings
+  @State private var coverageFeedbackToken = 0
   private let accent = SoloTheme.amber
 
   private var summary: FounderWorkstationSummary {
@@ -993,6 +995,7 @@ private struct FounderWorkstationCard: View {
     VStack(alignment: .leading, spacing: expanded ? 16 : 12) {
       identity
       metrics
+      coverageChangeFeedback
       pendingWork
       if expanded {
         founderCommand
@@ -1052,12 +1055,43 @@ private struct FounderWorkstationCard: View {
       founderMetric("Attention", "\(store.attentionRemaining)/\(store.attentionMaximum)", "eye")
       founderMetric("Runway", "\(store.stats.runway)d", "calendar")
       founderMetric("Momentum", "\(store.stats.momentum)", "arrow.up.right")
+      founderMetric("Company Trust", "\(store.stats.trust)", "checkmark.shield")
+      founderMetric("Coverage", signed(store.stats.coverage), "antenna.radiowaves.left.and.right")
       if expanded {
-        founderMetric("Company Trust", "\(store.stats.trust)", "checkmark.shield")
         founderMetric("Revenue", store.stats.revenue.formatted(.currency(code: "USD").precision(.fractionLength(0))), "dollarsign")
         founderMetric("Capital", store.stats.capital.formatted(.currency(code: "USD").precision(.fractionLength(0))), "banknote")
       }
     }
+  }
+
+  @ViewBuilder
+  private var coverageChangeFeedback: some View {
+    if let change = store.latestCoverageChange, change.delta != 0 {
+      HStack(spacing: 7) {
+        Image(systemName: change.delta > 0 ? "arrow.up.right" : "arrow.down.right")
+        Text("COVERAGE \(signed(change.delta))").fontWeight(.black)
+        Text(change.reason).foregroundStyle(.secondary).lineLimit(2)
+        Spacer(minLength: 0)
+      }
+      .font(.caption2)
+      .foregroundStyle(change.delta > 0 ? SoloTheme.mint : SoloTheme.coral)
+      .padding(.horizontal, 9)
+      .padding(.vertical, 7)
+      .background(.black.opacity(0.20), in: .rect(cornerRadius: 9))
+      .contentTransition(.numericText(value: Double(store.stats.coverage)))
+      .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
+      .accessibilityElement(children: .combine)
+      .accessibilityLabel("Coverage changed by \(change.delta). \(change.reason)")
+      .onAppear {
+        coverageFeedbackToken += 1
+        settings.playFeedback(change.delta > 0 ? .coveragePositive : .coverageNegative)
+      }
+      .sensoryFeedback(change.delta > 0 ? .success : .warning, trigger: coverageFeedbackToken)
+    }
+  }
+
+  private func signed(_ value: Int) -> String {
+    "\(value > 0 ? "+" : "")\(value)"
   }
 
   private var metricColumns: [GridItem] {
@@ -1068,7 +1102,7 @@ private struct FounderWorkstationCard: View {
     Label {
       VStack(alignment: .leading, spacing: 1) {
         Text(label.uppercased()).font(.caption2.weight(.bold)).foregroundStyle(.secondary)
-        Text(value).font(.caption.weight(.semibold)).contentTransition(.interpolate)
+        Text(value).font(.caption.weight(.semibold)).contentTransition(.numericText())
       }
     } icon: {
       Image(systemName: symbol).foregroundStyle(accent)

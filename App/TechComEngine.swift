@@ -12,6 +12,7 @@ struct TechComHeadline: Codable, Identifiable, Equatable {
   var text: String
   var venture: Int
   var sprint: Int
+  var publicEventID: String? = nil
 }
 
 struct NewsHeadlineTemplate {

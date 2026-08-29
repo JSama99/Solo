@@ -64,6 +64,9 @@ final class GameStore {
   private(set) var workforceNotifications: [String] = []
   var techComHeadlines: [TechComHeadline] = []
   var techComRivals: [TechComRival] = []
+  private(set) var publicMediaEvents: [PublicMediaEvent] = []
+  private(set) var processedCoverageEventIDs: Set<String> = []
+  private(set) var latestCoverageChange: CoverageChange?
   private(set) var statementSpent = 0
   private(set) var feedPosts: [FeedPost] = []
   private var pendingFeedEffects = SimulationEffects()
@@ -117,6 +120,7 @@ final class GameStore {
 
   var hasSave: Bool {
     UserDefaults.standard.data(forKey: Self.saveKey) != nil
+      || UserDefaults.standard.data(forKey: Self.v17SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v16SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v15SaveKey) != nil
       || UserDefaults.standard.data(forKey: Self.v14SaveKey) != nil
@@ -159,7 +163,23 @@ final class GameStore {
     }
     feedPosts[index].resolvedActionID = actionID
     pendingFeedEffects = pendingFeedEffects + action.effects
-    stats.coverage = min(100, max(-100, stats.coverage + action.coverageDelta))
+    let projected = CoverageTuning.clamp(stats.coverage + action.coverageDelta)
+    let program: SignalTVProgram = action.coverageDelta > 0 && projected >= 60
+      ? .founderSpotlight
+      : abs(action.coverageDelta) >= 8 ? .breaking : .techComLive
+    let tone: PublicMediaTone = action.coverageDelta > 0 ? .favorable : action.coverageDelta < 0 ? .critical : .neutral
+    applyPublicMediaEvent(PublicMediaEvent(
+      id: "feed-\(postID)-\(actionID)",
+      program: program,
+      tone: tone,
+      headline: feedPosts[index].headline,
+      summary: action.detail,
+      tickerItems: [feedPosts[index].headline, "TECH.COM PUBLIC DESK"] + SignalTVProgramming.safeMarketTicker,
+      coverageDelta: action.coverageDelta,
+      venture: feedPosts[index].venture,
+      sprint: feedPosts[index].sprint,
+      concernsPlayerCompany: true
+    ))
     injectedFeedTaskTitle = action.grantsTaskTitle
     save()
   }
@@ -598,6 +618,9 @@ final class GameStore {
     forksUsedThisVenture = 0
     rivalDiscontinuities = []
     reportCache = []
+    publicMediaEvents = []
+    processedCoverageEventIDs = []
+    latestCoverageChange = nil
     techComHeadlines = []
     techComRivals = TechComEngine.rivals(seed: seed ?? 0x534F4C4F)
     talentBoardRefreshes = 0
@@ -640,6 +663,10 @@ final class GameStore {
        let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
        envelope.version == Self.saveVersion {
       loadedSave = envelope.career
+    } else if let data = UserDefaults.standard.data(forKey: Self.v17SaveKey),
+              let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
+              envelope.version == 17 {
+      loadedSave = migrateV17(envelope.career)
     } else if let data = UserDefaults.standard.data(forKey: Self.v16SaveKey),
               let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
               envelope.version == 16 {
@@ -1975,6 +2002,9 @@ final class GameStore {
     pendingChapterMilestone = save.pendingChapterMilestone
     techComHeadlines = save.techComHeadlines
     techComRivals = save.techComRivals.isEmpty ? TechComEngine.rivals(seed: UInt64(save.venture * 100 + save.sprint)) : save.techComRivals
+    publicMediaEvents = save.publicMediaEvents.filter(\.isPublic)
+    processedCoverageEventIDs = save.processedCoverageEventIDs
+    latestCoverageChange = nil
     talentBoardRefreshes = save.talentBoardRefreshes
     recallsShownThisVenture = 0
     activeRecall = nil
@@ -2086,6 +2116,8 @@ final class GameStore {
   private func migrateV15(_ legacy: CareerSave) -> CareerSave { legacy }
 
   private func migrateV16(_ legacy: CareerSave) -> CareerSave { legacy }
+
+  private func migrateV17(_ legacy: CareerSave) -> CareerSave { legacy }
 
   private func migrateV6(_ legacy: CareerSave) -> CareerSave {
     legacy
@@ -2394,11 +2426,90 @@ final class GameStore {
   func recordTechComHeadlines(events: [PresentationCoordinator.Event], snapshot: TechComSnapshot) {
     var generator = SeededRandomNumberGenerator(seed: UInt64(snapshot.venture * 10_000 + snapshot.sprint * 100 + techComHeadlines.count))
     let published = TechComEngine.headlines(snapshot: snapshot, events: events, generator: &generator)
-    for headline in published where !techComHeadlines.contains(where: { $0.text == headline.text && $0.venture == headline.venture && $0.sprint == headline.sprint }) {
+    var unappliedCoverage = publicCoverageDelta(events: events)
+    for var headline in published where !techComHeadlines.contains(where: { $0.text == headline.text && $0.venture == headline.venture && $0.sprint == headline.sprint }) {
+      let eventID = "techcom-v\(headline.venture)-s\(headline.sprint)-\(SignalTVProgramming.stableID(headline.text))"
+      headline.publicEventID = eventID
       techComHeadlines.insert(headline, at: 0)
+      let concernsPlayer = headline.category == .ownCompany
+      let delta = concernsPlayer ? unappliedCoverage : 0
+      if delta != 0 { unappliedCoverage = 0 }
+      let projected = CoverageTuning.clamp(stats.coverage + delta)
+      let program: SignalTVProgram
+      if delta > 0 && projected >= 60 && delta >= 8 {
+        program = .founderSpotlight
+      } else if abs(delta) >= 8 {
+        program = .breaking
+      } else {
+        program = headline.category == .rival ? .rivalWatch : .techComLive
+      }
+      applyPublicMediaEvent(PublicMediaEvent(
+        id: eventID,
+        program: program,
+        tone: delta > 0 ? .favorable : delta < 0 ? .critical : .neutral,
+        headline: headline.text,
+        summary: broadcastSummary(for: headline.category),
+        tickerItems: [headline.text] + SignalTVProgramming.safeMarketTicker,
+        coverageDelta: delta,
+        venture: headline.venture,
+        sprint: headline.sprint,
+        concernsPlayerCompany: concernsPlayer
+      ), persist: false)
     }
     techComHeadlines = Array(techComHeadlines.prefix(60))
     save()
+  }
+
+  /// The single authority for Coverage-changing media. Both publication and
+  /// broadcast replay call this method; the stable event ledger makes those
+  /// representations idempotent across navigation and save/load.
+  @discardableResult
+  func applyPublicMediaEvent(_ event: PublicMediaEvent, persist: Bool = true) -> Bool {
+    guard event.isPublic else { return false }
+    if !publicMediaEvents.contains(where: { $0.id == event.id }) {
+      publicMediaEvents.insert(event, at: 0)
+      publicMediaEvents = Array(publicMediaEvents.prefix(30))
+    }
+    guard event.concernsPlayerCompany,
+          event.coverageDelta != 0,
+          !processedCoverageEventIDs.contains(event.id) else {
+      if persist { save() }
+      return false
+    }
+    let before = stats.coverage
+    stats.coverage = CoverageTuning.clamp(before + event.coverageDelta)
+    processedCoverageEventIDs.insert(event.id)
+    let applied = stats.coverage - before
+    latestCoverageChange = CoverageChange(eventID: event.id, delta: applied, reason: event.summary)
+    if persist { save() }
+    return applied != 0
+  }
+
+  private func publicCoverageDelta(events: [PresentationCoordinator.Event]) -> Int {
+    for event in events.reversed() {
+      switch event {
+      case .sprint(_, let result):
+        return CoverageTuning.delta(for: result)
+      case .review(_, _, _, let result, _):
+        switch result.verificationState {
+        case .overclaimed: return -6
+        case .driftDetected: return -7
+        case .confirmed where result.evidenceCompleteness >= 75: return 4
+        default: continue
+        }
+      case .assignment:
+        continue
+      }
+    }
+    return 0
+  }
+
+  private func broadcastSummary(for category: TechComHeadlineCategory) -> String {
+    switch category {
+    case .ownCompany: "A canonical public company event enters the broadcast cycle."
+    case .trend: "Signal TV summarizes the public startup market without inventing company truth."
+    case .rival: "Rival Watch reports only public claims and canonically revealed developments."
+    }
   }
 
   @discardableResult
@@ -2493,7 +2604,9 @@ final class GameStore {
       forksUsedThisVenture: forksUsedThisVenture,
       doctrineProfile: currentDoctrineProfile,
       unicornIdentity: careerOutcome?.unicornIdentity,
-      rivalDiscontinuities: rivalDiscontinuities
+      rivalDiscontinuities: rivalDiscontinuities,
+      publicMediaEvents: publicMediaEvents,
+      processedCoverageEventIDs: processedCoverageEventIDs
     )
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
@@ -2658,11 +2771,12 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  static let saveVersion = 17
+  static let saveVersion = 18
   /// The key the current save format is written to. Not private so tests can
   /// assert against the live key instead of hard-coding a version that goes
   /// stale the next time the format changes.
-  static let saveKey = "solo-unicorn-run-native-save-v17"
+  static let saveKey = "solo-unicorn-run-native-save-v18"
+  private static let v17SaveKey = "solo-unicorn-run-native-save-v17"
   private static let v16SaveKey = "solo-unicorn-run-native-save-v16"
   private static let v15SaveKey = "solo-unicorn-run-native-save-v15"
   private static let v14SaveKey = "solo-unicorn-run-native-save-v14"
@@ -2680,12 +2794,12 @@ final class GameStore {
   private static let v2SaveKey = "solo-unicorn-run-native-save-v2"
   private static let legacySaveKey = "solo-unicorn-run-native-save-v1"
   static let saveCareerPurgeKeys = [
-    v16SaveKey, v15SaveKey, v14SaveKey, v13SaveKey, v12SaveKey, v11SaveKey,
+    v17SaveKey, v16SaveKey, v15SaveKey, v14SaveKey, v13SaveKey, v12SaveKey, v11SaveKey,
     v10SaveKey, v9SaveKey, v8SaveKey, v7SaveKey, v6SaveKey,
     v5SaveKey, v4SaveKey, v3SaveKey, v2SaveKey, legacySaveKey
   ]
   static let resetCareerPurgeKeys = [
-    v16SaveKey, v15SaveKey, v14SaveKey, v13SaveKey, v12SaveKey, v11SaveKey,
+    v17SaveKey, v16SaveKey, v15SaveKey, v14SaveKey, v13SaveKey, v12SaveKey, v11SaveKey,
     v10SaveKey, v9SaveKey, v8SaveKey, v7SaveKey, v6SaveKey,
     v5SaveKey, v4SaveKey, v3SaveKey, v2SaveKey, legacySaveKey
   ]
