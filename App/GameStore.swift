@@ -101,7 +101,7 @@ final class GameStore {
     case .rest: insufficient = stats.runway > 0 ? nil : "Unavailable: no Runway remains for operating burn"
     case .train: insufficient = stats.energy >= abs(FounderEnvironmentalTuning.trainingEnergy) ? nil : "Unavailable: not enough Energy to train"
     }
-    let reason = cooldown ? "Unavailable: available again in \(next!.formatted(.relative(presentation: .named)))" : insufficient
+    let reason = cooldown ? "Unavailable: available again \(next!.formatted(.relative(presentation: .named)))" : insufficient
     switch action {
     case .rest:
       let burn = max(1, Int((Double(VentureEra.era(for: venture).runwayBurnPerSprint) * 0.25).rounded()))
