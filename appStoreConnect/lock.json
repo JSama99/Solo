@@ -13,6 +13,17 @@
           }
         ],
         "setID": "d6b5370b-967b-4bcf-a7c5-a8372e601daf"
+      },
+      "IOS:32.7.5:en-US:APP_IPHONE_67": {
+        "screenshots": [
+          {
+            "fileName": "founder-garage-67.png",
+            "fileSize": 3353936,
+            "id": "4f462cf5-2278-4719-b082-45a54471e3d6",
+            "sourceFileChecksum": "fccb5e598be4921b5419dd45c8da602a"
+          }
+        ],
+        "setID": "c4036f62-2aac-4ca1-a9a5-fa47b6501424"
       }
     },
     "inAppPurchasePricing": {
@@ -1570,6 +1581,19 @@
         ]
       },
       "id": "d6b5370b-967b-4bcf-a7c5-a8372e601daf",
+      "type": "appScreenshotSets"
+    },
+    "appStoreVersionScreenshotSet:IOS:32.7.5:en-US:APP_IPHONE_67": {
+      "fields": {
+        "screenshots": [
+          {
+            "file": "founder-garage-67.png",
+            "fileSize": 3353936,
+            "sourceFileChecksum": "fccb5e598be4921b5419dd45c8da602a"
+          }
+        ]
+      },
+      "id": "c4036f62-2aac-4ca1-a9a5-fa47b6501424",
       "type": "appScreenshotSets"
     },
     "availability": {
