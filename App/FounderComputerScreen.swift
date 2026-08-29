@@ -902,6 +902,12 @@ private struct TaskAssignmentSheet: View {
             Text(task.detail).font(.caption).foregroundStyle(.secondary)
             Text("\(task.role.rawValue) · \(task.category.rawValue) · \(task.urgency.label)").font(.caption2)
             Text("Reward: \(task.reward) · If ignored: \(task.consequenceLabel)").font(.caption2).foregroundStyle(SoloTheme.amber)
+            if let agent {
+              Label("Estimated AI cost: \(store.assignmentCostPreview(task: task, agent: agent).formatted(.currency(code: "USD").precision(.fractionLength(0))))", systemImage: "cpu")
+                .font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.cyan)
+              Text("Charged once when work begins; repeated taps and relaunches cannot charge it again.")
+                .font(.caption2).foregroundStyle(.secondary)
+            }
             HStack {
               Button("Assign") {
                 assignmentTap.toggle()
@@ -1053,13 +1059,14 @@ private struct FounderWorkstationCard: View {
     LazyVGrid(columns: metricColumns, alignment: .leading, spacing: 8) {
       founderMetric("Energy", "\(store.stats.energy)", "battery.75percent")
       founderMetric("Attention", "\(store.attentionRemaining)/\(store.attentionMaximum)", "eye")
-      founderMetric("Runway", "\(store.stats.runway)d", "calendar")
+      founderMetric("Runway", store.finance.runwayLabel(fallbackDailyBurn: 120), "calendar")
       founderMetric("Momentum", "\(store.stats.momentum)", "arrow.up.right")
       founderMetric("Company Trust", "\(store.stats.trust)", "checkmark.shield")
       founderMetric("Coverage", signed(store.stats.coverage), "antenna.radiowaves.left.and.right")
       if expanded {
-        founderMetric("Revenue", store.stats.revenue.formatted(.currency(code: "USD").precision(.fractionLength(0))), "dollarsign")
-        founderMetric("Capital", store.stats.capital.formatted(.currency(code: "USD").precision(.fractionLength(0))), "banknote")
+        founderMetric("Cash", store.finance.cash.formatted(.currency(code: "USD").precision(.fractionLength(0))), "banknote")
+        founderMetric("Capital Raised", store.finance.capitalRaised.formatted(.currency(code: "USD").precision(.fractionLength(0))), "chart.line.uptrend.xyaxis")
+        founderMetric("Revenue", store.finance.lifetimeRevenue.formatted(.currency(code: "USD").precision(.fractionLength(0))), "dollarsign")
       }
     }
   }

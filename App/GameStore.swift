@@ -27,6 +27,11 @@ final class GameStore {
   var venture = 1
   private(set) var intent: SprintIntent = .build
   var stats = FounderStats()
+  /// Canonical financial ledger. Legacy `stats.capital` mirrors cash so older
+  /// systems remain compatible while financial mutations use this authority.
+  var finance = CompanyFinance()
+  /// Day-level operating calendar beneath ventures and sprints.
+  var operatingCalendar = OperatingCalendar()
   var agents = ContentLibrary.initialAgents
   /// The three commitments selected for the sprint.
   var tasks: [SoloTask] = []
@@ -125,6 +130,7 @@ final class GameStore {
     save.elapsedHours += preview.durationHours
     environmentalSave = save
     apply(preview.effects)
+    advanceOperatingTime(hours: preview.durationHours)
     sanitizeState()
     saveCareer()
     return true
@@ -419,7 +425,7 @@ final class GameStore {
       return
     }
     guard (slot == 4 && TalentBoard.fourthSlotPriceRange.contains(candidate.price)) || (slot == 5 && TalentBoard.fifthSlotPriceRange.contains(candidate.price)) else { return }
-    stats.capital -= talentPrice(candidate)
+    recordExpense(id: "hire-\(candidate.id)-v\(venture)-s\(sprint)", category: .aiWorkforce, amount: talentPrice(candidate), source: "AI workforce onboarding: \(candidate.name)", agentID: candidate.id)
     agents.append(candidate.makeAgent())
     achievementStore?.recordWorkforce(agents)
     save()
@@ -432,7 +438,7 @@ final class GameStore {
   func refreshTalentBoard() {
     guard agents.count >= 4, nextTalentSlot != nil else { return }
     guard stats.capital >= TalentBoard.refreshCost else { alertMessage = "Refreshing the talent board costs \(TalentBoard.refreshCost) Capital."; return }
-    stats.capital -= TalentBoard.refreshCost
+    recordExpense(id: "talent-board-refresh-\(venture)-\(sprint)-\(talentBoardRefreshes)", category: .operations, amount: TalentBoard.refreshCost, source: "Talent board refresh")
     talentBoardRefreshes += 1
     save()
   }
@@ -463,7 +469,7 @@ final class GameStore {
     guard let progressionStore else { return .futureEnvironment }
     let result = progressionStore.purchase(tier, availableCapital: stats.capital)
     if case .purchased(let cost) = result {
-      stats.capital = max(0, stats.capital - cost)
+      recordExpense(id: "facility-\(tier.rawValue)", category: .space, amount: cost, source: tier == .founderLoft ? "Founder Loft move-in commitment" : "Headquarters: \(tier.name)", headquarters: tier)
       achievementStore?.recordFacilityProgress(
         purchasedUpgradeCount: progressionStore.purchasedUpgrades.count,
         ownsLoft: progressionStore.ownedFacilities.contains(.founderLoft),
@@ -479,7 +485,7 @@ final class GameStore {
     guard let progressionStore else { return .futureEnvironment }
     let result = progressionStore.purchaseUpgrade(id, availableCapital: stats.capital)
     if case .purchased(let cost) = result {
-      stats.capital = max(0, stats.capital - cost)
+      recordExpense(id: "infrastructure-\(id.rawValue)", category: .infrastructure, amount: cost, source: "Infrastructure: \(id.rawValue)")
       achievementStore?.recordFacilityProgress(
         purchasedUpgradeCount: progressionStore.purchasedUpgrades.count,
         ownsLoft: progressionStore.ownedFacilities.contains(.founderLoft),
@@ -655,6 +661,8 @@ final class GameStore {
     recentObjectiveKinds = []
     intent = .build
     stats = FounderStats()
+    finance = CompanyFinance(cash: stats.capital, capitalRaised: stats.capital, lifetimeRevenue: stats.revenue)
+    operatingCalendar = OperatingCalendar()
     agents = ContentLibrary.initialAgents
     taskBacklog = []
     founderAttentionSpent = 0
@@ -720,6 +728,10 @@ final class GameStore {
        let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
        envelope.version == Self.saveVersion {
       loadedSave = envelope.career
+    } else if let data = UserDefaults.standard.data(forKey: Self.v18SaveKey),
+              let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
+              envelope.version == 18 {
+      loadedSave = migrateV18(envelope.career)
     } else if let data = UserDefaults.standard.data(forKey: Self.v17SaveKey),
               let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
               envelope.version == 17 {
@@ -902,6 +914,7 @@ final class GameStore {
       }
       tasks[taskIndex].assignedAgentID = agentID
       if let agent = agents.first(where: { $0.id == agentID }) {
+        recordExpense(id: "assignment-\(taskID.uuidString)-\(agentID)", category: .aiWorkforce, amount: OperatingCostTuning.assignmentCost(task: tasks[taskIndex], agent: agent), source: "\(agent.name) — \(tasks[taskIndex].title)", agentID: agentID)
         if let cached = cachedReport(taskID: taskID, agentID: agentID) {
           tasks[taskIndex].result = cached
         } else {
@@ -1990,12 +2003,41 @@ final class GameStore {
   }
 
   private func apply(_ effects: SimulationEffects) {
+    if effects.revenue > 0 {
+      recordRevenue(id: "effects-v\(venture)-s\(sprint)-\(finance.transactions.count)", amount: effects.revenue, source: "Verified operating outcome")
+    } else if effects.revenue < 0 {
+      recordExpense(id: "revenue-reversal-v\(venture)-s\(sprint)-\(finance.transactions.count)", category: .growth, amount: abs(effects.revenue), source: "Customer revenue reversal")
+    }
     stats.revenue = max(0, stats.revenue + effects.revenue)
     stats.momentum = clamped(stats.momentum + effects.momentum)
     stats.trust = clamped(stats.trust + effects.trust)
     stats.energy = clamped(stats.energy + effects.energy)
     stats.runway = max(0, stats.runway + effects.runway)
-    stats.capital = max(0, stats.capital + effects.revenue / 4)
+    stats.capital = finance.cash
+  }
+
+  func assignmentCostPreview(task: SoloTask, agent: SoloAgent) -> Int {
+    OperatingCostTuning.assignmentCost(task: task, agent: agent)
+  }
+
+  func recordRevenue(id: String, amount: Int, source: String) {
+    _ = finance.apply(.init(id: id, kind: .revenue, amount: amount, category: nil, simulationDay: operatingCalendar.totalDays, source: source, isRecurring: false, agentID: nil, headquarters: nil))
+    stats.capital = finance.cash
+  }
+
+  func recordExpense(id: String, category: ExpenseCategory, amount: Int, source: String, recurring: Bool = false, agentID: String? = nil, headquarters: FacilityTier? = nil) {
+    _ = finance.apply(.init(id: id, kind: .expense, amount: amount, category: category, simulationDay: operatingCalendar.totalDays, source: source, isRecurring: recurring, agentID: agentID, headquarters: headquarters))
+    stats.capital = finance.cash
+  }
+
+  func advanceOperatingTime(hours: Int) {
+    let before = operatingCalendar.totalDays
+    operatingCalendar.advance(hours: hours)
+    guard operatingCalendar.totalDays > before else { return }
+    finance.closeDay()
+    if progressionStore?.currentFacility == .founderLoft, operatingCalendar.totalDays % 30 == 0 {
+      recordExpense(id: "loft-monthly-\(operatingCalendar.totalDays / 30)", category: .space, amount: OperatingCostTuning.founderLoftMonthlyObligation, source: "Founder Loft monthly lease and utilities", recurring: true, headquarters: .founderLoft)
+    }
   }
 
   private func apply(_ save: CareerSave) {
@@ -2017,6 +2059,10 @@ final class GameStore {
       : max(1, save.venture)
     intent = save.intent
     stats = save.stats
+    finance = save.finance
+    operatingCalendar = save.operatingCalendar
+    // Keep legacy consumers coherent after loading a new-format ledger.
+    stats.capital = finance.cash
     agents = save.agents
     tasks = save.tasks
     taskBacklog = save.taskBacklog
@@ -2176,6 +2222,10 @@ final class GameStore {
   private func migrateV16(_ legacy: CareerSave) -> CareerSave { legacy }
 
   private func migrateV17(_ legacy: CareerSave) -> CareerSave { legacy }
+
+  /// v18 -> v19: `CareerSave`'s tolerant decoder seeds finance from legacy
+  /// spendable capital and starts Day 1. No legacy assignment is charged.
+  private func migrateV18(_ legacy: CareerSave) -> CareerSave { legacy }
 
   private func migrateV6(_ legacy: CareerSave) -> CareerSave {
     legacy
@@ -2664,7 +2714,9 @@ final class GameStore {
       unicornIdentity: careerOutcome?.unicornIdentity,
       rivalDiscontinuities: rivalDiscontinuities,
       publicMediaEvents: publicMediaEvents,
-      processedCoverageEventIDs: processedCoverageEventIDs
+      processedCoverageEventIDs: processedCoverageEventIDs,
+      finance: finance,
+      operatingCalendar: operatingCalendar
     )
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
@@ -2681,7 +2733,8 @@ final class GameStore {
     stats.momentum = clamped(stats.momentum)
     stats.trust = clamped(stats.trust)
     stats.energy = clamped(stats.energy)
-    stats.capital = min(1_000_000_000, max(0, stats.capital))
+    finance.cash = min(1_000_000_000, max(0, finance.cash))
+    stats.capital = finance.cash
     stats.trackRecord = min(1_000_000, max(0, stats.trackRecord))
     stats.coverage = min(100, max(-100, stats.coverage))
     for index in agents.indices {
@@ -2829,11 +2882,12 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  static let saveVersion = 18
+  static let saveVersion = 19
   /// The key the current save format is written to. Not private so tests can
   /// assert against the live key instead of hard-coding a version that goes
   /// stale the next time the format changes.
-  static let saveKey = "solo-unicorn-run-native-save-v18"
+  static let saveKey = "solo-unicorn-run-native-save-v19"
+  private static let v18SaveKey = "solo-unicorn-run-native-save-v18"
   private static let v17SaveKey = "solo-unicorn-run-native-save-v17"
   private static let v16SaveKey = "solo-unicorn-run-native-save-v16"
   private static let v15SaveKey = "solo-unicorn-run-native-save-v15"
