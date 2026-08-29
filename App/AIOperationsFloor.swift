@@ -70,6 +70,7 @@ struct AIOperationsFloor: View {
       .font(.caption.weight(.black))
       .foregroundStyle(.secondary)
       .accessibilityAddTraits(.isHeader)
+      .accessibilitySortPriority(50)
   }
 
   private var floorBackground: some View {
@@ -119,7 +120,7 @@ struct AIOperationsFloor: View {
     .padding(14).background(SoloTheme.amber.opacity(0.10), in: .rect(cornerRadius: 18))
     .overlay { RoundedRectangle(cornerRadius: 18).stroke(SoloTheme.amber.opacity(0.55), lineWidth: 1.5) }
     .accessibilityElement(children: .contain)
-    .accessibilityLabel("Founder Command Console. Objective: \(objective)")
+    .accessibilitySortPriority(40)
   }
 
   private var reviewQueue: some View {
@@ -129,19 +130,26 @@ struct AIOperationsFloor: View {
         Text("No packets awaiting review. The floor will route reported outputs here.").font(.caption).foregroundStyle(.secondary)
       } else {
         ForEach(projection.queue) { item in
+          let actionEnabled = AIOperationsFloorProjection.queueActionEnabled(
+            item: item,
+            availability: availability[item.agentID]
+          )
           Button { onReview(item.agentID) } label: {
             HStack(spacing: 9) {
               Image(systemName: item.symbol).foregroundStyle(item.accent)
               VStack(alignment: .leading, spacing: 1) { Text(item.title).font(.caption.weight(.bold)); Text(item.detail).font(.caption2).foregroundStyle(.secondary) }
               Spacer(); Image(systemName: "chevron.right").font(.caption2.weight(.bold)).foregroundStyle(.secondary)
             }.frame(maxWidth: .infinity, minHeight: 44, alignment: .leading).padding(.horizontal, 8)
-          }.buttonStyle(.plain).disabled(!item.isReviewable)
+          }
+          .buttonStyle(.plain)
+          .disabled(!actionEnabled)
+          .accessibilityHint(actionEnabled ? "Opens the canonical Founder Review path." : "This packet is visible but cannot be reviewed in the current Founder state.")
         }
       }
     }
     .padding(12).background(.white.opacity(0.055), in: .rect(cornerRadius: 16))
     .overlay { RoundedRectangle(cornerRadius: 16).stroke(projection.queue.isEmpty ? .white.opacity(0.12) : SoloTheme.amber.opacity(0.65), lineWidth: 1) }
-    .accessibilityLabel("Founder Review Queue, \(projection.queue.count) items")
+    .accessibilitySortPriority(30)
   }
 
   @ViewBuilder private func station(_ agent: LivingAgentProjection?) -> some View {
@@ -178,6 +186,15 @@ private struct OperationsStationCard: View {
     .background(accent.opacity(expanded ? 0.13 : 0.075), in: .rect(cornerRadius: 16))
     .overlay { RoundedRectangle(cornerRadius: 16).stroke(accent.opacity(expanded ? 0.82 : 0.42), lineWidth: expanded ? 1.5 : 1) }
     .accessibilityElement(children: .contain)
+    .accessibilitySortPriority(accessibilityPriority)
+  }
+  private var accessibilityPriority: Double {
+    switch agent.agentID {
+    case "aurora": 23
+    case "stacks": 22
+    case "brio": 21
+    default: 20
+    }
   }
   private var portrait: some View { ZStack { Circle().fill(accent.opacity(0.2)); if let asset = AgentPortraitAsset.name(for: agent.agentID) { Image(asset).resizable().scaledToFill() } else { Text(agent.initials).font(.headline.weight(.black)) } }.frame(width: 48, height: 48).clipShape(.circle).overlay { Circle().stroke(accent.opacity(0.8), lineWidth: 1.5) } }
   private var handoffStrip: some View {
@@ -204,6 +221,9 @@ struct AIOperationsFloorProjection: Equatable {
   var queue: [QueueItem]
   static func primaryStationIDs(from agents: [LivingAgentProjection]) -> [String] {
     ["aurora", "stacks", "brio"].filter { id in agents.contains { $0.agentID == id } }
+  }
+  static func queueActionEnabled(item: QueueItem, availability: CompanyCommandAgentAvailability?) -> Bool {
+    item.isReviewable && availability?.canReview == true
   }
   static func derive(agents: [LivingAgentProjection], summary: CompanyCommandFounderSummary, finance: CompanyFinance, calendar: OperatingCalendar) -> Self {
     let items = agents.compactMap { agent -> QueueItem? in

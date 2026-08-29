@@ -6,6 +6,7 @@ struct FounderDeskWorkspace: View {
 
   @Environment(FounderProgressionStore.self) private var progression
   @Environment(AchievementStore.self) private var achievements
+  @Environment(AppSettingsStore.self) private var settings
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.colorSchemeContrast) private var contrast
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -61,6 +62,13 @@ struct FounderDeskWorkspace: View {
       .sensoryFeedback(.selection, trigger: selectionFeedback)
       .onChange(of: store.stats.trackRecord, initial: true) { _, value in
         progression.observe(trackRecord: value)
+      }
+      .onChange(of: scenePhase, initial: true) { _, phase in
+        if phase == .active {
+          settings.setAudioContext(navigation.selection == .device(.computer) ? .companyCommand : .garage)
+        } else {
+          settings.setAudioContext(.background)
+        }
       }
       .accessibilityAction(named: Text("Look Left")) { moveCamera(horizontal: -1, vertical: 0) }
       .accessibilityAction(named: Text("Look Center")) { centerCamera() }
@@ -463,6 +471,10 @@ struct FounderDeskWorkspace: View {
     }
     if let transition {
       beginTransition(completing: transition)
+      if device == .computer {
+        settings.setAudioContext(.companyCommand)
+        settings.playFeedback(.companyCommandFocus)
+      }
       return
     }
     Task { @MainActor in
@@ -477,6 +489,8 @@ struct FounderDeskWorkspace: View {
       deviceStates[device] = .settling
     }
     if device == .computer {
+      settings.playFeedback(.companyCommandClose)
+      settings.setAudioContext(.garage)
       var transition: FounderEnvironmentMode?
       withAnimation(workspaceAnimation) {
         transition = navigation.lookOut()

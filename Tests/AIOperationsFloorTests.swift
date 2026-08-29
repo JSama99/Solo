@@ -39,6 +39,15 @@ final class AIOperationsFloorTests: XCTestCase {
     XCTAssertEqual(stationIDs, ["aurora", "stacks", "brio"])
   }
 
+  func testQueueActionRequiresCanonicalReviewAvailability() {
+    let item = AIOperationsFloorProjection.derive(
+      agents: [agent(id: "aurora", activity: .awaitingReview, conditions: [])],
+      summary: summary(), finance: .init(), calendar: .init()
+    ).queue[0]
+    XCTAssertFalse(AIOperationsFloorProjection.queueActionEnabled(item: item, availability: .init(canReview: false)))
+    XCTAssertTrue(AIOperationsFloorProjection.queueActionEnabled(item: item, availability: .init(canReview: true)))
+  }
+
   private func agent(id: String, activity: LivingAgentActivity, conditions: Set<LivingAgentCondition>) -> LivingAgentProjection {
     LivingAgentProjection(agentID: id, name: id.capitalized, initials: String(id.prefix(1)).uppercased(), role: id == "aurora" ? .research : id == "stacks" ? .engineering : .marketing, taskID: UUID(), taskTitle: "Canonical task", activity: activity, conditions: conditions, emphasis: .normal, progress: 0.5, reviewRevealStep: 0, stressLabel: "Stable", trustLabel: "Trust 85 or higher", level: 1, needsFounderAttention: false, isResting: false)
   }

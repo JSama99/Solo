@@ -418,6 +418,7 @@ struct FounderComputerScreen: View {
   private func review(_ id: String) {
     guard availability(for: id).canReview, let task = task(for: id) else { return }
     commandInteraction.observePresentation(agentID: id)
+    settings.setAudioContext(.founderReview)
     withAnimation(SoloMotion.resolved(SoloMotion.focus, reduceMotion: reduceMotion)) {
       activeReviewTaskID = task.id
       reviewStage = 0
@@ -475,6 +476,7 @@ struct FounderComputerScreen: View {
     case .reported, .unverified:
       break
     }
+    settings.setAudioContext(.companyCommand)
   }
 
   /// Speaks the outcome of an action that VoiceOver would otherwise have to
