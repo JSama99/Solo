@@ -58,12 +58,14 @@ struct FounderEnvironmentalActionCard: View {
   var onDismiss: () -> Void
 
   private var preview: FounderEnvironmentalPreview { store.environmentalPreview(for: action) }
+  @Environment(AppSettingsStore.self) private var settings
+  @State private var completed = false
 
   var body: some View {
     VStack(alignment: .leading, spacing: 14) {
       Label(action.object.title, systemImage: action.object.symbol)
         .font(.title3.weight(.bold))
-      Text(action.title).font(.headline)
+      Text(completed ? "Completed" : action.title).font(.headline)
       Text(preview.accessibilitySummary)
         .font(.body)
         .foregroundStyle(.secondary)
@@ -76,15 +78,16 @@ struct FounderEnvironmentalActionCard: View {
       }
       Spacer(minLength: 0)
       HStack {
-        Button("Cancel", action: onDismiss)
+        Button(completed ? "Done" : "Cancel", action: onDismiss)
           .buttonStyle(.bordered)
         Spacer()
         Button("Confirm", systemImage: "checkmark") {
-          guard store.performEnvironmentalAction(action) else { return }
-          onDismiss()
+          guard !completed, store.performEnvironmentalAction(action) else { return }
+          completed = true
+          settings.playFeedback(action == .rest ? .environmentalRest : .environmentalTraining)
         }
         .buttonStyle(.borderedProminent)
-        .disabled(!preview.available)
+        .disabled(!preview.available || completed)
       }
     }
     .padding(22)

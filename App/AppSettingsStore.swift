@@ -136,6 +136,8 @@ enum GameFeedbackKind {
   case chapterAdvance
   case coveragePositive
   case coverageNegative
+  case environmentalRest
+  case environmentalTraining
 
   var frequency: Double {
     switch self {
@@ -151,6 +153,8 @@ enum GameFeedbackKind {
     case .chapterAdvance: 820
     case .coveragePositive: 790
     case .coverageNegative: 310
+    case .environmentalRest: 540
+    case .environmentalTraining: 700
     }
   }
 
