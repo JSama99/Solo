@@ -37,25 +37,21 @@ struct FounderComputerScreen: View {
     ScrollViewReader { proxy in
       ScrollView {
         LazyVStack(spacing: 16) {
-          CompanyCommandViewport(
+          AIOperationsFloor(
             agents: livingAgentProjections,
-            atmosphere: companyAtmosphere,
-            infrastructure: infrastructureVisuals,
-            sprintPhase: store.sprintPhase,
-            focus: commandInteraction.focus,
-            agentAvailability: agentAvailability,
-            founderSummary: founderSummary,
-            founderDilemma: store.activeDilemma,
+            summary: founderSummary,
+            objective: store.currentObjective?.title ?? "Set the next company priority.",
+            venture: store.venture,
+            sprint: store.sprint,
+            finance: store.finance,
+            calendar: store.operatingCalendar,
+            stats: store.stats,
+            availability: agentAvailability,
             reduceMotion: reduceMotion,
-            onFocus: focusViewport,
             onAssign: beginAssignment,
             onReview: review,
-            onRest: requestRest,
-            onSkipAgentPresentation: skipPresentation,
-            onOpenFullWorkstation: openFullWorkstation,
-            onCommit: commit,
-            onSelectFounderDilemma: store.selectDilemmaChoice,
-            onVisibilityChange: { isViewportVisible = $0 }
+            onOpenDetail: openFullWorkstation,
+            onCommit: commit
           )
           .id("viewport")
           .founderEntrance(order: 0, alreadyPresented: hasPresentedRoster)
