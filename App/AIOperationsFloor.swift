@@ -109,10 +109,14 @@ struct AIOperationsFloor: View {
         metric("Coverage", signed(stats.coverage), "antenna.radiowaves.left.and.right")
         metric("Attention", "\(summary.attentionRemaining)/\(summary.attentionMaximum)", "eye")
       }
-      Label(summary.nextAction, systemImage: summary.canCommit ? "checkmark.seal.fill" : "arrow.right.circle.fill")
-        .font(.subheadline.weight(.semibold)).foregroundStyle(summary.canCommit ? SoloTheme.mint : .primary)
-        .padding(10).frame(maxWidth: .infinity, alignment: .leading)
-        .background(.black.opacity(0.34), in: .rect(cornerRadius: 10))
+      Button { onOpenDetail(.founder) } label: {
+        Label(summary.nextAction, systemImage: summary.canCommit ? "checkmark.seal.fill" : "arrow.right.circle.fill")
+          .font(.subheadline.weight(.semibold)).foregroundStyle(summary.canCommit ? SoloTheme.mint : .primary)
+          .padding(10).frame(maxWidth: .infinity, alignment: .leading)
+          .background(.black.opacity(0.34), in: .rect(cornerRadius: 10))
+      }
+      .buttonStyle(.plain)
+      .accessibilityHint("Opens the canonical Founder decision surface.")
     }
     .padding(14).background(SoloTheme.amber.opacity(0.10), in: .rect(cornerRadius: 18))
     .overlay { RoundedRectangle(cornerRadius: 18).stroke(SoloTheme.amber.opacity(0.55), lineWidth: 1.5) }
