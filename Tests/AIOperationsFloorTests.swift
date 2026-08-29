@@ -28,6 +28,17 @@ final class AIOperationsFloorTests: XCTestCase {
     XCTAssertTrue(items.allSatisfy { !$0.isReviewable })
   }
 
+  func testPrimaryStationProjectionUsesEachCanonicalAgentOnce() {
+    let agents = [
+      agent(id: "aurora", activity: .idle, conditions: []),
+      agent(id: "aurora", activity: .working, conditions: [.focused]),
+      agent(id: "stacks", activity: .idle, conditions: []),
+      agent(id: "brio", activity: .idle, conditions: [])
+    ]
+    let stationIDs = AIOperationsFloorProjection.primaryStationIDs(from: agents)
+    XCTAssertEqual(stationIDs, ["aurora", "stacks", "brio"])
+  }
+
   private func agent(id: String, activity: LivingAgentActivity, conditions: Set<LivingAgentCondition>) -> LivingAgentProjection {
     LivingAgentProjection(agentID: id, name: id.capitalized, initials: String(id.prefix(1)).uppercased(), role: id == "aurora" ? .research : id == "stacks" ? .engineering : .marketing, taskID: UUID(), taskTitle: "Canonical task", activity: activity, conditions: conditions, emphasis: .normal, progress: 0.5, reviewRevealStep: 0, stressLabel: "Stable", trustLabel: "Trust 85 or higher", level: 1, needsFounderAttention: false, isResting: false)
   }

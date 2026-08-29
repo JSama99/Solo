@@ -46,6 +46,7 @@ struct AIOperationsFloor: View {
 
   private var compactFloor: some View {
     VStack(alignment: .leading, spacing: 14) {
+      floorHeader
       console
       reviewQueue
       ForEach(orderedAgents) { agent in
@@ -57,12 +58,20 @@ struct AIOperationsFloor: View {
 
   private var wideFloor: some View {
     VStack(alignment: .leading, spacing: 14) {
+      floorHeader
       console
       HStack(alignment: .top, spacing: 14) {
         VStack(spacing: 12) { station(agent(id: "aurora")); station(agent(id: "stacks")) }
         VStack(spacing: 12) { reviewQueue; station(agent(id: "brio")); persistentAction }
       }
     }
+  }
+
+  private var floorHeader: some View {
+    Label("AI OPERATIONS FLOOR", systemImage: "cpu.fill")
+      .font(.caption.weight(.black))
+      .foregroundStyle(.secondary)
+      .accessibilityAddTraits(.isHeader)
   }
 
   private var floorBackground: some View {
@@ -138,7 +147,7 @@ struct AIOperationsFloor: View {
   }
   private var orderedAgents: [LivingAgentProjection] { [agent(id: "aurora"), agent(id: "stacks"), agent(id: "brio")].compactMap { $0 } }
   private func agent(id: String) -> LivingAgentProjection? { agents.first { $0.agentID == id } }
-  private var persistentAction: some View { Group { if summary.canCommit { Button("End Day · Commit Sprint", systemImage: "arrow.forward.square.fill", action: onCommit).font(.subheadline.weight(.black)).frame(maxWidth: .infinity, minHeight: 48).background(SoloTheme.amber, in: .rect(cornerRadius: 13)).foregroundStyle(.black).buttonStyle(.plain).accessibilityHint("Commits canonical sprint results") } } }
+  private var persistentAction: some View { Group { if summary.canCommit { Button("COMMIT SPRINT", systemImage: "arrow.forward.square.fill", action: onCommit).font(.subheadline.weight(.black)).frame(maxWidth: .infinity, minHeight: 48).background(SoloTheme.amber, in: .rect(cornerRadius: 13)).foregroundStyle(.black).buttonStyle(.plain).accessibilityHint("Commits the canonical sprint simulation, including its associated operating time.") } } }
   private func metric(_ label: String, _ value: String, _ symbol: String) -> some View { Label { VStack(alignment: .leading, spacing: 2) { Text(label).font(.caption2).foregroundStyle(.secondary); Text(value).font(.caption.weight(.bold)).lineLimit(1).minimumScaleFactor(0.75) } } icon: { Image(systemName: symbol).foregroundStyle(SoloTheme.amber) }.frame(maxWidth: .infinity, alignment: .leading).padding(8).background(.black.opacity(0.28), in: .rect(cornerRadius: 9)) }
   private func signed(_ value: Int) -> String { "\(value > 0 ? "+" : "")\(value)" }
 }
@@ -191,6 +200,9 @@ private struct OperationsStationCard: View {
 struct AIOperationsFloorProjection: Equatable {
   struct QueueItem: Identifiable, Equatable { var id: String { agentID }; var agentID: String; var title: String; var detail: String; var symbol: String; var accent: Color; var isReviewable: Bool }
   var queue: [QueueItem]
+  static func primaryStationIDs(from agents: [LivingAgentProjection]) -> [String] {
+    ["aurora", "stacks", "brio"].filter { id in agents.contains { $0.agentID == id } }
+  }
   static func derive(agents: [LivingAgentProjection], summary: CompanyCommandFounderSummary, finance: CompanyFinance, calendar: OperatingCalendar) -> Self {
     let items = agents.compactMap { agent -> QueueItem? in
       guard [.workComplete, .awaitingReview, .reviewing, .reviewed, .resolving].contains(agent.activity) else { return nil }
