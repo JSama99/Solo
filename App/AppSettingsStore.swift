@@ -7,8 +7,9 @@ import Observation
 final class AppSettingsStore {
   var soundEffectsEnabled: Bool { didSet { defaults.set(soundEffectsEnabled, forKey: "solo.settings.soundEffects") } }
   var musicEnabled: Bool { didSet { defaults.set(musicEnabled, forKey: "solo.settings.musicEnabled"); updatePlayback() } }
-  var musicVolume: Double { didSet { player.volume = Float(musicVolume); defaults.set(musicVolume, forKey: "solo.settings.musicVolume") } }
+  var musicVolume: Double { didSet { applyMusicGain(); defaults.set(musicVolume, forKey: "solo.settings.musicVolume") } }
   private(set) var musicName: String?
+  private(set) var audioContext: AppAudioContext = .garage
 
   private let defaults: UserDefaults
   private let engine = AVAudioEngine()
@@ -27,7 +28,7 @@ final class AppSettingsStore {
     engine.attach(feedbackPlayer)
     engine.connect(player, to: engine.mainMixerNode, format: nil)
     engine.connect(feedbackPlayer, to: engine.mainMixerNode, format: nil)
-    player.volume = Float(musicVolume)
+    applyMusicGain()
     restoreMusic()
   }
 
@@ -54,7 +55,7 @@ final class AppSettingsStore {
   /// Plays a short synthesized confirmation. No audio asset, network access,
   /// randomness, or simulation timing is involved.
   func playFeedback(_ kind: GameFeedbackKind) {
-    guard soundEffectsEnabled else { return }
+    guard soundEffectsEnabled, audioContext != .background else { return }
     if !engine.isRunning {
       do {
         try engine.start()
@@ -67,6 +68,17 @@ final class AppSettingsStore {
     feedbackPlayer.stop()
     feedbackPlayer.scheduleBuffer(buffer)
     feedbackPlayer.play()
+  }
+
+  func setAudioContext(_ context: AppAudioContext) {
+    guard audioContext != context else { return }
+    audioContext = context
+    applyMusicGain()
+    updatePlayback()
+  }
+
+  private func applyMusicGain() {
+    player.volume = Float(musicVolume * audioContext.musicGain)
   }
 
   private func restoreMusic() {
@@ -87,7 +99,7 @@ final class AppSettingsStore {
   }
 
   private func updatePlayback() {
-    guard musicEnabled, let audioFile else { player.pause(); return }
+    guard musicEnabled, audioContext != .background, let audioFile else { player.pause(); return }
     if !engine.isRunning { try? engine.start() }
     guard !player.isPlaying else { return }
     scheduleLoop(audioFile)
@@ -100,6 +112,22 @@ final class AppSettingsStore {
         guard let self, self.musicEnabled, let file = self.audioFile else { return }
         self.scheduleLoop(file)
       }
+    }
+  }
+}
+
+enum AppAudioContext: Equatable {
+  case garage
+  case companyCommand
+  case founderReview
+  case background
+
+  var musicGain: Double {
+    switch self {
+    case .garage: 1
+    case .companyCommand: 0.35
+    case .founderReview: 0.18
+    case .background: 0
     }
   }
 }
@@ -124,6 +152,8 @@ enum FeedbackToneBuffer {
 }
 
 enum GameFeedbackKind {
+  case companyCommandFocus
+  case companyCommandClose
   case dispatch
   case workComplete
   case review
@@ -141,6 +171,8 @@ enum GameFeedbackKind {
 
   var frequency: Double {
     switch self {
+    case .companyCommandFocus: 580
+    case .companyCommandClose: 390
     case .dispatch: 520
     case .workComplete: 660
     case .review: 430

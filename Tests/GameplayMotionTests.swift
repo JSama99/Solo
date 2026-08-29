@@ -12,6 +12,12 @@ import XCTest
 ///    being reproducible the moment a view redrew.
 @MainActor
 final class GameplayMotionTests: XCTestCase {
+  func testAudioContextDucksAndSuspendsWithoutChangingSettings() {
+    XCTAssertEqual(AppAudioContext.garage.musicGain, 1)
+    XCTAssertEqual(AppAudioContext.companyCommand.musicGain, 0.35)
+    XCTAssertEqual(AppAudioContext.founderReview.musicGain, 0.18)
+    XCTAssertEqual(AppAudioContext.background.musicGain, 0)
+  }
   override func tearDown() {
     for key in UserDefaults.standard.dictionaryRepresentation().keys
     where key.hasPrefix("solo-unicorn-run-native-save-") {

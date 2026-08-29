@@ -57,7 +57,7 @@ final class DivergenceSystemTests: XCTestCase {
 
   func testV17PurgeListsCannotDrift() {
     XCTAssertEqual(GameStore.saveCareerPurgeKeys, GameStore.resetCareerPurgeKeys)
-    XCTAssertEqual(GameStore.saveVersion, 18)
+    XCTAssertEqual(GameStore.saveVersion, 19)
   }
 
   func testDivergenceBranchContainsNoRestorableCareerSnapshot() {

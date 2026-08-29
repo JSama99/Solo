@@ -11,6 +11,7 @@ struct FounderComputerScreen: View {
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var commandInteraction = CompanyCommandInteractionState()
   @State private var expandedWorkstationAgentID: String?
+  @State private var detailDestination: DetailedWorkstationDestination?
   @State private var isViewportVisible = true
   @State private var scrollPosition = ScrollPosition()
   @AccessibilityFocusState private var accessibilityWorkstationID: String?
@@ -37,56 +38,33 @@ struct FounderComputerScreen: View {
     ScrollViewReader { proxy in
       ScrollView {
         LazyVStack(spacing: 16) {
-          CompanyCommandViewport(
+          AIOperationsFloor(
             agents: livingAgentProjections,
-            atmosphere: companyAtmosphere,
-            infrastructure: infrastructureVisuals,
-            sprintPhase: store.sprintPhase,
-            focus: commandInteraction.focus,
-            agentAvailability: agentAvailability,
-            founderSummary: founderSummary,
-            founderDilemma: store.activeDilemma,
+            summary: founderSummary,
+            objective: store.currentObjective?.title ?? "Set the next company priority.",
+            venture: store.venture,
+            sprint: store.sprint,
+            finance: store.finance,
+            calendar: store.operatingCalendar,
+            stats: store.stats,
+            availability: agentAvailability,
             reduceMotion: reduceMotion,
-            onFocus: focusViewport,
             onAssign: beginAssignment,
             onReview: review,
-            onRest: requestRest,
-            onSkipAgentPresentation: skipPresentation,
-            onOpenFullWorkstation: openFullWorkstation,
-            onCommit: commit,
-            onSelectFounderDilemma: store.selectDilemmaChoice,
-            onVisibilityChange: { isViewportVisible = $0 }
+            onOpenDetail: openFullWorkstation,
+            onCommit: commit
           )
           .id("viewport")
           .founderEntrance(order: 0, alreadyPresented: hasPresentedRoster)
-          FounderWorkstationCard(
-            store: store,
-            presentation: presentation,
-            expanded: expandedWorkstationAgentID == nil,
-            commitInProgress: commitInProgress,
-            onSelect: selectCanonicalFounder,
-            onSelectAgent: beginReviewFocus,
-            onCommit: commit
-          )
-          .id("founder")
-          .accessibilityFocused($accessibilityWorkstationID, equals: "founder")
-          .founderEntrance(order: 1, alreadyPresented: hasPresentedRoster)
-          ForEach(orderedStations) { station in
-            workspaceCard(for: station)
-            .id(station.id)
-            .accessibilityFocused($accessibilityWorkstationID, equals: station.agentID)
-            .opacity(isReviewFocused && expandedWorkstationAgentID != station.agentID ? 0.86 : 1)
-            .founderEntrance(order: rank(station.agentID) + 2, alreadyPresented: hasPresentedRoster)
-          }
           evidenceDrawer
             .id(FounderComputerWorkspaceTarget.evidence.rawValue)
-            .founderEntrance(order: 5, alreadyPresented: hasPresentedRoster)
+            .founderEntrance(order: 1, alreadyPresented: hasPresentedRoster)
           HindsightArchiveCard(
             precedents: store.precedents,
             divergences: store.divergenceRecords
           )
           .id(FounderComputerWorkspaceTarget.hindsight.rawValue)
-          .founderEntrance(order: 6, alreadyPresented: hasPresentedRoster)
+          .founderEntrance(order: 2, alreadyPresented: hasPresentedRoster)
         }
         .padding(16)
         .frame(maxWidth: .infinity)
@@ -140,6 +118,17 @@ struct FounderComputerScreen: View {
         assignmentDestination = nil
         announce("Assignment updated.")
       }
+    }
+    .sheet(item: $detailDestination) { destination in
+      NavigationStack {
+        ScrollView {
+          detailedWorkstation(destination)
+            .padding(16)
+        }
+        .navigationTitle(destination.title)
+        .navigationBarTitleDisplayMode(.inline)
+      }
+      .presentationDetents([.medium, .large])
     }
     #if DEBUG
     .sheet(isPresented: $showsMotionVerification) {
@@ -376,15 +365,31 @@ struct FounderComputerScreen: View {
   }
 
   private func openFullWorkstation(_ target: CompanyCommandFocus) {
-    switch target {
+    guard target == .founder || agent(for: target.scrollID) != nil else { return }
+    detailDestination = .init(target: target)
+    announce("Opened the detailed \(target.scrollID == "founder" ? "Founder" : agent(for: target.scrollID)?.name ?? "agent") workstation.")
+  }
+
+  @ViewBuilder
+  private func detailedWorkstation(_ destination: DetailedWorkstationDestination) -> some View {
+    switch destination.target {
     case .founder:
-      expandedWorkstationAgentID = nil
+      FounderWorkstationCard(
+        store: store,
+        presentation: presentation,
+        expanded: true,
+        commitInProgress: commitInProgress,
+        onSelect: { },
+        onSelectAgent: { openFullWorkstation(.agent($0)) },
+        onCommit: commit
+      )
     case .agent(let agentID):
-      guard agent(for: agentID) != nil else { return }
-      expandedWorkstationAgentID = agentID
+      if let station = orderedStations.first(where: { $0.agentID == agentID }) {
+        workspaceCard(for: station)
+      } else {
+        ContentUnavailableView("Station unavailable", systemImage: "exclamationmark.triangle")
+      }
     }
-    commandInteraction.requestFullWorkstation(target)
-    announce("Moving to the detailed \(target.scrollID == "founder" ? "Founder" : agent(for: target.scrollID)?.name ?? "agent") workstation.")
   }
 
   private func beginAssignment(_ agentID: String) {
@@ -413,6 +418,7 @@ struct FounderComputerScreen: View {
   private func review(_ id: String) {
     guard availability(for: id).canReview, let task = task(for: id) else { return }
     commandInteraction.observePresentation(agentID: id)
+    settings.setAudioContext(.founderReview)
     withAnimation(SoloMotion.resolved(SoloMotion.focus, reduceMotion: reduceMotion)) {
       activeReviewTaskID = task.id
       reviewStage = 0
@@ -470,6 +476,7 @@ struct FounderComputerScreen: View {
     case .reported, .unverified:
       break
     }
+    settings.setAudioContext(.companyCommand)
   }
 
   /// Speaks the outcome of an action that VoiceOver would otherwise have to
@@ -480,6 +487,11 @@ struct FounderComputerScreen: View {
 }
 
 private struct AssignmentDestination: Identifiable { var agentID: String; var id: String { agentID } }
+private struct DetailedWorkstationDestination: Identifiable {
+  var target: CompanyCommandFocus
+  var id: String { target.scrollID }
+  var title: String { target.scrollID == "founder" ? "Founder Command" : "Agent Workstation" }
+}
 private struct RestCandidate: Identifiable { var agentID: String; var name: String; var hasAssignment: Bool; var id: String { agentID } }
 
 private struct AgentPortrait: View {
@@ -1022,10 +1034,6 @@ private struct FounderWorkstationCard: View {
     .gameplayMotion(.emphasis, value: expanded)
     .gameplayMotion(value: summary)
     .accessibilityElement(children: .contain)
-    .accessibilityLabel("Founder workstation")
-    .accessibilityValue(summary.readiness.message)
-    .accessibilityAddTraits(expanded ? [.isButton, .isSelected] : .isButton)
-    .accessibilityAction { onSelect() }
   }
 
   private var identity: some View {
