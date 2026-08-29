@@ -76,6 +76,9 @@ enum OperatingCostTuning {
   static let founderLoftMonthlyRent = 3_000
   static let founderLoftMoveIn = founderLoftDeposit + founderLoftFirstMonth + founderLoftMovingSetup
   static let founderLoftMonthlyObligation = founderLoftMonthlyRent + founderLoftMonthlyUtilities
+  static let dailyAIWorkforcePerAgent = 12
+  static let dailyInfrastructure = 16
+  static let dailyOperations = 14
   static func assignmentCost(task: SoloTask, agent: SoloAgent) -> Int { max(12, task.urgency.rawValue * 7 + (agent.role == task.role ? 4 : 8)) }
 }
 

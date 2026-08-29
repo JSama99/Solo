@@ -40,6 +40,10 @@ struct HeadquartersProgressScreen: View {
         .font(.caption.weight(.semibold)).foregroundStyle(SoloTheme.mint)
       Text("Cash is spendable. Capital Raised is financing history; it is not a second balance.")
         .font(.caption).foregroundStyle(.secondary)
+      if let latest = store.finance.transactions.last {
+        Label(latest.kind == .expense ? "Cash decreased by \(latest.amount.formatted(.currency(code: "USD").precision(.fractionLength(0)))) because \(latest.source)." : "Cash increased by \(latest.amount.formatted(.currency(code: "USD").precision(.fractionLength(0)))) from \(latest.source).", systemImage: latest.kind == .expense ? "arrow.down.right" : "arrow.up.right")
+          .font(.caption2).foregroundStyle(.secondary)
+      }
     }
     .soloCard()
   }

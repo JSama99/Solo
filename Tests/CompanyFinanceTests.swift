@@ -26,4 +26,10 @@ final class CompanyFinanceTests: XCTestCase {
     XCTAssertEqual(calendar.dayOfSprint, 7)
     XCTAssertEqual(calendar.period, .morning)
   }
+
+  func testRunwayIsFiniteForLossMakingCompany() {
+    var finance = CompanyFinance(cash: 1_000)
+    XCTAssertTrue(finance.apply(.init(id: "hosting", kind: .expense, amount: 200, category: .infrastructure, simulationDay: 1, source: "Hosting", isRecurring: true, agentID: nil, headquarters: nil)))
+    XCTAssertEqual(finance.runwayLabel(fallbackDailyBurn: 100), "5 days")
+  }
 }

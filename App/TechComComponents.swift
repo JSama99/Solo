@@ -762,7 +762,7 @@ struct TechComTalentBoard: View {
           }
           .buttonStyle(.borderedProminent)
           .tint(SoloTheme.purple)
-          .disabled(store.stats.capital < store.talentPrice(candidate))
+          .disabled(store.finance.cash < store.talentPrice(candidate))
         }
         .padding(14)
         .background(SoloTheme.purple.opacity(0.07), in: .rect(cornerRadius: 15))
@@ -772,7 +772,7 @@ struct TechComTalentBoard: View {
           store.refreshTalentBoard()
         }
         .buttonStyle(.bordered)
-        .disabled(store.stats.capital < TalentBoard.refreshCost)
+        .disabled(store.finance.cash < TalentBoard.refreshCost)
       }
     }
     .padding(16)

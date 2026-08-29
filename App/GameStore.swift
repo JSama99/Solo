@@ -420,8 +420,8 @@ final class GameStore {
 
   func hire(_ candidate: TalentCandidate) {
     guard talentBoardGateMessage == nil, let slot = nextTalentSlot,
-          talentBoardCandidates.contains(candidate), stats.capital >= talentPrice(candidate) else {
-      alertMessage = stats.capital < talentPrice(candidate) ? "Not enough Capital for this hire." : talentBoardGateMessage
+          talentBoardCandidates.contains(candidate), finance.cash >= talentPrice(candidate) else {
+      alertMessage = finance.cash < talentPrice(candidate) ? "Not enough Cash for this hire." : talentBoardGateMessage
       return
     }
     guard (slot == 4 && TalentBoard.fourthSlotPriceRange.contains(candidate.price)) || (slot == 5 && TalentBoard.fifthSlotPriceRange.contains(candidate.price)) else { return }
@@ -437,7 +437,7 @@ final class GameStore {
 
   func refreshTalentBoard() {
     guard agents.count >= 4, nextTalentSlot != nil else { return }
-    guard stats.capital >= TalentBoard.refreshCost else { alertMessage = "Refreshing the talent board costs \(TalentBoard.refreshCost) Capital."; return }
+    guard finance.cash >= TalentBoard.refreshCost else { alertMessage = "Refreshing the talent board costs \(TalentBoard.refreshCost) Cash."; return }
     recordExpense(id: "talent-board-refresh-\(venture)-\(sprint)-\(talentBoardRefreshes)", category: .operations, amount: TalentBoard.refreshCost, source: "Talent board refresh")
     talentBoardRefreshes += 1
     save()
@@ -467,13 +467,13 @@ final class GameStore {
   @discardableResult
   func purchaseFacility(_ tier: FacilityTier) -> FounderProgressionStore.PurchaseResult {
     guard let progressionStore else { return .futureEnvironment }
-    let result = progressionStore.purchase(tier, availableCapital: stats.capital)
+    let result = progressionStore.purchase(tier, availableCapital: finance.cash)
     if case .purchased(let cost) = result {
       recordExpense(id: "facility-\(tier.rawValue)", category: .space, amount: cost, source: tier == .founderLoft ? "Founder Loft move-in commitment" : "Headquarters: \(tier.name)", headquarters: tier)
       achievementStore?.recordFacilityProgress(
         purchasedUpgradeCount: progressionStore.purchasedUpgrades.count,
         ownsLoft: progressionStore.ownedFacilities.contains(.founderLoft),
-        capital: stats.capital
+        capital: finance.cash
       )
       save()
     }
@@ -483,13 +483,13 @@ final class GameStore {
   @discardableResult
   func purchaseFacilityUpgrade(_ id: FacilityUpgradeID) -> FounderProgressionStore.PurchaseResult {
     guard let progressionStore else { return .futureEnvironment }
-    let result = progressionStore.purchaseUpgrade(id, availableCapital: stats.capital)
+    let result = progressionStore.purchaseUpgrade(id, availableCapital: finance.cash)
     if case .purchased(let cost) = result {
       recordExpense(id: "infrastructure-\(id.rawValue)", category: .infrastructure, amount: cost, source: "Infrastructure: \(id.rawValue)")
       achievementStore?.recordFacilityProgress(
         purchasedUpgradeCount: progressionStore.purchasedUpgrades.count,
         ownsLoft: progressionStore.ownedFacilities.contains(.founderLoft),
-        capital: stats.capital
+        capital: finance.cash
       )
       save()
     }
@@ -1236,6 +1236,8 @@ final class GameStore {
     if effects.trust > 0 { effects.trust = Int((Double(effects.trust) * (1 + Double(thesisProfile.customerLoyaltyModifier) / 100)).rounded()) }
     effects = effects + rivalMoves.reduce(SimulationEffects()) { $0 + $1.playerEffects }
     apply(effects)
+    advanceOperatingTime(hours: 7 * 24)
+    finance.beginSprint()
     recordRivalMoveHeadlines(rivalMoves, venture: rivalMoveVenture, sprint: rivalMoveSprint)
     if facilityBonuses.sprintEnergyRecovery > 0 {
       stats.energy = min(100, stats.energy + facilityBonuses.sprintEnergyRecovery)
@@ -2031,13 +2033,20 @@ final class GameStore {
   }
 
   func advanceOperatingTime(hours: Int) {
-    let before = operatingCalendar.totalDays
+    let startDay = operatingCalendar.totalDays
     operatingCalendar.advance(hours: hours)
-    guard operatingCalendar.totalDays > before else { return }
-    finance.closeDay()
-    if progressionStore?.currentFacility == .founderLoft, operatingCalendar.totalDays % 30 == 0 {
-      recordExpense(id: "loft-monthly-\(operatingCalendar.totalDays / 30)", category: .space, amount: OperatingCostTuning.founderLoftMonthlyObligation, source: "Founder Loft monthly lease and utilities", recurring: true, headquarters: .founderLoft)
+    guard operatingCalendar.totalDays > startDay else { return }
+    for day in (startDay + 1)...operatingCalendar.totalDays { closeOperatingDay(day) }
+  }
+
+  private func closeOperatingDay(_ day: Int) {
+    recordExpense(id: "ai-workforce-day-\(day)", category: .aiWorkforce, amount: agents.count * OperatingCostTuning.dailyAIWorkforcePerAgent, source: "AI workforce operating plans", recurring: true)
+    recordExpense(id: "infrastructure-day-\(day)", category: .infrastructure, amount: OperatingCostTuning.dailyInfrastructure, source: "Hosting, storage, and Company Server", recurring: true)
+    recordExpense(id: "operations-day-\(day)", category: .operations, amount: OperatingCostTuning.dailyOperations, source: "Essential company services", recurring: true)
+    if progressionStore?.currentFacility == .founderLoft, day % 30 == 0 {
+      recordExpense(id: "loft-monthly-\(day / 30)", category: .space, amount: OperatingCostTuning.founderLoftMonthlyObligation, source: "Founder Loft monthly lease and utilities", recurring: true, headquarters: .founderLoft)
     }
+    finance.closeDay()
   }
 
   private func apply(_ save: CareerSave) {

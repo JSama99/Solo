@@ -8,6 +8,10 @@
 - **Net Burn** is recent operating expenses minus revenue. Runway is a derived cash estimate; cash-flow-positive companies show that state instead of an absurd duration.
 - `FounderStats.capital` remains a compatibility projection of cash for established systems. It is not a second balance.
 
+## Daily closeout
+
+Committing a sprint advances the operating calendar by seven days. Each day records AI workforce plans, hosting/storage/Company Server, and essential operations under stable day-based transaction IDs. The Loft lease is applied when any crossed day reaches the 30-day boundary, so a seven-day sprint can never skip the monthly obligation.
+
 ## Charging policy
 
 Meaningful assignments preview their estimated AI cost, then create one stable ledger expense when they begin. Repeated taps, reconstructed views, saves, and replay cannot apply the same ID twice. Verification and cross-check costs remain explicit future extensions; legacy in-progress work is never back-charged.
