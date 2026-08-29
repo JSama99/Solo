@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A5A100000000000000000001 /* SignalTVModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A100000000000000000011 /* SignalTVModels.swift */; };
+		A5A100000000000000000002 /* SignalTVView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A100000000000000000012 /* SignalTVView.swift */; };
+		A5A100000000000000000003 /* SignalTVTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A100000000000000000013 /* SignalTVTests.swift */; };
 		FD3270000000000000000001 /* FounderDeskWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000011 /* FounderDeskWorkspace.swift */; };
 		FD3270000000000000000002 /* FounderDeskWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */; };
 		FD3270000000000000000003 /* FounderDeskWorkspaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000013 /* FounderDeskWorkspaceTests.swift */; };
@@ -140,6 +143,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A5A100000000000000000011 /* SignalTVModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalTVModels.swift; sourceTree = "<group>"; };
+		A5A100000000000000000012 /* SignalTVView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalTVView.swift; sourceTree = "<group>"; };
+		A5A100000000000000000013 /* SignalTVTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalTVTests.swift; sourceTree = "<group>"; };
 		FD3270000000000000000011 /* FounderDeskWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspace.swift; sourceTree = "<group>"; };
 		FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspaceModel.swift; sourceTree = "<group>"; };
 		FD3270000000000000000013 /* FounderDeskWorkspaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspaceTests.swift; sourceTree = "<group>"; };
@@ -290,6 +296,7 @@
 		62FFB73B4F7FB65000C228B6 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				A5A100000000000000000013 /* SignalTVTests.swift */,
 				FD3270000000000000000013 /* FounderDeskWorkspaceTests.swift */,
 				B32100000000000000000003 /* Build32LivingCompanyTests.swift */,
 				B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */,
@@ -337,6 +344,8 @@
 		7775A9C13FE1CF8E12C7214B /* App */ = {
 			isa = PBXGroup;
 			children = (
+				A5A100000000000000000011 /* SignalTVModels.swift */,
+				A5A100000000000000000012 /* SignalTVView.swift */,
 				FD3270000000000000000011 /* FounderDeskWorkspace.swift */,
 				FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */,
 				FD3275000000000000000011 /* FounderDevicePresentation.swift */,
@@ -548,6 +557,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5A100000000000000000003 /* SignalTVTests.swift in Sources */,
 				FD3270000000000000000003 /* FounderDeskWorkspaceTests.swift in Sources */,
 				B32000000000000000000003 /* Build32LivingCompanyTests.swift in Sources */,
 				B32200000000000000000001 /* Build32_1ViewportInteractionTests.swift in Sources */,
@@ -587,6 +597,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5A100000000000000000001 /* SignalTVModels.swift in Sources */,
+				A5A100000000000000000002 /* SignalTVView.swift in Sources */,
 				FD3270000000000000000001 /* FounderDeskWorkspace.swift in Sources */,
 				FD3270000000000000000002 /* FounderDeskWorkspaceModel.swift in Sources */,
 				FD3275000000000000000001 /* FounderDevicePresentation.swift in Sources */,

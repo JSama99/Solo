@@ -424,6 +424,42 @@ struct FounderStats: Codable, Hashable {
   var capital = 2_500
   var trackRecord = 0
   var coverage = 0
+
+  private enum CodingKeys: String, CodingKey {
+    case runway, revenue, momentum, trust, energy, capital, trackRecord, coverage
+  }
+
+  init(
+    runway: Int = 42,
+    revenue: Int = 500,
+    momentum: Int = 18,
+    trust: Int = 68,
+    energy: Int = 82,
+    capital: Int = 2_500,
+    trackRecord: Int = 0,
+    coverage: Int = 0
+  ) {
+    self.runway = runway
+    self.revenue = revenue
+    self.momentum = momentum
+    self.trust = trust
+    self.energy = energy
+    self.capital = capital
+    self.trackRecord = trackRecord
+    self.coverage = CoverageTuning.clamp(coverage)
+  }
+
+  init(from decoder: Decoder) throws {
+    let values = try decoder.container(keyedBy: CodingKeys.self)
+    runway = try values.decodeIfPresent(Int.self, forKey: .runway) ?? 42
+    revenue = try values.decodeIfPresent(Int.self, forKey: .revenue) ?? 500
+    momentum = try values.decodeIfPresent(Int.self, forKey: .momentum) ?? 18
+    trust = try values.decodeIfPresent(Int.self, forKey: .trust) ?? 68
+    energy = try values.decodeIfPresent(Int.self, forKey: .energy) ?? 82
+    capital = try values.decodeIfPresent(Int.self, forKey: .capital) ?? 2_500
+    trackRecord = try values.decodeIfPresent(Int.self, forKey: .trackRecord) ?? 0
+    coverage = CoverageTuning.clamp(try values.decodeIfPresent(Int.self, forKey: .coverage) ?? 0)
+  }
 }
 
 enum AgentStressBand: String, Codable, CaseIterable {
@@ -1276,6 +1312,8 @@ struct CareerSave: Codable {
   var doctrineProfile: DoctrineProfile?
   var unicornIdentity: UnicornIdentity?
   var rivalDiscontinuities: [RivalDiscontinuity]
+  var publicMediaEvents: [PublicMediaEvent]
+  var processedCoverageEventIDs: Set<String>
 
   private enum CodingKeys: String, CodingKey {
     case founderName, doctrine, productType, talentBoardRefreshes, sprint, venture, intent, stats, agents, tasks
@@ -1287,7 +1325,7 @@ struct CareerSave: Codable {
     case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, completedVentureObjectives, ventureObjective, thesis, thesisHistory, awaitingThesisSelection, pendingChapterMilestone
     case techComHeadlines, techComRivals, latentDefects, poachingOffer, exposedRivalIDs
     case activeDivergence, divergenceRecords, forksUsedThisVenture, doctrineProfile, unicornIdentity
-    case rivalDiscontinuities
+    case rivalDiscontinuities, publicMediaEvents, processedCoverageEventIDs
   }
 
   init(
@@ -1342,7 +1380,9 @@ struct CareerSave: Codable {
     forksUsedThisVenture: Int = 0,
     doctrineProfile: DoctrineProfile? = nil,
     unicornIdentity: UnicornIdentity? = nil,
-    rivalDiscontinuities: [RivalDiscontinuity] = []
+    rivalDiscontinuities: [RivalDiscontinuity] = [],
+    publicMediaEvents: [PublicMediaEvent] = [],
+    processedCoverageEventIDs: Set<String> = []
   ) {
     self.founderName = founderName
     self.doctrine = doctrine
@@ -1396,6 +1436,8 @@ struct CareerSave: Codable {
     self.doctrineProfile = doctrineProfile
     self.unicornIdentity = unicornIdentity
     self.rivalDiscontinuities = rivalDiscontinuities
+    self.publicMediaEvents = publicMediaEvents
+    self.processedCoverageEventIDs = processedCoverageEventIDs
   }
 
   init(from decoder: Decoder) throws {
@@ -1464,6 +1506,8 @@ struct CareerSave: Codable {
     doctrineProfile = try container.decodeIfPresent(DoctrineProfile.self, forKey: .doctrineProfile)
     unicornIdentity = try container.decodeIfPresent(UnicornIdentity.self, forKey: .unicornIdentity)
     rivalDiscontinuities = try container.decodeIfPresent([RivalDiscontinuity].self, forKey: .rivalDiscontinuities) ?? []
+    publicMediaEvents = try container.decodeIfPresent([PublicMediaEvent].self, forKey: .publicMediaEvents) ?? []
+    processedCoverageEventIDs = try container.decodeIfPresent(Set<String>.self, forKey: .processedCoverageEventIDs) ?? []
   }
 }
 

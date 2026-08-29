@@ -134,6 +134,8 @@ enum GameFeedbackKind {
   case infrastructureInstall
   case levelUp
   case chapterAdvance
+  case coveragePositive
+  case coverageNegative
 
   var frequency: Double {
     switch self {
@@ -147,12 +149,14 @@ enum GameFeedbackKind {
     case .infrastructureInstall: 610
     case .levelUp: 920
     case .chapterAdvance: 820
+    case .coveragePositive: 790
+    case .coverageNegative: 310
     }
   }
 
   var duration: Double {
     switch self {
-    case .verificationWarning, .resolutionLock: 0.12
+    case .verificationWarning, .resolutionLock, .coverageNegative: 0.12
     default: 0.08
     }
   }

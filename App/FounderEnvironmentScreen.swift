@@ -251,7 +251,15 @@ struct FounderEnvironmentScreen: View {
       atmosphere: atmosphere,
       infrastructure: InfrastructureVisual.map(purchased: progression.purchasedUpgrades, facility: progression.currentFacility, agents: agents, sprint: store.sprint),
       agents: agents,
-      visibleEvent: visibleGarageEvent
+      visibleEvent: visibleGarageEvent,
+      signalTVEvents: SignalTVProgramming.ambientEvents(
+        publicEvents: store.publicMediaEvents,
+        techComHeadlines: store.techComHeadlines,
+        rivals: store.techComRivals,
+        coverage: store.stats.coverage,
+        venture: store.venture,
+        sprint: store.sprint
+      )
     )
   }
 
@@ -383,6 +391,7 @@ enum FounderEnvironmentWorldAnchor: String, CaseIterable, Sendable {
   case founderDeskSurface
   case founderDeskFloorSide
   case founderCommandDesk
+  case signalTV
 }
 
 enum FounderEnvironmentParallaxLayer: Double, Sendable {
@@ -432,7 +441,8 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       .founderDeskRightEdge: CGPoint(x: 840, y: 650),
       .founderDeskSurface: CGPoint(x: 680, y: 590),
       .founderDeskFloorSide: CGPoint(x: 870, y: 710),
-      .founderCommandDesk: CGPoint(x: 535, y: 635)
+      .founderCommandDesk: CGPoint(x: 535, y: 635),
+      .signalTV: CGPoint(x: 835, y: 205)
     ]
     if composition == .compactCockpit {
       result[.auroraStation] = CGPoint(x: 245, y: 315)
@@ -449,6 +459,7 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       result[.founderDeskRightEdge] = CGPoint(x: 855, y: 660)
       result[.founderDeskSurface] = CGPoint(x: 680, y: 600)
       result[.founderDeskFloorSide] = CGPoint(x: 900, y: 720)
+      result[.signalTV] = CGPoint(x: 840, y: 205)
     }
     return result
   }
@@ -469,7 +480,7 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
 
   func depthScale(for anchor: FounderEnvironmentWorldAnchor) -> CGFloat {
     switch anchor {
-    case .garageEntrance, .storage: 0.78
+    case .garageEntrance, .storage, .signalTV: 0.78
     case .auroraStation: 0.90
     case .stacksStation: 0.84
     case .brioStation: 0.91
@@ -583,16 +594,42 @@ struct FounderDeskEquipmentLayout: Equatable, Sendable {
   }
 }
 
+/// Keeps the tappable Free Look target registered to the same world-space
+/// anchor and depth transform as the rendered television chassis.
+struct SignalTVHotspotLayout: Equatable, Sendable {
+  var viewportSize: CGSize
+
+  func frame(camera: FounderEnvironmentCameraState) -> CGRect {
+    let layout = FounderEnvironmentLayout(viewportSize: viewportSize)
+    let scale = layout.depthScale(for: .signalTV) * layout.scale
+    let size = CGSize(width: 292 * scale, height: 191 * scale)
+    let position = layout.viewportPosition(for: .signalTV, camera: camera, layer: .background)
+    return CGRect(
+      x: position.x - size.width / 2,
+      y: position.y - size.height / 2,
+      width: size.width,
+      height: size.height
+    )
+  }
+
+  func isSelectable(camera: FounderEnvironmentCameraState) -> Bool {
+    let intersection = frame(camera: camera).intersection(CGRect(origin: .zero, size: viewportSize))
+    return intersection.width >= 44 && intersection.height >= 44
+  }
+}
+
 struct FounderEnvironmentProjection: Equatable, Sendable {
   var facility: FacilityTier
   var atmosphere: CompanyAtmosphere
   var infrastructure: [InfrastructureVisual]
   var agents: [LivingAgentProjection]
   var visibleEvent: FounderGarageVisibleEvent? = nil
+  var signalTVEvents: [PublicMediaEvent] = []
 
   var spatialPresentation: CompanySpatialPresentation { .map(facility) }
   var accessibilitySummary: String {
-    "\(facility.accessibilityDescription) \(atmosphere.accessibilitySummary) Environment agents show only visible work state."
+    let signal = signalTVEvents.first.map { "Signal TV is airing \($0.program.rawValue): \($0.headline)." } ?? "Signal TV is airing Market Pulse."
+    return "\(facility.accessibilityDescription) \(atmosphere.accessibilitySummary) \(signal) Environment agents show only visible work state."
   }
 
   var agentAccessibilitySummary: String {
@@ -637,6 +674,7 @@ struct FounderEnvironmentRendererView: View {
       practicalLighting(size: size, layout: layout)
       livingElectricalLayer(size: size, layout: layout)
       garageArchitecture(size: size, layout: layout)
+      signalTVLayer(layout: layout)
       groundingShadows(size: size, layout: layout)
       panoramicStations(size: size, layout: layout)
       taskArtifactLayer(size: size, layout: layout)
@@ -646,6 +684,18 @@ struct FounderEnvironmentRendererView: View {
       atmosphere(size: size)
     }
     .background(Color.black)
+  }
+
+  private func signalTVLayer(layout: FounderEnvironmentLayout) -> some View {
+    SignalTVView(
+      events: projection.signalTVEvents,
+      reduceMotion: !motion.ambient.continuousMotionEnabled,
+      increasedContrast: increasedContrast,
+      continuousMotionEnabled: motion.ambient.continuousMotionEnabled
+    )
+    .scaleEffect(layout.depthScale(for: .signalTV) * layout.scale)
+    .position(layout.viewportPosition(for: .signalTV, camera: camera, layer: .background))
+    .allowsHitTesting(false)
   }
 
   private func cinematicValueShaping(size: CGSize) -> some View {
@@ -1580,6 +1630,15 @@ struct FounderEnvironmentRendererView: View {
         worldPoint: CGPoint(x: 325, y: 315),
         layout: layout
       )
+
+      RadialGradient(
+        colors: [Color.cyan.opacity(0.075 + motion.ambient.screenLife * 0.065), .clear],
+        center: .center,
+        startRadius: 8,
+        endRadius: 150
+      )
+      .frame(width: 310, height: 205)
+      .position(layout.viewportPosition(for: .signalTV, camera: camera, layer: .background))
 
       RadialGradient(
         colors: [Color.cyan.opacity(0.10 * motion.lighting.founderMonitorGlow), .clear],
