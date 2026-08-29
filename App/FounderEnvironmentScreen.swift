@@ -707,7 +707,7 @@ struct FounderEnvironmentRendererView: View {
       .clipped()
     }
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel("Founder environment. \(projection.accessibilitySummary) \(projection.agentAccessibilitySummary)")
+    .accessibilityLabel("Founder environment. \(projection.accessibilitySummary) Signal TV and Founder equipment are physical; AI agents operate inside Company Command.")
   }
 
   private func panoramicScene(size: CGSize, layout: FounderEnvironmentLayout) -> some View {

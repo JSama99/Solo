@@ -34,7 +34,7 @@ enum FacilityTier: Int, Codable, CaseIterable, Identifiable {
 
   var accessibilityDescription: String {
     switch self {
-    case .founderGarage: "Warm industrial garage with research, verification, engineering, and founder workstations."
+    case .founderGarage: "Warm industrial garage with a Founder desk, recovery couch, workout bench, Signal TV, and practical equipment."
     case .founderLoft: "A playable living and working loft with sustainable operations space."
     case .smallOffice: "Future dedicated early-company office."
     case .officeSuite: "Future multi-room office suite."

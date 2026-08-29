@@ -18,6 +18,7 @@ struct FounderDeskWorkspace: View {
   @State private var selectionFeedback = 0
   @State private var hasUsedFreeLook = false
   @State private var showsSignalTVViewer = false
+  @State private var selectedEnvironmentalAction: FounderEnvironmentalAction?
   @State private var deviceStates = Dictionary(
     uniqueKeysWithValues: FounderDeskDevice.allCases.map { ($0, FounderPhysicalDeviceState.idle) }
   )
@@ -70,6 +71,13 @@ struct FounderDeskWorkspace: View {
     }
     .sheet(isPresented: $showsSignalTVViewer) {
       SignalTVViewer(events: environmentProjection.signalTVEvents, coverage: store.stats.coverage)
+    }
+    .sheet(item: $selectedEnvironmentalAction) { action in
+      FounderEnvironmentalActionCard(store: store, action: action) {
+        selectedEnvironmentalAction = nil
+      }
+      .presentationDetents([.height(310)])
+      .presentationDragIndicator(.visible)
     }
   }
 
@@ -177,6 +185,8 @@ struct FounderDeskWorkspace: View {
         deviceButton(.server, style: .wide, visible: true, motion: motion)
         Button("Open Signal TV", systemImage: "tv") { showsSignalTVViewer = true }
           .buttonStyle(.bordered)
+        environmentalButton(.rest)
+        environmentalButton(.train)
       }
       .padding(18)
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -222,6 +232,8 @@ struct FounderDeskWorkspace: View {
 
       signalTVHotspot(size: size)
 
+      environmentalHotspots(size: size)
+
       FounderEnvironmentControlLayer(
         mode: navigation.camera.mode,
         reduceMotion: reduceMotion,
@@ -248,6 +260,29 @@ struct FounderDeskWorkspace: View {
           .accessibilityHidden(true)
           .transition(.opacity)
       }
+    }
+  }
+
+  private func environmentalButton(_ action: FounderEnvironmentalAction) -> some View {
+    Button(action.object.title, systemImage: action.object.symbol) {
+      selectionFeedback += 1
+      selectedEnvironmentalAction = action
+    }
+    .buttonStyle(.bordered)
+    .accessibilityHint("Preview the cost, benefit, duration, and availability before confirming.")
+    .accessibilityIdentifier("garage-\(action.object.rawValue)-hotspot")
+  }
+
+  private func environmentalHotspots(size: CGSize) -> some View {
+    let layout = FounderEnvironmentLayout(viewportSize: size)
+    return ForEach([FounderEnvironmentalAction.rest, .train]) { action in
+      let anchor: FounderEnvironmentWorldAnchor = action == .rest ? .founderCouch : .workoutBench
+      let point = layout.viewportPosition(for: anchor, camera: navigation.camera, layer: .middleGround)
+      environmentalButton(action)
+        .position(x: point.x, y: min(size.height - 98, point.y + 85))
+        .opacity(layout.zoneIsVisible(anchor, camera: navigation.camera, margin: 80) ? 1 : 0)
+        .allowsHitTesting(layout.zoneIsVisible(anchor, camera: navigation.camera, margin: 80))
+        .accessibilityHidden(!layout.zoneIsVisible(anchor, camera: navigation.camera, margin: 80))
     }
   }
 
