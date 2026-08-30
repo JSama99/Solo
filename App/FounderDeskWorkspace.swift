@@ -57,6 +57,8 @@ struct FounderDeskWorkspace: View {
         }
 
         persistentFocusedDevices(size: geometry.size)
+          .allowsHitTesting(navigation.selection != .overview)
+          .accessibilityHidden(navigation.selection == .overview)
 
         #if DEBUG
         if navigation.selection == .device(.computer) {
@@ -225,7 +227,6 @@ struct FounderDeskWorkspace: View {
       .frame(maxWidth: .infinity, alignment: .leading)
     }
     .background(.black.opacity(0.32))
-    .accessibilityFocused($deskIsFocused)
   }
 
   private func spatialOverview(size: CGSize, motion: FounderGarageMotionPresentation) -> some View {
@@ -234,7 +235,7 @@ struct FounderDeskWorkspace: View {
       regularWidth: horizontalSizeClass == .regular
     )
     let garageDoor = FounderGarageDoorLayout(viewportSize: size)
-    let garageDoorFrame = garageDoor.frame(camera: navigation.camera)
+    let garageDoorFrame = garageDoor.accessibilityFrame(camera: navigation.camera)
     return ZStack {
       overviewAccessibilityMarker
       garageDoorAccessibilityMarker
@@ -285,7 +286,6 @@ struct FounderDeskWorkspace: View {
         onCenter: centerCamera
       )
       .frame(width: size.width, height: size.height)
-      .accessibilityFocused($deskIsFocused)
 
       if FounderDeskCameraChromePolicy.showsInstruction(hasUsedFreeLook: hasUsedFreeLook) {
         Text("Drag to look · tap equipment to focus")
@@ -409,6 +409,7 @@ struct FounderDeskWorkspace: View {
       .accessibilityElement()
       .accessibilityLabel("Founder Desk Overview")
       .accessibilityIdentifier("founder-desk-overview")
+      .accessibilityFocused($deskIsFocused)
   }
 
   private func deviceButton(

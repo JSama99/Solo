@@ -466,7 +466,10 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       .garageEntrance: CGPoint(x: 82, y: 350),
       // The main door lives on the rear wall, deliberately opposite the
       // Founder desk so LOOK OUT has a clear, physical destination.
-      .rearGarageDoor: CGPoint(x: 975, y: 342),
+      // This is intentionally inside the neutral compact camera frame, while
+      // the right look places the complete door near the visual center. Keep
+      // the renderer and VoiceOver landmark on this single world anchor.
+      .rearGarageDoor: CGPoint(x: 920, y: 342),
       .storage: CGPoint(x: 225, y: 320),
       .auroraStation: CGPoint(x: 325, y: 300),
       .verificationArray: CGPoint(x: 188, y: 505),
@@ -487,7 +490,9 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       .founderDeskSurface: CGPoint(x: 680, y: 590),
       .founderDeskFloorSide: CGPoint(x: 870, y: 710),
       .founderCommandDesk: CGPoint(x: 535, y: 635),
-      .signalTV: CGPoint(x: 835, y: 205)
+      // Keep the television above the rear-door header so both architectural
+      // objects remain independently readable during the rightward look.
+      .signalTV: CGPoint(x: 835, y: 112)
     ]
     if composition == .compactCockpit {
       result[.auroraStation] = CGPoint(x: 245, y: 315)
@@ -504,7 +509,7 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       result[.founderDeskRightEdge] = CGPoint(x: 855, y: 660)
       result[.founderDeskSurface] = CGPoint(x: 680, y: 600)
       result[.founderDeskFloorSide] = CGPoint(x: 900, y: 720)
-      result[.signalTV] = CGPoint(x: 840, y: 205)
+      result[.signalTV] = CGPoint(x: 840, y: 112)
       result[.founderCouch] = CGPoint(x: 1_140, y: 585)
       result[.workoutBench] = CGPoint(x: 250, y: 585)
     }
@@ -693,6 +698,17 @@ struct FounderGarageDoorLayout: Equatable, Sendable {
     let visible = frame(camera: camera).intersection(CGRect(origin: .zero, size: viewportSize))
     return visible.width >= 44 && visible.height >= 44
   }
+
+  /// The accessibility landmark is placed from this exact same frame; it must
+  /// never drift from the painted architectural door as the camera moves.
+  func accessibilityFrame(camera: FounderEnvironmentCameraState) -> CGRect {
+    frame(camera: camera)
+  }
+
+  func visibleWidthRatio(camera: FounderEnvironmentCameraState) -> CGFloat {
+    let visible = frame(camera: camera).intersection(CGRect(origin: .zero, size: viewportSize))
+    return max(0, visible.width / frame(camera: camera).width)
+  }
 }
 
 struct FounderEnvironmentProjection: Equatable, Sendable {
@@ -706,11 +722,6 @@ struct FounderEnvironmentProjection: Equatable, Sendable {
   var signalTVEvents: [PublicMediaEvent] = []
 
   var spatialPresentation: CompanySpatialPresentation { .map(facility) }
-  var accessibilitySummary: String {
-    let signal = signalTVEvents.first.map { "Signal TV is airing \($0.program.rawValue): \($0.headline)." } ?? "Signal TV is airing Market Pulse."
-    return "\(facility.accessibilityDescription) \(atmosphere.accessibilitySummary) \(signal) Environment agents show only visible work state."
-  }
-
   var agentAccessibilitySummary: String {
     agents.map { agent in
       let visibleConditions = agent.conditions.intersection([.focused, .stressed, .overloaded])
@@ -742,8 +753,7 @@ struct FounderEnvironmentRendererView: View {
       .frame(width: size.width, height: size.height)
       .clipped()
     }
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel("Founder environment. \(projection.accessibilitySummary) Signal TV and Founder equipment are physical; AI agents operate inside Company Command.")
+    .accessibilityHidden(true)
   }
 
   private func panoramicScene(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
@@ -2469,7 +2479,6 @@ struct FounderPhysicalMonitorView<Content: View>: View {
 
 struct FounderEnvironmentControlLayer: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-  @State private var cameraAlternativesExpanded = false
 
   var mode: FounderEnvironmentMode
   var reduceMotion: Bool
@@ -2507,35 +2516,17 @@ struct FounderEnvironmentControlLayer: View {
           .accessibilityAddTraits(.isHeader)
 
         HStack(spacing: 6) {
-          if FounderDeskCameraChromePolicy.exposesManualControls(
-            expanded: cameraAlternativesExpanded,
-            accessibilityText: dynamicTypeSize.isAccessibilitySize
-          ) {
-            Button("Look Left", systemImage: "chevron.left") {
-              onLook(-1, 0)
-              cameraAlternativesExpanded = false
-            }
+          Button("Camera controls", systemImage: "move.3d") { onCenter() }
+          .labelStyle(.iconOnly)
+          .accessibilityIdentifier("free-look-camera-controls")
+          .accessibilityHint("Centers Free Look; adjacent controls look left and right")
+
+          Button("Look Left", systemImage: "chevron.left") { onLook(-1, 0) }
             .labelStyle(.iconOnly)
-            Button("Center", systemImage: "viewfinder") {
-              onCenter()
-              cameraAlternativesExpanded = false
-            }
+          Button("Center", systemImage: "viewfinder") { onCenter() }
             .labelStyle(.iconOnly)
-            Button("Look Right", systemImage: "chevron.right") {
-              onLook(1, 0)
-              cameraAlternativesExpanded = false
-            }
+          Button("Look Right", systemImage: "chevron.right") { onLook(1, 0) }
             .labelStyle(.iconOnly)
-          } else {
-            Button("Camera controls", systemImage: "move.3d") {
-              withAnimation(reduceMotion ? nil : .snappy(duration: 0.20)) {
-                cameraAlternativesExpanded = true
-              }
-            }
-            .labelStyle(.iconOnly)
-            .accessibilityIdentifier("free-look-camera-controls")
-            .accessibilityHint("Shows Look Left, Center, and Look Right controls")
-          }
         }
         .buttonStyle(.bordered)
         .controlSize(.large)

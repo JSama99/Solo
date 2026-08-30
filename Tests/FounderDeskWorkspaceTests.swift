@@ -374,12 +374,31 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     XCTAssertEqual(FounderDeskLayoutPolicy.layout(regularWidth: true, accessibilityText: false, height: 800), .spatialRegular)
   }
 
-  func testRearGarageDoorIsVisibleInRightFreeLookOnIPhoneAndIPad() {
+  func testRearGarageDoorIsDiscoverableAtNeutralFreeLookOnIPhoneAndIPad() {
+    let camera = FounderEnvironmentCameraState(mode: .freeLook)
+    for size in [CGSize(width: 402, height: 874), CGSize(width: 1_024, height: 1_366)] {
+      let door = FounderGarageDoorLayout(viewportSize: size)
+      XCTAssertTrue(door.isVisible(camera: camera))
+      XCTAssertGreaterThanOrEqual(door.visibleWidthRatio(camera: camera), 0.30)
+    }
+  }
+
+  func testRearGarageDoorIsNearlyCompleteInRightFreeLookOnIPhoneAndIPad() {
     let camera = FounderEnvironmentCameraState(horizontalLook: 1, mode: .freeLook)
     for size in [CGSize(width: 402, height: 874), CGSize(width: 1_024, height: 1_366)] {
       let door = FounderGarageDoorLayout(viewportSize: size)
       XCTAssertTrue(door.isVisible(camera: camera))
-      XCTAssertGreaterThanOrEqual(door.frame(camera: camera).intersection(CGRect(origin: .zero, size: size)).width, 44)
+      XCTAssertGreaterThanOrEqual(door.visibleWidthRatio(camera: camera), 0.98)
+    }
+  }
+
+  func testGarageDoorRenderAndAccessibilityGeometryRemainIdentical() {
+    let door = FounderGarageDoorLayout(viewportSize: CGSize(width: 402, height: 874))
+    for camera in [
+      FounderEnvironmentCameraState(mode: .freeLook),
+      FounderEnvironmentCameraState(horizontalLook: 1, verticalLook: -0.18, mode: .freeLook)
+    ] {
+      XCTAssertEqual(door.accessibilityFrame(camera: camera), door.frame(camera: camera))
     }
   }
 
