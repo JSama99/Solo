@@ -1096,15 +1096,7 @@ private struct FounderWorkstationCard: View {
     }
     .shadow(color: isReady && expanded ? accent.opacity(0.28) : .clear, radius: 16, y: 7)
     .contentShape(.rect(cornerRadius: 22))
-    // The compact card remains a convenient focus target. In expanded detail,
-    // however, its controls are canonical state-changing actions; a parent tap
-    // recognizer must not compete with Founder Event or resolution buttons.
-    .simultaneousGesture(
-      TapGesture().onEnded {
-        guard !expanded else { return }
-        onSelect()
-      }
-    )
+    .onTapGesture(perform: onSelect)
     .gameplayMotion(.emphasis, value: expanded)
     .gameplayMotion(value: summary)
     .accessibilityElement(children: .contain)
