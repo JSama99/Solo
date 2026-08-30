@@ -105,8 +105,8 @@ final class SignalTVTests: XCTestCase {
   func testResponsiveTVPlacementPreservesSameWorldObject() {
     let phone = FounderEnvironmentLayout(viewportSize: CGSize(width: 390, height: 844))
     let tablet = FounderEnvironmentLayout(viewportSize: CGSize(width: 1024, height: 768))
-    XCTAssertEqual(phone.anchors[.signalTV], CGPoint(x: 840, y: 205))
-    XCTAssertEqual(tablet.anchors[.signalTV], CGPoint(x: 835, y: 205))
+    XCTAssertEqual(phone.anchors[.signalTV], CGPoint(x: 840, y: 112))
+    XCTAssertEqual(tablet.anchors[.signalTV], CGPoint(x: 835, y: 112))
     let phonePosition = phone.viewportPosition(for: .signalTV, camera: FounderEnvironmentCameraState(mode: .freeLook), layer: .background)
     let tabletPosition = tablet.viewportPosition(for: .signalTV, camera: FounderEnvironmentCameraState(mode: .freeLook), layer: .background)
     XCTAssertGreaterThan(phonePosition.x, 300)

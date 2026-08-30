@@ -2479,7 +2479,6 @@ struct FounderPhysicalMonitorView<Content: View>: View {
 
 struct FounderEnvironmentControlLayer: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-  @State private var cameraAlternativesExpanded = false
 
   var mode: FounderEnvironmentMode
   var reduceMotion: Bool
@@ -2517,35 +2516,17 @@ struct FounderEnvironmentControlLayer: View {
           .accessibilityAddTraits(.isHeader)
 
         HStack(spacing: 6) {
-          if FounderDeskCameraChromePolicy.exposesManualControls(
-            expanded: cameraAlternativesExpanded,
-            accessibilityText: dynamicTypeSize.isAccessibilitySize
-          ) {
-            Button("Look Left", systemImage: "chevron.left") {
-              onLook(-1, 0)
-              cameraAlternativesExpanded = false
-            }
+          Button("Camera controls", systemImage: "move.3d") { onCenter() }
+          .labelStyle(.iconOnly)
+          .accessibilityIdentifier("free-look-camera-controls")
+          .accessibilityHint("Centers Free Look; adjacent controls look left and right")
+
+          Button("Look Left", systemImage: "chevron.left") { onLook(-1, 0) }
             .labelStyle(.iconOnly)
-            Button("Center", systemImage: "viewfinder") {
-              onCenter()
-              cameraAlternativesExpanded = false
-            }
+          Button("Center", systemImage: "viewfinder") { onCenter() }
             .labelStyle(.iconOnly)
-            Button("Look Right", systemImage: "chevron.right") {
-              onLook(1, 0)
-              cameraAlternativesExpanded = false
-            }
+          Button("Look Right", systemImage: "chevron.right") { onLook(1, 0) }
             .labelStyle(.iconOnly)
-          } else {
-            Button("Camera controls", systemImage: "move.3d") {
-              withAnimation(reduceMotion ? nil : .snappy(duration: 0.20)) {
-                cameraAlternativesExpanded = true
-              }
-            }
-            .labelStyle(.iconOnly)
-            .accessibilityIdentifier("free-look-camera-controls")
-            .accessibilityHint("Shows Look Left, Center, and Look Right controls")
-          }
         }
         .buttonStyle(.bordered)
         .controlSize(.large)

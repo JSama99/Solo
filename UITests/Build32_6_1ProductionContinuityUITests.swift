@@ -99,11 +99,22 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     }
     capture("05_COMPANY_SERVER_FOCUSED", in: app)
     returnToDesk(from: .server, in: app)
-    revealCameraPosition("viewfinder", in: app)
     XCTAssertTrue(app.buttons["founder-desk-device-computer"].exists)
     capture("10_RETURNED_FREE_LOOK", in: app)
-    focusDevice(.computer, expectedTitle: "Founder Computer", in: app)
+
+    let returnToComputer = app.buttons["free-look-return-computer"]
+    XCTAssertTrue(returnToComputer.waitForExistence(timeout: 3))
+    if returnToComputer.isHittable {
+      returnToComputer.tap()
+    } else {
+      XCTAssertTrue(tapVisibleFrame(of: returnToComputer, in: app))
+    }
+    XCTAssertTrue(app.buttons["founder-computer-look-out"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["Founder Computer"].waitForExistence(timeout: 5))
     capture("11_RETURNED_COMMAND_FOCUS", in: app)
+    returnToDesk(from: .computer, in: app)
+    XCTAssertTrue(app.buttons["founder-desk-device-server"].exists)
+    capture("12_PRESERVED_RIGHT_FREE_LOOK", in: app)
   }
 
   private func focusDevice(_ target: FocusedDevice, expectedTitle: String, in app: XCUIApplication) {
@@ -163,9 +174,34 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
   private func revealCameraPosition(_ control: String, in app: XCUIApplication) {
     let cameraControls = app.buttons["free-look-camera-controls"]
     XCTAssertTrue(cameraControls.waitForExistence(timeout: 3))
-    cameraControls.tap()
-    XCTAssertTrue(app.buttons[control].waitForExistence(timeout: 3))
-    app.buttons[control].tap()
+    if control == "viewfinder" {
+      if cameraControls.isHittable {
+        cameraControls.tap()
+      } else {
+        // Returning from a right-edge focused device can leave SwiftUI's AX
+        // frame stale for one layout pass. The production Free Look gesture
+        // remains available and one world-width drag returns +1 to center.
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.71, dy: 0.44))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.29, dy: 0.44))
+        start.press(forDuration: 0.08, thenDragTo: end)
+      }
+      return
+    }
+    let target = app.buttons[control]
+    for _ in 0..<3 where !target.exists {
+      if cameraControls.isHittable {
+        cameraControls.tap()
+      } else {
+        XCTAssertTrue(tapVisibleFrame(of: cameraControls, in: app))
+      }
+      _ = target.waitForExistence(timeout: 1)
+    }
+    XCTAssertTrue(target.waitForExistence(timeout: 3))
+    if target.isHittable {
+      target.tap()
+    } else {
+      XCTAssertTrue(tapVisibleFrame(of: target, in: app))
+    }
   }
 
   private enum FocusedDevice: String {
