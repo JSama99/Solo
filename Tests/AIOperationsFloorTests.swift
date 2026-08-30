@@ -9,8 +9,8 @@ final class AIOperationsFloorTests: XCTestCase {
     ).queue
     XCTAssertEqual(queue.count, 1)
     XCTAssertTrue(queue[0].isReviewable)
-    XCTAssertTrue(queue[0].title.contains("reported output"))
-    XCTAssertFalse(queue[0].detail.localizedCaseInsensitiveContains("verified"))
+    XCTAssertEqual(queue[0].lifecycle, "Reported output")
+    XCTAssertFalse(queue[0].decisionSummary.localizedCaseInsensitiveContains("verified"))
   }
 
   func testQueueIdentityIsCanonicalAgentIdentityAndDoesNotDuplicate() {
@@ -46,6 +46,82 @@ final class AIOperationsFloorTests: XCTestCase {
     ).queue[0]
     XCTAssertFalse(AIOperationsFloorProjection.queueActionEnabled(item: item, availability: .init(canReview: false)))
     XCTAssertTrue(AIOperationsFloorProjection.queueActionEnabled(item: item, availability: .init(canReview: true)))
+  }
+
+  func testCriticalFounderDecisionOutranksInformationalTransition() {
+    let queue = AIOperationsFloorProjection.derive(
+      agents: [
+        agent(id: "brio", activity: .resolving, conditions: []),
+        agent(id: "aurora", activity: .awaitingReview, conditions: [])
+      ],
+      summary: summary(), finance: .init(), calendar: .init()
+    ).queue
+    XCTAssertEqual(queue.map(\.agentID), ["aurora", "brio"])
+    XCTAssertEqual(queue.map(\.priority), [.critical, .informational])
+  }
+
+  func testReviewedItemNavigatesToResolutionWithoutReinvokingReview() {
+    let item = AIOperationsFloorProjection.derive(
+      agents: [agent(id: "stacks", activity: .reviewed, conditions: [])],
+      summary: summary(), finance: .init(), calendar: .init()
+    ).queue[0]
+    XCTAssertEqual(item.action, .resolve)
+    XCTAssertFalse(item.isReviewable)
+    XCTAssertFalse(AIOperationsFloorProjection.queueActionEnabled(item: item, availability: .init(canReview: true)))
+    XCTAssertTrue(AIOperationsFloorProjection.queueActionEnabled(item: item, availability: .init(requiresResolution: true)))
+  }
+
+  func testEmptyQueueExplainsCanonicalRouting() {
+    XCTAssertEqual(
+      AIOperationsFloorProjection.emptyQueueText,
+      "No reports awaiting Founder Review. Aurora, Stacks and Brio will route reported outputs here."
+    )
+  }
+
+  func testPrimaryCompositionDeclaresOneConsoleQueueAndCanonicalStations() {
+    let ids = AIOperationsFloorProjection.primarySurfaceIDs
+    XCTAssertEqual(ids.count, 5)
+    XCTAssertEqual(Set(ids).count, 5)
+    XCTAssertEqual(ids.filter { $0 == "founder-command-console" }.count, 1)
+    XCTAssertEqual(ids.filter { $0 == "operations-station-aurora" }.count, 1)
+    XCTAssertEqual(ids.filter { $0 == "operations-station-stacks" }.count, 1)
+    XCTAssertEqual(ids.filter { $0 == "operations-station-brio" }.count, 1)
+  }
+
+  func testReviewPrioritySuppressesCommitAsNextAction() {
+    var founder = summary()
+    founder.canCommit = true
+    founder.reviewCount = 1
+    let projection = AIOperationsFloorProjection.derive(
+      agents: [agent(id: "aurora", activity: .awaitingReview, conditions: [])],
+      summary: founder, finance: .init(), calendar: .init()
+    )
+    XCTAssertEqual(projection.nextAction.eyebrow, "FOUNDER REVIEW")
+    XCTAssertNotEqual(projection.nextAction.shortTitle, "Commit Sprint")
+  }
+
+  func testProjectionDoesNotMutateCanonicalFinanceOrCalendar() {
+    let finance = CompanyFinance(cash: 1_234, lifetimeRevenue: 432)
+    let calendar = OperatingCalendar(totalDays: 91, dayOfSprint: 3, hour: 14)
+    _ = AIOperationsFloorProjection.derive(
+      agents: [agent(id: "aurora", activity: .working, conditions: [.focused])],
+      summary: summary(), finance: finance, calendar: calendar
+    )
+    XCTAssertEqual(finance.cash, 1_234)
+    XCTAssertEqual(finance.lifetimeRevenue, 432)
+    XCTAssertEqual(calendar.totalDays, 91)
+    XCTAssertEqual(calendar.dayOfSprint, 3)
+    XCTAssertEqual(calendar.period, .afternoon)
+  }
+
+  func testReportedAccessibilityNeverClaimsVerification() {
+    let reported = agent(id: "aurora", activity: .awaitingReview, conditions: [])
+    let item = AIOperationsFloorProjection.derive(
+      agents: [reported], summary: summary(), finance: .init(), calendar: .init()
+    ).queue[0]
+    XCTAssertTrue(item.accessibilityLabel.localizedCaseInsensitiveContains("reported"))
+    XCTAssertFalse(item.accessibilityLabel.localizedCaseInsensitiveContains("verified"))
+    XCTAssertFalse(reported.accessibilityValue.localizedCaseInsensitiveContains("verified"))
   }
 
   private func agent(id: String, activity: LivingAgentActivity, conditions: Set<LivingAgentCondition>) -> LivingAgentProjection {
