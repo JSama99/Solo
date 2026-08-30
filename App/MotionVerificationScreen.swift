@@ -19,6 +19,7 @@ struct MotionVerificationScreen: View {
   @State private var isPlayingCausalProof = false
   @State private var showsPhysicalEnvironment: Bool
   @State private var proofMode: FounderEnvironmentMode
+  @State private var lightingPeriod: OperatingCalendar.Period = .morning
 
   private var isCommandFocusProof: Bool {
     ProcessInfo.processInfo.arguments.contains("--motion-qa-command-focus-proof")
@@ -122,6 +123,17 @@ struct MotionVerificationScreen: View {
             Text("Physical Garage").tag(true)
           }
           .pickerStyle(.segmented)
+
+          if showsPhysicalEnvironment {
+            Picker("Garage lighting", selection: $lightingPeriod) {
+              ForEach(OperatingCalendar.Period.allCases, id: \.self) { period in
+                Text(period.title).tag(period)
+              }
+            }
+            .pickerStyle(.segmented)
+            .accessibilityIdentifier("motion-qa-garage-lighting")
+          }
+
           fixtureViewport
 
           HStack {
@@ -265,7 +277,8 @@ struct MotionVerificationScreen: View {
         facility: fixture.atmosphere.facility,
         atmosphere: fixture.atmosphere,
         infrastructure: fixture.infrastructure,
-        agents: fixture.agents
+        agents: fixture.agents,
+        period: lightingPeriod
       )
       let motion = FounderGarageMotionPresentation.derive(
         environment: projection,

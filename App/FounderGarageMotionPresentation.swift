@@ -395,22 +395,42 @@ struct FounderGarageLightingPresentation: Equatable, Sendable {
   var momentumConnectionIntensity: Double
   var brioPublicSignalStability: Double
   var founderNotificationIntensity: Double
+  var operatingPeriod: OperatingCalendar.Period
+  var garageDoorPanelBrightness: Double
+  var garageDoorExteriorLeakIntensity: Double
 
   static func derive(
     atmosphere: CompanyAtmosphere,
     stations: [FounderGarageStationMotion],
-    event: FounderGarageEventEmphasis
+    event: FounderGarageEventEmphasis,
+    period: OperatingCalendar.Period
   ) -> Self {
     let activeCount = stations.filter { $0.activityIntensity >= 0.5 }.count
     let attention = stations.contains { $0.needsFounderAttention }
+    let doorLight = garageDoorLight(for: period)
     return Self(
       practicalLightIntensity: max(0.32, min(0.86, 0.38 + atmosphere.energy * 0.42)),
       founderMonitorGlow: min(0.92, 0.42 + Double(activeCount) * 0.09),
       warningIntensity: atmosphere.isLowRunway ? 0.62 : 0,
       momentumConnectionIntensity: atmosphere.isHighMomentum ? 0.72 : 0.14,
       brioPublicSignalStability: atmosphere.isLowTrust ? 0.52 : 1,
-      founderNotificationIntensity: attention ? 0.88 : event.kind == .none ? 0 : 0.52
+      founderNotificationIntensity: attention ? 0.88 : event.kind == .none ? 0 : 0.52,
+      operatingPeriod: period,
+      garageDoorPanelBrightness: doorLight.panelBrightness,
+      garageDoorExteriorLeakIntensity: doorLight.exteriorLeakIntensity
     )
+  }
+
+  private static func garageDoorLight(for period: OperatingCalendar.Period) -> (
+    panelBrightness: Double,
+    exteriorLeakIntensity: Double
+  ) {
+    switch period {
+    case .morning: (0.94, 0.10)
+    case .afternoon: (1.0, 0.07)
+    case .evening: (0.78, 0.14)
+    case .night: (0.57, 0.32)
+    }
   }
 }
 
@@ -559,7 +579,12 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
         sceneActive: sceneActive
       ),
       stations: stations,
-      lighting: .derive(atmosphere: environment.atmosphere, stations: stations, event: event),
+      lighting: .derive(
+        atmosphere: environment.atmosphere,
+        stations: stations,
+        event: event,
+        period: environment.period
+      ),
       environment: .derive(
         facility: environment.facility,
         infrastructure: environment.infrastructure,

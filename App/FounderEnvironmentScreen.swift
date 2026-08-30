@@ -287,6 +287,7 @@ struct FounderEnvironmentScreen: View {
       atmosphere: atmosphere,
       infrastructure: InfrastructureVisual.map(purchased: progression.purchasedUpgrades, facility: progression.currentFacility, agents: agents, sprint: store.sprint),
       agents: agents,
+      period: store.operatingCalendar.period,
       visibleEvent: visibleGarageEvent,
       signalTVEvents: SignalTVProgramming.ambientEvents(
         publicEvents: store.publicMediaEvents,
@@ -409,6 +410,7 @@ struct FounderCommandFocusLayout: Equatable, Sendable {
 
 enum FounderEnvironmentWorldAnchor: String, CaseIterable, Sendable {
   case garageEntrance
+  case rearGarageDoor
   case storage
   case auroraStation
   case verificationArray
@@ -462,6 +464,9 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
   var anchors: [FounderEnvironmentWorldAnchor: CGPoint] {
     var result: [FounderEnvironmentWorldAnchor: CGPoint] = [
       .garageEntrance: CGPoint(x: 82, y: 350),
+      // The main door lives on the rear wall, deliberately opposite the
+      // Founder desk so LOOK OUT has a clear, physical destination.
+      .rearGarageDoor: CGPoint(x: 975, y: 342),
       .storage: CGPoint(x: 225, y: 320),
       .auroraStation: CGPoint(x: 325, y: 300),
       .verificationArray: CGPoint(x: 188, y: 505),
@@ -522,7 +527,7 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
 
   func depthScale(for anchor: FounderEnvironmentWorldAnchor) -> CGFloat {
     switch anchor {
-    case .garageEntrance, .storage, .signalTV: 0.78
+    case .garageEntrance, .rearGarageDoor, .storage, .signalTV: 0.78
     case .auroraStation: 0.90
     case .stacksStation: 0.84
     case .brioStation: 0.91
@@ -661,11 +666,42 @@ struct SignalTVHotspotLayout: Equatable, Sendable {
   }
 }
 
+/// Shared world geometry keeps the rear-wall door's rendered body and its
+/// accessibility landmark in lockstep across compact iPhone and iPad scenes.
+struct FounderGarageDoorLayout: Equatable, Sendable {
+  static let unscaledSize = CGSize(width: 470, height: 390)
+
+  var viewportSize: CGSize
+
+  func frame(camera: FounderEnvironmentCameraState) -> CGRect {
+    let layout = FounderEnvironmentLayout(viewportSize: viewportSize)
+    let scale = layout.depthScale(for: .rearGarageDoor) * layout.scale
+    let size = CGSize(
+      width: Self.unscaledSize.width * scale,
+      height: Self.unscaledSize.height * scale
+    )
+    let position = layout.viewportPosition(for: .rearGarageDoor, camera: camera, layer: .background)
+    return CGRect(
+      x: position.x - size.width / 2,
+      y: position.y - size.height / 2,
+      width: size.width,
+      height: size.height
+    )
+  }
+
+  func isVisible(camera: FounderEnvironmentCameraState) -> Bool {
+    let visible = frame(camera: camera).intersection(CGRect(origin: .zero, size: viewportSize))
+    return visible.width >= 44 && visible.height >= 44
+  }
+}
+
 struct FounderEnvironmentProjection: Equatable, Sendable {
   var facility: FacilityTier
   var atmosphere: CompanyAtmosphere
   var infrastructure: [InfrastructureVisual]
   var agents: [LivingAgentProjection]
+  /// The canonical operating calendar drives environmental light only.
+  var period: OperatingCalendar.Period = .morning
   var visibleEvent: FounderGarageVisibleEvent? = nil
   var signalTVEvents: [PublicMediaEvent] = []
 
@@ -980,6 +1016,10 @@ struct FounderEnvironmentRendererView: View {
 
       wallUtilityDetails(layout: layout)
 
+      if projection.spatialPresentation == .improvisedGarage {
+        rearGarageDoor(layout: layout)
+      }
+
       garageEntrance
         .position(layout.viewportPosition(for: .garageEntrance, camera: camera, layer: .middleGround))
       storageShelves
@@ -1113,6 +1153,20 @@ struct FounderEnvironmentRendererView: View {
       Capsule().fill(.black.opacity(0.96)).frame(width: 158, height: 7).offset(y: 112)
       Capsule().fill(.white.opacity(0.30)).frame(width: 24, height: 5).offset(y: 61)
     }
+    .accessibilityHidden(true)
+  }
+
+  /// A closed, sectional door is a room-scale object — not a wall texture or
+  /// a Founder Computer decoration. Its frame is positioned in the rear world
+  /// layer so it stays available when the player pans away from the desk.
+  private func rearGarageDoor(layout: FounderEnvironmentLayout) -> some View {
+    FounderGarageDoorView(
+      panelBrightness: motion.lighting.garageDoorPanelBrightness,
+      exteriorLeakIntensity: motion.lighting.garageDoorExteriorLeakIntensity,
+      increasedContrast: increasedContrast
+    )
+    .scaleEffect(layout.depthScale(for: .rearGarageDoor) * layout.scale)
+    .position(layout.viewportPosition(for: .rearGarageDoor, camera: camera, layer: .background))
     .accessibilityHidden(true)
   }
 
@@ -2065,6 +2119,145 @@ struct FounderEnvironmentRendererView: View {
       Image(systemName: "mug.fill").foregroundStyle(.orange.opacity(0.75)).offset(x: -size.width * 0.34, y: -size.height * 0.10)
     }
     .allowsHitTesting(false)
+  }
+}
+
+/// Closed by design. This is a visual architectural element and does not own
+/// any gameplay state, persistence, resource cost, or interaction.
+private struct FounderGarageDoorView: View {
+  var panelBrightness: Double
+  var exteriorLeakIntensity: Double
+  var increasedContrast: Bool
+
+  private let panelCount = 6
+
+  var body: some View {
+    ZStack {
+      // Exterior spill establishes the door as a real boundary in the room;
+      // at night it is intentionally concentrated around the closed seams.
+      RoundedRectangle(cornerRadius: 10)
+        .fill(.black.opacity(0.88))
+        .frame(width: 446, height: 344)
+        .shadow(color: .black.opacity(0.72), radius: 14, x: 8, y: 10)
+
+      RoundedRectangle(cornerRadius: 8)
+        .stroke(
+          LinearGradient(
+            colors: [leakColor.opacity(exteriorLeakIntensity), .clear, leakColor.opacity(exteriorLeakIntensity * 0.72)],
+            startPoint: .top,
+            endPoint: .bottom
+          ),
+          lineWidth: increasedContrast ? 4 : 2
+        )
+        .frame(width: 432, height: 330)
+        .shadow(color: leakColor.opacity(exteriorLeakIntensity * 0.42), radius: 10)
+
+      RoundedRectangle(cornerRadius: 6)
+        .fill(LinearGradient(
+          colors: [
+            Color(red: 0.22, green: 0.23, blue: 0.23).opacity(panelBrightness),
+            Color(red: 0.095, green: 0.105, blue: 0.108).opacity(panelBrightness),
+            Color(red: 0.045, green: 0.050, blue: 0.052).opacity(panelBrightness)
+          ],
+          startPoint: .top,
+          endPoint: .bottom
+        ))
+        .frame(width: 404, height: 304)
+        .overlay {
+          FounderGarageSurfaceTexture(kind: .powderCoat, strength: 1.7)
+            .clipShape(.rect(cornerRadius: 6))
+        }
+
+      VStack(spacing: 0) {
+        ForEach(0..<panelCount, id: \.self) { row in
+          doorPanel(row: row)
+          if row < panelCount - 1 {
+            ZStack {
+              Rectangle().fill(.black.opacity(0.88)).frame(height: 3)
+              Rectangle().fill(leakColor.opacity(exteriorLeakIntensity * 0.66)).frame(height: 0.8).offset(y: 1.2)
+            }
+          }
+        }
+      }
+      .frame(width: 404, height: 304)
+      .clipShape(.rect(cornerRadius: 6))
+
+      // Side rails, rollers, upper track, and the compact motor housing make
+      // the sectional construction readable at a glance.
+      HStack(spacing: 414) {
+        sideRail
+        sideRail
+      }
+      .offset(y: 3)
+
+      HStack(spacing: 8) {
+        Capsule().fill(FounderGarageMaterial.satinMetal).frame(width: 364, height: 7)
+        RoundedRectangle(cornerRadius: 3).fill(FounderGarageMaterial.powderCoat).frame(width: 46, height: 24)
+          .overlay {
+            Circle().fill(.green.opacity(0.58)).frame(width: 5, height: 5).offset(x: 13)
+          }
+          .overlay { RoundedRectangle(cornerRadius: 3).stroke(.white.opacity(increasedContrast ? 0.58 : 0.18), lineWidth: 1) }
+      }
+      .offset(y: -174)
+
+      Capsule()
+        .fill(.black.opacity(0.94))
+        .frame(width: 402, height: 8)
+        .overlay(alignment: .top) { Capsule().fill(leakColor.opacity(exteriorLeakIntensity * 0.78)).frame(height: 1) }
+        .offset(y: 151)
+
+      HStack(spacing: 7) {
+        Capsule().fill(FounderGarageMaterial.satinMetal).frame(width: 42, height: 8)
+        Circle().fill(.black.opacity(0.84)).frame(width: 13, height: 13)
+          .overlay { Circle().fill(.white.opacity(0.32)).frame(width: 3, height: 3) }
+      }
+      .offset(y: 112)
+    }
+    .frame(width: 470, height: 390)
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
+  }
+
+  private var leakColor: Color {
+    exteriorLeakIntensity > 0.20 ? Color(red: 0.43, green: 0.56, blue: 0.74) : Color(red: 0.88, green: 0.68, blue: 0.42)
+  }
+
+  private var sideRail: some View {
+    VStack(spacing: 16) {
+      Capsule().fill(FounderGarageMaterial.satinMetal).frame(width: 10, height: 306)
+      VStack(spacing: 17) {
+        ForEach(0..<7, id: \.self) { _ in
+          Circle().fill(.black.opacity(0.90)).frame(width: 10, height: 10)
+            .overlay { Circle().fill(.white.opacity(0.18)).frame(width: 3, height: 3) }
+        }
+      }
+      .offset(y: -306)
+    }
+  }
+
+  private func doorPanel(row: Int) -> some View {
+    ZStack(alignment: .top) {
+      LinearGradient(
+        colors: [
+          .white.opacity((0.10 + Double((panelCount - row)) * 0.010) * panelBrightness),
+          .clear,
+          .black.opacity(0.12 + Double(row) * 0.012)
+        ],
+        startPoint: .top,
+        endPoint: .bottom
+      )
+      RoundedRectangle(cornerRadius: 2)
+        .stroke(.white.opacity(increasedContrast ? 0.38 : 0.12), lineWidth: 1)
+        .padding(.horizontal, 4)
+      HStack(spacing: 74) {
+        ForEach(0..<4, id: \.self) { _ in
+          Capsule().fill(.black.opacity(0.12)).frame(width: 1, height: 35)
+        }
+      }
+      .offset(y: 5)
+      Capsule().fill(.white.opacity(0.055 * panelBrightness)).frame(width: 356, height: 1).offset(y: 7)
+    }
+    .frame(height: 49)
   }
 }
 
