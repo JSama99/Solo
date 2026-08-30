@@ -323,10 +323,10 @@ private struct OperationsStationCard: View {
 
   @ViewBuilder private var roleSnapshot: some View {
     switch agent.role {
-    case .research: StationPipeline(accent: accent, title: "RESEARCH PATH", labels: ["Question", "Sources", "Packet"], activeStep: pipelineStep, status: researchStatus, progress: agent.progress)
-    case .engineering: StationPipeline(accent: accent, title: "BUILD PIPELINE", labels: ["Module", "Tests", "Gate"], activeStep: pipelineStep, status: engineeringStatus, progress: agent.progress)
-    case .marketing: StationPipeline(accent: accent, title: "PUBLIC SIGNAL", labels: ["Message", "Audience", "Claim"], activeStep: pipelineStep, status: growthStatus, progress: agent.progress)
-    case .general: StationPipeline(accent: accent, title: "GENERAL OPERATIONS", labels: ["Brief", "Work", "Handoff"], activeStep: pipelineStep, status: engineeringStatus, progress: agent.progress)
+    case .research: StationPipeline(accent: accent, title: "RESEARCH PATH", labels: ["Question", "Sources", "Packet"], activeStep: pipelineStep, status: researchStatus)
+    case .engineering: StationPipeline(accent: accent, title: "BUILD PIPELINE", labels: ["Module", "Tests", "Gate"], activeStep: pipelineStep, status: engineeringStatus)
+    case .marketing: StationPipeline(accent: accent, title: "PUBLIC SIGNAL", labels: ["Message", "Audience", "Claim"], activeStep: pipelineStep, status: growthStatus)
+    case .general: StationPipeline(accent: accent, title: "GENERAL OPERATIONS", labels: ["Brief", "Work", "Handoff"], activeStep: pipelineStep, status: engineeringStatus)
     }
   }
 
@@ -442,7 +442,6 @@ private struct StationPipeline: View {
   var labels: [String]
   var activeStep: Int
   var status: String
-  var progress: Double
   var body: some View {
     VStack(alignment: .leading, spacing: 7) {
       HStack { Text(title).font(.caption2.weight(.black)).foregroundStyle(accent); Spacer(); Text(status).font(.caption2).foregroundStyle(.secondary).lineLimit(1) }
@@ -454,7 +453,10 @@ private struct StationPipeline: View {
           }
         }
       }
-      ProgressView(value: progress).tint(accent).accessibilityLabel("Reported work progress").accessibilityValue("\(Int((progress * 100).rounded())) percent. Activity only; not verification.")
+      Label("Reported lifecycle — not verified outcome", systemImage: "eye.slash")
+        .font(.caption2.weight(.semibold))
+        .foregroundStyle(.secondary)
+        .accessibilityLabel("Reported lifecycle only. It does not indicate verified correctness.")
     }
     .padding(9).background(.black.opacity(0.24), in: .rect(cornerRadius: 10))
   }
