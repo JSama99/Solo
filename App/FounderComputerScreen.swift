@@ -40,6 +40,7 @@ struct FounderComputerScreen: View {
         LazyVStack(spacing: 16) {
           AIOperationsFloor(
             agents: livingAgentProjections,
+            tasks: store.tasks,
             summary: founderSummary,
             objective: store.currentObjective?.title ?? "Set the next company priority.",
             venture: store.venture,
@@ -114,9 +115,9 @@ struct FounderComputerScreen: View {
     .onChange(of: presentation.latestEvent?.id) { _, _ in handlePresentationEvent() }
     .onChange(of: assignmentIdentity) { _, _ in reconcilePresentationAfterAssignmentChange() }
     .sheet(item: $assignmentDestination) { destination in
-      TaskAssignmentSheet(store: store, presentation: presentation, agentID: destination.agentID) {
+      TaskAssignmentSheet(store: store, presentation: presentation, agentID: destination.agentID) { feedback in
         assignmentDestination = nil
-        announce("Assignment updated.")
+        announce(feedback)
       }
     }
     .sheet(item: $detailDestination) { destination in
@@ -144,10 +145,7 @@ struct FounderComputerScreen: View {
       }
     }
     #endif
-    .confirmationDialog("Rest this sprint?", isPresented: Binding(
-      get: { restCandidate != nil },
-      set: { if !$0 { restCandidate = nil } }
-    ), titleVisibility: .visible) {
+    .confirmationDialog("Rest this sprint?", isPresented: restConfirmationPresented, titleVisibility: .visible) {
       if let candidate = restCandidate {
         Button("Rest \(candidate.name)", role: .destructive) {
           withAnimation(MotionKind.state.resolved(reduceMotion: reduceMotion)) { store.restAgent(agentID: candidate.agentID) }
@@ -159,6 +157,13 @@ struct FounderComputerScreen: View {
     } message: {
       Text(restCandidate?.hasAssignment == true ? "Rest clears the unreviewed assignment. The agent performs no task and recovers stress when the sprint commits." : "The agent performs no task and recovers stress when the sprint commits.")
     }
+  }
+
+  private var restConfirmationPresented: Binding<Bool> {
+    Binding(
+      get: { restCandidate != nil },
+      set: { if !$0 { restCandidate = nil } }
+    )
   }
 
   private func handlePresentationEvent() {
@@ -439,7 +444,13 @@ struct FounderComputerScreen: View {
       presentation.resolve(taskID: taskID, choice: choice, in: store)
     }
     announce("\(choice.title) selected.")
-    settings.playFeedback(.resolutionLock)
+    let feedback: GameFeedbackKind = switch choice {
+    case .approve: .approval
+    case .rework: .revision
+    case .escalate: .verificationRequest
+    case .shipAnyway: .shipAnyway
+    }
+    settings.playFeedback(feedback)
   }
 
   private func commit() {
@@ -901,9 +912,11 @@ private struct TaskAssignmentSheet: View {
   var store: GameStore
   var presentation: PresentationCoordinator
   var agentID: String
-  var didFinish: () -> Void
+  var didFinish: (String) -> Void
   @Environment(\.dismiss) private var dismiss
   @State private var assignmentTap = false
+  @State private var pendingTaskID: UUID?
+  @State private var isSubmitting = false
   private var agent: SoloAgent? { store.agents.first { $0.id == agentID } }
   var body: some View {
     NavigationStack {
@@ -920,26 +933,79 @@ private struct TaskAssignmentSheet: View {
               Text("Charged once when work begins; repeated taps and relaunches cannot charge it again.")
                 .font(.caption2).foregroundStyle(.secondary)
             }
-            HStack {
-              Button("Assign") {
-                assignmentTap.toggle()
-                presentation.assign(agentID: agentID, to: task.id, in: store)
-                dismiss()
-                didFinish()
-              }
-              .buttonStyle(.borderedProminent)
-              .disabled(task.isReviewed)
-              if task.assignedAgentID == agentID && !task.isReviewed {
-                Button("Remove", role: .destructive) { presentation.assign(agentID: nil, to: task.id, in: store); dismiss(); didFinish() }.buttonStyle(.bordered)
+            if pendingTaskID == task.id, let agent {
+              assignmentConfirmation(task: task, agent: agent)
+            } else {
+              HStack {
+                Button("Review assignment", systemImage: "doc.text.magnifyingglass") {
+                  withAnimation(.snappy) { pendingTaskID = task.id }
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(task.isReviewed)
+                if task.assignedAgentID == agentID && !task.isReviewed {
+                  Button("Remove", role: .destructive) {
+                    presentation.assign(agentID: nil, to: task.id, in: store)
+                    dismiss()
+                    didFinish("\(agent?.name ?? "Agent")'s assignment was removed. No calendar time advanced.")
+                  }
+                  .buttonStyle(.bordered)
+                }
               }
             }
-          }.padding(.vertical, 5)
+          }
+          .padding(.vertical, 5)
         }
       }
       .navigationTitle("Assign \(agent?.name ?? "Agent")")
       .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
     }
     .sensoryFeedback(.impact(weight: .medium), trigger: assignmentTap)
+  }
+
+  private func assignmentConfirmation(task: SoloTask, agent: SoloAgent) -> some View {
+    let cost = store.assignmentCostPreview(task: task, agent: agent)
+    return VStack(alignment: .leading, spacing: 9) {
+      Label("CONFIRM ASSIGNMENT", systemImage: "checkmark.shield.fill")
+        .font(.caption.weight(.black)).foregroundStyle(SoloTheme.amber)
+      confirmationRow("Action", "Assign \(agent.name)", "arrow.down.doc.fill")
+      confirmationRow("AI cost", cost.formatted(.currency(code: "USD").precision(.fractionLength(0))), "banknote.fill")
+      confirmationRow("Time", "No immediate calendar advance", "clock.fill")
+      confirmationRow("Founder Attention", "No assignment cost", "eye.fill")
+      confirmationRow("Expected benefit", task.reward, "arrow.up.right")
+      confirmationRow("Known uncertainty", "Output remains reported until Founder Review", "questionmark.diamond.fill")
+      confirmationRow("If left undone", task.consequenceLabel, "exclamationmark.triangle.fill")
+      Text("Sprint commit—not assignment—advances the canonical operating calendar by seven days.")
+        .font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+      HStack {
+        Button("Confirm assignment", systemImage: "checkmark") {
+          guard !isSubmitting else { return }
+          isSubmitting = true
+          assignmentTap.toggle()
+          presentation.assign(agentID: agentID, to: task.id, in: store)
+          dismiss()
+          didFinish("\(agent.name) received \(task.title). Cash decreased by \(cost.formatted(.currency(code: "USD").precision(.fractionLength(0)))). The operating calendar is unchanged until Sprint commit.")
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(SoloTheme.amber)
+        .disabled(isSubmitting || task.isReviewed)
+        Button("Back") { withAnimation(.snappy) { pendingTaskID = nil } }
+          .buttonStyle(.bordered)
+      }
+    }
+    .padding(12)
+    .background(SoloTheme.amber.opacity(0.10), in: .rect(cornerRadius: 12))
+    .overlay { RoundedRectangle(cornerRadius: 12).stroke(SoloTheme.amber.opacity(0.55), lineWidth: 1) }
+    .accessibilityElement(children: .contain)
+  }
+
+  private func confirmationRow(_ title: String, _ value: String, _ symbol: String) -> some View {
+    Label {
+      VStack(alignment: .leading, spacing: 1) {
+        Text(title.uppercased()).font(.caption2.weight(.bold)).foregroundStyle(.secondary)
+        Text(value).font(.caption.weight(.semibold)).fixedSize(horizontal: false, vertical: true)
+      }
+    } icon: { Image(systemName: symbol).foregroundStyle(SoloTheme.amber) }
+      .accessibilityElement(children: .combine)
   }
 }
 

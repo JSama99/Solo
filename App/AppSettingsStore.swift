@@ -155,12 +155,18 @@ enum GameFeedbackKind {
   case companyCommandFocus
   case companyCommandClose
   case dispatch
+  case workStart
   case workComplete
   case review
+  case approval
+  case revision
+  case verificationRequest
+  case shipAnyway
   case verificationSuccess
   case verificationWarning
   case resolutionLock
   case sprintCommit
+  case financialWarning
   case infrastructureInstall
   case levelUp
   case chapterAdvance
@@ -174,12 +180,18 @@ enum GameFeedbackKind {
     case .companyCommandFocus: 580
     case .companyCommandClose: 390
     case .dispatch: 520
+    case .workStart: 590
     case .workComplete: 660
     case .review: 430
+    case .approval: 820
+    case .revision: 470
+    case .verificationRequest: 610
+    case .shipAnyway: 330
     case .verificationSuccess: 880
     case .verificationWarning: 260
     case .resolutionLock: 360
     case .sprintCommit: 740
+    case .financialWarning: 220
     case .infrastructureInstall: 610
     case .levelUp: 920
     case .chapterAdvance: 820
@@ -192,7 +204,7 @@ enum GameFeedbackKind {
 
   var duration: Double {
     switch self {
-    case .verificationWarning, .resolutionLock, .coverageNegative: 0.12
+    case .verificationWarning, .resolutionLock, .coverageNegative, .financialWarning, .shipAnyway: 0.12
     default: 0.08
     }
   }
