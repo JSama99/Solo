@@ -374,6 +374,36 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     XCTAssertEqual(FounderDeskLayoutPolicy.layout(regularWidth: true, accessibilityText: false, height: 800), .spatialRegular)
   }
 
+  func testRearGarageDoorIsVisibleInRightFreeLookOnIPhoneAndIPad() {
+    let camera = FounderEnvironmentCameraState(horizontalLook: 1, mode: .freeLook)
+    for size in [CGSize(width: 402, height: 874), CGSize(width: 1_024, height: 1_366)] {
+      let door = FounderGarageDoorLayout(viewportSize: size)
+      XCTAssertTrue(door.isVisible(camera: camera))
+      XCTAssertGreaterThanOrEqual(door.frame(camera: camera).intersection(CGRect(origin: .zero, size: size)).width, 44)
+    }
+  }
+
+  func testGarageDoorLightingUsesCanonicalMorningAndNightPeriods() {
+    let morning = garageMotion(period: .morning)
+    let night = garageMotion(period: .night)
+    XCTAssertEqual(morning.lighting.operatingPeriod, .morning)
+    XCTAssertEqual(night.lighting.operatingPeriod, .night)
+    XCTAssertGreaterThan(morning.lighting.garageDoorPanelBrightness, night.lighting.garageDoorPanelBrightness)
+    XCTAssertGreaterThan(night.lighting.garageDoorExteriorLeakIntensity, morning.lighting.garageDoorExteriorLeakIntensity)
+  }
+
+  func testFounderComputerRoundTripPreservesGarageDoorWorldState() {
+    var state = FounderDeskNavigationState()
+    state.setLook(horizontal: 1, vertical: -0.12, reduceMotion: false)
+    let door = FounderGarageDoorLayout(viewportSize: CGSize(width: 402, height: 874))
+    let before = door.frame(camera: state.camera)
+    XCTAssertEqual(state.select(.computer), .computerFocused)
+    state.completeCameraTransition(to: .computerFocused)
+    XCTAssertEqual(state.lookOut(), .freeLook)
+    state.completeCameraTransition(to: .freeLook)
+    XCTAssertEqual(door.frame(camera: state.camera), before)
+  }
+
   func testAccessibilityTextUsesReadableListLayout() {
     XCTAssertEqual(FounderDeskLayoutPolicy.layout(regularWidth: false, accessibilityText: true, height: 800), .accessibleList)
     XCTAssertEqual(FounderDeskLayoutPolicy.layout(regularWidth: true, accessibilityText: true, height: 1_100), .accessibleList)
@@ -511,6 +541,22 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     _ = state.select(.computer)
     state.completeCameraTransition(to: .computerFocused)
     return state
+  }
+
+  private func garageMotion(period: OperatingCalendar.Period) -> FounderGarageMotionPresentation {
+    let environment = FounderEnvironmentProjection(
+      facility: .founderGarage,
+      atmosphere: .derive(stats: FounderStats(), facility: .founderGarage, venture: 1),
+      infrastructure: [],
+      agents: [],
+      period: period
+    )
+    return FounderGarageMotionPresentation.derive(
+      environment: environment,
+      camera: FounderEnvironmentCameraState(mode: .freeLook),
+      reduceMotion: false,
+      sceneActive: true
+    )
   }
 
   private func assertNoHiddenTruth(in preview: FounderDeskPreview, file: StaticString = #filePath, line: UInt = #line) {

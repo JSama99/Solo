@@ -24,6 +24,9 @@ struct FounderDeskWorkspace: View {
     uniqueKeysWithValues: FounderDeskDevice.allCases.map { ($0, FounderPhysicalDeviceState.idle) }
   )
   @State private var deviceActivationID = UUID()
+  #if DEBUG
+  @State private var showsMotionVerification = false
+  #endif
   @AccessibilityFocusState private var focusedDevice: FounderDeskDevice?
   @AccessibilityFocusState private var deskIsFocused: Bool
 
@@ -54,6 +57,21 @@ struct FounderDeskWorkspace: View {
         }
 
         persistentFocusedDevices(size: geometry.size)
+
+        #if DEBUG
+        if navigation.selection == .device(.computer) {
+          Button("Motion QA", systemImage: "waveform.path.ecg") {
+            showsMotionVerification = true
+          }
+          .labelStyle(.iconOnly)
+          .buttonStyle(.bordered)
+          .tint(SoloTheme.mint)
+          .accessibilityLabel("Open Motion QA")
+          .accessibilityHint("Opens presentation-only visual verification.")
+          .position(x: geometry.size.width - 34, y: 92)
+          .zIndex(10)
+        }
+        #endif
       }
       .frame(width: geometry.size.width, height: geometry.size.height)
       .clipped()
@@ -87,6 +105,11 @@ struct FounderDeskWorkspace: View {
       .presentationDetents([.height(310)])
       .presentationDragIndicator(.visible)
     }
+    #if DEBUG
+    .sheet(isPresented: $showsMotionVerification) {
+      MotionVerificationScreen()
+    }
+    #endif
   }
 
   private var environmentProjection: FounderEnvironmentProjection {
@@ -115,6 +138,7 @@ struct FounderDeskWorkspace: View {
         sprint: store.sprint
       ),
       agents: agents,
+      period: store.operatingCalendar.period,
       visibleEvent: visibleGarageEvent,
       signalTVEvents: SignalTVProgramming.ambientEvents(
         publicEvents: store.publicMediaEvents,
@@ -175,6 +199,7 @@ struct FounderDeskWorkspace: View {
     ScrollView {
       VStack(alignment: .leading, spacing: 12) {
         overviewAccessibilityMarker
+        garageDoorAccessibilityMarker
         deskHeading
         Button("Return to Founder Computer", systemImage: "desktopcomputer") { select(.computer) }
           .buttonStyle(.borderedProminent)
@@ -208,8 +233,14 @@ struct FounderDeskWorkspace: View {
       viewportSize: size,
       regularWidth: horizontalSizeClass == .regular
     )
+    let garageDoor = FounderGarageDoorLayout(viewportSize: size)
+    let garageDoorFrame = garageDoor.frame(camera: navigation.camera)
     return ZStack {
       overviewAccessibilityMarker
+      garageDoorAccessibilityMarker
+        .frame(width: garageDoorFrame.width, height: garageDoorFrame.height)
+        .position(x: garageDoorFrame.midX, y: garageDoorFrame.midY)
+        .accessibilityHidden(!garageDoor.isVisible(camera: navigation.camera))
 
       LinearGradient(
         colors: [.clear, .black.opacity(0.08), .black.opacity(0.52)],
@@ -358,6 +389,18 @@ struct FounderDeskWorkspace: View {
       .background(.black.opacity(0.38), in: .capsule)
       .accessibilityIdentifier("founder-desk-overview")
     .accessibilityElement(children: .combine)
+  }
+
+  /// A stable VoiceOver landmark for the room-scale rear-wall object. It is
+  /// deliberately noninteractive and communicates no hidden simulation state.
+  private var garageDoorAccessibilityMarker: some View {
+    Color.clear
+      .accessibilityElement()
+      .accessibilityLabel("Garage Door")
+      .accessibilityValue("Closed")
+      .accessibilityHint("Physical sectional garage door on the rear wall.")
+      .accessibilityIdentifier("garage-door")
+      .allowsHitTesting(false)
   }
 
   private var overviewAccessibilityMarker: some View {
