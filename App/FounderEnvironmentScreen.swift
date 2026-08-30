@@ -706,11 +706,6 @@ struct FounderEnvironmentProjection: Equatable, Sendable {
   var signalTVEvents: [PublicMediaEvent] = []
 
   var spatialPresentation: CompanySpatialPresentation { .map(facility) }
-  var accessibilitySummary: String {
-    let signal = signalTVEvents.first.map { "Signal TV is airing \($0.program.rawValue): \($0.headline)." } ?? "Signal TV is airing Market Pulse."
-    return "\(facility.accessibilityDescription) \(atmosphere.accessibilitySummary) \(signal) Environment agents show only visible work state."
-  }
-
   var agentAccessibilitySummary: String {
     agents.map { agent in
       let visibleConditions = agent.conditions.intersection([.focused, .stressed, .overloaded])
@@ -742,8 +737,7 @@ struct FounderEnvironmentRendererView: View {
       .frame(width: size.width, height: size.height)
       .clipped()
     }
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel("Founder environment. \(projection.accessibilitySummary) Signal TV and Founder equipment are physical; AI agents operate inside Company Command.")
+    .accessibilityHidden(true)
   }
 
   private func panoramicScene(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
