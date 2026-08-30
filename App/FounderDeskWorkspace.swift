@@ -234,7 +234,7 @@ struct FounderDeskWorkspace: View {
       regularWidth: horizontalSizeClass == .regular
     )
     let garageDoor = FounderGarageDoorLayout(viewportSize: size)
-    let garageDoorFrame = garageDoor.frame(camera: navigation.camera)
+    let garageDoorFrame = garageDoor.accessibilityFrame(camera: navigation.camera)
     return ZStack {
       overviewAccessibilityMarker
       garageDoorAccessibilityMarker

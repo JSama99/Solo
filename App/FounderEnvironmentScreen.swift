@@ -466,7 +466,10 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       .garageEntrance: CGPoint(x: 82, y: 350),
       // The main door lives on the rear wall, deliberately opposite the
       // Founder desk so LOOK OUT has a clear, physical destination.
-      .rearGarageDoor: CGPoint(x: 975, y: 342),
+      // This is intentionally inside the neutral compact camera frame, while
+      // the right look places the complete door near the visual center. Keep
+      // the renderer and VoiceOver landmark on this single world anchor.
+      .rearGarageDoor: CGPoint(x: 920, y: 342),
       .storage: CGPoint(x: 225, y: 320),
       .auroraStation: CGPoint(x: 325, y: 300),
       .verificationArray: CGPoint(x: 188, y: 505),
@@ -487,7 +490,9 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       .founderDeskSurface: CGPoint(x: 680, y: 590),
       .founderDeskFloorSide: CGPoint(x: 870, y: 710),
       .founderCommandDesk: CGPoint(x: 535, y: 635),
-      .signalTV: CGPoint(x: 835, y: 205)
+      // Keep the television above the rear-door header so both architectural
+      // objects remain independently readable during the rightward look.
+      .signalTV: CGPoint(x: 835, y: 112)
     ]
     if composition == .compactCockpit {
       result[.auroraStation] = CGPoint(x: 245, y: 315)
@@ -504,7 +509,7 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       result[.founderDeskRightEdge] = CGPoint(x: 855, y: 660)
       result[.founderDeskSurface] = CGPoint(x: 680, y: 600)
       result[.founderDeskFloorSide] = CGPoint(x: 900, y: 720)
-      result[.signalTV] = CGPoint(x: 840, y: 205)
+      result[.signalTV] = CGPoint(x: 840, y: 112)
       result[.founderCouch] = CGPoint(x: 1_140, y: 585)
       result[.workoutBench] = CGPoint(x: 250, y: 585)
     }
@@ -692,6 +697,17 @@ struct FounderGarageDoorLayout: Equatable, Sendable {
   func isVisible(camera: FounderEnvironmentCameraState) -> Bool {
     let visible = frame(camera: camera).intersection(CGRect(origin: .zero, size: viewportSize))
     return visible.width >= 44 && visible.height >= 44
+  }
+
+  /// The accessibility landmark is placed from this exact same frame; it must
+  /// never drift from the painted architectural door as the camera moves.
+  func accessibilityFrame(camera: FounderEnvironmentCameraState) -> CGRect {
+    frame(camera: camera)
+  }
+
+  func visibleWidthRatio(camera: FounderEnvironmentCameraState) -> CGFloat {
+    let visible = frame(camera: camera).intersection(CGRect(origin: .zero, size: viewportSize))
+    return max(0, visible.width / frame(camera: camera).width)
   }
 }
 
