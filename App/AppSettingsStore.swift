@@ -21,7 +21,7 @@ final class AppSettingsStore {
   private var securityScopedURL: URL?
   private var ambienceScheduled = false
   private var feedbackDuckToken = UUID()
-  private var lastGarageEventToken: UUID?
+  private var garageCueDeduplicator = GarageAudioCueDeduplicator()
 
   init(defaults: UserDefaults = .standard) {
     self.defaults = defaults
@@ -84,9 +84,8 @@ final class AppSettingsStore {
   /// Converts sanitized Garage presentation hooks into real local audio. The
   /// event token prevents view recomputation from stacking duplicate cues.
   func playGarageAudioHooks(_ hooks: FounderGarageAudioHookPresentation) {
-    guard let token = hooks.eventToken, token != lastGarageEventToken else { return }
-    lastGarageEventToken = token
-    guard let cue = hooks.cues.first else { return }
+    guard let cue = hooks.cues.first,
+          garageCueDeduplicator.shouldPlay(token: hooks.eventToken, cue: cue) else { return }
     switch cue {
     case .monitorWake: playFeedback(.deviceWake)
     case .researchScanner, .buildActivity: playFeedback(.typing)
@@ -171,6 +170,22 @@ final class AppSettingsStore {
         self.scheduleLoop(file)
       }
     }
+  }
+}
+
+/// Stateful playback policy kept separate from AVAudioEngine so event
+/// deduplication is deterministic and directly testable. An empty render pass
+/// cannot consume a token before its audible cue arrives.
+struct GarageAudioCueDeduplicator: Equatable, Sendable {
+  private(set) var lastToken: UUID?
+  private(set) var lastCue: FounderGarageAudioCue?
+
+  mutating func shouldPlay(token: UUID?, cue: FounderGarageAudioCue) -> Bool {
+    guard let token else { return false }
+    guard token != lastToken || cue != lastCue else { return false }
+    lastToken = token
+    lastCue = cue
+    return true
   }
 }
 
