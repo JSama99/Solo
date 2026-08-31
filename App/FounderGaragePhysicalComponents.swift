@@ -246,6 +246,8 @@ struct FounderGaragePhysicalStationView: View {
       deskLightReflection
       deskObjects
         .offset(y: -31)
+      authoredCharacterInteraction
+        .offset(y: -39)
       artifactDock
       workflowControls
         .offset(y: 11)
@@ -774,12 +776,57 @@ struct FounderGaragePhysicalStationView: View {
         }
       }
       .offset(y: motion?.physical.postureOffsetY ?? 0)
+      .offset(x: (motion?.physical.rolePresence.gazeOffsetX ?? 0) + (motion?.physical.rolePresence.restingLean ?? 0))
+      .rotationEffect(.degrees(motion?.physical.rolePresence.headTiltDegrees ?? 0), anchor: .bottom)
       .scaleEffect(motion?.physical.postureScale ?? 1, anchor: .bottom)
       .phaseAnimator(motion?.physical.portraitMotionEnabled == true ? [ambientRhythm.phase, motion?.physical.breathingAmplitude ?? 0, 0.0] : [0.0]) { content, y in
           content
             .offset(x: y * (kind == .campaign ? -0.14 : 0.12), y: y)
             .scaleEffect(1 + y * 0.00045, anchor: .bottom)
       } animation: { _ in .easeInOut(duration: ambientRhythm.duration) }
+    }
+  }
+
+  @ViewBuilder
+  private var authoredCharacterInteraction: some View {
+    let presence = motion?.physical.rolePresence
+    let travel = presence?.handTravel ?? 0
+    let active = presence?.motionEnabled == true && travel > 0
+    Group {
+      switch kind {
+      case .research:
+        HStack(spacing: 5) {
+          Image(systemName: "doc.text.magnifyingglass")
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundStyle(tone.opacity(0.76))
+          Capsule().fill(Color(red: 0.49, green: 0.30, blue: 0.22)).frame(width: 19, height: 7)
+        }
+        .offset(x: -36)
+      case .engineering:
+        HStack(spacing: 18) {
+          Capsule().fill(Color(red: 0.48, green: 0.29, blue: 0.21)).frame(width: 18, height: 7)
+          Capsule().fill(Color(red: 0.48, green: 0.29, blue: 0.21)).frame(width: 18, height: 7)
+        }
+        .overlay { RoundedRectangle(cornerRadius: 2).stroke(tone.opacity(0.44), lineWidth: 1).frame(width: 62, height: 14) }
+        .offset(x: 20)
+      case .campaign:
+        HStack(spacing: 5) {
+          Capsule().fill(Color(red: 0.49, green: 0.30, blue: 0.22)).frame(width: 19, height: 7)
+          Image(systemName: "bubble.left.and.bubble.right.fill")
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundStyle(tone.opacity(0.78))
+        }
+        .offset(x: 34)
+      }
+    }
+    .opacity(0.44 + (presence?.monitorAttention ?? 0.3) * 0.46)
+    .phaseAnimator(active ? [0.0, travel, 0.0] : [0.0]) { content, phase in
+      content.offset(
+        x: phase * (kind == .research ? 4 : kind == .campaign ? -5 : 2),
+        y: phase * (kind == .engineering ? 2 : -1)
+      )
+    } animation: { _ in
+      .easeInOut(duration: max(0.48, 1.18 - (presence?.interactionRate ?? 0) * 0.42))
     }
   }
 

@@ -80,12 +80,15 @@ struct FounderDeskWorkspace: View {
       .animation(reduceMotion ? .easeOut(duration: 0.14) : .smooth(duration: 0.38), value: navigation.selection)
       .animation(reduceMotion ? nil : .smooth(duration: 0.34), value: navigation.camera)
       .sensoryFeedback(.selection, trigger: selectionFeedback)
+      .onChange(of: motion.audioHooks.eventToken, initial: true) { _, _ in
+        settings.playGarageAudioHooks(motion.audioHooks)
+      }
       .onChange(of: store.stats.trackRecord, initial: true) { _, value in
         progression.observe(trackRecord: value)
       }
       .onChange(of: scenePhase, initial: true) { _, phase in
         if phase == .active {
-          settings.setAudioContext(navigation.selection == .device(.computer) ? .companyCommand : .garage)
+          settings.setAudioContext(audioContext(for: navigation.selection))
         } else {
           settings.setAudioContext(.background)
         }
@@ -521,6 +524,8 @@ struct FounderDeskWorkspace: View {
       }
       return
     }
+    settings.setAudioContext(audioContext(for: .device(device)))
+    settings.playFeedback(.deviceWake)
     Task { @MainActor in
       if !reduceMotion { try? await Task.sleep(for: .milliseconds(360)) }
       focusedDevice = device
@@ -545,6 +550,8 @@ struct FounderDeskWorkspace: View {
     withAnimation(workspaceAnimation) {
       navigation.closeSecondaryDevice()
     }
+    settings.setAudioContext(.garage)
+    settings.playFeedback(.buttonPress)
     selectionFeedback += 1
     Task { @MainActor in
       if !reduceMotion { try? await Task.sleep(for: .milliseconds(260)) }
@@ -559,6 +566,16 @@ struct FounderDeskWorkspace: View {
     navigation.transitionStyle(reduceMotion: reduceMotion) == .crossfade
       ? .easeOut(duration: 0.14)
       : .smooth(duration: 0.38)
+  }
+
+  private func audioContext(for selection: FounderDeskSelection) -> AppAudioContext {
+    switch selection {
+    case .overview: .garage
+    case .device(.computer): .companyCommand
+    case .device(.phone): .techCom
+    case .device(.tablet): .venture
+    case .device(.server): .companyServer
+    }
   }
 
   private func freeLookDragGesture(in size: CGSize) -> some Gesture {

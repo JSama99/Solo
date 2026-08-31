@@ -1,6 +1,40 @@
 import XCTest
 
 final class Build32_6_2ProductionContinuityUITests: XCTestCase {
+  func testBuild3276AuthoredMotionAndLightingEvidence() throws {
+    let fixtures: [(String, String)] = [
+      ("Idle overview", "20_AGENT_IDLE"),
+      ("Aurora assignment received", "21_AURORA_ASSIGNMENT"),
+      ("Aurora working", "22_AURORA_WORKING"),
+      ("Stacks working", "23_STACKS_WORKING"),
+      ("Brio working", "24_BRIO_WORKING"),
+      ("Awaiting Founder review", "25_AWAITING_REVIEW"),
+      ("Review step one", "26_FOUNDER_REVIEW_CUE"),
+      ("Reduce Motion endpoints", "27_REDUCE_MOTION")
+    ]
+
+    for (fixture, evidenceName) in fixtures {
+      let app = XCUIApplication()
+      app.launchArguments = ["--motion-qa-physical"]
+      app.launchEnvironment["SOLO_MOTION_QA_FIXTURE"] = fixture
+      app.launch()
+      XCTAssertTrue(app.buttons["Done"].waitForExistence(timeout: 6), "Failed to launch fixture: \(fixture)")
+      capture(evidenceName, in: app)
+      app.terminate()
+    }
+
+    let app = XCUIApplication()
+    app.launchArguments = ["--motion-qa-physical"]
+    app.launchEnvironment["SOLO_MOTION_QA_FIXTURE"] = "Idle overview"
+    app.launch()
+    XCTAssertTrue(app.buttons["Done"].waitForExistence(timeout: 6))
+    capture("28_MORNING_GARAGE", in: app)
+    let night = app.buttons["Night"]
+    XCTAssertTrue(night.waitForExistence(timeout: 4))
+    night.tap()
+    capture("29_NIGHT_GARAGE", in: app)
+  }
+
   func testIdleGarageAmbientLifeHold() throws {
     let app = XCUIApplication()
     app.launchArguments = ["--founder-desk-production-proof"]

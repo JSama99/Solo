@@ -771,8 +771,39 @@ struct FounderEnvironmentRendererView: View {
       founderDesk(size: size, layout: layout)
       ambientEquipmentLayer(size: size, layout: layout)
       atmosphere(size: size)
+      operatingPeriodGrade(size: size)
     }
     .background(Color.black)
+    .brightness((motion.lighting.roomExposure - 1) * 0.34)
+    .contrast(0.90 + motion.lighting.rearWallClarity * 0.10)
+  }
+
+  private func operatingPeriodGrade(size: CGSize) -> some View {
+    ZStack {
+      LinearGradient(
+        colors: [
+          Color.orange.opacity(motion.lighting.practicalWarmth * 0.075),
+          .clear,
+          Color.blue.opacity((1 - motion.lighting.practicalWarmth) * 0.055)
+        ],
+        startPoint: .topTrailing,
+        endPoint: .bottomLeading
+      )
+      LinearGradient(
+        colors: [.clear, .black.opacity(0.06 * motion.lighting.shadowLength)],
+        startPoint: .center,
+        endPoint: .bottom
+      )
+      RadialGradient(
+        colors: [Color.cyan.opacity(max(0, motion.lighting.displayGlowMultiplier - 0.70) * 0.055), .clear],
+        center: UnitPoint(x: 0.52, y: 0.56),
+        startRadius: 12,
+        endRadius: size.width * 0.60
+      )
+    }
+    .frame(width: size.width, height: size.height)
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
   }
 
   private func signalTVLayer(layout: FounderEnvironmentLayout) -> some View {
@@ -1260,18 +1291,25 @@ struct FounderEnvironmentRendererView: View {
             )
           }
           .phaseAnimator(
-            station.physical.reactionMotionEnabled ? [0.0, 1.0] : [1.0],
+            motion.choreography.phases,
             trigger: station.eventToken
-          ) { content, progress in
+          ) { content, phase in
+            let progress = phase == .anticipation ? 0.0 : 1.0
+            let scale = switch phase {
+            case .anticipation: motion.choreography.anticipationScale
+            case .action: motion.choreography.actionScale
+            case .settle: motion.choreography.settleScale
+            }
             content
               .position(
                 x: origin.x + (destinationPosition.x - origin.x) * progress,
                 y: origin.y + (destinationPosition.y - origin.y) * progress
               )
               .opacity(0.58 + progress * 0.42)
-              .scaleEffect(0.92 + progress * 0.08)
+              .scaleEffect(scale)
+              .offset(y: phase == .anticipation ? 4 : 0)
           } animation: { _ in
-            .smooth(duration: 0.46)
+            .smooth(duration: motion.choreography.travelDuration)
           }
         }
       }
