@@ -38,6 +38,23 @@ final class GameplayMotionTests: XCTestCase {
       XCTAssertEqual(firstSamples[0][index], firstSamples[1][index], accuracy: 0.000_001)
     }
   }
+
+  func testGarageAudioCueDeduplicationPlaysOneCuePerEventAndDoesNotConsumeMissingCues() {
+    let event = UUID(uuidString: "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE")!
+    var policy = GarageAudioCueDeduplicator()
+    XCTAssertFalse(policy.shouldPlay(token: nil, cue: .monitorWake))
+    XCTAssertTrue(policy.shouldPlay(token: event, cue: .monitorWake))
+    XCTAssertFalse(policy.shouldPlay(token: event, cue: .monitorWake))
+    XCTAssertTrue(policy.shouldPlay(token: event, cue: .reviewReady))
+    XCTAssertFalse(policy.shouldPlay(token: event, cue: .reviewReady))
+  }
+
+  func testEveryAudioContextHasAnIntentionalGarageAmbienceGain() {
+    let active: [AppAudioContext] = [.garage, .companyCommand, .founderReview, .techCom, .venture, .companyServer]
+    XCTAssertEqual(Set(active.map(\.ambienceGain)).count, active.count)
+    XCTAssertTrue(active.allSatisfy { $0.ambienceGain > 0 })
+    XCTAssertEqual(AppAudioContext.background.ambienceGain, 0)
+  }
   override func tearDown() {
     for key in UserDefaults.standard.dictionaryRepresentation().keys
     where key.hasPrefix("solo-unicorn-run-native-save-") {

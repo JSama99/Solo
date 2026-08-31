@@ -1,7 +1,7 @@
 import XCTest
 
 final class Build32_6_2ProductionContinuityUITests: XCTestCase {
-  func testBuild3276AuthoredMotionAndLightingEvidence() throws {
+  func testBuild3277AuthoredMotionAndLightingEvidence() throws {
     let fixtures: [(String, String)] = [
       ("Idle overview", "20_AGENT_IDLE"),
       ("Aurora assignment received", "21_AURORA_ASSIGNMENT"),
