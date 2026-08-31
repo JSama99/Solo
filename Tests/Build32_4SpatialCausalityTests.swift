@@ -1170,6 +1170,92 @@ final class Build32_5FounderEnvironmentTests: XCTestCase {
     XCTAssertEqual(brio.physical.artifactState, .returnedForReview)
   }
 
+  func testAuthoredRolePresenceIsDistinctAndLifecycleDriven() throws {
+    let motion = livingMotion(agents: [
+      livingAgent(id: "aurora", role: .research, activity: .working),
+      livingAgent(id: "stacks", role: .engineering, activity: .working),
+      livingAgent(id: "brio", role: .marketing, activity: .working)
+    ])
+    let aurora = try XCTUnwrap(motion.station(for: "aurora")).physical.rolePresence
+    let stacks = try XCTUnwrap(motion.station(for: "stacks")).physical.rolePresence
+    let brio = try XCTUnwrap(motion.station(for: "brio")).physical.rolePresence
+    XCTAssertNotEqual(aurora.gazeOffsetX, stacks.gazeOffsetX)
+    XCTAssertNotEqual(stacks.handTravel, brio.handTravel)
+    XCTAssertNotEqual(aurora.interactionRate, brio.interactionRate)
+    XCTAssertGreaterThan(stacks.handTravel, aurora.handTravel)
+    XCTAssertGreaterThan(aurora.monitorAttention, 0.9)
+  }
+
+  func testEveryAgentLifecycleMapsToNeutralAuthoredPresence() throws {
+    for activity in LivingAgentActivity.allCases {
+      let station = try XCTUnwrap(livingMotion(agents: [
+        livingAgent(id: "aurora", role: .research, activity: activity)
+      ]).station(for: "aurora"))
+      XCTAssertGreaterThanOrEqual(station.physical.rolePresence.monitorAttention, 0)
+      XCTAssertLessThanOrEqual(station.physical.rolePresence.monitorAttention, 1)
+      XCTAssertGreaterThanOrEqual(station.physical.rolePresence.acknowledgment, 0)
+      XCTAssertLessThanOrEqual(station.physical.rolePresence.acknowledgment, 1)
+    }
+  }
+
+  func testReduceMotionAndBackgroundStopAuthoredCharacterTravel() throws {
+    let reduced = try XCTUnwrap(livingMotion(
+      agents: [livingAgent(id: "stacks", role: .engineering, activity: .working)],
+      reduceMotion: true
+    ).station(for: "stacks")).physical.rolePresence
+    let background = try XCTUnwrap(livingMotion(
+      agents: [livingAgent(id: "brio", role: .marketing, activity: .working)],
+      sceneActive: false
+    ).station(for: "brio")).physical.rolePresence
+    XCTAssertFalse(reduced.motionEnabled)
+    XCTAssertEqual(reduced.handTravel, 0)
+    XCTAssertFalse(background.motionEnabled)
+    XCTAssertEqual(background.handTravel, 0)
+  }
+
+  func testEventChoreographyUsesAnticipationActionAndSettle() {
+    let event = FounderGarageEventEmphasis(
+      kind: .founderReviewRequired,
+      agentID: "aurora",
+      token: UUID(),
+      priority: 5,
+      duration: 0.72
+    )
+    let standard = FounderEventChoreography.derive(event: event, reduceMotion: false, sceneActive: true)
+    XCTAssertEqual(standard.phases, [.anticipation, .action, .settle])
+    XCTAssertLessThan(standard.anticipationScale, 1)
+    XCTAssertGreaterThan(standard.actionScale, 1)
+    XCTAssertEqual(standard.settleScale, 1)
+    let reduced = FounderEventChoreography.derive(event: event, reduceMotion: true, sceneActive: true)
+    XCTAssertEqual(reduced.phases, [.settle])
+    XCTAssertFalse(reduced.motionEnabled)
+  }
+
+  func testOperatingPeriodGradesTheWholeGarageDeterministically() {
+    func lighting(_ period: OperatingCalendar.Period) -> FounderGarageLightingPresentation {
+      let environment = FounderEnvironmentProjection(
+        facility: .founderGarage,
+        atmosphere: .derive(stats: FounderStats(), facility: .founderGarage, venture: 1),
+        infrastructure: [],
+        agents: [],
+        period: period
+      )
+      return FounderGarageMotionPresentation.derive(
+        environment: environment,
+        camera: FounderEnvironmentCameraState(),
+        reduceMotion: false,
+        sceneActive: true
+      ).lighting
+    }
+    let morning = lighting(.morning)
+    let night = lighting(.night)
+    XCTAssertGreaterThan(morning.roomExposure, night.roomExposure)
+    XCTAssertGreaterThan(morning.rearWallClarity, night.rearWallClarity)
+    XCTAssertGreaterThan(night.displayGlowMultiplier, morning.displayGlowMultiplier)
+    XCTAssertGreaterThan(night.shadowLength, morning.shadowLength)
+    XCTAssertGreaterThan(night.garageDoorExteriorLeakIntensity, morning.garageDoorExteriorLeakIntensity)
+  }
+
   func testReduceMotionStopsPortraitCoolingAndArtifactFlourishInputs() throws {
     let station = try XCTUnwrap(livingMotion(
       agents: [livingAgent(id: "stacks", role: .engineering, activity: .working)],

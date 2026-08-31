@@ -35,7 +35,7 @@ struct MotionVerificationScreen: View {
       || ProcessInfo.processInfo.arguments.contains("--motion-qa-agent-cohesion-sequence")
     let commandFocusProof = ProcessInfo.processInfo.arguments.contains("--motion-qa-command-focus-proof")
     _showsPhysicalEnvironment = State(initialValue: physical)
-    let startsInFreeLook = ProcessInfo.processInfo.arguments.contains("--motion-qa-agent-cohesion-sequence")
+    let startsInFreeLook = physical || ProcessInfo.processInfo.arguments.contains("--motion-qa-agent-cohesion-sequence")
     _proofMode = State(initialValue: startsInFreeLook || !physical || commandFocusProof ? .freeLook : .computerFocused)
   }
 

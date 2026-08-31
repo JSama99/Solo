@@ -31,6 +31,52 @@ enum FounderGarageArtifactState: String, Equatable, Sendable {
   case returnedForReview
 }
 
+/// Deterministic authored character direction. Values describe visible body
+/// language only; they never encode result quality, correctness, or truth.
+struct FounderAgentRolePresence: Equatable, Sendable {
+  var gazeOffsetX: Double
+  var headTiltDegrees: Double
+  var shoulderRhythm: Double
+  var handTravel: Double
+  var interactionRate: Double
+  var monitorAttention: Double
+  var acknowledgment: Double
+  var restingLean: Double
+  var motionEnabled: Bool
+
+  static func derive(
+    role: AgentRole,
+    activity: LivingAgentActivity,
+    reduceMotion: Bool,
+    sceneActive: Bool
+  ) -> Self {
+    let enabled = sceneActive && !reduceMotion
+    let working = activity == .working
+    let assignment = activity == .assignmentReceived
+    let returned = [.workComplete, .awaitingReview].contains(activity)
+    let reviewing = [.reviewing, .reviewed].contains(activity)
+    let resting = activity == .resting
+    let roleValues: (Double, Double, Double, Double, Double) = switch role {
+    case .research: (-1.8, -1.2, 0.42, 0.38, 0.92)
+    case .engineering: (1.2, 0.8, 0.34, 1.0, 0.82)
+    case .marketing: (2.1, 1.4, 0.50, 0.62, 0.88)
+    case .general: (0, 0, 0.36, 0.58, 0.80)
+    }
+    return Self(
+      gazeOffsetX: returned ? -roleValues.0 * 0.8 : working ? roleValues.0 : 0,
+      headTiltDegrees: resting ? -2.4 : reviewing ? -roleValues.1 : working ? roleValues.1 : 0,
+      shoulderRhythm: enabled && [.idle, .working, .resting].contains(activity)
+        ? roleValues.2 * (resting ? 0.55 : 1) : 0,
+      handTravel: enabled && working ? roleValues.3 : 0,
+      interactionRate: working ? roleValues.4 : reviewing ? 0.28 : 0,
+      monitorAttention: working ? 1 : assignment ? 0.78 : returned ? 0.62 : reviewing ? 0.84 : 0.34,
+      acknowledgment: enabled && assignment ? 1 : returned ? 0.52 : 0,
+      restingLean: resting ? (role == .marketing ? -2.8 : 2.2) : 0,
+      motionEnabled: enabled
+    )
+  }
+}
+
 /// Object-level physical presentation derived exclusively from player-visible
 /// lifecycle state. Values are deliberately role-neutral and contain no result
 /// quality, verification, or resolution data.
@@ -55,9 +101,11 @@ struct FounderGarageStationPhysicalPresentation: Equatable, Sendable {
   var shadowMassOpacity: Double
   var reactionIntensity: Double
   var reactionMotionEnabled: Bool
+  var rolePresence: FounderAgentRolePresence
 
   static func derive(
     activity: LivingAgentActivity,
+    role: AgentRole,
     visibleProgress: Double,
     reduceMotion: Bool,
     sceneActive: Bool
@@ -79,7 +127,7 @@ struct FounderGarageStationPhysicalPresentation: Equatable, Sendable {
     }
 
     return Self(
-      portraitMotionEnabled: active && [.idle, .working].contains(activity),
+      portraitMotionEnabled: active && [.idle, .working, .resting].contains(activity),
       portraitLightIntensity: isOperating ? 0.78 : activity == .awaitingReview ? 0.58 : 0.28,
       portraitEdgeLightIntensity: isOperating ? 0.72 : isAwaitingReview ? 0.48 : 0.24,
       postureOffsetY: isWorking ? 2.2 : activity == .assignmentReceived ? 1.2 : isAwaitingReview ? -0.4 : 0,
@@ -98,7 +146,8 @@ struct FounderGarageStationPhysicalPresentation: Equatable, Sendable {
       rimLightIntensity: isOperating ? 0.62 : isAwaitingReview ? 0.48 : 0.26,
       shadowMassOpacity: isOperating || isAwaitingReview ? 0.30 : 0.46,
       reactionIntensity: isWorking ? 0.92 : activity == .assignmentReceived ? 0.72 : isAwaitingReview ? 0.58 : 0.16,
-      reactionMotionEnabled: active && [.assignmentReceived, .working, .workComplete, .awaitingReview].contains(activity)
+      reactionMotionEnabled: active && [.assignmentReceived, .working, .workComplete, .awaitingReview].contains(activity),
+      rolePresence: .derive(role: role, activity: activity, reduceMotion: reduceMotion, sceneActive: sceneActive)
     )
   }
 }
@@ -346,6 +395,7 @@ struct FounderGarageStationMotion: Equatable, Sendable {
       eventToken: agent.presentationSequenceID,
       physical: .derive(
         activity: agent.activity,
+        role: agent.role,
         visibleProgress: agent.progress,
         reduceMotion: reduceMotion,
         sceneActive: sceneActive
@@ -398,6 +448,11 @@ struct FounderGarageLightingPresentation: Equatable, Sendable {
   var operatingPeriod: OperatingCalendar.Period
   var garageDoorPanelBrightness: Double
   var garageDoorExteriorLeakIntensity: Double
+  var roomExposure: Double
+  var rearWallClarity: Double
+  var practicalWarmth: Double
+  var shadowLength: Double
+  var displayGlowMultiplier: Double
 
   static func derive(
     atmosphere: CompanyAtmosphere,
@@ -408,6 +463,7 @@ struct FounderGarageLightingPresentation: Equatable, Sendable {
     let activeCount = stations.filter { $0.activityIntensity >= 0.5 }.count
     let attention = stations.contains { $0.needsFounderAttention }
     let doorLight = garageDoorLight(for: period)
+    let periodLight = wholeGarageLight(for: period)
     return Self(
       practicalLightIntensity: max(0.32, min(0.86, 0.38 + atmosphere.energy * 0.42)),
       founderMonitorGlow: min(0.92, 0.42 + Double(activeCount) * 0.09),
@@ -417,7 +473,12 @@ struct FounderGarageLightingPresentation: Equatable, Sendable {
       founderNotificationIntensity: attention ? 0.88 : event.kind == .none ? 0 : 0.52,
       operatingPeriod: period,
       garageDoorPanelBrightness: doorLight.panelBrightness,
-      garageDoorExteriorLeakIntensity: doorLight.exteriorLeakIntensity
+      garageDoorExteriorLeakIntensity: doorLight.exteriorLeakIntensity,
+      roomExposure: periodLight.exposure,
+      rearWallClarity: periodLight.rearClarity,
+      practicalWarmth: periodLight.warmth,
+      shadowLength: periodLight.shadowLength,
+      displayGlowMultiplier: periodLight.displayGlow
     )
   }
 
@@ -431,6 +492,48 @@ struct FounderGarageLightingPresentation: Equatable, Sendable {
     case .evening: (0.78, 0.14)
     case .night: (0.57, 0.32)
     }
+  }
+
+  private static func wholeGarageLight(for period: OperatingCalendar.Period) -> (
+    exposure: Double,
+    rearClarity: Double,
+    warmth: Double,
+    shadowLength: Double,
+    displayGlow: Double
+  ) {
+    switch period {
+    case .morning: (0.92, 1.0, 0.18, 0.72, 0.78)
+    case .afternoon: (1.0, 0.94, 0.30, 0.58, 0.72)
+    case .evening: (0.76, 0.72, 0.88, 1.0, 1.08)
+    case .night: (0.52, 0.54, 0.62, 1.18, 1.34)
+    }
+  }
+}
+
+enum FounderEventChoreographyPhase: String, CaseIterable, Equatable, Sendable {
+  case anticipation
+  case action
+  case settle
+}
+
+struct FounderEventChoreography: Equatable, Sendable {
+  var phases: [FounderEventChoreographyPhase]
+  var anticipationScale: Double
+  var actionScale: Double
+  var settleScale: Double
+  var travelDuration: Double
+  var motionEnabled: Bool
+
+  static func derive(event: FounderGarageEventEmphasis, reduceMotion: Bool, sceneActive: Bool) -> Self {
+    let enabled = sceneActive && !reduceMotion && event.kind != .none
+    return Self(
+      phases: enabled ? FounderEventChoreographyPhase.allCases : [.settle],
+      anticipationScale: enabled ? 0.94 : 1,
+      actionScale: enabled ? (event.priority >= 5 ? 1.08 : 1.04) : 1,
+      settleScale: 1,
+      travelDuration: enabled ? min(0.82, max(0.42, event.duration)) : 0,
+      motionEnabled: enabled
+    )
   }
 }
 
@@ -547,6 +650,7 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
   var event: FounderGarageEventEmphasis
   var infrastructure: FounderInfrastructureReactionPresentation
   var audioHooks: FounderGarageAudioHookPresentation
+  var choreography: FounderEventChoreography
 
   static func derive(
     environment: FounderEnvironmentProjection,
@@ -598,7 +702,8 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
         reduceMotion: reduceMotion,
         sceneActive: sceneActive
       ),
-      audioHooks: .derive(stations: stations, event: event)
+      audioHooks: .derive(stations: stations, event: event),
+      choreography: .derive(event: event, reduceMotion: reduceMotion, sceneActive: sceneActive)
     )
   }
 

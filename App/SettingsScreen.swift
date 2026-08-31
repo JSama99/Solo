@@ -13,6 +13,16 @@ struct SettingsScreen: View {
         Label("Feedback", systemImage: "speaker.wave.2.fill").font(.headline).foregroundStyle(SoloTheme.cyan)
         Toggle("Cash confirmations", isOn: $settings.soundEffectsEnabled)
         Text("Play a haptic and confirmation tone after a revenue-positive sprint.").font(.caption).foregroundStyle(.secondary)
+        Slider(value: $settings.ambienceVolume, in: 0...1) {
+          Text("Garage ambience volume")
+        } minimumValueLabel: {
+          Image(systemName: "speaker.slash.fill")
+        } maximumValueLabel: {
+          Image(systemName: "speaker.wave.3.fill")
+        }
+        Text("Controls local Garage room tone independently from music. Set to zero to mute ambience.")
+          .font(.caption)
+          .foregroundStyle(.secondary)
         Divider()
         Label("Your Music", systemImage: "music.note").font(.headline).foregroundStyle(SoloTheme.cyan)
         Toggle("Play background music", isOn: $settings.musicEnabled).disabled(settings.musicName == nil)

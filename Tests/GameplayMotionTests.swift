@@ -1,3 +1,4 @@
+import AVFoundation
 import SwiftUI
 import XCTest
 @testable import Solo_Unicorn_Run
@@ -17,6 +18,25 @@ final class GameplayMotionTests: XCTestCase {
     XCTAssertEqual(AppAudioContext.companyCommand.musicGain, 0.35)
     XCTAssertEqual(AppAudioContext.founderReview.musicGain, 0.18)
     XCTAssertEqual(AppAudioContext.background.musicGain, 0)
+    XCTAssertLessThan(AppAudioContext.companyCommand.ambienceGain, AppAudioContext.garage.ambienceGain)
+    XCTAssertLessThan(AppAudioContext.founderReview.ambienceGain, AppAudioContext.companyCommand.ambienceGain)
+    XCTAssertNotEqual(AppAudioContext.techCom, AppAudioContext.venture)
+    XCTAssertNotEqual(AppAudioContext.techCom.ambienceGain, AppAudioContext.venture.ambienceGain)
+    XCTAssertEqual(AppAudioContext.background.ambienceGain, 0)
+  }
+
+  func testGarageAmbienceIsDeterministicLoopSafeAndLocallySynthesized() throws {
+    let format = try XCTUnwrap(AVAudioFormat(standardFormatWithSampleRate: 44_100, channels: 2))
+    let first = try XCTUnwrap(GarageAmbienceBuffer.make(format: format, duration: 0.1))
+    let second = try XCTUnwrap(GarageAmbienceBuffer.make(format: format, duration: 0.1))
+    XCTAssertEqual(first.frameLength, second.frameLength)
+    XCTAssertEqual(first.frameLength, 4_410)
+    let firstSamples = try XCTUnwrap(first.floatChannelData)
+    let secondSamples = try XCTUnwrap(second.floatChannelData)
+    for index in stride(from: 0, to: Int(first.frameLength), by: 137) {
+      XCTAssertEqual(firstSamples[0][index], secondSamples[0][index], accuracy: 0.000_001)
+      XCTAssertEqual(firstSamples[0][index], firstSamples[1][index], accuracy: 0.000_001)
+    }
   }
   override func tearDown() {
     for key in UserDefaults.standard.dictionaryRepresentation().keys
