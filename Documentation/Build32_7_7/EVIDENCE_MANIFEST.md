@@ -19,5 +19,7 @@ All files below were created from Build 32.7.7 runtime. XCTest attachment UUID m
 - `652C0E51-896D-4741-BCCB-D6ACBF15F43E.png` — Reduce Motion endpoints.
 - `AF6FE8C0-363F-4D0C-9692-3804E8C115D8.png` — Morning Garage.
 - `33D05C57-4FDC-455C-8FA9-D474C18C0F96.png` — Night Garage.
+- `assignment-to-review-runtime.mov` — 960×540 H.264 runtime recording of the deterministic idle → assignment received → working → awaiting Founder Review loop. The source recording ran for 30 seconds before compression.
+- `founder-desk-continuity-runtime.mov` — 960×540 H.264 recording of the successful 101.875-second production UI flow: Founder Computer focus/LOOK OUT, 16-second idle hold, left/center/right Free Look, Tech.com, Venture, Company Server, returned command focus, and preserved rightward Free Look.
 
-No Build 32.7.7 video or audible waveform is included; none is claimed.
+Both videos were validated by AVFoundation passthrough reads after compression. No audible waveform is included; ears-on audio is not claimed.

@@ -22,6 +22,7 @@
 - Focused motion/audio/Garage Door/choreography: 104 passed, 0 failed on iPhone 17 Pro Max, iOS 26.5 (`/private/tmp/SoloFocused3277.xcresult`).
 - Complete unit suite: 529 passed, 0 failed on iPad Air 11-inch (M4), iOS 26.5 (`/private/tmp/SoloComplete3277iPad.xcresult`).
 - Authored lifecycle/lighting UI continuity: 1 passed, 0 failed on iPad Air 11-inch (M4), iOS 26.5 (`/private/tmp/Solo3277UIPad.xcresult`), producing ten retained screenshots.
+- Production Founder Desk/device continuity: 1 passed, 0 failed on iPad Air 11-inch (M4), iOS 26.5 (`/private/tmp/Solo3277ContinuityFinal.xcresult`), recorded as a continuous runtime video.
 - The iPhone UI-test runner was rejected by SpringBoard as busy while Bitrig's live preview owned the simulator. Actual iPhone runtime screenshots were captured through that live preview instead.
 
 ## Runtime and accessibility observations
@@ -30,11 +31,11 @@
 - Actual iPad debug production-component fixtures were observed for idle, assignment, all three working roles, awaiting review, Founder Review cue, Reduce Motion, Morning, and Night.
 - VoiceOver order exposes the room heading and status before devices; physical devices have descriptive labels/help; Garage Door follows Signal TV and precedes the phone/tablet controls. Interactive controls observed in the production iPhone tree are labelled.
 - No unbounded particles, physics, per-device timelines, duplicate feature trees, or simulation RNG use were introduced.
-- Source policy and tests verify offscreen throttling and scene activation. No Instruments/ETTrace CPU or memory capture was produced, so no numeric performance claim is made. The 50.995-second multi-launch UI fixture completed without a crash or assertion failure, but that is not a frame-pacing measurement.
+- Source policy and tests verify offscreen throttling and scene activation. A 20-second idle Garage hold on the iPad Air simulator held resident memory effectively flat: 348,112 KB at 11 seconds and 348,016 KB at 42 seconds (−96 KB). Host-reported CPU averaged 21.5% in this Debug simulator fixture. This is a point observation, not a release-device frame-time guarantee. ETTrace was unavailable, so no symbolicated hotspot claim is made.
 
 ## Evidence limits and acceptance
 
 - Audio is programmatically verified only. The simulator evidence path did not provide ears-on or waveform capture.
-- No new assignment-to-review runtime video was produced. The fixture proves assignment/working/awaiting-review endpoints with actual runtime stills, but temporal choreography is not claimed visually accepted.
-- Founder Computer focus/return and audio-context transitions are covered by source/tests and older runtime evidence, not new Build 32.7.7 captures.
-- Observed Build 32.7.7 runtime evidence covers 12 of the 16 requested evidence categories (75%). Motion-loop restart quality, assignment-to-review temporal continuity, focus/return continuity, and audio transitions remain outside new runtime proof. Final visual acceptance is therefore **not claimed**.
+- A new 30-second assignment-to-review video proves the deterministic idle, assignment acknowledgment, working, and returned-for-review loop without a visible restart.
+- A new continuous production video proves Founder Computer focus/return, the full idle hold, camera continuity, all secondary-device contexts, and the Garage Door composition. Those interactions exercise the matching audio-context transitions; audio behavior itself remains programmatically verified because the capture contains no audible waveform.
+- All 16 requested evidence categories now have Build 32.7.7 runtime artifacts or, for audio, the explicitly permitted programmatic verification. Observed visual-direction completion is **87.5%**: temporal Garage/device/agent presentation is now runtime-observed, while ears-on audio and true facial/limb articulation remain unaccepted. Final visual acceptance is still **not claimed** for those two limitations.
