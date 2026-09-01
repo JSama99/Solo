@@ -1058,7 +1058,8 @@ final class GameStore {
       venture: venture,
       sprint: sprint,
       stress: agent.progression.stressBand,
-      attentionCost: evidenceTriageAttentionCost
+      attentionCost: evidenceTriageAttentionCost,
+      evidenceTopic: task.resolvedEvidenceTopic
     ))
     save()
     return true
@@ -1090,7 +1091,7 @@ final class GameStore {
     guard WorkSessionEngine.record(action, in: &workSessions[index]) else { return false }
     if workSessions[index].decisions.count == workSessions[index].cards.count {
       _ = WorkSessionEngine.completeManual(&workSessions[index])
-      applyWorkSessionDelivery(at: index)
+      applyWorkSessionOutcome(at: index)
     }
     save()
     return true
@@ -1101,20 +1102,26 @@ final class GameStore {
     guard prepareEvidenceTriage(taskID: taskID),
           let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
           WorkSessionEngine.delegate(&workSessions[index]) else { return false }
-    applyWorkSessionDelivery(at: index)
+    applyWorkSessionOutcome(at: index)
     save()
     return true
   }
 
-  private func applyWorkSessionDelivery(at sessionIndex: Int) {
+  private func applyWorkSessionOutcome(at sessionIndex: Int) {
     guard workSessions.indices.contains(sessionIndex),
           workSessions[sessionIndex].completed,
           !workSessions[sessionIndex].completionApplied,
           let delivered = workSessions[sessionIndex].deliveredQuality,
           let taskIndex = tasks.firstIndex(where: { $0.id == workSessions[sessionIndex].assignmentID }),
           var result = tasks[taskIndex].result else { return }
-    result.applyWorkSessionDelivery(delivered)
+    result.applyWorkSessionOutcome(
+      deliveredQuality: delivered,
+      founderReviewQuality: workSessions[sessionIndex].founderReviewQuality
+    )
     tasks[taskIndex].result = result
+    if let cacheIndex = reportCache.firstIndex(where: { $0.taskID == workSessions[sessionIndex].assignmentID }) {
+      reportCache[cacheIndex].result = result
+    }
     workSessions[sessionIndex].completionApplied = true
   }
 
@@ -1292,7 +1299,7 @@ final class GameStore {
       ), !latentDefects.contains(where: { $0.id == defect.id }) {
         latentDefects.append(defect)
       }
-      if tasks[index].isReviewed && result.isStrongForSimulation { strongOutcomes += 1 }
+      if tasks[index].isReviewed && result.isDeliveredStrongForSimulation { strongOutcomes += 1 }
       if result.evidenceCompleteness < 45 || result.correlatedFailureIdentifier != nil {
         riskyOutcomes += 1
       }
@@ -1883,7 +1890,11 @@ final class GameStore {
       evidence[index].overclaimAmount = actual.map { max(0, evidence[index].reportedQuality - $0) } ?? 0
       evidence[index].correlatedFailureIdentifier = result.correlatedFailureIdentifier
       if let session = workSession(for: task.id) {
-        evidence[index].workSessionMistakes = session.mistakes
+        evidence[index].workSessionAgentQuality = session.agentPotentialQuality
+        evidence[index].workSessionFounderReviewQuality = session.founderReviewQuality
+        evidence[index].workSessionDeliveredQuality = session.deliveredQuality
+        evidence[index].workSessionFindings = session.findings
+        evidence[index].workSessionCausalAttribution = session.causalAttribution
         evidence[index].hindsightNotes = session.hindsightExplanations
       }
       if let actual {
@@ -1918,7 +1929,11 @@ final class GameStore {
         overclaimAmount: actual == nil ? 0 : result.overclaimAmount,
         evidenceCompleteness: result.evidenceCompleteness,
         correlatedFailureIdentifier: result.correlatedFailureIdentifier,
-        workSessionMistakes: workSession(for: task.id)?.mistakes ?? [],
+        workSessionAgentQuality: workSession(for: task.id)?.agentPotentialQuality,
+        workSessionFounderReviewQuality: workSession(for: task.id)?.founderReviewQuality,
+        workSessionDeliveredQuality: workSession(for: task.id)?.deliveredQuality,
+        workSessionFindings: workSession(for: task.id)?.findings ?? [],
+        workSessionCausalAttribution: workSession(for: task.id)?.causalAttribution,
         hindsightNotes: workSession(for: task.id)?.hindsightExplanations ?? []
       ),
       at: 0
@@ -2207,6 +2222,7 @@ final class GameStore {
     forksUsedThisVenture = save.forksUsedThisVenture
     rivalDiscontinuities = save.rivalDiscontinuities
     reportCache = save.reportCache
+    restoreLegacyWorkSessionCausalQuality()
     precedents = save.precedents
     awaitingFounderPass = save.awaitingFounderPass
     pendingVentureCheckpoint = save.pendingVentureCheckpoint
@@ -2267,6 +2283,49 @@ final class GameStore {
       stage = .ventureThesis
     } else {
       stage = .game
+    }
+  }
+
+  /// Build 32.7.3 Work Sessions overwrote TaskResult's hidden actual quality.
+  /// The persisted session still carries the original potential, so restore
+  /// that truth without touching company effects that were already scaled.
+  private func restoreLegacyWorkSessionCausalQuality() {
+    for session in workSessions where session.completed && session.completionApplied {
+      guard let deliveredQuality = session.deliveredQuality else { continue }
+      if let taskIndex = tasks.firstIndex(where: { $0.id == session.assignmentID }),
+         var result = tasks[taskIndex].result,
+         !result.hasCanonicalWorkSessionOutcome {
+        result.restoreLegacyWorkSessionOutcome(
+          agentPotentialQuality: session.agentPotentialQuality,
+          founderReviewQuality: session.founderReviewQuality,
+          deliveredQuality: deliveredQuality
+        )
+        tasks[taskIndex].result = result
+      }
+      if let cacheIndex = reportCache.firstIndex(where: { $0.taskID == session.assignmentID }),
+         !reportCache[cacheIndex].result.hasCanonicalWorkSessionOutcome {
+        reportCache[cacheIndex].result.applyWorkSessionOutcome(
+          deliveredQuality: deliveredQuality,
+          founderReviewQuality: session.founderReviewQuality,
+        )
+      }
+      if let evidenceIndex = evidence.firstIndex(where: { $0.taskInstanceID == session.assignmentID.uuidString }) {
+        evidence[evidenceIndex].workSessionAgentQuality = session.agentPotentialQuality
+        evidence[evidenceIndex].workSessionFounderReviewQuality = session.founderReviewQuality
+        evidence[evidenceIndex].workSessionDeliveredQuality = deliveredQuality
+        evidence[evidenceIndex].workSessionFindings = session.findings
+        evidence[evidenceIndex].workSessionCausalAttribution = session.causalAttribution
+        if evidence[evidenceIndex].actualQuality != nil {
+          evidence[evidenceIndex].actualQuality = session.agentPotentialQuality
+          evidence[evidenceIndex].overclaimAmount = max(
+            0,
+            evidence[evidenceIndex].reportedQuality - session.agentPotentialQuality
+          )
+        }
+        if evidence[evidenceIndex].hindsightNotes.isEmpty {
+          evidence[evidenceIndex].hindsightNotes = session.hindsightExplanations
+        }
+      }
     }
   }
 

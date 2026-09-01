@@ -1,6 +1,22 @@
 import XCTest
 
 final class Build32_6_2ProductionContinuityUITests: XCTestCase {
+  func testEvidenceTriageDelegateLanguageUsesFounderFiction() throws {
+    let app = XCUIApplication()
+    app.terminate()
+    app.launchArguments = ["--work-session-qa-choice"]
+    app.launch()
+
+    XCTAssertTrue(app.buttons["DELEGATE"].waitForExistence(timeout: 6))
+    XCTAssertTrue(app.staticTexts["Let Aurora finalize the packet · preserves Founder Attention"].exists)
+    XCTAssertEqual(
+      app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS[c] 'deterministic baseline'")).count,
+      0
+    )
+    capture("WORK_SESSION_CAUSAL_DELEGATE_COPY", in: app)
+    app.terminate()
+  }
+
   func testBuild3277AuthoredMotionAndLightingEvidence() throws {
     let fixtures: [(String, String)] = [
       ("Idle overview", "20_AGENT_IDLE"),
@@ -15,6 +31,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
 
     for (fixture, evidenceName) in fixtures {
       let app = XCUIApplication()
+      app.terminate()
       app.launchArguments = ["--motion-qa-physical"]
       app.launchEnvironment["SOLO_MOTION_QA_FIXTURE"] = fixture
       app.launch()
@@ -24,6 +41,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     }
 
     let app = XCUIApplication()
+    app.terminate()
     app.launchArguments = ["--motion-qa-physical"]
     app.launchEnvironment["SOLO_MOTION_QA_FIXTURE"] = "Idle overview"
     app.launch()
@@ -33,6 +51,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     XCTAssertTrue(night.waitForExistence(timeout: 4))
     night.tap()
     capture("29_NIGHT_GARAGE", in: app)
+    app.terminate()
   }
 
   func testIdleGarageAmbientLifeHold() throws {

@@ -696,13 +696,14 @@ struct SoloTask: Codable, Identifiable, Hashable {
   var resolutionLocked = false
   var minimumEra: VentureEra?
   var productTypes: Set<ProductType>?
+  var evidenceTopic: EvidenceTopic?
 
   var reward: String { impact.label }
   var consequenceLabel: String { skipEffects.conciseLossLabel }
 
   private enum CodingKeys: String, CodingKey {
     case id, title, detail, role, category, urgency, impact, skipEffects
-    case assignedAgentID, isReviewed, result, resolution, resolutionLocked, minimumEra, productTypes
+    case assignedAgentID, isReviewed, result, resolution, resolutionLocked, minimumEra, productTypes, evidenceTopic
   }
 
   init(
@@ -720,7 +721,8 @@ struct SoloTask: Codable, Identifiable, Hashable {
     resolution: TaskResolutionChoice? = nil,
     resolutionLocked: Bool = false,
     minimumEra: VentureEra? = nil,
-    productTypes: Set<ProductType>? = nil
+    productTypes: Set<ProductType>? = nil,
+    evidenceTopic: EvidenceTopic? = nil
   ) {
     self.id = id
     self.title = title
@@ -737,6 +739,7 @@ struct SoloTask: Codable, Identifiable, Hashable {
     self.resolutionLocked = resolutionLocked
     self.minimumEra = minimumEra
     self.productTypes = productTypes
+    self.evidenceTopic = evidenceTopic
   }
 
   init(from decoder: Decoder) throws {
@@ -757,6 +760,7 @@ struct SoloTask: Codable, Identifiable, Hashable {
     resolutionLocked = try container.decodeIfPresent(Bool.self, forKey: .resolutionLocked) ?? false
     minimumEra = try container.decodeIfPresent(VentureEra.self, forKey: .minimumEra)
     productTypes = try container.decodeIfPresent(Set<ProductType>.self, forKey: .productTypes)
+    evidenceTopic = try container.decodeIfPresent(EvidenceTopic.self, forKey: .evidenceTopic)
   }
 
   func encode(to encoder: Encoder) throws {
@@ -776,6 +780,30 @@ struct SoloTask: Codable, Identifiable, Hashable {
     try container.encode(resolutionLocked, forKey: .resolutionLocked)
     try container.encodeIfPresent(minimumEra, forKey: .minimumEra)
     try container.encodeIfPresent(productTypes, forKey: .productTypes)
+    try container.encodeIfPresent(evidenceTopic, forKey: .evidenceTopic)
+  }
+
+  var resolvedEvidenceTopic: EvidenceTopic? {
+    if let evidenceTopic { return evidenceTopic }
+    let copy = "\(title) \(detail)".lowercased()
+    let mappings: [(EvidenceTopic, [String])] = [
+      (.retention, ["retention", "churn", "renewal", "repeat usage"]),
+      (.pricing, ["pricing", "price", "willingness to pay", "margin", "monetization"]),
+      (.competition, ["competitor", "competition", "competitive", "rival"]),
+      (.customer, ["customer", "interview", "buyer", "user research"]),
+      (.growth, ["growth", "acquisition", "conversion", "activation"]),
+      (.market, ["market", "category demand", "tam"]),
+      (.operations, ["operations", "support", "workflow", "handoff", "process"]),
+      (.product, ["product", "feature", "onboarding", "prototype"])
+    ]
+    if let match = mappings.first(where: { _, words in words.contains(where: copy.contains) }) {
+      return match.0
+    }
+    return switch category {
+    case .product: .product
+    case .operations: .operations
+    default: nil
+    }
   }
 
   private static func legacyCategory(for role: AgentRole) -> TaskCategory {
@@ -932,7 +960,11 @@ struct EvidenceEntry: Codable, Identifiable {
   var overclaimAmount: Int
   var evidenceCompleteness: Int
   var correlatedFailureIdentifier: String?
-  var workSessionMistakes: [WorkSessionMistake]
+  var workSessionAgentQuality: Int?
+  var workSessionFounderReviewQuality: Int?
+  var workSessionDeliveredQuality: Int?
+  var workSessionFindings: [WorkSessionFinding]
+  var workSessionCausalAttribution: WorkSessionCausalAttribution?
   var hindsightNotes: [String]
 
   var reviewAttempted: Bool { reviewed }
@@ -941,7 +973,9 @@ struct EvidenceEntry: Codable, Identifiable {
   private enum CodingKeys: String, CodingKey {
     case id, venture, sprint, taskInstanceID, task, agent, reviewed, evidenceVerified
     case verdict, note, reportedQuality, actualQuality, verificationState
-    case overclaimAmount, evidenceCompleteness, correlatedFailureIdentifier, workSessionMistakes, hindsightNotes
+    case overclaimAmount, evidenceCompleteness, correlatedFailureIdentifier
+    case workSessionAgentQuality, workSessionFounderReviewQuality, workSessionDeliveredQuality
+    case workSessionFindings, workSessionMistakes, workSessionCausalAttribution, hindsightNotes
   }
 
   init(
@@ -961,7 +995,11 @@ struct EvidenceEntry: Codable, Identifiable {
     overclaimAmount: Int,
     evidenceCompleteness: Int,
     correlatedFailureIdentifier: String?,
-    workSessionMistakes: [WorkSessionMistake] = [],
+    workSessionAgentQuality: Int? = nil,
+    workSessionFounderReviewQuality: Int? = nil,
+    workSessionDeliveredQuality: Int? = nil,
+    workSessionFindings: [WorkSessionFinding] = [],
+    workSessionCausalAttribution: WorkSessionCausalAttribution? = nil,
     hindsightNotes: [String] = []
   ) {
     self.id = id
@@ -980,7 +1018,11 @@ struct EvidenceEntry: Codable, Identifiable {
     self.overclaimAmount = overclaimAmount
     self.evidenceCompleteness = evidenceCompleteness
     self.correlatedFailureIdentifier = correlatedFailureIdentifier
-    self.workSessionMistakes = workSessionMistakes
+    self.workSessionAgentQuality = workSessionAgentQuality
+    self.workSessionFounderReviewQuality = workSessionFounderReviewQuality
+    self.workSessionDeliveredQuality = workSessionDeliveredQuality
+    self.workSessionFindings = workSessionFindings
+    self.workSessionCausalAttribution = workSessionCausalAttribution
     self.hindsightNotes = hindsightNotes
   }
 
@@ -1008,8 +1050,40 @@ struct EvidenceEntry: Codable, Identifiable {
     overclaimAmount = try container.decodeIfPresent(Int.self, forKey: .overclaimAmount) ?? 0
     evidenceCompleteness = try container.decodeIfPresent(Int.self, forKey: .evidenceCompleteness) ?? 0
     correlatedFailureIdentifier = try container.decodeIfPresent(String.self, forKey: .correlatedFailureIdentifier)
-    workSessionMistakes = try container.decodeIfPresent([WorkSessionMistake].self, forKey: .workSessionMistakes) ?? []
+    workSessionAgentQuality = try container.decodeIfPresent(Int.self, forKey: .workSessionAgentQuality)
+    workSessionFounderReviewQuality = try container.decodeIfPresent(Int.self, forKey: .workSessionFounderReviewQuality)
+    workSessionDeliveredQuality = try container.decodeIfPresent(Int.self, forKey: .workSessionDeliveredQuality)
+    workSessionFindings = try container.decodeIfPresent([WorkSessionFinding].self, forKey: .workSessionFindings)
+      ?? container.decodeIfPresent([WorkSessionFinding].self, forKey: .workSessionMistakes)
+      ?? []
+    workSessionCausalAttribution = try container.decodeIfPresent(WorkSessionCausalAttribution.self, forKey: .workSessionCausalAttribution)
     hindsightNotes = try container.decodeIfPresent([String].self, forKey: .hindsightNotes) ?? []
+  }
+
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(id, forKey: .id)
+    try container.encode(venture, forKey: .venture)
+    try container.encode(sprint, forKey: .sprint)
+    try container.encode(taskInstanceID, forKey: .taskInstanceID)
+    try container.encode(task, forKey: .task)
+    try container.encode(agent, forKey: .agent)
+    try container.encode(reviewed, forKey: .reviewed)
+    try container.encode(evidenceVerified, forKey: .evidenceVerified)
+    try container.encode(verdict, forKey: .verdict)
+    try container.encode(note, forKey: .note)
+    try container.encode(reportedQuality, forKey: .reportedQuality)
+    try container.encodeIfPresent(actualQuality, forKey: .actualQuality)
+    try container.encode(verificationState, forKey: .verificationState)
+    try container.encode(overclaimAmount, forKey: .overclaimAmount)
+    try container.encode(evidenceCompleteness, forKey: .evidenceCompleteness)
+    try container.encodeIfPresent(correlatedFailureIdentifier, forKey: .correlatedFailureIdentifier)
+    try container.encodeIfPresent(workSessionAgentQuality, forKey: .workSessionAgentQuality)
+    try container.encodeIfPresent(workSessionFounderReviewQuality, forKey: .workSessionFounderReviewQuality)
+    try container.encodeIfPresent(workSessionDeliveredQuality, forKey: .workSessionDeliveredQuality)
+    try container.encode(workSessionFindings, forKey: .workSessionFindings)
+    try container.encodeIfPresent(workSessionCausalAttribution, forKey: .workSessionCausalAttribution)
+    try container.encode(hindsightNotes, forKey: .hindsightNotes)
   }
 }
 
