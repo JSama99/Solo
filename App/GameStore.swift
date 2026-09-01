@@ -46,6 +46,9 @@ final class GameStore {
   private(set) var selectedDilemmaChoiceID: String?
   private(set) var currentObjective: SprintObjective?
   var evidence: [EvidenceEntry] = []
+  /// Assignment-stable Work Sessions remain in the career ledger so later
+  /// Evidence and Hindsight can explain the founder's review decisions.
+  private(set) var workSessions: [WorkSessionRecord] = []
   var report: SprintReport?
   var careerOutcome: CareerOutcome?
   var alertMessage: String?
@@ -671,6 +674,7 @@ final class GameStore {
     selectedDilemmaChoiceID = nil
     currentObjective = nil
     evidence = []
+    workSessions = []
     careerOutcome = nil
     report = nil
     pendingEffects = []
@@ -981,7 +985,8 @@ final class GameStore {
   func review(taskID: UUID) {
     guard let taskIndex = tasks.firstIndex(where: { $0.id == taskID }) else { return }
     guard !tasks[taskIndex].isReviewed else { return }
-    guard attentionRemaining > 0 else {
+    let completedWorkSession = workSessions.first(where: { $0.assignmentID == taskID && $0.completed })
+    guard completedWorkSession != nil || attentionRemaining > 0 else {
       alertMessage = "No Founder Attention remains this sprint."
       return
     }
@@ -999,7 +1004,7 @@ final class GameStore {
     tasks[taskIndex].isReviewed = true
     tasks[taskIndex].resolution = .approve
     tasks[taskIndex].resolutionLocked = false
-    founderAttentionSpent += 1
+    if completedWorkSession == nil { founderAttentionSpent += 1 }
     let reviewEnergy = DoctrineRules.profile(for: doctrine).reviewEnergyCost
     stats.energy = clamped(stats.energy - reviewEnergy)
     agents[agentIndex].calibration = min(1, agents[agentIndex].calibration + 0.035)
@@ -1023,6 +1028,94 @@ final class GameStore {
     achievementStore?.recordReveal(context: achievementContext)
     sanitizeState()
     save()
+  }
+
+  var evidenceTriageAttentionCost: Int { min(3, attentionMaximum) }
+
+  func isEvidenceTriageEligible(taskID: UUID) -> Bool {
+    guard let task = tasks.first(where: { $0.id == taskID }), let agentID = task.assignedAgentID else { return false }
+    return WorkSessionEngine.isEligible(task: task, agentID: agentID)
+  }
+
+  func workSession(for taskID: UUID) -> WorkSessionRecord? {
+    workSessions.first(where: { $0.assignmentID == taskID })
+  }
+
+  @discardableResult
+  func prepareEvidenceTriage(taskID: UUID) -> Bool {
+    if workSession(for: taskID) != nil { return true }
+    guard let task = tasks.first(where: { $0.id == taskID }),
+          let agentID = task.assignedAgentID,
+          let agent = agents.first(where: { $0.id == agentID }),
+          let potential = task.result?.workSessionPotentialQuality,
+          WorkSessionEngine.isEligible(task: task, agentID: agentID) else { return false }
+    workSessions.append(WorkSessionEngine.makeRecord(
+      assignmentID: taskID,
+      agentID: agentID,
+      urgency: task.urgency,
+      potentialQuality: potential,
+      careerSeed: RivalEngine.careerSeed(founderName: founderName, productType: productType),
+      venture: venture,
+      sprint: sprint,
+      stress: agent.progression.stressBand,
+      attentionCost: evidenceTriageAttentionCost
+    ))
+    save()
+    return true
+  }
+
+  @discardableResult
+  func beginManualEvidenceTriage(taskID: UUID) -> Bool {
+    guard prepareEvidenceTriage(taskID: taskID),
+          let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }) else { return false }
+    if workSessions[index].path == .manualReview { return true }
+    guard workSessions[index].path == nil, !workSessions[index].completed else { return false }
+    let cost = workSessions[index].founderAttentionCost
+    guard attentionRemaining >= cost else {
+      alertMessage = "Evidence Triage needs \(cost) Founder Attention. Delegate to preserve the remaining budget."
+      return false
+    }
+    workSessions[index].path = .manualReview
+    if !workSessions[index].founderAttentionCharged {
+      founderAttentionSpent += cost
+      workSessions[index].founderAttentionCharged = true
+    }
+    save()
+    return true
+  }
+
+  @discardableResult
+  func classifyEvidence(taskID: UUID, action: EvidenceTriageAction) -> Bool {
+    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }) else { return false }
+    guard WorkSessionEngine.record(action, in: &workSessions[index]) else { return false }
+    if workSessions[index].decisions.count == workSessions[index].cards.count {
+      _ = WorkSessionEngine.completeManual(&workSessions[index])
+      applyWorkSessionDelivery(at: index)
+    }
+    save()
+    return true
+  }
+
+  @discardableResult
+  func delegateEvidenceTriage(taskID: UUID) -> Bool {
+    guard prepareEvidenceTriage(taskID: taskID),
+          let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+          WorkSessionEngine.delegate(&workSessions[index]) else { return false }
+    applyWorkSessionDelivery(at: index)
+    save()
+    return true
+  }
+
+  private func applyWorkSessionDelivery(at sessionIndex: Int) {
+    guard workSessions.indices.contains(sessionIndex),
+          workSessions[sessionIndex].completed,
+          !workSessions[sessionIndex].completionApplied,
+          let delivered = workSessions[sessionIndex].deliveredQuality,
+          let taskIndex = tasks.firstIndex(where: { $0.id == workSessions[sessionIndex].assignmentID }),
+          var result = tasks[taskIndex].result else { return }
+    result.applyWorkSessionDelivery(delivered)
+    tasks[taskIndex].result = result
+    workSessions[sessionIndex].completionApplied = true
   }
 
   /// Converts a review into a consequential founder decision. Rework and
@@ -1571,6 +1664,7 @@ final class GameStore {
     divergenceRecords = []
     forksUsedThisVenture = 0
     reportCache = []
+    workSessions = []
     taskBacklog = []
     founderAttentionSpent = 0
     restingAgentIDs = []
@@ -1788,6 +1882,10 @@ final class GameStore {
       evidence[index].verificationState = result.verificationState
       evidence[index].overclaimAmount = actual.map { max(0, evidence[index].reportedQuality - $0) } ?? 0
       evidence[index].correlatedFailureIdentifier = result.correlatedFailureIdentifier
+      if let session = workSession(for: task.id) {
+        evidence[index].workSessionMistakes = session.mistakes
+        evidence[index].hindsightNotes = session.hindsightExplanations
+      }
       if let actual {
         evidence[index].note = "Reported \(evidence[index].reportedQuality); verified \(actual). Evidence \(evidence[index].evidenceCompleteness)%."
       } else {
@@ -1819,7 +1917,9 @@ final class GameStore {
         verificationState: result.verificationState,
         overclaimAmount: actual == nil ? 0 : result.overclaimAmount,
         evidenceCompleteness: result.evidenceCompleteness,
-        correlatedFailureIdentifier: result.correlatedFailureIdentifier
+        correlatedFailureIdentifier: result.correlatedFailureIdentifier,
+        workSessionMistakes: workSession(for: task.id)?.mistakes ?? [],
+        hindsightNotes: workSession(for: task.id)?.hindsightExplanations ?? []
       ),
       at: 0
     )
@@ -2093,6 +2193,7 @@ final class GameStore {
     selectedDilemmaChoiceID = save.selectedDilemmaChoiceID
     currentObjective = save.currentObjective
     evidence = save.evidence
+    workSessions = save.workSessions
     careerOutcome = save.outcome
     randomNumberGenerator = save.randomNumberGenerator
     correlatedFailureEvent = save.correlatedFailureEvent
@@ -2737,7 +2838,8 @@ final class GameStore {
       publicMediaEvents: publicMediaEvents,
       processedCoverageEventIDs: processedCoverageEventIDs,
       finance: finance,
-      operatingCalendar: operatingCalendar
+      operatingCalendar: operatingCalendar,
+      workSessions: workSessions
     )
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {

@@ -932,6 +932,8 @@ struct EvidenceEntry: Codable, Identifiable {
   var overclaimAmount: Int
   var evidenceCompleteness: Int
   var correlatedFailureIdentifier: String?
+  var workSessionMistakes: [WorkSessionMistake]
+  var hindsightNotes: [String]
 
   var reviewAttempted: Bool { reviewed }
   var actualQualityRevealed: Bool { actualQuality != nil }
@@ -939,7 +941,7 @@ struct EvidenceEntry: Codable, Identifiable {
   private enum CodingKeys: String, CodingKey {
     case id, venture, sprint, taskInstanceID, task, agent, reviewed, evidenceVerified
     case verdict, note, reportedQuality, actualQuality, verificationState
-    case overclaimAmount, evidenceCompleteness, correlatedFailureIdentifier
+    case overclaimAmount, evidenceCompleteness, correlatedFailureIdentifier, workSessionMistakes, hindsightNotes
   }
 
   init(
@@ -958,7 +960,9 @@ struct EvidenceEntry: Codable, Identifiable {
     verificationState: VerificationState,
     overclaimAmount: Int,
     evidenceCompleteness: Int,
-    correlatedFailureIdentifier: String?
+    correlatedFailureIdentifier: String?,
+    workSessionMistakes: [WorkSessionMistake] = [],
+    hindsightNotes: [String] = []
   ) {
     self.id = id
     self.venture = venture
@@ -976,6 +980,8 @@ struct EvidenceEntry: Codable, Identifiable {
     self.overclaimAmount = overclaimAmount
     self.evidenceCompleteness = evidenceCompleteness
     self.correlatedFailureIdentifier = correlatedFailureIdentifier
+    self.workSessionMistakes = workSessionMistakes
+    self.hindsightNotes = hindsightNotes
   }
 
   init(from decoder: Decoder) throws {
@@ -1002,6 +1008,8 @@ struct EvidenceEntry: Codable, Identifiable {
     overclaimAmount = try container.decodeIfPresent(Int.self, forKey: .overclaimAmount) ?? 0
     evidenceCompleteness = try container.decodeIfPresent(Int.self, forKey: .evidenceCompleteness) ?? 0
     correlatedFailureIdentifier = try container.decodeIfPresent(String.self, forKey: .correlatedFailureIdentifier)
+    workSessionMistakes = try container.decodeIfPresent([WorkSessionMistake].self, forKey: .workSessionMistakes) ?? []
+    hindsightNotes = try container.decodeIfPresent([String].self, forKey: .hindsightNotes) ?? []
   }
 }
 
@@ -1316,6 +1324,7 @@ struct CareerSave: Codable {
   var processedCoverageEventIDs: Set<String>
   var finance: CompanyFinance
   var operatingCalendar: OperatingCalendar
+  var workSessions: [WorkSessionRecord]
 
   private enum CodingKeys: String, CodingKey {
     case founderName, doctrine, productType, talentBoardRefreshes, sprint, venture, intent, stats, agents, tasks
@@ -1327,7 +1336,7 @@ struct CareerSave: Codable {
     case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, completedVentureObjectives, ventureObjective, thesis, thesisHistory, awaitingThesisSelection, pendingChapterMilestone
     case techComHeadlines, techComRivals, latentDefects, poachingOffer, exposedRivalIDs
     case activeDivergence, divergenceRecords, forksUsedThisVenture, doctrineProfile, unicornIdentity
-    case rivalDiscontinuities, publicMediaEvents, processedCoverageEventIDs, finance, operatingCalendar
+    case rivalDiscontinuities, publicMediaEvents, processedCoverageEventIDs, finance, operatingCalendar, workSessions
   }
 
   init(
@@ -1386,7 +1395,8 @@ struct CareerSave: Codable {
     publicMediaEvents: [PublicMediaEvent] = [],
     processedCoverageEventIDs: Set<String> = [],
     finance: CompanyFinance? = nil,
-    operatingCalendar: OperatingCalendar = OperatingCalendar()
+    operatingCalendar: OperatingCalendar = OperatingCalendar(),
+    workSessions: [WorkSessionRecord] = []
   ) {
     self.founderName = founderName
     self.doctrine = doctrine
@@ -1444,6 +1454,7 @@ struct CareerSave: Codable {
     self.processedCoverageEventIDs = processedCoverageEventIDs
     self.finance = finance ?? CompanyFinance(cash: stats.capital, capitalRaised: stats.capital, lifetimeRevenue: stats.revenue)
     self.operatingCalendar = operatingCalendar
+    self.workSessions = workSessions
   }
 
   init(from decoder: Decoder) throws {
@@ -1519,6 +1530,7 @@ struct CareerSave: Codable {
     finance = try container.decodeIfPresent(CompanyFinance.self, forKey: .finance)
       ?? CompanyFinance(cash: stats.capital, capitalRaised: stats.capital, lifetimeRevenue: stats.revenue)
     operatingCalendar = try container.decodeIfPresent(OperatingCalendar.self, forKey: .operatingCalendar) ?? OperatingCalendar()
+    workSessions = try container.decodeIfPresent([WorkSessionRecord].self, forKey: .workSessions) ?? []
   }
 }
 
