@@ -2,6 +2,7 @@ import Foundation
 
 enum WorkSessionFamily: String, Codable, Hashable {
   case evidenceTriage
+  case systemsReview
 }
 
 enum WorkSessionPath: String, Codable, Hashable {
@@ -66,12 +67,20 @@ enum WorkSessionFinding: String, Codable, CaseIterable, Hashable {
   case correctlyDetectedContradiction
   case correctlyFlaggedHighRiskAmbiguity
   case correctlyPreservedStrongEvidence
+  case dependencyViolation
+  case skippedVerification
+  case unsafeRelease
+  case correctlyPreservedDependency
+  case correctlyRequiredVerification
+  case correctlyIdentifiedReleaseGate
 
   var polarity: WorkSessionFindingPolarity {
     switch self {
-    case .acceptedWeakEvidence, .rejectedStrongEvidence, .failedToVerifyAmbiguity, .overVerifiedClearEvidence:
+    case .acceptedWeakEvidence, .rejectedStrongEvidence, .failedToVerifyAmbiguity, .overVerifiedClearEvidence,
+         .dependencyViolation, .skippedVerification, .unsafeRelease:
       .negative
-    case .correctlyDetectedContradiction, .correctlyFlaggedHighRiskAmbiguity, .correctlyPreservedStrongEvidence:
+    case .correctlyDetectedContradiction, .correctlyFlaggedHighRiskAmbiguity, .correctlyPreservedStrongEvidence,
+         .correctlyPreservedDependency, .correctlyRequiredVerification, .correctlyIdentifiedReleaseGate:
       .positive
     }
   }
@@ -85,6 +94,12 @@ enum WorkSessionFinding: String, Codable, CaseIterable, Hashable {
     case .correctlyDetectedContradiction: "Founder Review correctly isolated a contradictory measurement."
     case .correctlyFlaggedHighRiskAmbiguity: "Founder Review correctly requested verification for a high-risk ambiguity."
     case .correctlyPreservedStrongEvidence: "Founder Review preserved a well-supported source for the operating decision."
+    case .dependencyViolation: "A dependent implementation step was scheduled before its prerequisite."
+    case .skippedVerification: "Founder Review allowed required verification to occur too late."
+    case .unsafeRelease: "Founder Review allowed release before its required safety gate."
+    case .correctlyPreservedDependency: "Founder Review preserved a critical technical dependency."
+    case .correctlyRequiredVerification: "Founder Review kept required validation ahead of dependent work."
+    case .correctlyIdentifiedReleaseGate: "Founder Review held release until required checks were complete."
     }
   }
 }
@@ -182,9 +197,12 @@ struct WorkSessionRecord: Codable, Identifiable, Hashable {
   var challengeSeed: UInt64
   var agentPotentialQuality: Int
   var evidenceTopic: EvidenceTopic?
+  var technicalTopic: TechnicalTopic?
   var path: WorkSessionPath?
   var cards: [EvidenceTriageCard]
   var decisions: [WorkSessionDecision]
+  var systemsChallenge: SystemsReviewChallenge?
+  var systemsSequence: [String]
   var founderReviewQuality: Int?
   var deliveredQuality: Int?
   var findings: [WorkSessionFinding]
@@ -202,6 +220,10 @@ struct WorkSessionRecord: Codable, Identifiable, Hashable {
   var usedCount: Int { decisions.filter { $0.action == .use }.count }
   var verifiedCount: Int { decisions.filter { $0.action == .verify }.count }
   var rejectedCount: Int { decisions.filter { $0.action == .reject }.count }
+  var systemsAssessment: SystemsReviewAssessment? {
+    guard let systemsChallenge else { return nil }
+    return SystemsReviewEvaluator.evaluate(challenge: systemsChallenge, sequence: systemsSequence)
+  }
 
   var founderReviewLabel: String {
     guard let quality = founderReviewQuality else { return path == .delegate ? "Delegated" : "Pending" }
@@ -216,7 +238,8 @@ struct WorkSessionRecord: Codable, Identifiable, Hashable {
 
   var hindsightExplanations: [String] {
     var explanations = Array(Set(findings.map(\.hindsightExplanation))).sorted()
-    explanations.insert(causalAttribution.hindsightExplanation, at: 0)
+    let agentName = agentID == "stacks" ? "Stacks" : agentID == "aurora" ? "Aurora" : "The agent"
+    explanations.insert(causalAttribution.hindsightExplanation(agentName: agentName), at: 0)
     return explanations
   }
 
@@ -239,8 +262,8 @@ struct WorkSessionRecord: Codable, Identifiable, Hashable {
 
 extension WorkSessionRecord {
   private enum CodingKeys: String, CodingKey {
-    case id, assignmentID, agentID, family, stakes, challengeSeed, agentPotentialQuality, evidenceTopic
-    case path, cards, decisions, founderReviewQuality, deliveredQuality, findings, mistakes
+    case id, assignmentID, agentID, family, stakes, challengeSeed, agentPotentialQuality, evidenceTopic, technicalTopic
+    case path, cards, decisions, systemsChallenge, systemsSequence, founderReviewQuality, deliveredQuality, findings, mistakes
     case founderAttentionCost, founderAttentionCharged, completionApplied, completed, agentStressAtCreation
   }
 
@@ -255,9 +278,12 @@ extension WorkSessionRecord {
     challengeSeed = try values.decodeIfPresent(UInt64.self, forKey: .challengeSeed) ?? 0
     agentPotentialQuality = min(100, max(0, try values.decodeIfPresent(Int.self, forKey: .agentPotentialQuality) ?? 0))
     evidenceTopic = try values.decodeIfPresent(EvidenceTopic.self, forKey: .evidenceTopic)
+    technicalTopic = try values.decodeIfPresent(TechnicalTopic.self, forKey: .technicalTopic)
     path = try values.decodeIfPresent(WorkSessionPath.self, forKey: .path)
     cards = try values.decodeIfPresent([EvidenceTriageCard].self, forKey: .cards) ?? []
     decisions = try values.decodeIfPresent([WorkSessionDecision].self, forKey: .decisions) ?? []
+    systemsChallenge = try values.decodeIfPresent(SystemsReviewChallenge.self, forKey: .systemsChallenge)
+    systemsSequence = try values.decodeIfPresent([String].self, forKey: .systemsSequence) ?? []
     founderReviewQuality = try values.decodeIfPresent(Int.self, forKey: .founderReviewQuality)
     deliveredQuality = try values.decodeIfPresent(Int.self, forKey: .deliveredQuality)
     findings = try values.decodeIfPresent([WorkSessionFinding].self, forKey: .findings)
@@ -280,9 +306,12 @@ extension WorkSessionRecord {
     try values.encode(challengeSeed, forKey: .challengeSeed)
     try values.encode(agentPotentialQuality, forKey: .agentPotentialQuality)
     try values.encodeIfPresent(evidenceTopic, forKey: .evidenceTopic)
+    try values.encodeIfPresent(technicalTopic, forKey: .technicalTopic)
     try values.encodeIfPresent(path, forKey: .path)
     try values.encode(cards, forKey: .cards)
     try values.encode(decisions, forKey: .decisions)
+    try values.encodeIfPresent(systemsChallenge, forKey: .systemsChallenge)
+    try values.encode(systemsSequence, forKey: .systemsSequence)
     try values.encodeIfPresent(founderReviewQuality, forKey: .founderReviewQuality)
     try values.encodeIfPresent(deliveredQuality, forKey: .deliveredQuality)
     try values.encode(findings, forKey: .findings)
@@ -295,13 +324,13 @@ extension WorkSessionRecord {
 }
 
 private extension WorkSessionCausalAttribution {
-  var hindsightExplanation: String {
+  func hindsightExplanation(agentName: String) -> String {
     switch self {
-    case .agentOutput: "Aurora's underlying output limited the available organizational result."
-    case .founderReview: "Aurora's underlying work was stronger than the result preserved by Founder Review."
-    case .shared: "Both Aurora's underlying output and Founder Review constrained the delivered result."
-    case .delegation: "Delegation preserved Founder Attention but left some of Aurora's potential unextracted."
-    case .potentialPreserved: "Founder management preserved Aurora's available work quality."
+    case .agentOutput: "\(agentName)'s underlying output limited the available organizational result."
+    case .founderReview: "\(agentName)'s underlying work was stronger than the result preserved by Founder Review."
+    case .shared: "Both \(agentName)'s underlying output and Founder Review constrained the delivered result."
+    case .delegation: "Delegation preserved Founder Attention but left some of \(agentName)'s potential unextracted."
+    case .potentialPreserved: "Founder management preserved \(agentName)'s available work quality."
     }
   }
 }
@@ -314,10 +343,19 @@ enum WorkSessionEngine {
   }
 
   static func isEligible(task: SoloTask, agentID: String) -> Bool {
-    agentID == "aurora"
-      && (task.role == .research || task.category == .research || task.category == .trust)
-      && task.result != nil
-      && !task.isReviewed
+    family(for: task, agentID: agentID) != nil
+  }
+
+  static func family(for task: SoloTask, agentID: String) -> WorkSessionFamily? {
+    guard task.result != nil, !task.isReviewed else { return nil }
+    if agentID == "aurora",
+       task.role == .research || task.category == .research || task.category == .trust {
+      return .evidenceTriage
+    }
+    if agentID == "stacks", task.role == .engineering, task.urgency != .critical {
+      return .systemsReview
+    }
+    return nil
   }
 
   static func makeRecord(
@@ -351,9 +389,60 @@ enum WorkSessionEngine {
       challengeSeed: seed,
       agentPotentialQuality: min(100, max(0, potentialQuality)),
       evidenceTopic: evidenceTopic,
+      technicalTopic: nil,
       path: nil,
       cards: cards,
       decisions: [],
+      systemsChallenge: nil,
+      systemsSequence: [],
+      founderReviewQuality: nil,
+      deliveredQuality: nil,
+      findings: [],
+      founderAttentionCost: max(0, attentionCost),
+      founderAttentionCharged: false,
+      completionApplied: false,
+      completed: false,
+      agentStressAtCreation: stress
+    )
+  }
+
+  static func makeSystemsReviewRecord(
+    assignmentID: UUID,
+    agentID: String,
+    urgency: TaskUrgency,
+    potentialQuality: Int,
+    careerSeed: UInt64,
+    venture: Int,
+    sprint: Int,
+    stress: AgentStressBand,
+    attentionCost: Int,
+    technicalTopic: TechnicalTopic?
+  ) -> WorkSessionRecord {
+    let stakes = WorkSessionStakes(urgency: urgency)
+    let seed = stableSeed(
+      careerSeed: careerSeed,
+      assignmentID: assignmentID,
+      agentID: agentID,
+      venture: venture,
+      sprint: sprint,
+      family: .systemsReview,
+      topicIdentity: technicalTopic?.rawValue
+    )
+    return WorkSessionRecord(
+      id: "systems-review-\(assignmentID.uuidString.lowercased())",
+      assignmentID: assignmentID,
+      agentID: agentID,
+      family: .systemsReview,
+      stakes: stakes,
+      challengeSeed: seed,
+      agentPotentialQuality: min(100, max(0, potentialQuality)),
+      evidenceTopic: nil,
+      technicalTopic: technicalTopic,
+      path: nil,
+      cards: [],
+      decisions: [],
+      systemsChallenge: SystemsReviewChallengeFactory.make(seed: seed, topic: technicalTopic, stakes: stakes),
+      systemsSequence: [],
       founderReviewQuality: nil,
       deliveredQuality: nil,
       findings: [],
@@ -374,6 +463,7 @@ enum WorkSessionEngine {
   }
 
   static func completeManual(_ record: inout WorkSessionRecord) -> Bool {
+    if record.family == .systemsReview { return completeSystemsReview(&record) }
     guard record.path == .manualReview, !record.completed, record.decisions.count == record.cards.count else { return false }
     var earned = 0
     var possible = 0
@@ -388,6 +478,53 @@ enum WorkSessionEngine {
     record.founderReviewQuality = min(100, max(0, raw))
     record.findings = findings
     record.deliveredQuality = deliveredQuality(potential: record.agentPotentialQuality, reviewQuality: raw, path: .manualReview, seed: record.challengeSeed)
+    record.completed = true
+    return true
+  }
+
+  static func selectSystemStep(_ stepID: String, in record: inout WorkSessionRecord) -> Bool {
+    guard record.family == .systemsReview,
+          record.path == .manualReview,
+          !record.completed,
+          let challenge = record.systemsChallenge,
+          challenge.steps.contains(where: { $0.id == stepID }),
+          !record.systemsSequence.contains(stepID) else { return false }
+    record.systemsSequence.append(stepID)
+    return true
+  }
+
+  static func removeSystemStep(_ stepID: String, in record: inout WorkSessionRecord) -> Bool {
+    guard record.family == .systemsReview,
+          record.path == .manualReview,
+          !record.completed,
+          let index = record.systemsSequence.firstIndex(of: stepID) else { return false }
+    record.systemsSequence.remove(at: index)
+    return true
+  }
+
+  static func resetSystemsSequence(_ record: inout WorkSessionRecord) -> Bool {
+    guard record.family == .systemsReview,
+          record.path == .manualReview,
+          !record.completed,
+          !record.systemsSequence.isEmpty else { return false }
+    record.systemsSequence.removeAll()
+    return true
+  }
+
+  static func completeSystemsReview(_ record: inout WorkSessionRecord) -> Bool {
+    guard record.family == .systemsReview,
+          record.path == .manualReview,
+          !record.completed,
+          let challenge = record.systemsChallenge,
+          let assessment = SystemsReviewEvaluator.evaluate(challenge: challenge, sequence: record.systemsSequence) else { return false }
+    record.founderReviewQuality = assessment.reviewQuality
+    record.findings = assessment.findings
+    record.deliveredQuality = deliveredQuality(
+      potential: record.agentPotentialQuality,
+      reviewQuality: assessment.reviewQuality,
+      path: .manualReview,
+      seed: record.challengeSeed
+    )
     record.completed = true
     return true
   }
@@ -431,9 +568,29 @@ enum WorkSessionEngine {
     sprint: Int,
     evidenceTopic: EvidenceTopic?
   ) -> UInt64 {
+    stableSeed(
+      careerSeed: careerSeed,
+      assignmentID: assignmentID,
+      agentID: agentID,
+      venture: venture,
+      sprint: sprint,
+      family: .evidenceTriage,
+      topicIdentity: evidenceTopic?.rawValue
+    )
+  }
+
+  private static func stableSeed(
+    careerSeed: UInt64,
+    assignmentID: UUID,
+    agentID: String,
+    venture: Int,
+    sprint: Int,
+    family: WorkSessionFamily,
+    topicIdentity: String?
+  ) -> UInt64 {
     var value = careerSeed ^ UInt64(max(0, venture) * 10_000 + max(0, sprint) * 100)
-    var identity = "\(assignmentID.uuidString.lowercased())|\(agentID)|evidence-triage-v1"
-    if let evidenceTopic { identity += "|topic:\(evidenceTopic.rawValue)" }
+    var identity = "\(assignmentID.uuidString.lowercased())|\(agentID)|\(family.rawValue)-v1"
+    if let topicIdentity { identity += "|topic:\(topicIdentity)" }
     for byte in identity.utf8 {
       value ^= UInt64(byte)
       value &*= 0x100000001B3

@@ -142,7 +142,7 @@ struct TaskResult: Codable, Hashable {
   var hasCanonicalWorkSessionOutcome: Bool { hiddenDeliveredQuality != nil }
 
   /// Routes the organizational payoff through delivered quality while keeping
-  /// Aurora's original hidden actual quality intact for evaluation and reveal.
+  /// the agent's original hidden actual quality intact for evaluation and reveal.
   /// Repeated application is prevented by WorkSessionRecord.completionApplied.
   mutating func applyWorkSessionOutcome(deliveredQuality: Int, founderReviewQuality: Int?) {
     let oldQuality = max(1, hiddenActualQuality)

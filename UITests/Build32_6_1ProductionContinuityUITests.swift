@@ -1,6 +1,37 @@
 import XCTest
 
 final class Build32_6_2ProductionContinuityUITests: XCTestCase {
+  func testStacksSystemsReviewProductionSequence() throws {
+    let phases: [(String, String, String)] = [
+      ("choice", "REVIEW WORK", "STACKS_SYSTEMS_01_WORK_COMPLETE"),
+      ("active", "DEPENDENCY BUILD", "STACKS_SYSTEMS_02_ACTIVE"),
+      ("selected", "3/6", "STACKS_SYSTEMS_03_SELECTED"),
+      ("complete", "SYSTEMS REVIEW COMPLETE", "STACKS_SYSTEMS_04_COMPLETE")
+    ]
+    for (phase, expected, evidenceName) in phases {
+      let app = XCUIApplication()
+      app.launchArguments = ["--systems-review-qa-\(phase)"]
+      app.launch()
+      XCTAssertTrue(app.descendants(matching: .any)[expected].waitForExistence(timeout: 6), phase)
+      capture(evidenceName, in: app)
+      app.terminate()
+    }
+
+    let report = XCUIApplication()
+    report.launchArguments = ["--systems-review-qa-report"]
+    report.launch()
+    XCTAssertTrue(report.staticTexts["AI OPERATIONS FLOOR"].waitForExistence(timeout: 6))
+    capture("STACKS_SYSTEMS_05_CANONICAL_RETURN", in: report)
+    report.terminate()
+
+    let aurora = XCUIApplication()
+    aurora.launchArguments = ["--work-session-qa-active"]
+    aurora.launch()
+    XCTAssertTrue(aurora.navigationBars["Evidence Triage"].waitForExistence(timeout: 6))
+    capture("STACKS_SYSTEMS_06_AURORA_REGRESSION", in: aurora)
+    aurora.terminate()
+  }
+
   func testEvidenceTriageDelegateLanguageUsesFounderFiction() throws {
     let app = XCUIApplication()
     app.terminate()

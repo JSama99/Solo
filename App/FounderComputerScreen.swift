@@ -122,8 +122,19 @@ struct FounderComputerScreen: View {
       }
     }
     .sheet(item: $workSessionDestination) { destination in
-      EvidenceTriageView(store: store, taskID: destination.taskID) {
-        finishWorkSessionReview(taskID: destination.taskID)
+      Group {
+        switch store.workSessionFamily(taskID: destination.taskID) {
+        case .evidenceTriage:
+          EvidenceTriageView(store: store, taskID: destination.taskID) {
+            finishWorkSessionReview(taskID: destination.taskID)
+          }
+        case .systemsReview:
+          SystemsReviewView(store: store, taskID: destination.taskID) {
+            finishWorkSessionReview(taskID: destination.taskID)
+          }
+        case nil:
+          ContentUnavailableView("Work Session unavailable", systemImage: "exclamationmark.triangle")
+        }
       }
       .presentationDetents([.large])
     }
@@ -429,10 +440,11 @@ struct FounderComputerScreen: View {
 
   private func review(_ id: String) {
     guard availability(for: id).canReview, let task = task(for: id) else { return }
-    if store.isEvidenceTriageEligible(taskID: task.id) {
-      guard store.prepareEvidenceTriage(taskID: task.id) else { return }
+    if let family = store.workSessionFamily(taskID: task.id) {
+      guard store.prepareWorkSession(taskID: task.id, expectedFamily: family) else { return }
       workSessionDestination = .init(taskID: task.id)
-      announce("Aurora work complete. Choose Review Work or Delegate.")
+      let agentName = family == .systemsReview ? "Stacks" : "Aurora"
+      announce("\(agentName) work complete. Choose Review Work or Delegate.")
       return
     }
     startCanonicalReview(task: task, agentID: id)

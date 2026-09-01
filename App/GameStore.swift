@@ -1030,11 +1030,23 @@ final class GameStore {
     save()
   }
 
-  var evidenceTriageAttentionCost: Int { min(3, attentionMaximum) }
+  var workSessionAttentionCost: Int { min(3, attentionMaximum) }
+  var evidenceTriageAttentionCost: Int { workSessionAttentionCost }
 
   func isEvidenceTriageEligible(taskID: UUID) -> Bool {
     guard let task = tasks.first(where: { $0.id == taskID }), let agentID = task.assignedAgentID else { return false }
-    return WorkSessionEngine.isEligible(task: task, agentID: agentID)
+    return WorkSessionEngine.family(for: task, agentID: agentID) == .evidenceTriage
+  }
+
+  func isSystemsReviewEligible(taskID: UUID) -> Bool {
+    guard let task = tasks.first(where: { $0.id == taskID }), let agentID = task.assignedAgentID else { return false }
+    return WorkSessionEngine.family(for: task, agentID: agentID) == .systemsReview
+  }
+
+  func workSessionFamily(taskID: UUID) -> WorkSessionFamily? {
+    if let existing = workSession(for: taskID) { return existing.family }
+    guard let task = tasks.first(where: { $0.id == taskID }), let agentID = task.assignedAgentID else { return nil }
+    return WorkSessionEngine.family(for: task, agentID: agentID)
   }
 
   func workSession(for taskID: UUID) -> WorkSessionRecord? {
@@ -1043,37 +1055,81 @@ final class GameStore {
 
   @discardableResult
   func prepareEvidenceTriage(taskID: UUID) -> Bool {
-    if workSession(for: taskID) != nil { return true }
+    prepareWorkSession(taskID: taskID, expectedFamily: .evidenceTriage)
+  }
+
+  @discardableResult
+  func prepareSystemsReview(taskID: UUID) -> Bool {
+    prepareWorkSession(taskID: taskID, expectedFamily: .systemsReview)
+  }
+
+  @discardableResult
+  func prepareWorkSession(taskID: UUID, expectedFamily: WorkSessionFamily? = nil) -> Bool {
+    if let existing = workSession(for: taskID) {
+      return expectedFamily == nil || existing.family == expectedFamily
+    }
     guard let task = tasks.first(where: { $0.id == taskID }),
           let agentID = task.assignedAgentID,
           let agent = agents.first(where: { $0.id == agentID }),
           let potential = task.result?.workSessionPotentialQuality,
-          WorkSessionEngine.isEligible(task: task, agentID: agentID) else { return false }
-    workSessions.append(WorkSessionEngine.makeRecord(
-      assignmentID: taskID,
-      agentID: agentID,
-      urgency: task.urgency,
-      potentialQuality: potential,
-      careerSeed: RivalEngine.careerSeed(founderName: founderName, productType: productType),
-      venture: venture,
-      sprint: sprint,
-      stress: agent.progression.stressBand,
-      attentionCost: evidenceTriageAttentionCost,
-      evidenceTopic: task.resolvedEvidenceTopic
-    ))
+          let family = WorkSessionEngine.family(for: task, agentID: agentID),
+          expectedFamily == nil || expectedFamily == family else { return false }
+    let commonSeed = RivalEngine.careerSeed(founderName: founderName, productType: productType)
+    let record: WorkSessionRecord
+    switch family {
+    case .evidenceTriage:
+      record = WorkSessionEngine.makeRecord(
+        assignmentID: taskID,
+        agentID: agentID,
+        urgency: task.urgency,
+        potentialQuality: potential,
+        careerSeed: commonSeed,
+        venture: venture,
+        sprint: sprint,
+        stress: agent.progression.stressBand,
+        attentionCost: workSessionAttentionCost,
+        evidenceTopic: task.resolvedEvidenceTopic
+      )
+    case .systemsReview:
+      record = WorkSessionEngine.makeSystemsReviewRecord(
+        assignmentID: taskID,
+        agentID: agentID,
+        urgency: task.urgency,
+        potentialQuality: potential,
+        careerSeed: commonSeed,
+        venture: venture,
+        sprint: sprint,
+        stress: agent.progression.stressBand,
+        attentionCost: workSessionAttentionCost,
+        technicalTopic: task.resolvedTechnicalTopic
+      )
+    }
+    workSessions.append(record)
     save()
     return true
   }
 
   @discardableResult
   func beginManualEvidenceTriage(taskID: UUID) -> Bool {
-    guard prepareEvidenceTriage(taskID: taskID),
+    guard prepareEvidenceTriage(taskID: taskID) else { return false }
+    return beginManualWorkSession(taskID: taskID)
+  }
+
+  @discardableResult
+  func beginManualSystemsReview(taskID: UUID) -> Bool {
+    guard prepareSystemsReview(taskID: taskID) else { return false }
+    return beginManualWorkSession(taskID: taskID)
+  }
+
+  @discardableResult
+  func beginManualWorkSession(taskID: UUID) -> Bool {
+    guard prepareWorkSession(taskID: taskID),
           let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }) else { return false }
     if workSessions[index].path == .manualReview { return true }
     guard workSessions[index].path == nil, !workSessions[index].completed else { return false }
     let cost = workSessions[index].founderAttentionCost
     guard attentionRemaining >= cost else {
-      alertMessage = "Evidence Triage needs \(cost) Founder Attention. Delegate to preserve the remaining budget."
+      alertMessage = "This Work Session needs \(cost) Founder Attention. Delegate to preserve the remaining budget."
       return false
     }
     workSessions[index].path = .manualReview
@@ -1099,9 +1155,54 @@ final class GameStore {
 
   @discardableResult
   func delegateEvidenceTriage(taskID: UUID) -> Bool {
-    guard prepareEvidenceTriage(taskID: taskID),
+    guard prepareEvidenceTriage(taskID: taskID) else { return false }
+    return delegateWorkSession(taskID: taskID)
+  }
+
+  @discardableResult
+  func delegateSystemsReview(taskID: UUID) -> Bool {
+    guard prepareSystemsReview(taskID: taskID) else { return false }
+    return delegateWorkSession(taskID: taskID)
+  }
+
+  @discardableResult
+  func delegateWorkSession(taskID: UUID) -> Bool {
+    guard prepareWorkSession(taskID: taskID),
           let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
           WorkSessionEngine.delegate(&workSessions[index]) else { return false }
+    applyWorkSessionOutcome(at: index)
+    save()
+    return true
+  }
+
+  @discardableResult
+  func selectSystemsReviewStep(taskID: UUID, stepID: String) -> Bool {
+    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+          WorkSessionEngine.selectSystemStep(stepID, in: &workSessions[index]) else { return false }
+    save()
+    return true
+  }
+
+  @discardableResult
+  func removeSystemsReviewStep(taskID: UUID, stepID: String) -> Bool {
+    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+          WorkSessionEngine.removeSystemStep(stepID, in: &workSessions[index]) else { return false }
+    save()
+    return true
+  }
+
+  @discardableResult
+  func resetSystemsReview(taskID: UUID) -> Bool {
+    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+          WorkSessionEngine.resetSystemsSequence(&workSessions[index]) else { return false }
+    save()
+    return true
+  }
+
+  @discardableResult
+  func submitSystemsReview(taskID: UUID) -> Bool {
+    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+          WorkSessionEngine.completeSystemsReview(&workSessions[index]) else { return false }
     applyWorkSessionOutcome(at: index)
     save()
     return true
