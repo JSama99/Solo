@@ -123,6 +123,21 @@ struct TaskResult: Codable, Hashable {
     hiddenActualQuality < 52 || evidenceCompleteness < 45 || correlatedFailureIdentifier != nil
   }
 
+  /// Canonical hidden truth captured before any Work Session. This remains
+  /// internal simulation data and must only enter persisted session state,
+  /// never a visible projection.
+  var workSessionPotentialQuality: Int { hiddenActualQuality }
+
+  /// Converts existing potential into usable output without inventing quality.
+  /// Repeated application is prevented by WorkSessionRecord.completionApplied.
+  mutating func applyWorkSessionDelivery(_ deliveredQuality: Int) {
+    let oldQuality = max(1, hiddenActualQuality)
+    let bounded = min(hiddenActualQuality, max(0, deliveredQuality))
+    immediateEffects = immediateEffects.scaled(by: Double(bounded) / Double(oldQuality))
+    hiddenActualQuality = bounded
+    overclaimAmount = max(0, reportedQuality - hiddenActualQuality)
+  }
+
   init(
     actualQuality: Int,
     reportedQuality: Int,

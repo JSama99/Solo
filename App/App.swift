@@ -19,6 +19,14 @@ struct SoloUnicornRunApp: App {
     #endif
   }
 
+  private var workSessionQAPhase: WorkSessionQAPhase? {
+    #if DEBUG
+    WorkSessionQAPhase.allCases.first { ProcessInfo.processInfo.arguments.contains("--work-session-qa-\($0.rawValue)") }
+    #else
+    nil
+    #endif
+  }
+
   init() {
     #if DEBUG
     if !ProcessInfo.processInfo.arguments.contains("--motion-qa") {
@@ -33,7 +41,9 @@ struct SoloUnicornRunApp: App {
     WindowGroup {
       Group {
         #if DEBUG
-        if isMotionQA {
+        if let workSessionQAPhase {
+          WorkSessionQAHost(phase: workSessionQAPhase)
+        } else if isMotionQA {
           MotionVerificationScreen(initialFixture: motionQAFixture)
         } else {
           ContentView()

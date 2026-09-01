@@ -16,6 +16,7 @@ struct FounderComputerScreen: View {
   @State private var scrollPosition = ScrollPosition()
   @AccessibilityFocusState private var accessibilityWorkstationID: String?
   @State private var assignmentDestination: AssignmentDestination?
+  @State private var workSessionDestination: WorkSessionDestination?
   @State private var restCandidate: RestCandidate?
   @State private var evidenceExpanded = false
   @State private var resolutionTick = 0
@@ -119,6 +120,12 @@ struct FounderComputerScreen: View {
         assignmentDestination = nil
         announce(feedback)
       }
+    }
+    .sheet(item: $workSessionDestination) { destination in
+      EvidenceTriageView(store: store, taskID: destination.taskID) {
+        finishWorkSessionReview(taskID: destination.taskID)
+      }
+      .presentationDetents([.large])
     }
     .sheet(item: $detailDestination) { destination in
       NavigationStack {
@@ -422,6 +429,23 @@ struct FounderComputerScreen: View {
 
   private func review(_ id: String) {
     guard availability(for: id).canReview, let task = task(for: id) else { return }
+    if store.isEvidenceTriageEligible(taskID: task.id) {
+      guard store.prepareEvidenceTriage(taskID: task.id) else { return }
+      workSessionDestination = .init(taskID: task.id)
+      announce("Aurora work complete. Choose Review Work or Delegate.")
+      return
+    }
+    startCanonicalReview(task: task, agentID: id)
+  }
+
+  private func finishWorkSessionReview(taskID: UUID) {
+    guard let task = store.tasks.first(where: { $0.id == taskID }),
+          let agentID = task.assignedAgentID,
+          store.workSession(for: taskID)?.completed == true else { return }
+    startCanonicalReview(task: task, agentID: agentID)
+  }
+
+  private func startCanonicalReview(task: SoloTask, agentID id: String) {
     commandInteraction.observePresentation(agentID: id)
     settings.setAudioContext(.founderReview)
     withAnimation(SoloMotion.resolved(SoloMotion.focus, reduceMotion: reduceMotion)) {
@@ -498,6 +522,7 @@ struct FounderComputerScreen: View {
 }
 
 private struct AssignmentDestination: Identifiable { var agentID: String; var id: String { agentID } }
+private struct WorkSessionDestination: Identifiable { var taskID: UUID; var id: UUID { taskID } }
 private struct DetailedWorkstationDestination: Identifiable {
   var target: CompanyCommandFocus
   var id: String { target.scrollID }

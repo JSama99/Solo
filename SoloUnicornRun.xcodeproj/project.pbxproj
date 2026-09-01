@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F32700000000000000000001 /* WorkSessionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000011 /* WorkSessionEngine.swift */; };
+		F32700000000000000000002 /* EvidenceTriageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000012 /* EvidenceTriageView.swift */; };
+		F32700000000000000000003 /* WorkSessionEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000013 /* WorkSessionEngineTests.swift */; };
 		B33000000000000000000001 /* CompanyFinance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000011 /* CompanyFinance.swift */; };
 		B33000000000000000000002 /* AIOperationsFloor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000012 /* AIOperationsFloor.swift */; };
 		B33000000000000000000003 /* CompanyFinanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000013 /* CompanyFinanceTests.swift */; };
@@ -149,6 +152,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F32700000000000000000011 /* WorkSessionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionEngine.swift; sourceTree = "<group>"; };
+		F32700000000000000000012 /* EvidenceTriageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvidenceTriageView.swift; sourceTree = "<group>"; };
+		F32700000000000000000013 /* WorkSessionEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionEngineTests.swift; sourceTree = "<group>"; };
 		B33000000000000000000011 /* CompanyFinance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyFinance.swift; sourceTree = "<group>"; };
 		B33000000000000000000012 /* AIOperationsFloor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIOperationsFloor.swift; sourceTree = "<group>"; };
 		B33000000000000000000013 /* CompanyFinanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyFinanceTests.swift; sourceTree = "<group>"; };
@@ -308,6 +314,7 @@
 		62FFB73B4F7FB65000C228B6 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				F32700000000000000000013 /* WorkSessionEngineTests.swift */,
 				B33000000000000000000013 /* CompanyFinanceTests.swift */,
 				B33000000000000000000014 /* AIOperationsFloorTests.swift */,
 				A5A100000000000000000013 /* SignalTVTests.swift */,
@@ -359,6 +366,8 @@
 		7775A9C13FE1CF8E12C7214B /* App */ = {
 			isa = PBXGroup;
 			children = (
+				F32700000000000000000011 /* WorkSessionEngine.swift */,
+				F32700000000000000000012 /* EvidenceTriageView.swift */,
 				B33000000000000000000011 /* CompanyFinance.swift */,
 				B33000000000000000000012 /* AIOperationsFloor.swift */,
 				A5A100000000000000000011 /* SignalTVModels.swift */,
@@ -575,6 +584,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F32700000000000000000003 /* WorkSessionEngineTests.swift in Sources */,
 				B33000000000000000000003 /* CompanyFinanceTests.swift in Sources */,
 				B33000000000000000000004 /* AIOperationsFloorTests.swift in Sources */,
 				A5A100000000000000000003 /* SignalTVTests.swift in Sources */,
@@ -618,6 +628,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F32700000000000000000001 /* WorkSessionEngine.swift in Sources */,
+				F32700000000000000000002 /* EvidenceTriageView.swift in Sources */,
 				B33000000000000000000001 /* CompanyFinance.swift in Sources */,
 				B33000000000000000000002 /* AIOperationsFloor.swift in Sources */,
 				A5A100000000000000000001 /* SignalTVModels.swift in Sources */,

@@ -41,8 +41,13 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     app.launch()
 
     let continueCareer = app.buttons["Continue Career"]
-    XCTAssertTrue(continueCareer.waitForExistence(timeout: 5))
-    continueCareer.tap()
+    if continueCareer.waitForExistence(timeout: 5) {
+      continueCareer.tap()
+    } else {
+      // This ambient-life proof must be independently runnable on a clean
+      // simulator; XCTest does not guarantee class or method ordering.
+      enterFreshProductionCareer(in: app)
+    }
 
     let computer = app.buttons["founder-desk-device-computer"]
     let lookOut = app.buttons["founder-computer-look-out"]
