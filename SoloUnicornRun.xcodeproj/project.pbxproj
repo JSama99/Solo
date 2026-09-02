@@ -13,6 +13,9 @@
 		F32700000000000000000004 /* SystemsReviewChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000014 /* SystemsReviewChallenge.swift */; };
 		F32700000000000000000005 /* SystemsReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000015 /* SystemsReviewView.swift */; };
 		F32700000000000000000006 /* SystemsReviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000016 /* SystemsReviewTests.swift */; };
+		F32800000000000000000001 /* CampaignCalibrationChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32800000000000000000011 /* CampaignCalibrationChallenge.swift */; };
+		F32800000000000000000002 /* CampaignCalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32800000000000000000012 /* CampaignCalibrationView.swift */; };
+		F32800000000000000000003 /* CampaignCalibrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32800000000000000000013 /* CampaignCalibrationTests.swift */; };
 		B33000000000000000000001 /* CompanyFinance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000011 /* CompanyFinance.swift */; };
 		B33000000000000000000002 /* AIOperationsFloor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000012 /* AIOperationsFloor.swift */; };
 		B33000000000000000000003 /* CompanyFinanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000013 /* CompanyFinanceTests.swift */; };
@@ -161,6 +164,9 @@
 		F32700000000000000000014 /* SystemsReviewChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemsReviewChallenge.swift; sourceTree = "<group>"; };
 		F32700000000000000000015 /* SystemsReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemsReviewView.swift; sourceTree = "<group>"; };
 		F32700000000000000000016 /* SystemsReviewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemsReviewTests.swift; sourceTree = "<group>"; };
+		F32800000000000000000011 /* CampaignCalibrationChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignCalibrationChallenge.swift; sourceTree = "<group>"; };
+		F32800000000000000000012 /* CampaignCalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignCalibrationView.swift; sourceTree = "<group>"; };
+		F32800000000000000000013 /* CampaignCalibrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignCalibrationTests.swift; sourceTree = "<group>"; };
 		B33000000000000000000011 /* CompanyFinance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyFinance.swift; sourceTree = "<group>"; };
 		B33000000000000000000012 /* AIOperationsFloor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIOperationsFloor.swift; sourceTree = "<group>"; };
 		B33000000000000000000013 /* CompanyFinanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyFinanceTests.swift; sourceTree = "<group>"; };
@@ -322,6 +328,7 @@
 			children = (
 				F32700000000000000000013 /* WorkSessionEngineTests.swift */,
 				F32700000000000000000016 /* SystemsReviewTests.swift */,
+				F32800000000000000000013 /* CampaignCalibrationTests.swift */,
 				B33000000000000000000013 /* CompanyFinanceTests.swift */,
 				B33000000000000000000014 /* AIOperationsFloorTests.swift */,
 				A5A100000000000000000013 /* SignalTVTests.swift */,
@@ -377,6 +384,8 @@
 				F32700000000000000000012 /* EvidenceTriageView.swift */,
 				F32700000000000000000014 /* SystemsReviewChallenge.swift */,
 				F32700000000000000000015 /* SystemsReviewView.swift */,
+				F32800000000000000000011 /* CampaignCalibrationChallenge.swift */,
+				F32800000000000000000012 /* CampaignCalibrationView.swift */,
 				B33000000000000000000011 /* CompanyFinance.swift */,
 				B33000000000000000000012 /* AIOperationsFloor.swift */,
 				A5A100000000000000000011 /* SignalTVModels.swift */,
@@ -595,6 +604,7 @@
 			files = (
 				F32700000000000000000003 /* WorkSessionEngineTests.swift in Sources */,
 				F32700000000000000000006 /* SystemsReviewTests.swift in Sources */,
+				F32800000000000000000003 /* CampaignCalibrationTests.swift in Sources */,
 				B33000000000000000000003 /* CompanyFinanceTests.swift in Sources */,
 				B33000000000000000000004 /* AIOperationsFloorTests.swift in Sources */,
 				A5A100000000000000000003 /* SignalTVTests.swift in Sources */,
@@ -639,6 +649,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				F32700000000000000000001 /* WorkSessionEngine.swift in Sources */,
+				F32800000000000000000001 /* CampaignCalibrationChallenge.swift in Sources */,
+				F32800000000000000000002 /* CampaignCalibrationView.swift in Sources */,
 				F32700000000000000000002 /* EvidenceTriageView.swift in Sources */,
 				F32700000000000000000004 /* SystemsReviewChallenge.swift in Sources */,
 				F32700000000000000000005 /* SystemsReviewView.swift in Sources */,

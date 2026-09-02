@@ -1043,6 +1043,11 @@ final class GameStore {
     return WorkSessionEngine.family(for: task, agentID: agentID) == .systemsReview
   }
 
+  func isCampaignCalibrationEligible(taskID: UUID) -> Bool {
+    guard let task = tasks.first(where: { $0.id == taskID }), let agentID = task.assignedAgentID else { return false }
+    return WorkSessionEngine.family(for: task, agentID: agentID) == .campaignCalibration
+  }
+
   func workSessionFamily(taskID: UUID) -> WorkSessionFamily? {
     if let existing = workSession(for: taskID) { return existing.family }
     guard let task = tasks.first(where: { $0.id == taskID }), let agentID = task.assignedAgentID else { return nil }
@@ -1061,6 +1066,11 @@ final class GameStore {
   @discardableResult
   func prepareSystemsReview(taskID: UUID) -> Bool {
     prepareWorkSession(taskID: taskID, expectedFamily: .systemsReview)
+  }
+
+  @discardableResult
+  func prepareCampaignCalibration(taskID: UUID) -> Bool {
+    prepareWorkSession(taskID: taskID, expectedFamily: .campaignCalibration)
   }
 
   @discardableResult
@@ -1103,6 +1113,19 @@ final class GameStore {
         attentionCost: workSessionAttentionCost,
         technicalTopic: task.resolvedTechnicalTopic
       )
+    case .campaignCalibration:
+      record = WorkSessionEngine.makeCampaignCalibrationRecord(
+        assignmentID: taskID,
+        agentID: agentID,
+        urgency: task.urgency,
+        potentialQuality: potential,
+        careerSeed: commonSeed,
+        venture: venture,
+        sprint: sprint,
+        stress: agent.progression.stressBand,
+        attentionCost: workSessionAttentionCost,
+        campaignCategory: task.resolvedCampaignCategory
+      )
     }
     workSessions.append(record)
     save()
@@ -1118,6 +1141,12 @@ final class GameStore {
   @discardableResult
   func beginManualSystemsReview(taskID: UUID) -> Bool {
     guard prepareSystemsReview(taskID: taskID) else { return false }
+    return beginManualWorkSession(taskID: taskID)
+  }
+
+  @discardableResult
+  func beginManualCampaignCalibration(taskID: UUID) -> Bool {
+    guard prepareCampaignCalibration(taskID: taskID) else { return false }
     return beginManualWorkSession(taskID: taskID)
   }
 
@@ -1166,6 +1195,12 @@ final class GameStore {
   }
 
   @discardableResult
+  func delegateCampaignCalibration(taskID: UUID) -> Bool {
+    guard prepareCampaignCalibration(taskID: taskID) else { return false }
+    return delegateWorkSession(taskID: taskID)
+  }
+
+  @discardableResult
   func delegateWorkSession(taskID: UUID) -> Bool {
     guard prepareWorkSession(taskID: taskID),
           let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
@@ -1203,6 +1238,31 @@ final class GameStore {
   func submitSystemsReview(taskID: UUID) -> Bool {
     guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
           WorkSessionEngine.completeSystemsReview(&workSessions[index]) else { return false }
+    applyWorkSessionOutcome(at: index)
+    save()
+    return true
+  }
+
+  @discardableResult
+  func selectCampaignOption(taskID: UUID, slot: CampaignSlot, optionID: String) -> Bool {
+    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+          WorkSessionEngine.selectCampaignOption(optionID, slot: slot, in: &workSessions[index]) else { return false }
+    save()
+    return true
+  }
+
+  @discardableResult
+  func resetCampaignCalibration(taskID: UUID) -> Bool {
+    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+          WorkSessionEngine.resetCampaignSelection(&workSessions[index]) else { return false }
+    save()
+    return true
+  }
+
+  @discardableResult
+  func submitCampaignCalibration(taskID: UUID) -> Bool {
+    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+          WorkSessionEngine.completeCampaignCalibration(&workSessions[index]) else { return false }
     applyWorkSessionOutcome(at: index)
     save()
     return true
