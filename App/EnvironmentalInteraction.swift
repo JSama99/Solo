@@ -6,8 +6,8 @@ enum FounderEnvironmentalObject: String, CaseIterable, Codable, Hashable, Identi
   case workoutBench
 
   var id: String { rawValue }
-  var title: String { self == .couch ? "Founder Couch" : "Workout Bench" }
-  var symbol: String { self == .couch ? "sofa.fill" : "figure.strengthtraining.traditional" }
+  var title: String { self == .couch ? "Recovery Cot" : "Workout Bench" }
+  var symbol: String { self == .couch ? "bed.double.fill" : "figure.strengthtraining.traditional" }
 }
 
 enum FounderEnvironmentalAction: String, Codable, Hashable, Identifiable, Sendable {

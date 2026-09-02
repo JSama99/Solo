@@ -247,6 +247,12 @@ final class Build32_4SpatialCausalityTests: XCTestCase {
     XCTAssertFalse(loft.showsToolWall)
   }
 
+  func testRecoveryInteractionNoLongerExposesResidentialCouchLanguage() {
+    XCTAssertEqual(FounderEnvironmentalAction.rest.object.title, "Recovery Cot")
+    XCTAssertEqual(FounderEnvironmentalAction.rest.object.symbol, "bed.double.fill")
+    XCTAssertFalse(FounderEnvironmentalAction.rest.object.title.localizedCaseInsensitiveContains("couch"))
+  }
+
   func testGarageAsymmetryChangesBayPlacementWhileLoftStaysLevel() {
     let order = ["aurora", "stacks", "brio"]
     let garage = CompanySceneLayout(
