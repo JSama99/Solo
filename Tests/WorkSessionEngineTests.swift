@@ -41,6 +41,9 @@ final class WorkSessionEngineTests: XCTestCase {
     XCTAssertTrue(WorkSessionEngine.completeManual(&record))
     XCTAssertEqual(record.founderReviewQuality, 100)
     XCTAssertEqual(record.deliveredQuality, record.agentPotentialQuality)
+    XCTAssertTrue(record.negativeFindings.isEmpty)
+    XCTAssertFalse(record.positiveFindings.isEmpty)
+    XCTAssertTrue(record.positiveFindings.allSatisfy { $0.polarity == .positive })
   }
 
   func testPoorReviewReducesDeliveredQuality() {
@@ -66,11 +69,74 @@ final class WorkSessionEngineTests: XCTestCase {
     XCTAssertNotEqual(first.challengeSeed, different.challengeSeed)
   }
 
+  func testUntaggedChallengeUsesOriginalGeneralPool() {
+    let record = makeRecord(potential: 80)
+    let taggedExpansion = Set(["pricing-panel", "discount-conversion", "margin-thread"])
+    XCTAssertTrue(Set(record.cards.map(\.id)).isDisjoint(with: taggedExpansion))
+    XCTAssertNil(record.evidenceTopic)
+  }
+
+  func testTaggedChallengeIsDeterministicAndPrefersMatchingEvidence() {
+    let first = makeRecord(potential: 80, topic: .retention)
+    let second = makeRecord(potential: 80, topic: .retention)
+    XCTAssertEqual(first.challengeSeed, second.challengeSeed)
+    XCTAssertEqual(first.cards, second.cards)
+    XCTAssertEqual(first.evidenceTopic, .retention)
+    XCTAssertGreaterThanOrEqual(first.cards.filter { $0.supports(.retention) }.count, 3)
+  }
+
+  func testExplicitAndInferredTaskTopicsUseSafeFallbacks() {
+    let explicit = SoloTask(title: "Review evidence", detail: "General packet", role: .research, impact: .trust(3), evidenceTopic: .pricing)
+    let inferred = SoloTask(title: "Validate retention cohorts", detail: "Review churn and renewal behavior", role: .research, impact: .trust(3))
+    let untagged = SoloTask(title: "Review evidence", detail: "Assess the available packet", role: .research, impact: .trust(3))
+    XCTAssertEqual(explicit.resolvedEvidenceTopic, .pricing)
+    XCTAssertEqual(inferred.resolvedEvidenceTopic, .retention)
+    XCTAssertNil(untagged.resolvedEvidenceTopic)
+  }
+
+  func testTaskResultPreservesAgentQualityAndStoresCausalOutcomeSeparately() {
+    var result = makeTaskResult(actual: 92, immediateMomentum: 92)
+    result.applyWorkSessionOutcome(deliveredQuality: 64, founderReviewQuality: 55)
+    XCTAssertEqual(result.workSessionPotentialQuality, 92)
+    XCTAssertEqual(result.founderReviewQualityForSimulation, 55)
+    XCTAssertEqual(result.deliveredQualityForSimulation, 64)
+    XCTAssertEqual(result.immediateEffects.momentum, 64, "Company payoff must route through delivered quality")
+    XCTAssertTrue(result.isStrongForSimulation, "Agent evaluation must retain Aurora's original quality")
+    XCTAssertFalse(result.isDeliveredStrongForSimulation)
+    _ = result.verify()
+    XCTAssertEqual(result.revealedActualQuality, 92, "Earned reveal must report Aurora's original truth, not delivered quality")
+  }
+
+  func testPerfectReviewCannotRaiseWeakAgentOutput() {
+    XCTAssertEqual(
+      WorkSessionEngine.deliveredQuality(potential: 48, reviewQuality: 100, path: .manualReview, seed: 3),
+      48
+    )
+  }
+
+  func testCausalAttributionDistinguishesFounderAndAgentFailure() {
+    var founderFailure = makeRecord(potential: 92)
+    founderFailure.path = .manualReview
+    founderFailure.founderReviewQuality = 55
+    founderFailure.deliveredQuality = 64
+    XCTAssertEqual(founderFailure.causalAttribution, .founderReview)
+
+    var agentFailure = makeRecord(potential: 48)
+    agentFailure.path = .manualReview
+    agentFailure.founderReviewQuality = 100
+    agentFailure.deliveredQuality = 48
+    XCTAssertEqual(agentFailure.causalAttribution, .agentOutput)
+    XCTAssertTrue(agentFailure.hindsightExplanations.contains { $0.contains("underlying output limited") })
+  }
+
   func testVisibleCardAndVoiceOverMetadataDoNotLeakCorrectness() throws {
     let card = try XCTUnwrap(makeRecord(potential: 80).nextCardPresentation)
     let fieldNames = Set(Mirror(reflecting: card).children.compactMap(\.label))
     XCTAssertFalse(fieldNames.contains("idealAction"))
     XCTAssertFalse(fieldNames.contains("weight"))
+    XCTAssertFalse(fieldNames.contains("agentPotentialQuality"))
+    XCTAssertFalse(fieldNames.contains("founderReviewQuality"))
+    XCTAssertFalse(fieldNames.contains("deliveredQuality"))
     let metadata = card.accessibilityLabel.lowercased()
     for protected in ["correct", "incorrect", "ideal", "weak evidence", "strong evidence", "hidden", "drift", "overclaim"] {
       XCTAssertFalse(metadata.contains(protected), "Accessibility leaked protected truth: \(protected)")
@@ -95,8 +161,51 @@ final class WorkSessionEngineTests: XCTestCase {
     XCTAssertTrue(decoded.workSessions.isEmpty)
   }
 
-  private func makeRecord(potential: Int) -> WorkSessionRecord {
-    WorkSessionEngine.makeRecord(assignmentID: assignmentID, agentID: "aurora", urgency: .normal, potentialQuality: potential, careerSeed: 10, venture: 1, sprint: 1, stress: .stable, attentionCost: 3)
+  func testLegacyWorkSessionMistakesDecodeAsTypedFindings() throws {
+    var record = makeRecord(potential: 80)
+    record.findings = [.acceptedWeakEvidence, .correctlyDetectedContradiction]
+    let encoded = try JSONEncoder().encode(record)
+    var json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+    json["mistakes"] = json.removeValue(forKey: "findings")
+    json.removeValue(forKey: "evidenceTopic")
+    let decoded = try JSONDecoder().decode(
+      WorkSessionRecord.self,
+      from: JSONSerialization.data(withJSONObject: json)
+    )
+    XCTAssertEqual(decoded.findings, record.findings)
+    XCTAssertEqual(decoded.negativeFindings, [.acceptedWeakEvidence])
+    XCTAssertEqual(decoded.positiveFindings, [.correctlyDetectedContradiction])
+  }
+
+  func testLegacyCausalRepairRestoresAgentTruthWithoutDoubleScalingCompanyEffects() {
+    var legacyResult = makeTaskResult(actual: 64, immediateMomentum: 64)
+    legacyResult.restoreLegacyWorkSessionOutcome(
+      agentPotentialQuality: 92,
+      founderReviewQuality: 55,
+      deliveredQuality: 64
+    )
+    XCTAssertEqual(legacyResult.workSessionPotentialQuality, 92)
+    XCTAssertEqual(legacyResult.founderReviewQualityForSimulation, 55)
+    XCTAssertEqual(legacyResult.deliveredQualityForSimulation, 64)
+    XCTAssertEqual(legacyResult.immediateEffects.momentum, 64)
+  }
+
+  private func makeRecord(potential: Int, topic: EvidenceTopic? = nil) -> WorkSessionRecord {
+    WorkSessionEngine.makeRecord(assignmentID: assignmentID, agentID: "aurora", urgency: .normal, potentialQuality: potential, careerSeed: 10, venture: 1, sprint: 1, stress: .stable, attentionCost: 3, evidenceTopic: topic)
+  }
+
+  private func makeTaskResult(actual: Int, immediateMomentum: Int) -> TaskResult {
+    TaskResult(
+      actualQuality: actual,
+      reportedQuality: actual,
+      evidenceCompleteness: 80,
+      correlatedFailureIdentifier: nil,
+      immediateEffects: SimulationEffects(momentum: immediateMomentum),
+      delayedEffects: SimulationEffects(),
+      confidenceLowerBound: actual - 5,
+      confidenceUpperBound: actual + 5,
+      knownOperationalRisk: "Normal operational variance"
+    )
   }
 }
 
@@ -136,17 +245,25 @@ final class WorkSessionStoreTests: XCTestCase {
     XCTAssertEqual(store.evidence.count, evidenceCount)
   }
 
-  func testPoorManualReviewPersistsMistakesForHindsight() throws {
+  func testPoorManualReviewPersistsTypedFindingsAndCausalHindsight() throws {
     let (store, taskID) = try makeEligibleStore()
     let potential = try XCTUnwrap(store.tasks.first(where: { $0.id == taskID })?.result?.workSessionPotentialQuality)
     XCTAssertTrue(store.beginManualEvidenceTriage(taskID: taskID))
     try finish(store: store, taskID: taskID, action: .use)
     let session = try XCTUnwrap(store.workSession(for: taskID))
     XCTAssertLessThanOrEqual(try XCTUnwrap(session.deliveredQuality), potential)
-    XCTAssertFalse(session.mistakes.isEmpty)
+    let canonicalResult = try XCTUnwrap(store.tasks.first(where: { $0.id == taskID })?.result)
+    XCTAssertEqual(canonicalResult.workSessionPotentialQuality, potential)
+    XCTAssertEqual(canonicalResult.founderReviewQualityForSimulation, session.founderReviewQuality)
+    XCTAssertEqual(canonicalResult.deliveredQualityForSimulation, session.deliveredQuality)
+    XCTAssertFalse(session.negativeFindings.isEmpty)
     store.review(taskID: taskID)
     let evidence = try XCTUnwrap(store.evidence.first(where: { $0.taskInstanceID == taskID.uuidString }))
-    XCTAssertEqual(evidence.workSessionMistakes, session.mistakes)
+    XCTAssertEqual(evidence.workSessionFindings, session.findings)
+    XCTAssertEqual(evidence.workSessionAgentQuality, session.agentPotentialQuality)
+    XCTAssertEqual(evidence.workSessionFounderReviewQuality, session.founderReviewQuality)
+    XCTAssertEqual(evidence.workSessionDeliveredQuality, session.deliveredQuality)
+    XCTAssertEqual(evidence.workSessionCausalAttribution, session.causalAttribution)
     XCTAssertEqual(evidence.hindsightNotes, session.hindsightExplanations)
     XCTAssertFalse(evidence.hindsightNotes.isEmpty)
   }
@@ -177,6 +294,39 @@ final class WorkSessionStoreTests: XCTestCase {
     XCTAssertEqual(restored.attentionRemaining, attention)
     XCTAssertTrue(restored.beginManualEvidenceTriage(taskID: taskID))
     XCTAssertEqual(restored.attentionRemaining, attention)
+  }
+
+  func testCompletedSessionRestoresAllCausalQualityAndFindings() throws {
+    let (store, taskID) = try makeEligibleStore()
+    XCTAssertTrue(store.beginManualEvidenceTriage(taskID: taskID))
+    try finish(store: store, taskID: taskID, action: .reject)
+    let before = try XCTUnwrap(store.workSession(for: taskID))
+    let beforeResult = try XCTUnwrap(store.tasks.first(where: { $0.id == taskID })?.result)
+
+    let restored = GameStore()
+    restored.continueCareer()
+    let after = try XCTUnwrap(restored.workSession(for: taskID))
+    let afterResult = try XCTUnwrap(restored.tasks.first(where: { $0.id == taskID })?.result)
+    XCTAssertEqual(after.agentPotentialQuality, before.agentPotentialQuality)
+    XCTAssertEqual(after.founderReviewQuality, before.founderReviewQuality)
+    XCTAssertEqual(after.deliveredQuality, before.deliveredQuality)
+    XCTAssertEqual(after.findings, before.findings)
+    XCTAssertEqual(afterResult.workSessionPotentialQuality, beforeResult.workSessionPotentialQuality)
+    XCTAssertEqual(afterResult.founderReviewQualityForSimulation, beforeResult.founderReviewQualityForSimulation)
+    XCTAssertEqual(afterResult.deliveredQualityForSimulation, beforeResult.deliveredQualityForSimulation)
+  }
+
+  func testTaggedSessionReopeningCannotRerollEvidence() throws {
+    let (store, taskID) = try makeEligibleStore()
+    let taskIndex = try XCTUnwrap(store.tasks.firstIndex(where: { $0.id == taskID }))
+    store.tasks[taskIndex].evidenceTopic = .pricing
+    XCTAssertTrue(store.prepareEvidenceTriage(taskID: taskID))
+    let original = try XCTUnwrap(store.workSession(for: taskID))
+    XCTAssertEqual(original.evidenceTopic, .pricing)
+    XCTAssertGreaterThanOrEqual(original.cards.filter { $0.supports(.pricing) }.count, 3)
+    XCTAssertTrue(store.prepareEvidenceTriage(taskID: taskID))
+    XCTAssertEqual(store.workSession(for: taskID)?.challengeSeed, original.challengeSeed)
+    XCTAssertEqual(store.workSession(for: taskID)?.cards, original.cards)
   }
 
   func testAuroraStateChangesAfterCreationDoNotRerollChallenge() throws {

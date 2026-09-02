@@ -66,7 +66,7 @@ struct EvidenceTriageView: View {
     VStack(alignment: .leading, spacing: 16) {
       operationalPanel(title: "FOUNDER DECISION") {
         decisionRow("Review Work", detail: "Classify \(session.cards.count) evidence items · Founder Attention -\(session.founderAttentionCost)", symbol: "eye.fill")
-        decisionRow("Delegate", detail: "Preserve Founder Attention · deterministic baseline", symbol: "arrow.triangle.branch")
+        decisionRow("Delegate", detail: "Let Aurora finalize the packet · preserves Founder Attention", symbol: "arrow.triangle.branch")
       }
       Button {
         guard store.beginManualEvidenceTriage(taskID: taskID) else { return }
@@ -92,7 +92,7 @@ struct EvidenceTriageView: View {
           .background(.secondary.opacity(0.14), in: RoundedRectangle(cornerRadius: 14))
       }
       .buttonStyle(.plain)
-      .accessibilityHint("Accepts Aurora’s work at a safe deterministic baseline without spending Founder Attention")
+      .accessibilityHint("Lets Aurora finalize the packet without Founder Review and preserves Founder Attention")
 
       if store.attentionRemaining < session.founderAttentionCost {
         Label("Insufficient Founder Attention for manual review. Delegation remains available.", systemImage: "eye.slash")

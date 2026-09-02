@@ -1,6 +1,53 @@
 import XCTest
 
 final class Build32_6_2ProductionContinuityUITests: XCTestCase {
+  func testStacksSystemsReviewProductionSequence() throws {
+    let phases: [(String, String, String)] = [
+      ("choice", "REVIEW WORK", "STACKS_SYSTEMS_01_WORK_COMPLETE"),
+      ("active", "DEPENDENCY BUILD", "STACKS_SYSTEMS_02_ACTIVE"),
+      ("selected", "3/6", "STACKS_SYSTEMS_03_SELECTED"),
+      ("complete", "SYSTEMS REVIEW COMPLETE", "STACKS_SYSTEMS_04_COMPLETE")
+    ]
+    for (phase, expected, evidenceName) in phases {
+      let app = XCUIApplication()
+      app.launchArguments = ["--systems-review-qa-\(phase)"]
+      app.launch()
+      XCTAssertTrue(app.descendants(matching: .any)[expected].waitForExistence(timeout: 6), phase)
+      capture(evidenceName, in: app)
+      app.terminate()
+    }
+
+    let report = XCUIApplication()
+    report.launchArguments = ["--systems-review-qa-report"]
+    report.launch()
+    XCTAssertTrue(report.staticTexts["AI OPERATIONS FLOOR"].waitForExistence(timeout: 6))
+    capture("STACKS_SYSTEMS_05_CANONICAL_RETURN", in: report)
+    report.terminate()
+
+    let aurora = XCUIApplication()
+    aurora.launchArguments = ["--work-session-qa-active"]
+    aurora.launch()
+    XCTAssertTrue(aurora.navigationBars["Evidence Triage"].waitForExistence(timeout: 6))
+    capture("STACKS_SYSTEMS_06_AURORA_REGRESSION", in: aurora)
+    aurora.terminate()
+  }
+
+  func testEvidenceTriageDelegateLanguageUsesFounderFiction() throws {
+    let app = XCUIApplication()
+    app.terminate()
+    app.launchArguments = ["--work-session-qa-choice"]
+    app.launch()
+
+    XCTAssertTrue(app.buttons["DELEGATE"].waitForExistence(timeout: 6))
+    XCTAssertTrue(app.staticTexts["Let Aurora finalize the packet · preserves Founder Attention"].exists)
+    XCTAssertEqual(
+      app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS[c] 'deterministic baseline'")).count,
+      0
+    )
+    capture("WORK_SESSION_CAUSAL_DELEGATE_COPY", in: app)
+    app.terminate()
+  }
+
   func testBuild3277AuthoredMotionAndLightingEvidence() throws {
     let fixtures: [(String, String)] = [
       ("Idle overview", "20_AGENT_IDLE"),
@@ -15,6 +62,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
 
     for (fixture, evidenceName) in fixtures {
       let app = XCUIApplication()
+      app.terminate()
       app.launchArguments = ["--motion-qa-physical"]
       app.launchEnvironment["SOLO_MOTION_QA_FIXTURE"] = fixture
       app.launch()
@@ -24,6 +72,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     }
 
     let app = XCUIApplication()
+    app.terminate()
     app.launchArguments = ["--motion-qa-physical"]
     app.launchEnvironment["SOLO_MOTION_QA_FIXTURE"] = "Idle overview"
     app.launch()
@@ -33,6 +82,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     XCTAssertTrue(night.waitForExistence(timeout: 4))
     night.tap()
     capture("29_NIGHT_GARAGE", in: app)
+    app.terminate()
   }
 
   func testIdleGarageAmbientLifeHold() throws {

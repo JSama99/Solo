@@ -84,6 +84,8 @@ struct SimulationEffects: Codable, Hashable {
 
 struct TaskResult: Codable, Hashable {
   private var hiddenActualQuality: Int
+  private var hiddenFounderReviewQuality: Int?
+  private var hiddenDeliveredQuality: Int?
   var reportedQuality: Int
   var verificationState: VerificationState
   var overclaimAmount: Int
@@ -97,6 +99,8 @@ struct TaskResult: Codable, Hashable {
 
   private enum CodingKeys: String, CodingKey {
     case hiddenActualQuality
+    case hiddenFounderReviewQuality
+    case hiddenDeliveredQuality
     case reportedQuality
     case verificationState
     case overclaimAmount
@@ -119,6 +123,9 @@ struct TaskResult: Codable, Hashable {
 
   var isStrongForSimulation: Bool { hiddenActualQuality >= 68 }
 
+  /// Company-facing strength after any Work Session extraction loss.
+  var isDeliveredStrongForSimulation: Bool { deliveredQualityForSimulation >= 68 }
+
   var isRiskyForSimulation: Bool {
     hiddenActualQuality < 52 || evidenceCompleteness < 45 || correlatedFailureIdentifier != nil
   }
@@ -128,13 +135,34 @@ struct TaskResult: Codable, Hashable {
   /// never a visible projection.
   var workSessionPotentialQuality: Int { hiddenActualQuality }
 
-  /// Converts existing potential into usable output without inventing quality.
+  /// Canonical Work Session facts. These remain outside visible projections
+  /// until an existing verification or Hindsight reveal earns them.
+  var founderReviewQualityForSimulation: Int? { hiddenFounderReviewQuality }
+  var deliveredQualityForSimulation: Int { hiddenDeliveredQuality ?? hiddenActualQuality }
+  var hasCanonicalWorkSessionOutcome: Bool { hiddenDeliveredQuality != nil }
+
+  /// Routes the organizational payoff through delivered quality while keeping
+  /// the agent's original hidden actual quality intact for evaluation and reveal.
   /// Repeated application is prevented by WorkSessionRecord.completionApplied.
-  mutating func applyWorkSessionDelivery(_ deliveredQuality: Int) {
+  mutating func applyWorkSessionOutcome(deliveredQuality: Int, founderReviewQuality: Int?) {
     let oldQuality = max(1, hiddenActualQuality)
     let bounded = min(hiddenActualQuality, max(0, deliveredQuality))
     immediateEffects = immediateEffects.scaled(by: Double(bounded) / Double(oldQuality))
-    hiddenActualQuality = bounded
+    hiddenFounderReviewQuality = founderReviewQuality.map(Self.clamp)
+    hiddenDeliveredQuality = bounded
+  }
+
+  /// Repairs the destructive representation used by the first Work Session
+  /// prototype without scaling already-adjusted company effects a second time.
+  mutating func restoreLegacyWorkSessionOutcome(
+    agentPotentialQuality: Int,
+    founderReviewQuality: Int?,
+    deliveredQuality: Int
+  ) {
+    guard hiddenDeliveredQuality == nil else { return }
+    hiddenActualQuality = Self.clamp(agentPotentialQuality)
+    hiddenFounderReviewQuality = founderReviewQuality.map(Self.clamp)
+    hiddenDeliveredQuality = min(hiddenActualQuality, max(0, deliveredQuality))
     overclaimAmount = max(0, reportedQuality - hiddenActualQuality)
   }
 
@@ -151,6 +179,8 @@ struct TaskResult: Codable, Hashable {
     knownOperationalRisk: String
   ) {
     hiddenActualQuality = Self.clamp(actualQuality)
+    hiddenFounderReviewQuality = nil
+    hiddenDeliveredQuality = nil
     self.reportedQuality = Self.clamp(reportedQuality)
     self.verificationState = verificationState
     overclaimAmount = max(0, self.reportedQuality - hiddenActualQuality)
@@ -177,6 +207,9 @@ struct TaskResult: Codable, Hashable {
       confidenceUpperBound: try container.decodeIfPresent(Int.self, forKey: .confidenceUpperBound) ?? 100,
       knownOperationalRisk: try container.decodeIfPresent(String.self, forKey: .knownOperationalRisk) ?? "Unknown operational risk"
     )
+    hiddenFounderReviewQuality = try container.decodeIfPresent(Int.self, forKey: .hiddenFounderReviewQuality).map(Self.clamp)
+    hiddenDeliveredQuality = try container.decodeIfPresent(Int.self, forKey: .hiddenDeliveredQuality)
+      .map { min(hiddenActualQuality, Self.clamp($0)) }
   }
 
   @discardableResult
