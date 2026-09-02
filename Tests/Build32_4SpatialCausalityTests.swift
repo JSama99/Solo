@@ -226,6 +226,27 @@ final class Build32_4SpatialCausalityTests: XCTestCase {
     }
   }
 
+  func testFounderGarageUsesAtLeastFiveUnmistakableIndustrialCues() {
+    let garage = FounderGarageIdentityProjection.derive(.improvisedGarage)
+
+    XCTAssertGreaterThanOrEqual(garage.industrialCueCount, 5)
+    XCTAssertTrue(garage.showsSectionalDoor)
+    XCTAssertTrue(garage.showsCeilingJoists)
+    XCTAssertTrue(garage.showsToolWall)
+    XCTAssertTrue(garage.showsTireStack)
+    XCTAssertTrue(garage.showsConcreteWear)
+    XCTAssertFalse(garage.usesResidentialSeating)
+  }
+
+  func testFounderLoftDoesNotInheritGarageScenicLanguage() {
+    let loft = FounderGarageIdentityProjection.derive(.elevatedLoft)
+
+    XCTAssertEqual(loft.industrialCueCount, 0)
+    XCTAssertTrue(loft.usesResidentialSeating)
+    XCTAssertFalse(loft.showsSectionalDoor)
+    XCTAssertFalse(loft.showsToolWall)
+  }
+
   func testGarageAsymmetryChangesBayPlacementWhileLoftStaysLevel() {
     let order = ["aurora", "stacks", "brio"]
     let garage = CompanySceneLayout(
