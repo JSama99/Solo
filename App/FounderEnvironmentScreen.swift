@@ -469,7 +469,7 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       // This is intentionally inside the neutral compact camera frame, while
       // the right look places the complete door near the visual center. Keep
       // the renderer and VoiceOver landmark on this single world anchor.
-      .rearGarageDoor: CGPoint(x: 920, y: 342),
+      .rearGarageDoor: CGPoint(x: 680, y: 328),
       .storage: CGPoint(x: 225, y: 320),
       .auroraStation: CGPoint(x: 325, y: 300),
       .verificationArray: CGPoint(x: 188, y: 505),
@@ -674,7 +674,7 @@ struct SignalTVHotspotLayout: Equatable, Sendable {
 /// Shared world geometry keeps the rear-wall door's rendered body and its
 /// accessibility landmark in lockstep across compact iPhone and iPad scenes.
 struct FounderGarageDoorLayout: Equatable, Sendable {
-  static let unscaledSize = CGSize(width: 470, height: 390)
+  static let unscaledSize = CGSize(width: 720, height: 527)
 
   var viewportSize: CGSize
 
@@ -994,18 +994,22 @@ struct FounderEnvironmentRendererView: View {
 
   private func garageWallMaterial(size: CGSize) -> some View {
     Canvas { context, canvasSize in
-      let panelWidth = canvasSize.width / 9
-      for index in 0..<10 {
-        let rect = CGRect(x: CGFloat(index) * panelWidth, y: 0, width: panelWidth - 2, height: canvasSize.height)
-        context.fill(Path(rect), with: .color(index.isMultiple(of: 3) ? .white.opacity(0.025) : .black.opacity(0.035)))
-        context.stroke(Path(CGRect(x: rect.minX, y: 0, width: 1, height: rect.height)), with: .color(.black.opacity(0.36)), lineWidth: 2)
-      }
-      for row in 1..<6 {
-        let y = CGFloat(row) / 6 * canvasSize.height
-        var seam = Path()
-        seam.move(to: CGPoint(x: 0, y: y))
-        seam.addLine(to: CGPoint(x: canvasSize.width, y: y))
-        context.stroke(seam, with: .color(.black.opacity(0.30)), lineWidth: row.isMultiple(of: 2) ? 3 : 1)
+      let blockHeight: CGFloat = 44
+      let blockWidth: CGFloat = 108
+      let rows = Int(ceil(canvasSize.height / blockHeight))
+      let columns = Int(ceil(canvasSize.width / blockWidth)) + 1
+      for row in 0..<rows {
+        let offset = row.isMultiple(of: 2) ? -blockWidth / 2 : 0
+        for column in 0..<columns {
+          let rect = CGRect(
+            x: CGFloat(column) * blockWidth + offset,
+            y: CGFloat(row) * blockHeight,
+            width: blockWidth,
+            height: blockHeight
+          )
+          context.fill(Path(rect.insetBy(dx: 1.5, dy: 1.5)), with: .color(.white.opacity(row.isMultiple(of: 3) ? 0.030 : 0.016)))
+          context.stroke(Path(rect), with: .color(.black.opacity(0.46)), lineWidth: 2.5)
+        }
       }
       for index in 0..<18 {
         let x = CGFloat((index * 83) % 997) / 997 * canvasSize.width
@@ -1129,16 +1133,16 @@ struct FounderEnvironmentRendererView: View {
         .frame(width: size.width * 2.5, height: 13)
         .position(layout.viewportPosition(worldPoint: CGPoint(x: 680, y: 78), camera: camera, layer: .background))
 
-      HStack(spacing: 80) {
-        ForEach(0..<4, id: \.self) { _ in
+      HStack(spacing: 170) {
+        ForEach(0..<3, id: \.self) { _ in
           ZStack {
-            RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.86)).frame(width: 86, height: 15)
-            Capsule().fill(Color(red: 1, green: 0.78, blue: 0.48).opacity(0.82)).frame(width: 72, height: 6)
+            RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.92)).frame(width: 154, height: 20)
+            Capsule().fill(Color.white.opacity(0.88)).frame(width: 138, height: 8)
           }
-          .shadow(color: .orange.opacity(0.24), radius: 9, y: 5)
+          .shadow(color: .white.opacity(0.22), radius: 12, y: 7)
         }
       }
-      .position(layout.viewportPosition(worldPoint: CGPoint(x: 680, y: 105), camera: camera, layer: .background))
+      .position(layout.viewportPosition(worldPoint: CGPoint(x: 680, y: 88), camera: camera, layer: .background))
 
       wallUtilityDetails(layout: layout)
 
@@ -1347,12 +1351,22 @@ struct FounderEnvironmentRendererView: View {
   /// a Founder Computer decoration. Its frame is positioned in the rear world
   /// layer so it stays available when the player pans away from the desk.
   private func rearGarageDoor(layout: FounderEnvironmentLayout) -> some View {
-    FounderGarageDoorView(
-      panelBrightness: motion.lighting.garageDoorPanelBrightness,
-      exteriorLeakIntensity: motion.lighting.garageDoorExteriorLeakIntensity,
-      increasedContrast: increasedContrast
-    )
-    .scaleEffect(layout.depthScale(for: .rearGarageDoor) * layout.scale)
+    ZStack {
+      FounderGarageDoorView(
+        panelBrightness: motion.lighting.garageDoorPanelBrightness,
+        exteriorLeakIntensity: motion.lighting.garageDoorExteriorLeakIntensity,
+        increasedContrast: increasedContrast
+      )
+      Text("OVERHEAD DOOR · KEEP CLEAR")
+        .font(.system(size: 10, weight: .black, design: .monospaced))
+        .tracking(1.4)
+        .foregroundStyle(.white.opacity(0.58))
+        .padding(.horizontal, 14)
+        .padding(.vertical, 6)
+        .background(.black.opacity(0.76), in: .rect(cornerRadius: 2))
+        .offset(y: -208)
+    }
+    .scaleEffect(layout.depthScale(for: .rearGarageDoor) * layout.scale * 1.35)
     .position(layout.viewportPosition(for: .rearGarageDoor, camera: camera, layer: .background))
     .accessibilityHidden(true)
   }
