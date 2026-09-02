@@ -132,6 +132,10 @@ struct FounderComputerScreen: View {
           SystemsReviewView(store: store, taskID: destination.taskID) {
             finishWorkSessionReview(taskID: destination.taskID)
           }
+        case .campaignCalibration:
+          CampaignCalibrationView(store: store, taskID: destination.taskID) {
+            finishWorkSessionReview(taskID: destination.taskID)
+          }
         case nil:
           ContentUnavailableView("Work Session unavailable", systemImage: "exclamationmark.triangle")
         }

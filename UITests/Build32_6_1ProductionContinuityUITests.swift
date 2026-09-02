@@ -1,6 +1,37 @@
 import XCTest
 
 final class Build32_6_2ProductionContinuityUITests: XCTestCase {
+  func testBrioCampaignCalibrationProductionSequence() throws {
+    let phases: [(String, String, String)] = [
+      ("choice", "REVIEW WORK", "BRIO_CAMPAIGN_01_WORK_COMPLETE"),
+      ("audience", "STEP 1 OF 3 · AUDIENCE", "BRIO_CAMPAIGN_02_AUDIENCE"),
+      ("message", "STEP 2 OF 3 · MESSAGE", "BRIO_CAMPAIGN_03_MESSAGE"),
+      ("preview", "CAMPAIGN PREVIEW", "BRIO_CAMPAIGN_04_PREVIEW"),
+      ("complete", "CAMPAIGN CALIBRATION COMPLETE", "BRIO_CAMPAIGN_05_COMPLETE")
+    ]
+    for (phase, expected, evidenceName) in phases {
+      let app = XCUIApplication()
+      app.launchArguments = ["--campaign-calibration-qa-\(phase)"]
+      app.launch()
+      XCTAssertTrue(app.descendants(matching: .any)[expected].waitForExistence(timeout: 6), phase)
+      capture(evidenceName, in: app)
+      app.terminate()
+    }
+
+    for regression in [("report", "AI OPERATIONS FLOOR", "BRIO_CAMPAIGN_06_CANONICAL_RETURN"),
+                       ("aurora", "Evidence Triage", "BRIO_CAMPAIGN_07_AURORA_REGRESSION"),
+                       ("stacks", "Systems Review", "BRIO_CAMPAIGN_08_STACKS_REGRESSION")] {
+      let app = XCUIApplication()
+      if regression.0 == "report" { app.launchArguments = ["--campaign-calibration-qa-report"] }
+      else if regression.0 == "aurora" { app.launchArguments = ["--work-session-qa-active"] }
+      else { app.launchArguments = ["--systems-review-qa-active"] }
+      app.launch()
+      XCTAssertTrue(app.descendants(matching: .any)[regression.1].waitForExistence(timeout: 6))
+      capture(regression.2, in: app)
+      app.terminate()
+    }
+  }
+
   func testStacksSystemsReviewProductionSequence() throws {
     let phases: [(String, String, String)] = [
       ("choice", "REVIEW WORK", "STACKS_SYSTEMS_01_WORK_COMPLETE"),

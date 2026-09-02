@@ -35,6 +35,14 @@ struct SoloUnicornRunApp: App {
     #endif
   }
 
+  private var campaignCalibrationQAPhase: CampaignCalibrationQAPhase? {
+    #if DEBUG
+    CampaignCalibrationQAPhase.allCases.first { ProcessInfo.processInfo.arguments.contains("--campaign-calibration-qa-\($0.rawValue)") }
+    #else
+    nil
+    #endif
+  }
+
   init() {
     #if DEBUG
     if !ProcessInfo.processInfo.arguments.contains("--motion-qa") {
@@ -49,7 +57,9 @@ struct SoloUnicornRunApp: App {
     WindowGroup {
       Group {
         #if DEBUG
-        if let systemsReviewQAPhase {
+        if let campaignCalibrationQAPhase {
+          CampaignCalibrationQAHost(phase: campaignCalibrationQAPhase)
+        } else if let systemsReviewQAPhase {
           SystemsReviewQAHost(phase: systemsReviewQAPhase)
         } else if let workSessionQAPhase {
           WorkSessionQAHost(phase: workSessionQAPhase)

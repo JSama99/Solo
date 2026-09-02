@@ -3,6 +3,7 @@ import Foundation
 enum WorkSessionFamily: String, Codable, Hashable {
   case evidenceTriage
   case systemsReview
+  case campaignCalibration
 }
 
 enum WorkSessionPath: String, Codable, Hashable {
@@ -73,15 +74,29 @@ enum WorkSessionFinding: String, Codable, CaseIterable, Hashable {
   case correctlyPreservedDependency
   case correctlyRequiredVerification
   case correctlyIdentifiedReleaseGate
+  case audienceMismatch
+  case channelMismatch
+  case weakCampaignCoherence
+  case overclaimedMessage
+  case strongAudienceMatch
+  case strongMessageFit
+  case strongChannelFit
+  case coherentCampaign
+  case disciplinedClaim
+  case aspirationalPositioning
 
   var polarity: WorkSessionFindingPolarity {
     switch self {
     case .acceptedWeakEvidence, .rejectedStrongEvidence, .failedToVerifyAmbiguity, .overVerifiedClearEvidence,
-         .dependencyViolation, .skippedVerification, .unsafeRelease:
+         .dependencyViolation, .skippedVerification, .unsafeRelease,
+         .audienceMismatch, .channelMismatch, .weakCampaignCoherence, .overclaimedMessage:
       .negative
     case .correctlyDetectedContradiction, .correctlyFlaggedHighRiskAmbiguity, .correctlyPreservedStrongEvidence,
-         .correctlyPreservedDependency, .correctlyRequiredVerification, .correctlyIdentifiedReleaseGate:
+         .correctlyPreservedDependency, .correctlyRequiredVerification, .correctlyIdentifiedReleaseGate,
+         .strongAudienceMatch, .strongMessageFit, .strongChannelFit, .coherentCampaign, .disciplinedClaim:
       .positive
+    case .aspirationalPositioning:
+      .neutral
     }
   }
 
@@ -100,6 +115,16 @@ enum WorkSessionFinding: String, Codable, CaseIterable, Hashable {
     case .correctlyPreservedDependency: "Founder Review preserved a critical technical dependency."
     case .correctlyRequiredVerification: "Founder Review kept required validation ahead of dependent work."
     case .correctlyIdentifiedReleaseGate: "Founder Review held release until required checks were complete."
+    case .audienceMismatch: "Founder Review selected an audience that did not match the campaign objective."
+    case .channelMismatch: "The selected channel was a weak way to reach the chosen audience."
+    case .weakCampaignCoherence: "The audience, message, and channel did not reinforce one another."
+    case .overclaimedMessage: "Founder Review approved a claim that exceeded the available support."
+    case .strongAudienceMatch: "Founder Review aligned the audience with the campaign objective."
+    case .strongMessageFit: "The selected message addressed the chosen audience's motivation."
+    case .strongChannelFit: "The selected channel credibly reached the chosen audience."
+    case .coherentCampaign: "Audience, message, and channel formed a coherent campaign system."
+    case .disciplinedClaim: "Founder Review kept campaign positioning within the available support."
+    case .aspirationalPositioning: "Founder Review used aspirational positioning with a measured quality tradeoff."
     }
   }
 }
@@ -198,11 +223,14 @@ struct WorkSessionRecord: Codable, Identifiable, Hashable {
   var agentPotentialQuality: Int
   var evidenceTopic: EvidenceTopic?
   var technicalTopic: TechnicalTopic?
+  var campaignCategory: CampaignCategory?
   var path: WorkSessionPath?
   var cards: [EvidenceTriageCard]
   var decisions: [WorkSessionDecision]
   var systemsChallenge: SystemsReviewChallenge?
   var systemsSequence: [String]
+  var campaignChallenge: CampaignCalibrationChallenge?
+  var campaignSelection: CampaignSelection
   var founderReviewQuality: Int?
   var deliveredQuality: Int?
   var findings: [WorkSessionFinding]
@@ -224,6 +252,10 @@ struct WorkSessionRecord: Codable, Identifiable, Hashable {
     guard let systemsChallenge else { return nil }
     return SystemsReviewEvaluator.evaluate(challenge: systemsChallenge, sequence: systemsSequence)
   }
+  var campaignAssessment: CampaignCalibrationAssessment? {
+    guard let campaignChallenge else { return nil }
+    return CampaignCalibrationEvaluator.evaluate(challenge: campaignChallenge, selection: campaignSelection)
+  }
 
   var founderReviewLabel: String {
     guard let quality = founderReviewQuality else { return path == .delegate ? "Delegated" : "Pending" }
@@ -238,7 +270,12 @@ struct WorkSessionRecord: Codable, Identifiable, Hashable {
 
   var hindsightExplanations: [String] {
     var explanations = Array(Set(findings.map(\.hindsightExplanation))).sorted()
-    let agentName = agentID == "stacks" ? "Stacks" : agentID == "aurora" ? "Aurora" : "The agent"
+    let agentName = switch agentID {
+    case "aurora": "Aurora"
+    case "stacks": "Stacks"
+    case "brio": "Brio"
+    default: "The agent"
+    }
     explanations.insert(causalAttribution.hindsightExplanation(agentName: agentName), at: 0)
     return explanations
   }
@@ -262,8 +299,8 @@ struct WorkSessionRecord: Codable, Identifiable, Hashable {
 
 extension WorkSessionRecord {
   private enum CodingKeys: String, CodingKey {
-    case id, assignmentID, agentID, family, stakes, challengeSeed, agentPotentialQuality, evidenceTopic, technicalTopic
-    case path, cards, decisions, systemsChallenge, systemsSequence, founderReviewQuality, deliveredQuality, findings, mistakes
+    case id, assignmentID, agentID, family, stakes, challengeSeed, agentPotentialQuality, evidenceTopic, technicalTopic, campaignCategory
+    case path, cards, decisions, systemsChallenge, systemsSequence, campaignChallenge, campaignSelection, founderReviewQuality, deliveredQuality, findings, mistakes
     case founderAttentionCost, founderAttentionCharged, completionApplied, completed, agentStressAtCreation
   }
 
@@ -279,11 +316,14 @@ extension WorkSessionRecord {
     agentPotentialQuality = min(100, max(0, try values.decodeIfPresent(Int.self, forKey: .agentPotentialQuality) ?? 0))
     evidenceTopic = try values.decodeIfPresent(EvidenceTopic.self, forKey: .evidenceTopic)
     technicalTopic = try values.decodeIfPresent(TechnicalTopic.self, forKey: .technicalTopic)
+    campaignCategory = try values.decodeIfPresent(CampaignCategory.self, forKey: .campaignCategory)
     path = try values.decodeIfPresent(WorkSessionPath.self, forKey: .path)
     cards = try values.decodeIfPresent([EvidenceTriageCard].self, forKey: .cards) ?? []
     decisions = try values.decodeIfPresent([WorkSessionDecision].self, forKey: .decisions) ?? []
     systemsChallenge = try values.decodeIfPresent(SystemsReviewChallenge.self, forKey: .systemsChallenge)
     systemsSequence = try values.decodeIfPresent([String].self, forKey: .systemsSequence) ?? []
+    campaignChallenge = try values.decodeIfPresent(CampaignCalibrationChallenge.self, forKey: .campaignChallenge)
+    campaignSelection = try values.decodeIfPresent(CampaignSelection.self, forKey: .campaignSelection) ?? .init()
     founderReviewQuality = try values.decodeIfPresent(Int.self, forKey: .founderReviewQuality)
     deliveredQuality = try values.decodeIfPresent(Int.self, forKey: .deliveredQuality)
     findings = try values.decodeIfPresent([WorkSessionFinding].self, forKey: .findings)
@@ -307,11 +347,14 @@ extension WorkSessionRecord {
     try values.encode(agentPotentialQuality, forKey: .agentPotentialQuality)
     try values.encodeIfPresent(evidenceTopic, forKey: .evidenceTopic)
     try values.encodeIfPresent(technicalTopic, forKey: .technicalTopic)
+    try values.encodeIfPresent(campaignCategory, forKey: .campaignCategory)
     try values.encodeIfPresent(path, forKey: .path)
     try values.encode(cards, forKey: .cards)
     try values.encode(decisions, forKey: .decisions)
     try values.encodeIfPresent(systemsChallenge, forKey: .systemsChallenge)
     try values.encode(systemsSequence, forKey: .systemsSequence)
+    try values.encodeIfPresent(campaignChallenge, forKey: .campaignChallenge)
+    try values.encode(campaignSelection, forKey: .campaignSelection)
     try values.encodeIfPresent(founderReviewQuality, forKey: .founderReviewQuality)
     try values.encodeIfPresent(deliveredQuality, forKey: .deliveredQuality)
     try values.encode(findings, forKey: .findings)
@@ -355,6 +398,9 @@ enum WorkSessionEngine {
     if agentID == "stacks", task.role == .engineering, task.urgency != .critical {
       return .systemsReview
     }
+    if agentID == "brio", task.role == .marketing, task.urgency != .critical {
+      return .campaignCalibration
+    }
     return nil
   }
 
@@ -390,11 +436,14 @@ enum WorkSessionEngine {
       agentPotentialQuality: min(100, max(0, potentialQuality)),
       evidenceTopic: evidenceTopic,
       technicalTopic: nil,
+      campaignCategory: nil,
       path: nil,
       cards: cards,
       decisions: [],
       systemsChallenge: nil,
       systemsSequence: [],
+      campaignChallenge: nil,
+      campaignSelection: .init(),
       founderReviewQuality: nil,
       deliveredQuality: nil,
       findings: [],
@@ -438,11 +487,65 @@ enum WorkSessionEngine {
       agentPotentialQuality: min(100, max(0, potentialQuality)),
       evidenceTopic: nil,
       technicalTopic: technicalTopic,
+      campaignCategory: nil,
       path: nil,
       cards: [],
       decisions: [],
       systemsChallenge: SystemsReviewChallengeFactory.make(seed: seed, topic: technicalTopic, stakes: stakes),
       systemsSequence: [],
+      campaignChallenge: nil,
+      campaignSelection: .init(),
+      founderReviewQuality: nil,
+      deliveredQuality: nil,
+      findings: [],
+      founderAttentionCost: max(0, attentionCost),
+      founderAttentionCharged: false,
+      completionApplied: false,
+      completed: false,
+      agentStressAtCreation: stress
+    )
+  }
+
+  static func makeCampaignCalibrationRecord(
+    assignmentID: UUID,
+    agentID: String,
+    urgency: TaskUrgency,
+    potentialQuality: Int,
+    careerSeed: UInt64,
+    venture: Int,
+    sprint: Int,
+    stress: AgentStressBand,
+    attentionCost: Int,
+    campaignCategory: CampaignCategory?
+  ) -> WorkSessionRecord {
+    let stakes = WorkSessionStakes(urgency: urgency)
+    let seed = stableSeed(
+      careerSeed: careerSeed,
+      assignmentID: assignmentID,
+      agentID: agentID,
+      venture: venture,
+      sprint: sprint,
+      family: .campaignCalibration,
+      topicIdentity: campaignCategory?.rawValue
+    )
+    return WorkSessionRecord(
+      id: "campaign-calibration-\(assignmentID.uuidString.lowercased())",
+      assignmentID: assignmentID,
+      agentID: agentID,
+      family: .campaignCalibration,
+      stakes: stakes,
+      challengeSeed: seed,
+      agentPotentialQuality: min(100, max(0, potentialQuality)),
+      evidenceTopic: nil,
+      technicalTopic: nil,
+      campaignCategory: campaignCategory,
+      path: nil,
+      cards: [],
+      decisions: [],
+      systemsChallenge: nil,
+      systemsSequence: [],
+      campaignChallenge: CampaignCalibrationChallengeFactory.make(seed: seed, category: campaignCategory, stakes: stakes),
+      campaignSelection: .init(),
       founderReviewQuality: nil,
       deliveredQuality: nil,
       findings: [],
@@ -464,6 +567,7 @@ enum WorkSessionEngine {
 
   static func completeManual(_ record: inout WorkSessionRecord) -> Bool {
     if record.family == .systemsReview { return completeSystemsReview(&record) }
+    if record.family == .campaignCalibration { return completeCampaignCalibration(&record) }
     guard record.path == .manualReview, !record.completed, record.decisions.count == record.cards.count else { return false }
     var earned = 0
     var possible = 0
@@ -478,6 +582,46 @@ enum WorkSessionEngine {
     record.founderReviewQuality = min(100, max(0, raw))
     record.findings = findings
     record.deliveredQuality = deliveredQuality(potential: record.agentPotentialQuality, reviewQuality: raw, path: .manualReview, seed: record.challengeSeed)
+    record.completed = true
+    return true
+  }
+
+  static func selectCampaignOption(_ optionID: String, slot: CampaignSlot, in record: inout WorkSessionRecord) -> Bool {
+    guard record.family == .campaignCalibration,
+          record.path == .manualReview,
+          !record.completed,
+          let challenge = record.campaignChallenge,
+          challenge.contains(optionID: optionID, for: slot) else { return false }
+    record.campaignSelection[slot] = optionID
+    return true
+  }
+
+  static func resetCampaignSelection(_ record: inout WorkSessionRecord) -> Bool {
+    guard record.family == .campaignCalibration,
+          record.path == .manualReview,
+          !record.completed,
+          record.campaignSelection != .init() else { return false }
+    record.campaignSelection = .init()
+    return true
+  }
+
+  static func completeCampaignCalibration(_ record: inout WorkSessionRecord) -> Bool {
+    guard record.family == .campaignCalibration,
+          record.path == .manualReview,
+          !record.completed,
+          let challenge = record.campaignChallenge,
+          let assessment = CampaignCalibrationEvaluator.evaluate(
+            challenge: challenge,
+            selection: record.campaignSelection
+          ) else { return false }
+    record.founderReviewQuality = assessment.reviewQuality
+    record.findings = assessment.findings
+    record.deliveredQuality = deliveredQuality(
+      potential: record.agentPotentialQuality,
+      reviewQuality: assessment.reviewQuality,
+      path: .manualReview,
+      seed: record.challengeSeed
+    )
     record.completed = true
     return true
   }
