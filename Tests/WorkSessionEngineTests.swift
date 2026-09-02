@@ -332,6 +332,26 @@ final class WorkSessionStoreTests: XCTestCase {
     XCTAssertFalse(store.isFounderVerified(taskID: taskID), "Delegated work is not founder-verified")
   }
 
+  /// Delegated evidence must not earn the career-score quality bonus that
+  /// founder review does, even though both leave the task `isReviewed`.
+  func testDelegatedEvidenceDoesNotEarnTheCareerScoreQualityBonus() throws {
+    let (delegatedStore, delegatedID) = try makeEligibleStore()
+    XCTAssertTrue(delegatedStore.delegateEvidenceTriage(taskID: delegatedID))
+    delegatedStore.review(taskID: delegatedID)
+    let delegatedEvidence = try XCTUnwrap(
+      delegatedStore.evidence.first(where: { $0.taskInstanceID == delegatedID.uuidString })
+    )
+    XCTAssertTrue(delegatedEvidence.evidenceVerified, "The underlying evidence is still verified")
+    XCTAssertTrue(delegatedStore.isDelegatedVerification(taskInstanceID: delegatedID.uuidString),
+                  "…but it is attributable to delegation, so it must not score as founder-verified")
+
+    let (manualStore, manualID) = try makeEligibleStore()
+    XCTAssertTrue(manualStore.beginManualEvidenceTriage(taskID: manualID))
+    try finish(store: manualStore, taskID: manualID, action: .verify)
+    manualStore.review(taskID: manualID)
+    XCTAssertFalse(manualStore.isDelegatedVerification(taskInstanceID: manualID.uuidString))
+  }
+
   func testManualReviewCountsAsFounderVerified() throws {
     let (store, taskID) = try makeEligibleStore()
     XCTAssertTrue(store.beginManualEvidenceTriage(taskID: taskID))

@@ -1253,6 +1253,14 @@ final class GameStore {
     workSessions.first(where: { $0.assignmentID == taskID })?.path == .delegate
   }
 
+  /// Same question, keyed by the task-instance string an `EvidenceEntry`
+  /// carries. `evidence` and `workSessions` share a lifecycle — both are
+  /// cleared only on career reset — so this stays accurate for every entry
+  /// that can still contribute to the career score.
+  func isDelegatedVerification(taskInstanceID: String) -> Bool {
+    workSessions.contains { $0.assignmentID.uuidString == taskInstanceID && $0.path == .delegate }
+  }
+
   /// Verification the founder actually performed. Delegation still clears the
   /// neglect penalty — it is a legitimate safety valve — but it is a lesser
   /// tier that does not satisfy objectives written around real founder review.
@@ -3260,7 +3268,9 @@ final class GameStore {
   private var careerScore: Int {
     SimulationEngine.careerScore(
       stats: stats,
-      verifiedEvidence: evidence.filter(\.evidenceVerified).count,
+      // Delegated work is a lesser verification tier and does not earn the
+      // career-score quality bonus that real founder review does.
+      verifiedEvidence: evidence.filter { $0.evidenceVerified && !isDelegatedVerification(taskInstanceID: $0.taskInstanceID) }.count,
       completedObjectives: completedObjectives,
       averageRelationship: averageRelationship,
       unresolvedObligations: activeObligations.count,
