@@ -45,22 +45,36 @@ final class FounderProgressionStore {
   var completedCareerCount: Int { save.completedCareerCount }
   var purchasedUpgrades: Set<FacilityUpgradeID> { save.purchasedUpgrades }
 
+  /// Facility benefits are cumulative and upgrades carry forward. An upgrade
+  /// installed at or below the current tier stays active: previously this
+  /// filtered on `requiredFacility == currentFacility`, so moving up a tier
+  /// silently deleted every upgrade the player had bought (all five declare
+  /// `requiredFacility: .founderGarage`), turning each move into a straight
+  /// downgrade. Tier perks accumulate for the same reason — you keep what you
+  /// built.
   var bonuses: FacilityBonuses {
     var bonuses = FacilityBonuses.none
+    let tier = save.currentFacility
     let activeUpgrades = save.purchasedUpgrades.filter {
-      FacilityUpgradeDefinition.definition(for: $0)?.requiredFacility == save.currentFacility
+      guard let required = FacilityUpgradeDefinition.definition(for: $0)?.requiredFacility else { return false }
+      return required.rawValue <= tier.rawValue
     }
     if activeUpgrades.contains(.developmentRig) { bonuses.engineeringQualityBonus = 4 }
     if activeUpgrades.contains(.verificationArray) { bonuses.auroraEvidenceBonus = 8 }
     if activeUpgrades.contains(.campaignStudio) { bonuses.marketingRevenueMultiplier = 1.1 }
     if activeUpgrades.contains(.recoveryCorner) { bonuses.sprintEnergyRecovery = 3 }
     if activeUpgrades.contains(.founderCommandDesk) { bonuses.periodicAttentionBonus = 1 }
-    if save.currentFacility == .founderLoft { bonuses.ventureEnergyBonus = 5 }
-    if save.currentFacility == .founderGarage,
-       activeUpgrades.contains(.developmentRig) || activeUpgrades.contains(.verificationArray) || activeUpgrades.contains(.campaignStudio) {
+    if activeUpgrades.contains(.developmentRig) || activeUpgrades.contains(.verificationArray) || activeUpgrades.contains(.campaignStudio) {
       bonuses.agentXPBonusMultiplier = 1.1
     }
-    if save.currentFacility == .founderLoft { bonuses.stressAccumulationMultiplier = 0.9 }
+    if tier.rawValue >= FacilityTier.founderLoft.rawValue {
+      bonuses.ventureEnergyBonus = 5
+      bonuses.stressAccumulationMultiplier = 0.9
+    }
+    if tier.rawValue >= FacilityTier.smallOffice.rawValue { bonuses.talentSlotBonus = 1 }
+    if tier.rawValue >= FacilityTier.officeSuite.rawValue { bonuses.reviewEnergyDiscount = 1 }
+    if tier.rawValue >= FacilityTier.companyBuilding.rawValue { bonuses.agentXPAnyRoleMultiplier = 1.2 }
+    if tier.rawValue >= FacilityTier.unicornHeadquarters.rawValue { bonuses.rivalPressureResistance = 0.5 }
     return bonuses
   }
 

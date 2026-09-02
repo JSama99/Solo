@@ -50,13 +50,13 @@ final class Build10HeadquartersTests: XCTestCase {
     XCTAssertEqual(progression.purchaseUpgrade(.developmentRig, availableCapital: 800), .alreadyOwned)
   }
 
-  func testActiveFacilityControlsGarageBonuses() {
+  func testInstalledGarageUpgradesCarryForwardAcrossFacilityMoves() {
     let progression = FounderProgressionStore(defaults: isolatedDefaults(), saveKey: "progress")
     _ = progression.purchaseUpgrade(.developmentRig, availableCapital: 800)
     XCTAssertEqual(progression.bonuses.engineeringQualityBonus, 4)
     progression.observe(trackRecord: 8)
     _ = progression.purchase(.founderLoft, availableCapital: OperatingCostTuning.founderLoftMoveIn)
-    XCTAssertEqual(progression.bonuses.engineeringQualityBonus, 0)
+    XCTAssertEqual(progression.bonuses.engineeringQualityBonus, 4)
     XCTAssertEqual(progression.bonuses.ventureEnergyBonus, 5)
     XCTAssertTrue(progression.activate(.founderGarage))
     XCTAssertEqual(progression.bonuses.engineeringQualityBonus, 4)
@@ -88,14 +88,14 @@ final class Build10HeadquartersTests: XCTestCase {
     XCTAssertFalse(agent.progression.ambitionCompleted)
   }
 
-  func testGarageAndLoftWorkforceModifiersAreActiveOnlyAtCurrentFacility() {
+  func testGarageUpgradeAndLoftWorkforceModifiersAccumulate() {
     let progression = FounderProgressionStore(defaults: isolatedDefaults(), saveKey: "workforce")
     _ = progression.purchaseUpgrade(.developmentRig, availableCapital: 800)
     XCTAssertEqual(progression.bonuses.agentXPBonusMultiplier, 1.1)
     XCTAssertEqual(progression.bonuses.stressAccumulationMultiplier, 1)
     progression.observe(trackRecord: 8)
     _ = progression.purchase(.founderLoft, availableCapital: OperatingCostTuning.founderLoftMoveIn)
-    XCTAssertEqual(progression.bonuses.agentXPBonusMultiplier, 1)
+    XCTAssertEqual(progression.bonuses.agentXPBonusMultiplier, 1.1)
     XCTAssertEqual(progression.bonuses.stressAccumulationMultiplier, 0.9)
   }
 
