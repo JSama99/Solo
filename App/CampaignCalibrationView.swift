@@ -57,7 +57,7 @@ struct CampaignCalibrationView: View {
     VStack(alignment: .leading, spacing: 16) {
       panel(title: "FOUNDER DECISION") {
         decisionRow("Review Work", detail: "Assemble Brio’s campaign · Founder Attention -\(session.founderAttentionCost)", symbol: "eye.fill")
-        decisionRow("Delegate", detail: "Let Brio finalize the campaign · preserves Founder Attention", symbol: "arrow.triangle.branch")
+        decisionRow("Delegate", detail: "Let Brio finalize the campaign · costs \(store.delegateAttentionCost) Founder Attention", symbol: "arrow.triangle.branch")
       }
       objectiveCard(challenge)
       actionButton("REVIEW WORK", symbol: "eye.fill", primary: true) {
@@ -70,7 +70,7 @@ struct CampaignCalibrationView: View {
         guard store.delegateCampaignCalibration(taskID: taskID) else { return }
         settings.playFeedback(.dispatch)
       }
-      .accessibilityHint("Lets Brio finalize the campaign and preserves Founder Attention")
+      .accessibilityHint("Lets Brio finalize the campaign without Founder Review for \(store.delegateAttentionCost) Founder Attention, less than a manual review")
     }
   }
 

@@ -33,7 +33,7 @@ struct DoctrineRules: Hashable {
       )
     case .guided:
       DoctrineRules(
-        attentionMaximum: 3,
+        attentionMaximum: 2,
         reviewEnergyCost: 2,
         neglectDriftIncrease: 6.5,
         actualQualityBonus: 0,

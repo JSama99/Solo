@@ -292,14 +292,18 @@ final class SystemsReviewStoreTests: XCTestCase {
     XCTAssertEqual(store.workSession(for: id)?.deliveredQuality, session.deliveredQuality)
   }
 
-  func testDelegateIsDeterministicCostsNothingAndCannotReplay() throws {
+  /// P0 audit (Task 1): delegation now costs `delegateAttentionCost` instead
+  /// of being free, charged exactly once even across a rejected replay.
+  func testDelegateIsDeterministicCostsOneAttentionAndCannotReplay() throws {
     let (store, id) = try makeEligibleStore(agentID: "stacks", role: .engineering, title: "Deploy production release")
     let before = store.attentionRemaining
     XCTAssertTrue(store.delegateSystemsReview(taskID: id))
     let delivered = try XCTUnwrap(store.workSession(for: id)?.deliveredQuality)
+    XCTAssertEqual(store.attentionRemaining, before - store.delegateAttentionCost)
     XCTAssertFalse(store.delegateSystemsReview(taskID: id))
     XCTAssertEqual(store.workSession(for: id)?.deliveredQuality, delivered)
-    XCTAssertEqual(store.attentionRemaining, before)
+    XCTAssertEqual(store.attentionRemaining, before - store.delegateAttentionCost,
+                   "A rejected replay must not charge Attention twice")
   }
 
   func testCompletedReviewFeedsCanonicalEvidenceAndCausalHindsight() throws {

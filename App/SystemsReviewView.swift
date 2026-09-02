@@ -66,7 +66,7 @@ struct SystemsReviewView: View {
     VStack(alignment: .leading, spacing: 16) {
       operationalPanel(title: "FOUNDER DECISION") {
         decisionRow("Review Work", detail: "Sequence \(challenge.stepCount) implementation steps · Founder Attention -\(session.founderAttentionCost)", symbol: "eye.fill")
-        decisionRow("Delegate", detail: "Let Stacks finalize the implementation · preserves Founder Attention", symbol: "arrow.triangle.branch")
+        decisionRow("Delegate", detail: "Let Stacks finalize the implementation · costs \(store.delegateAttentionCost) Founder Attention", symbol: "arrow.triangle.branch")
       }
 
       Button {
@@ -93,10 +93,10 @@ struct SystemsReviewView: View {
           .background(.secondary.opacity(0.14), in: RoundedRectangle(cornerRadius: 14))
       }
       .buttonStyle(.plain)
-      .accessibilityHint("Lets Stacks finalize the implementation without Founder Review and preserves Founder Attention")
+      .accessibilityHint("Lets Stacks finalize the implementation without Founder Review for \(store.delegateAttentionCost) Founder Attention, less than a manual review")
 
       if store.attentionRemaining < session.founderAttentionCost {
-        Label("Insufficient Founder Attention for manual review. Delegation remains available.", systemImage: "eye.slash")
+        Label("Insufficient Founder Attention for manual review. Delegation costs \(store.delegateAttentionCost) and remains available.", systemImage: "eye.slash")
           .font(.footnote.weight(.semibold))
           .foregroundStyle(SoloTheme.amber)
       }
@@ -253,7 +253,7 @@ struct SystemsReviewView: View {
           resultRow("Founder Attention", "-\(session.founderAttentionCost)")
         } else {
           resultRow("Review Path", "Delegated")
-          resultRow("Founder Attention", "0")
+          resultRow("Founder Attention", "-\(session.founderAttentionCost)")
         }
       }
       Text("Stacks’ implementation report is ready. Underlying engineering quality and delivered quality remain hidden until the normal reveal path allows them.")

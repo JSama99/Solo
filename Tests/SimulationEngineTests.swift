@@ -19,7 +19,10 @@ final class SimulationEngineTests: XCTestCase {
     XCTAssertEqual(pure.startingStatAdjustment, SimulationEffects())
 
     let guided = DoctrineRules.profile(for: .guided)
-    XCTAssertEqual(guided.attentionMaximum, 3)
+    // P0 audit (Task 1): Guided dropped 3 -> 2 to match Pure/Trust. Guided is
+    // the default/tutorial doctrine and must still carry real review scarcity
+    // for the tasks that never reach a Work Session at all.
+    XCTAssertEqual(guided.attentionMaximum, 2)
     XCTAssertEqual(guided.reviewEnergyCost, 2)
     XCTAssertEqual(guided.neglectDriftIncrease, 6.5)
     XCTAssertEqual(guided.actualQualityBonus, 0)

@@ -901,6 +901,73 @@ final class GameStoreTests: XCTestCase {
     }
   }
 
+  // MARK: - Delegate attention cost (P0 audit, Task 1)
+
+  /// `protectFounder` requires `founderAttentionSpent <= 1`. Before delegation
+  /// cost Attention, "delegate everything" satisfied it for free while also
+  /// banking full verification credit. Now the cost flows through
+  /// `founderAttentionSpent`, so one delegation still clears the bar and two
+  /// do not — verified against the real objective evaluator through
+  /// commitSprint, not by re-deriving the arithmetic.
+  func testProtectFounderSurvivesOneDelegationButNotTwo() throws {
+    let single = try makeProtectFounderStore()
+    XCTAssertEqual(delegateEligibleTasks(in: single, limit: 1), 1)
+    XCTAssertEqual(single.founderAttentionSpent, 1)
+    single.commitSprint()
+    XCTAssertTrue(try XCTUnwrap(single.report).objectiveCompleted,
+                  "One delegation costs 1 Attention and must still satisfy protectFounder")
+
+    let double = try makeProtectFounderStore()
+    XCTAssertEqual(delegateEligibleTasks(in: double, limit: 2), 2)
+    XCTAssertEqual(double.founderAttentionSpent, 2)
+    double.commitSprint()
+    XCTAssertFalse(try XCTUnwrap(double.report).objectiveCompleted,
+                   "Two delegations exceed the 1-Attention budget protectFounder allows")
+  }
+
+  /// The budget itself now caps delegation: with a 2-Attention baseline a
+  /// player cannot delegate all three tasks in a sprint.
+  func testAttentionBudgetCapsHowManyTasksCanBeDelegated() throws {
+    let store = makeStore(seed: 909)
+    XCTAssertEqual(store.attentionMaximum, 2)
+    let delegated = delegateEligibleTasks(in: store, limit: 99)
+    XCTAssertLessThanOrEqual(delegated, 2, "Delegation must be bounded by the Attention budget")
+    XCTAssertEqual(store.attentionRemaining, 0)
+  }
+
+  /// Finds a career seed whose opening objective is `protectFounder`, so the
+  /// assertion runs against a real generated objective and the real evaluator.
+  private func makeProtectFounderStore() throws -> GameStore {
+    for seed in UInt64(1)...400 {
+      let store = makeStore(seed: seed)
+      if store.currentObjective?.kind == .protectFounder { return store }
+    }
+    XCTFail("No seed in 1...400 produced a protectFounder objective")
+    throw XCTSkip("protectFounder objective unavailable")
+  }
+
+  /// Makes tasks Aurora-eligible and delegates up to `limit` of them,
+  /// returning how many delegations actually succeeded.
+  @discardableResult
+  private func delegateEligibleTasks(in store: GameStore, limit: Int) -> Int {
+    store.confirmVentureThesisIfNeeded()
+    if let dilemma = store.activeDilemma,
+       let choice = dilemma.choices.first(where: { $0.id != "sell" }) ?? dilemma.choices.first {
+      store.selectDilemmaChoice(choice.id)
+    }
+    var delegated = 0
+    for index in store.tasks.indices where delegated < limit {
+      store.tasks[index].role = .research
+      store.tasks[index].category = .research
+      store.tasks[index].urgency = .important
+      let id = store.tasks[index].id
+      store.assign(agentID: "aurora", to: id)
+      guard store.isEvidenceTriageEligible(taskID: id) else { continue }
+      if store.delegateEvidenceTriage(taskID: id) { delegated += 1 }
+    }
+    return delegated
+  }
+
   private func makeStore(
     seed: UInt64 = 1_234,
     doctrine: FounderDoctrine = .guided
