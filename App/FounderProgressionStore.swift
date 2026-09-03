@@ -39,7 +39,15 @@ final class FounderProgressionStore {
     sanitize()
   }
 
+  /// The rendered headquarters — always a tier with a built environment.
   var currentFacility: FacilityTier { save.currentFacility }
+
+  /// The highest owned tier. This is what the company actually operates from:
+  /// it drives facility bonuses and the monthly obligation, and can run ahead
+  /// of `currentFacility` when a purchased tier has no environment art yet.
+  var operatingTier: FacilityTier {
+    save.ownedFacilities.max(by: { $0.rawValue < $1.rawValue }) ?? .founderGarage
+  }
   var ownedFacilities: Set<FacilityTier> { save.ownedFacilities }
   var highestTrackRecord: Int { save.highestTrackRecord }
   var completedCareerCount: Int { save.completedCareerCount }
@@ -54,7 +62,7 @@ final class FounderProgressionStore {
   /// built.
   var bonuses: FacilityBonuses {
     var bonuses = FacilityBonuses.none
-    let tier = save.currentFacility
+    let tier = operatingTier
     let activeUpgrades = save.purchasedUpgrades.filter {
       guard let required = FacilityUpgradeDefinition.definition(for: $0)?.requiredFacility else { return false }
       return required.rawValue <= tier.rawValue
@@ -114,7 +122,11 @@ final class FounderProgressionStore {
       return .predecessorRequired
     }
     let requirement = configuration.requirement(for: tier)
-    guard requirement.environmentAvailable else { return .futureEnvironment }
+    // Environment availability is a *rendering* fact, not a purchase gate. A
+    // tier with no built environment is still ownable: it charges its rent and
+    // grants its mechanical payload, while `currentFacility` — which the whole
+    // Living Company visual layer reads — stays on the last tier that actually
+    // has art. That keeps tiers 3-6 real progression without shipping a room.
     guard save.highestTrackRecord >= requirement.minimumTrackRecord else {
       return .trackRecordRequired(requirement.minimumTrackRecord)
     }
@@ -132,14 +144,17 @@ final class FounderProgressionStore {
     let result = purchaseResult(for: tier, availableCapital: availableCapital)
     guard case .purchased = result else { return result }
     save.ownedFacilities.insert(tier)
-    save.currentFacility = tier
+    if configuration.requirement(for: tier).environmentAvailable {
+      save.currentFacility = tier
+    }
     persist()
     return result
   }
 
   @discardableResult
   func activate(_ tier: FacilityTier) -> Bool {
-    guard save.ownedFacilities.contains(tier) else { return false }
+    guard save.ownedFacilities.contains(tier),
+          configuration.requirement(for: tier).environmentAvailable else { return false }
     save.currentFacility = tier
     persist()
     return true

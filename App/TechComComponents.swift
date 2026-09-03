@@ -740,7 +740,7 @@ struct TechComTalentBoard: View {
 
   private var unlockedBoard: some View {
     VStack(alignment: .leading, spacing: 12) {
-      Text("Hire your \(store.nextTalentSlot == 4 ? "fourth" : "fifth") AI teammate. Different model families reduce shared exposure.")
+      Text("Hire your \(store.nextTalentSlotLabel) AI teammate. Different model families reduce shared exposure.")
         .font(.caption)
         .foregroundStyle(.secondary)
       ForEach(store.talentBoardCandidates) { candidate in

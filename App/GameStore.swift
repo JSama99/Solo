@@ -406,7 +406,24 @@ final class GameStore {
     activeDivergence = nil
   }
 
-  var nextTalentSlot: Int? { agents.count < 4 ? 4 : agents.count < 5 ? 5 : nil }
+  /// The base roster tops out at five. The Small Office Room and above seat a
+  /// sixth teammate via `talentSlotBonus`, which is the tier's whole payoff.
+  var nextTalentSlot: Int? {
+    if agents.count < 4 { return 4 }
+    if agents.count < 5 { return 5 }
+    let capacity = 5 + facilityBonuses.talentSlotBonus
+    return agents.count < capacity ? agents.count + 1 : nil
+  }
+
+  /// Ordinal for the slot being filled, used in roster copy.
+  var nextTalentSlotLabel: String {
+    switch nextTalentSlot {
+    case 4: "fourth"
+    case 5: "fifth"
+    case 6: "sixth"
+    default: "next"
+    }
+  }
 
   var talentBoardCandidates: [TalentCandidate] {
     guard let slot = nextTalentSlot else { return [] }
@@ -418,6 +435,9 @@ final class GameStore {
     if slot == 4 {
       if careerMode == .bounded { return venture >= 2 ? nil : "Unlocks after the Venture 1 checkpoint." }
       return venture >= 6 ? nil : "Unlocks in Empire at Venture 6." }
+    if slot >= 6 {
+      return "Seated by the Small Office Room."
+    }
     if careerMode == .bounded { return venture >= 2 ? nil : "Unlocks in Venture 2." }
     return venture >= 16 ? nil : "Unlocks in Empire at Venture 16." }
 
@@ -427,7 +447,7 @@ final class GameStore {
       alertMessage = finance.cash < talentPrice(candidate) ? "Not enough Cash for this hire." : talentBoardGateMessage
       return
     }
-    guard (slot == 4 && TalentBoard.fourthSlotPriceRange.contains(candidate.price)) || (slot == 5 && TalentBoard.fifthSlotPriceRange.contains(candidate.price)) else { return }
+    guard TalentBoard.priceRange(for: slot).contains(candidate.price) else { return }
     recordExpense(id: "hire-\(candidate.id)-v\(venture)-s\(sprint)", category: .aiWorkforce, amount: talentPrice(candidate), source: "AI workforce onboarding: \(candidate.name)", agentID: candidate.id)
     agents.append(candidate.makeAgent())
     achievementStore?.recordWorkforce(agents)
@@ -1005,7 +1025,10 @@ final class GameStore {
     tasks[taskIndex].resolution = .approve
     tasks[taskIndex].resolutionLocked = false
     if completedWorkSession == nil { founderAttentionSpent += 1 }
-    let reviewEnergy = DoctrineRules.profile(for: doctrine).reviewEnergyCost
+    // Floored at 1: `reviewEnergyCost` is one of only three numbers that
+    // differentiate the doctrines, and Pure/Trust sit at 1 already. A flat
+    // discount would take them to zero and erase that distinction.
+    let reviewEnergy = max(1, DoctrineRules.profile(for: doctrine).reviewEnergyCost - facilityBonuses.reviewEnergyDiscount)
     stats.energy = clamped(stats.energy - reviewEnergy)
     agents[agentIndex].calibration = min(1, agents[agentIndex].calibration + 0.035)
     agents[agentIndex].drift = max(0, agents[agentIndex].drift - 9)
@@ -1561,7 +1584,12 @@ final class GameStore {
     if effects.revenue > 0 { effects.revenue = Int((Double(effects.revenue) * thesisProfile.revenueMultiplier).rounded()) }
     if effects.trust < 0 { effects.trust = Int((Double(effects.trust) * thesisProfile.trustPenaltyMultiplier).rounded()) }
     if effects.trust > 0 { effects.trust = Int((Double(effects.trust) * (1 + Double(thesisProfile.customerLoyaltyModifier) / 100)).rounded()) }
-    effects = effects + rivalMoves.reduce(SimulationEffects()) { $0 + $1.playerEffects }
+    // Unicorn Headquarters absorbs half of what rival moves do to the founder's
+    // own stats. This deliberately touches only `playerEffects` — a rival's
+    // `strengthBonus` and the market-share math are untouched, because damping
+    // a rival's own growth would be a different and much larger change than
+    // being less rattled by its moves.
+    effects = effects + softenedRivalPressure(rivalMoves)
     apply(effects)
     advanceOperatingTime(hours: 7 * 24)
     finance.beginSprint()
@@ -2294,8 +2322,14 @@ final class GameStore {
     if result.isStrongForSimulation { xp += 5 }
     if task.isReviewed && result.verificationState.evidenceVerified { xp += 4 }
     if result.isRiskyForSimulation { xp = max(xp, 2) }
-    if facilityBonuses.agentXPBonusMultiplier > 1, roleMatched {
-      xp = Int((Double(xp) * facilityBonuses.agentXPBonusMultiplier).rounded())
+    // The Company Building's training floor applies to all work; the Garage
+    // equipment bonus applies only to role-matched work. Owning both compounds
+    // multiplicatively, so role-matched work at a Company Building earns
+    // 1.1 x 1.2 = 1.32.
+    var xpMultiplier = facilityBonuses.agentXPAnyRoleMultiplier
+    if roleMatched { xpMultiplier *= facilityBonuses.agentXPBonusMultiplier }
+    if xpMultiplier > 1 {
+      xp = Int((Double(xp) * xpMultiplier).rounded())
     }
     agents[agentIndex].progression.addXP(xp)
     if roleMatched { agents[agentIndex].progression.roleMatchedTasks += 1 }
@@ -2390,8 +2424,9 @@ final class GameStore {
     recordExpense(id: "ai-workforce-day-\(day)", category: .aiWorkforce, amount: agents.count * OperatingCostTuning.dailyAIWorkforcePerAgent, source: "AI workforce operating plans", recurring: true)
     recordExpense(id: "infrastructure-day-\(day)", category: .infrastructure, amount: OperatingCostTuning.dailyInfrastructure, source: "Hosting, storage, and Company Server", recurring: true)
     recordExpense(id: "operations-day-\(day)", category: .operations, amount: OperatingCostTuning.dailyOperations, source: "Essential company services", recurring: true)
-    if progressionStore?.currentFacility == .founderLoft, day % 30 == 0 {
-      recordExpense(id: "loft-monthly-\(day / 30)", category: .space, amount: OperatingCostTuning.founderLoftMonthlyObligation, source: "Founder Loft monthly lease and utilities", recurring: true, headquarters: .founderLoft)
+    if let tier = progressionStore?.operatingTier, tier.monthlyObligation > 0, day % 30 == 0 {
+      let id = tier == .founderLoft ? "loft-monthly-\(day / 30)" : "facility-\(tier.rawValue)-monthly-\(day / 30)"
+      recordExpense(id: id, category: .space, amount: tier.monthlyObligation, source: "\(tier.name) monthly lease and utilities", recurring: true, headquarters: tier)
     }
     finance.closeDay()
   }
@@ -2910,6 +2945,26 @@ final class GameStore {
       founderName: founderName, venture: venture, sprint: sprint, stats: stats,
       agents: agents, tasks: tasks, dilemmaChoice: selectedDilemmaChoice
     ))
+  }
+
+  /// Sums the sprint's rival pressure, absorbing `rivalPressureResistance` of
+  /// each negative component. Positive components are never scaled: resistance
+  /// is armour, not a tax on good outcomes.
+  private func softenedRivalPressure(_ events: [RivalMoveEvent]) -> SimulationEffects {
+    let total = events.reduce(SimulationEffects()) { $0 + $1.playerEffects }
+    let resistance = min(1, max(0, facilityBonuses.rivalPressureResistance))
+    guard resistance > 0 else { return total }
+    func soften(_ value: Int) -> Int {
+      guard value < 0 else { return value }
+      return Int((Double(value) * (1 - resistance)).rounded())
+    }
+    return SimulationEffects(
+      revenue: soften(total.revenue),
+      momentum: soften(total.momentum),
+      trust: soften(total.trust),
+      energy: soften(total.energy),
+      runway: soften(total.runway)
+    )
   }
 
   private func recordRivalMoveHeadlines(_ events: [RivalMoveEvent], venture: Int, sprint: Int) {

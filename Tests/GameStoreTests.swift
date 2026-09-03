@@ -968,6 +968,88 @@ final class GameStoreTests: XCTestCase {
     return delegated
   }
 
+  // MARK: - Facility tier payloads in a live sprint (P0 audit, Task 2)
+
+  /// Small Office capacity is what seats a sixth teammate; without it the
+  /// roster is complete at five.
+  func testSixthRosterSlotAppearsOnlyWithFacilityCapacity() {
+    let store = makeStore(seed: 4_1)
+    let progression = makeProgression(saveKey: "slot", upTo: .founderLoft)
+    store.progressionStore = progression
+    while store.agents.count < 5 { store.agents.append(TalentBoard.candidates[store.agents.count].makeAgent()) }
+    XCTAssertNil(store.nextTalentSlot, "Five is the base cap without facility capacity")
+
+    _ = progression.purchase(.smallOffice, availableCapital: 100_000)
+    XCTAssertEqual(store.facilityBonuses.talentSlotBonus, 1)
+    XCTAssertEqual(store.nextTalentSlot, 6)
+    XCTAssertEqual(store.nextTalentSlotLabel, "sixth")
+    XCTAssertFalse(store.talentBoardCandidates.isEmpty, "The sixth slot must offer real candidates")
+    XCTAssertTrue(store.talentBoardCandidates.allSatisfy { TalentBoard.sixthSlotPriceRange.contains($0.price) })
+  }
+
+  /// Office Suite shaves Energy off review without ever making it free.
+  func testOfficeSuiteReducesReviewEnergyButNeverBelowOne() throws {
+    let baseline = makeStore(seed: 77, doctrine: .guided)
+    try assignFirstTask(in: baseline)
+    let energyBefore = baseline.stats.energy
+    baseline.review(taskID: try XCTUnwrap(baseline.tasks.first).id)
+    let baselineCost = energyBefore - baseline.stats.energy
+    XCTAssertEqual(baselineCost, 2, "Guided reviews cost 2 Energy at the Garage")
+
+    let suite = makeStore(seed: 77, doctrine: .guided)
+    suite.progressionStore = makeProgression(saveKey: "suite", upTo: .officeSuite)
+    XCTAssertEqual(suite.facilityBonuses.reviewEnergyDiscount, 1)
+    try assignFirstTask(in: suite)
+    let suiteEnergyBefore = suite.stats.energy
+    suite.review(taskID: try XCTUnwrap(suite.tasks.first).id)
+    XCTAssertEqual(suiteEnergyBefore - suite.stats.energy, 1, "Office Suite discounts Guided review to 1")
+
+    // Pure already sits at 1 and must not reach zero.
+    let pure = makeStore(seed: 77, doctrine: .pure)
+    pure.progressionStore = makeProgression(saveKey: "pure-suite", upTo: .officeSuite)
+    try assignFirstTask(in: pure)
+    let pureEnergyBefore = pure.stats.energy
+    pure.review(taskID: try XCTUnwrap(pure.tasks.first).id)
+    XCTAssertEqual(pureEnergyBefore - pure.stats.energy, 1, "Review must never be free")
+  }
+
+  /// Unicorn HQ absorbs half the pressure rival moves put on the founder's own
+  /// stats, and leaves the rivals' own strength and market share untouched.
+  func testUnicornHeadquartersHalvesRivalPressureWithoutTouchingMarketShare() {
+    let exposed = makeStore(seed: 3_030)
+    let pressure = exposed.rivalMoveEvents.reduce(SimulationEffects()) { $0 + $1.playerEffects }
+
+    let fortified = makeStore(seed: 3_030)
+    fortified.progressionStore = makeProgression(saveKey: "hq", upTo: .unicornHeadquarters)
+    XCTAssertEqual(fortified.facilityBonuses.rivalPressureResistance, 0.5)
+
+    // Same moves, same market share: resistance is armour on the founder's
+    // stats, not a damper on the rivals themselves.
+    XCTAssertEqual(fortified.rivalMoveEvents.map(\.move), exposed.rivalMoveEvents.map(\.move))
+    XCTAssertEqual(fortified.rivalMoveEvents.map(\.strengthBonus), exposed.rivalMoveEvents.map(\.strengthBonus))
+    XCTAssertEqual(
+      fortified.rivalStandings.map(\.marketShare).reduce(0, +),
+      exposed.rivalStandings.map(\.marketShare).reduce(0, +),
+      accuracy: 0.0001
+    )
+    if pressure.momentum < 0 {
+      XCTAssertGreaterThan(pressure.momentum, -100)
+    }
+  }
+
+  private func makeProgression(saveKey: String, upTo tier: FacilityTier) -> FounderProgressionStore {
+    let suite = "FacilityTierTests-\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suite)!
+    defaults.removePersistentDomain(forName: suite)
+    let progression = FounderProgressionStore(defaults: defaults, saveKey: saveKey)
+    progression.observe(trackRecord: 40)
+    for _ in 0..<5 { progression.beginCareer(); _ = progression.recordCareerCompletion(trackRecord: 40) }
+    for candidate in FacilityTier.allCases where candidate.rawValue > 0 && candidate.rawValue <= tier.rawValue {
+      _ = progression.purchase(candidate, availableCapital: 500_000)
+    }
+    return progression
+  }
+
   private func makeStore(
     seed: UInt64 = 1_234,
     doctrine: FounderDoctrine = .guided

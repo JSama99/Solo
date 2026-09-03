@@ -19,13 +19,39 @@ final class FacilityProgressionTests: XCTestCase {
     XCTAssertEqual(configuration.requirement(for: .unicornHeadquarters).completedCareers, 4)
   }
 
-  func testFutureEnvironmentBlocksBuild2Purchase() {
+  /// P0 audit (Task 2): a tier with no built environment is now purchasable —
+  /// it charges rent and grants its mechanical payload — but the player does
+  /// not visually move in. `currentFacility` drives the entire Living Company
+  /// visual layer, so it must never advance to a tier without art.
+  func testUnbuiltEnvironmentIsOwnableButNeverBecomesTheRenderedFacility() {
     let context = makeStore()
     context.store.observe(trackRecord: 20)
     XCTAssertEqual(
       context.store.purchaseResult(for: .founderLoft, availableCapital: 10_000),
-      .futureEnvironment
+      .purchased(cost: 4_000)
     )
+    XCTAssertEqual(context.store.purchase(.founderLoft, availableCapital: 10_000), .purchased(cost: 4_000))
+    XCTAssertTrue(context.store.ownedFacilities.contains(.founderLoft), "Ownership is granted")
+    XCTAssertEqual(context.store.operatingTier, .founderLoft, "Mechanics follow ownership")
+    XCTAssertEqual(context.store.currentFacility, .founderGarage, "Rendering stays on built art")
+    XCTAssertFalse(context.store.activate(.founderLoft), "Cannot move into an unbuilt environment")
+    XCTAssertEqual(context.store.currentFacility, .founderGarage)
+  }
+
+  /// The live build10 configuration: no owned tier may ever render without art.
+  func testRenderedFacilityAlwaysHasABuiltEnvironment() {
+    let context = makeStore(configuration: .build10)
+    context.store.observe(trackRecord: 40)
+    for _ in 0..<5 { context.store.beginCareer(); _ = context.store.recordCareerCompletion(trackRecord: 40) }
+    for tier in FacilityTier.allCases where tier.rawValue > 0 {
+      _ = context.store.purchase(tier, availableCapital: 500_000)
+    }
+    XCTAssertEqual(context.store.operatingTier, .unicornHeadquarters, "All tiers owned")
+    XCTAssertTrue(
+      FacilityProgressionConfiguration.build10.requirement(for: context.store.currentFacility).environmentAvailable,
+      "The rendered facility must always be one with built art"
+    )
+    XCTAssertEqual(context.store.currentFacility, .founderLoft)
   }
 
   func testFacilityUnlockEligibilityAndPurchaseRequirements() {

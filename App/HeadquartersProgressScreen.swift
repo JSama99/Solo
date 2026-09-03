@@ -93,7 +93,7 @@ struct HeadquartersProgressScreen: View {
           }
           Text(upgrade.detail).font(.caption).foregroundStyle(.secondary)
           if owned {
-            Text(upgrade.requiredFacility == progression.currentFacility ? "Active at this HQ" : "Inactive while another HQ is selected")
+            Text(upgrade.requiredFacility.rawValue <= progression.operatingTier.rawValue ? "Active" : "Requires \(upgrade.requiredFacility.name)")
               .font(.caption2.weight(.semibold)).foregroundStyle(SoloTheme.cyan)
           } else {
             Button("Purchase", systemImage: "cart.fill") {

@@ -32,6 +32,9 @@ enum TalentBoard {
   static let refreshCost = 600
   static let fourthSlotPriceRange = 1_200...1_800
   static let fifthSlotPriceRange = 2_500...3_500
+  /// Unlocked by the Small Office Room, which is the only way to seat a sixth
+  /// teammate. Priced above the fifth slot to match the tier's capital gate.
+  static let sixthSlotPriceRange = 4_200...5_600
 
   static let candidates: [TalentCandidate] = [
     TalentCandidate(id: "quill", name: "Quill", initials: "QU", role: .research, modelFamily: "Helix-3", pitch: "Finds contradictions before a market narrative hardens.", price: 1_200),
@@ -41,11 +44,23 @@ enum TalentBoard {
     TalentCandidate(id: "atlas", name: "Atlas", initials: "AT", role: .engineering, modelFamily: "Atlas-2", pitch: "Makes scale work without trading away operational clarity.", price: 2_600),
     TalentCandidate(id: "signal", name: "Signal", initials: "SI", role: .research, modelFamily: "Vector-4", pitch: "Separates durable demand from loud but fleeting attention.", price: 2_850),
     TalentCandidate(id: "cinder", name: "Cinder", initials: "CI", role: .general, modelFamily: "Orion-2", pitch: "Closes the gaps between customer promises and delivery.", price: 3_100),
-    TalentCandidate(id: "harbor", name: "Harbor", initials: "HA", role: .marketing, modelFamily: "Helix-3", pitch: "Builds trust with the customers most likely to stay.", price: 3_400)
+    TalentCandidate(id: "harbor", name: "Harbor", initials: "HA", role: .marketing, modelFamily: "Helix-3", pitch: "Builds trust with the customers most likely to stay.", price: 3_400),
+    TalentCandidate(id: "meridian", name: "Meridian", initials: "ME", role: .research, modelFamily: "Atlas-2", pitch: "Reads a market two quarters ahead and shows the working.", price: 4_400),
+    TalentCandidate(id: "kiln", name: "Kiln", initials: "KI", role: .engineering, modelFamily: "Orion-2", pitch: "Turns brittle prototypes into systems that survive real load.", price: 4_800),
+    TalentCandidate(id: "verity", name: "Verity", initials: "VE", role: .general, modelFamily: "Vector-4", pitch: "Holds the company to what it actually proved, not what it hoped.", price: 5_200),
+    TalentCandidate(id: "cadence", name: "Cadence", initials: "CA", role: .marketing, modelFamily: "Atlas-2", pitch: "Finds the rhythm between shipping and telling people you shipped.", price: 5_500)
   ]
 
+  static func priceRange(for slot: Int) -> ClosedRange<Int> {
+    switch slot {
+    case 4: fourthSlotPriceRange
+    case 5: fifthSlotPriceRange
+    default: sixthSlotPriceRange
+    }
+  }
+
   static func candidates(for slot: Int, excluding agentIDs: Set<String>, refresh: Int) -> [TalentCandidate] {
-    let range = slot == 4 ? fourthSlotPriceRange : fifthSlotPriceRange
+    let range = priceRange(for: slot)
     let eligible = candidates.filter { !agentIDs.contains($0.id) && range.contains($0.price) }
     guard !eligible.isEmpty else { return [] }
     let offset = refresh % eligible.count

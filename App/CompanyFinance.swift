@@ -76,6 +76,13 @@ enum OperatingCostTuning {
   static let founderLoftMonthlyRent = 3_000
   static let founderLoftMoveIn = founderLoftDeposit + founderLoftFirstMonth + founderLoftMovingSetup
   static let founderLoftMonthlyObligation = founderLoftMonthlyRent + founderLoftMonthlyUtilities
+  // Bigger space costs more to run. Each tier above the Loft carries its own
+  // monthly obligation on the same 30-day cadence, so moving up is a solvency
+  // decision rather than a pure upgrade.
+  static let smallOfficeMonthlyObligation = 4_200
+  static let officeSuiteMonthlyObligation = 5_400
+  static let companyBuildingMonthlyObligation = 6_800
+  static let unicornHeadquartersMonthlyObligation = 9_000
   static let dailyAIWorkforcePerAgent = 12
   static let dailyInfrastructure = 16
   static let dailyOperations = 14

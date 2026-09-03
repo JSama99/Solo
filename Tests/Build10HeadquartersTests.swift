@@ -62,6 +62,106 @@ final class Build10HeadquartersTests: XCTestCase {
     XCTAssertEqual(progression.bonuses.engineeringQualityBonus, 4)
   }
 
+  // MARK: - Unbuilt facility tiers now carry real payloads (P0 audit, Task 2)
+
+  /// Each of the four formerly-placeholder tiers must contribute something no
+  /// lower tier does, and those contributions accumulate.
+  func testEachUnbuiltTierAddsADistinctCumulativeBonus() {
+    let progression = FounderProgressionStore(defaults: isolatedDefaults(), saveKey: "tiers")
+    progression.observe(trackRecord: 40)
+    for _ in 0..<5 { progression.beginCareer(); _ = progression.recordCareerCompletion(trackRecord: 40) }
+
+    XCTAssertEqual(progression.bonuses.talentSlotBonus, 0)
+    XCTAssertEqual(progression.bonuses.reviewEnergyDiscount, 0)
+    XCTAssertEqual(progression.bonuses.agentXPAnyRoleMultiplier, 1)
+    XCTAssertEqual(progression.bonuses.rivalPressureResistance, 0)
+
+    _ = progression.purchase(.founderLoft, availableCapital: 100_000)
+    _ = progression.purchase(.smallOffice, availableCapital: 100_000)
+    XCTAssertEqual(progression.bonuses.talentSlotBonus, 1, "Small Office seats a sixth teammate")
+    XCTAssertEqual(progression.bonuses.reviewEnergyDiscount, 0)
+
+    _ = progression.purchase(.officeSuite, availableCapital: 100_000)
+    XCTAssertEqual(progression.bonuses.reviewEnergyDiscount, 1, "Office Suite discounts review Energy")
+    XCTAssertEqual(progression.bonuses.talentSlotBonus, 1, "…without losing the Small Office slot")
+
+    _ = progression.purchase(.companyBuilding, availableCapital: 100_000)
+    XCTAssertEqual(progression.bonuses.agentXPAnyRoleMultiplier, 1.2)
+
+    _ = progression.purchase(.unicornHeadquarters, availableCapital: 100_000)
+    XCTAssertEqual(progression.bonuses.rivalPressureResistance, 0.5)
+    // Everything below still applies.
+    XCTAssertEqual(progression.bonuses.talentSlotBonus, 1)
+    XCTAssertEqual(progression.bonuses.reviewEnergyDiscount, 1)
+    XCTAssertEqual(progression.bonuses.agentXPAnyRoleMultiplier, 1.2)
+    XCTAssertEqual(progression.bonuses.ventureEnergyBonus, 5)
+  }
+
+  /// The stacking rule, pinned explicitly: the Garage equipment bonus is
+  /// role-matched, the Company Building training floor is not, and owning both
+  /// compounds multiplicatively rather than one overriding the other.
+  func testGarageAndCompanyBuildingXPBonusesCompoundMultiplicatively() {
+    let progression = FounderProgressionStore(defaults: isolatedDefaults(), saveKey: "xp-stack")
+    progression.observe(trackRecord: 40)
+    for _ in 0..<5 { progression.beginCareer(); _ = progression.recordCareerCompletion(trackRecord: 40) }
+    _ = progression.purchaseUpgrade(.developmentRig, availableCapital: 100_000)
+    XCTAssertEqual(progression.bonuses.agentXPBonusMultiplier, 1.1)
+    XCTAssertEqual(progression.bonuses.agentXPAnyRoleMultiplier, 1)
+
+    for tier in [FacilityTier.founderLoft, .smallOffice, .officeSuite, .companyBuilding] {
+      _ = progression.purchase(tier, availableCapital: 100_000)
+    }
+    XCTAssertEqual(progression.bonuses.agentXPBonusMultiplier, 1.1, "Garage equipment carries forward")
+    XCTAssertEqual(progression.bonuses.agentXPAnyRoleMultiplier, 1.2, "Training floor applies to all work")
+    // Role-matched work with both owned: 1.1 x 1.2.
+    let combined = progression.bonuses.agentXPBonusMultiplier * progression.bonuses.agentXPAnyRoleMultiplier
+    XCTAssertEqual(combined, 1.32, accuracy: 0.0001)
+  }
+
+  /// The Office Suite discount must never make review free, which would erase
+  /// the doctrine differentiation `reviewEnergyCost` carries.
+  func testReviewEnergyDiscountIsFlooredAtOneForEveryDoctrine() {
+    for doctrine in FounderDoctrine.allCases {
+      let base = DoctrineRules.profile(for: doctrine).reviewEnergyCost
+      let discounted = max(1, base - 1)
+      XCTAssertGreaterThanOrEqual(discounted, 1, "\(doctrine) review must never be free")
+    }
+    XCTAssertEqual(max(1, DoctrineRules.profile(for: .pure).reviewEnergyCost - 1), 1)
+    XCTAssertEqual(max(1, DoctrineRules.profile(for: .trust).reviewEnergyCost - 1), 1)
+    XCTAssertEqual(max(1, DoctrineRules.profile(for: .guided).reviewEnergyCost - 1), 1)
+  }
+
+  /// Every tier above the Garage carries its own escalating monthly cost, and
+  /// the Loft keeps its legacy transaction ID so existing saves are not
+  /// re-charged for months they already paid.
+  func testEveryOccupiedTierCarriesAnEscalatingMonthlyObligation() {
+    XCTAssertEqual(FacilityTier.founderGarage.monthlyObligation, 0)
+    let ordered: [FacilityTier] = [.founderLoft, .smallOffice, .officeSuite, .companyBuilding, .unicornHeadquarters]
+    for (earlier, later) in zip(ordered, ordered.dropFirst()) {
+      XCTAssertLessThan(earlier.monthlyObligation, later.monthlyObligation,
+                        "\(later.name) should cost more to run than \(earlier.name)")
+    }
+    XCTAssertEqual(FacilityTier.founderLoft.monthlyObligation, OperatingCostTuning.founderLoftMonthlyObligation)
+    XCTAssertEqual(FacilityTier.unicornHeadquarters.monthlyObligation, 9_000)
+  }
+
+  /// The sixth slot needs real candidates, not just a widened price band.
+  func testSixthSlotHasItsOwnRealCandidates() {
+    let sixth = TalentBoard.candidates.filter { TalentBoard.sixthSlotPriceRange.contains($0.price) }
+    XCTAssertGreaterThanOrEqual(sixth.count, 3, "The sixth slot needs a real bench")
+    XCTAssertTrue(sixth.allSatisfy { !$0.pitch.isEmpty && !$0.name.isEmpty })
+    XCTAssertEqual(Set(sixth.map(\.id)).count, sixth.count, "Candidate IDs must be unique")
+    // No candidate may straddle two slot bands.
+    for candidate in TalentBoard.candidates {
+      let bands = [TalentBoard.fourthSlotPriceRange, TalentBoard.fifthSlotPriceRange, TalentBoard.sixthSlotPriceRange]
+        .filter { $0.contains(candidate.price) }
+      XCTAssertEqual(bands.count, 1, "\(candidate.name) should belong to exactly one slot band")
+    }
+    let offered = TalentBoard.candidates(for: 6, excluding: [], refresh: 0)
+    XCTAssertFalse(offered.isEmpty)
+    XCTAssertTrue(offered.allSatisfy { TalentBoard.sixthSlotPriceRange.contains($0.price) })
+  }
+
   func testLateTasksAreGatedFromGarageEra() {
     let garageTasks = ContentLibrary.taskPool(for: .garage).filter { ($0.minimumEra?.rawValue ?? 0) <= VentureEra.garage.rawValue }
     XCTAssertFalse(garageTasks.contains(where: { $0.title == "Shard the Data Layer" }))
