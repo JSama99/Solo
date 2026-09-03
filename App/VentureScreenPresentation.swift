@@ -80,7 +80,7 @@ struct VentureScreenPresentation: Equatable {
 
   @MainActor
   init(store: GameStore) {
-    let objective = store.ventureObjective ?? VentureObjective.selected(for: store.venture)
+    let objective = store.ventureObjective ?? store.peekVentureObjective(for: store.venture)
     self.init(
       venture: store.venture,
       sprint: store.sprint,

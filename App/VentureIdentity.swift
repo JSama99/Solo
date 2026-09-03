@@ -59,10 +59,57 @@ struct VentureObjective: Codable, Identifiable, Hashable {
     progress(revenue: revenue, trust: trust, evidence: evidence, completedObjectives: completedObjectives, obligations: obligations) == 1
   }
 
-  static func selected(for venture: Int) -> VentureObjective {
+  /// Seeded, no-immediate-repeat objective selection.
+  ///
+  /// The old formula was `(venture * 7 + era * 3) % count` — a pure function of
+  /// the venture number, identical in every career, so a player could learn the
+  /// whole schedule once and predict it forever.
+  ///
+  /// This is a *pure peek*: it draws from a deterministic hash of
+  /// `(careerSeed, venture)` rather than from the shared
+  /// `SeededRandomNumberGenerator`, the same second-channel pattern
+  /// `RivalEngine.unitRoll` uses. That has two consequences that matter here:
+  /// previewing venture N+1 at a checkpoint cannot diverge from what venture
+  /// N+1 actually selects, because both evaluate the same function on the same
+  /// inputs; and the simulation's RNG draw sequence is not touched at all, so
+  /// Divergence, Daily Challenge, and WorkSessionEngine card generation are
+  /// unaffected by construction rather than by careful ordering.
+  ///
+  /// `recent` holds the most recently selected objective IDs. Repeats are
+  /// avoided when an alternative exists, and the window is stable between a
+  /// checkpoint preview and the venture actually starting, since it only
+  /// changes when a new objective is committed.
+  static func selected(for venture: Int, careerSeed: UInt64 = 0, recent: [String] = []) -> VentureObjective {
     let era = VentureEra.era(for: venture)
     let eligible = all.filter { $0.minimumEra == nil || $0.minimumEra!.rawValue <= era.rawValue }
-    return eligible[(venture * 7 + era.rawValue * 3) % eligible.count]
+    guard !eligible.isEmpty else { return all[0] }
+    // Never narrow the pool below two genuine choices. Early eras have only
+    // three eligible objectives, so blocking the last two would leave exactly
+    // one legal pick and collapse selection into a fixed three-venture cycle
+    // that the seed merely phase-shifts — predictable again, which is the
+    // whole thing this is meant to prevent. Blocking widens only when the era
+    // has enough objectives to afford it.
+    let pool = [2, 1, 0]
+      .lazy
+      .map { depth -> [VentureObjective] in
+        guard depth > 0 else { return eligible }
+        let blocked = Set(recent.suffix(depth))
+        return eligible.filter { !blocked.contains($0.id) }
+      }
+      .first { $0.count >= min(2, eligible.count) } ?? eligible
+    return pool[Int(selectionRoll(careerSeed: careerSeed, venture: venture) % UInt64(pool.count))]
+  }
+
+  /// Deterministic hash channel for objective selection. Independent of the
+  /// shared simulation RNG, so calling it never advances any draw sequence.
+  private static func selectionRoll(careerSeed: UInt64, venture: Int) -> UInt64 {
+    var hash = careerSeed &* 0x9E3779B97F4A7C15 &+ 0x27D4EB2F165667C5
+    hash ^= UInt64(bitPattern: Int64(venture) &* 2_654_435_761)
+    hash &*= 0x100000001B3
+    hash ^= hash >> 33
+    hash &*= 0xFF51AFD7ED558CCD
+    hash ^= hash >> 33
+    return hash
   }
 
   static let all: [VentureObjective] = [

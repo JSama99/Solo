@@ -408,6 +408,30 @@ final class GameStore {
 
   /// The base roster tops out at five. The Small Office Room and above seat a
   /// sixth teammate via `talentSlotBonus`, which is the tier's whole payoff.
+  /// Stable per-career seed for content selection that must not consume the
+  /// shared simulation RNG.
+  var careerSeed: UInt64 {
+    RivalEngine.careerSeed(founderName: founderName, productType: productType)
+  }
+
+  /// What venture `n` would select, computed without side effects. Safe to call
+  /// for a future venture — a checkpoint preview and the venture's real start
+  /// evaluate the same pure function on the same inputs, so they cannot diverge.
+  func peekVentureObjective(for n: Int) -> VentureObjective {
+    VentureObjective.selected(for: n, careerSeed: careerSeed, recent: recentVentureObjectiveIDs)
+  }
+
+  /// Selects and commits the objective for the venture starting now, recording
+  /// it in the no-immediate-repeat window.
+  private func commitVentureObjective(for n: Int) {
+    let objective = peekVentureObjective(for: n)
+    ventureObjective = objective
+    recentVentureObjectiveIDs.append(objective.id)
+    if recentVentureObjectiveIDs.count > 4 {
+      recentVentureObjectiveIDs.removeFirst(recentVentureObjectiveIDs.count - 4)
+    }
+  }
+
   var nextTalentSlot: Int? {
     if agents.count < 4 { return 4 }
     if agents.count < 5 { return 5 }
@@ -663,7 +687,8 @@ final class GameStore {
     if founderName.isEmpty { founderName = "Founder" }
     sprint = 1
     venture = 1
-    ventureObjective = VentureObjective.selected(for: venture)
+    recentVentureObjectiveIDs = []
+    commitVentureObjective(for: venture)
     thesis = selectedThesis
     thesisHistory = []
     awaitingThesisSelection = true
@@ -1695,7 +1720,7 @@ final class GameStore {
     stats.runway = min(365, stats.runway + earnedRunwayRecovery)
     stats.energy = min(100, stats.energy + earnedEnergyRecovery)
     stats.energy = min(100, stats.energy + facilityBonuses.ventureEnergyBonus)
-    ventureObjective = VentureObjective.selected(for: venture)
+    commitVentureObjective(for: venture)
     selectedThesis = thesis
     awaitingThesisSelection = true
     recentTaskTitles = []
@@ -1736,7 +1761,7 @@ final class GameStore {
   /// non-terminal checkpoint and hands control to the player rather than
   /// silently rolling into the next set of 12 sprints.
   private func presentVentureCheckpoint() {
-    let objective = ventureObjective ?? VentureObjective.selected(for: venture)
+    let objective = ventureObjective ?? peekVentureObjective(for: venture)
     let currentPrecedents = precedents.filter { $0.venture == venture }
     let nextEra = VentureEra.era(for: venture + 1)
     let era = VentureEra.era(for: venture)
@@ -1751,7 +1776,7 @@ final class GameStore {
       precedentsBanked: currentPrecedents.count,
       grade: VentureGrader.grade(revenue: stats.revenue, attention: founderAttentionSpent, reviews: reviews, overclaimsCaught: caught, evidence: evidence.filter { $0.venture == venture }.count, energy: stats.energy, obligations: activeObligations.count, trust: stats.trust, flags: companyFlags),
       objectiveTitle: objective.title,
-      nextObjectiveTitle: VentureObjective.selected(for: venture + 1).title,
+      nextObjectiveTitle: peekVentureObjective(for: venture + 1).title,
       nextEraName: nextEra.name,
       nextEraForce: nextEra.newForce,
       crossesEraBoundary: nextEra != era,
@@ -1766,7 +1791,7 @@ final class GameStore {
   }
 
   private func evaluateVentureObjectiveAtCompletion() {
-    let objective = ventureObjective ?? VentureObjective.selected(for: venture)
+    let objective = ventureObjective ?? peekVentureObjective(for: venture)
     guard objective.isMet(revenue: stats.revenue, trust: stats.trust, evidence: evidence.count, completedObjectives: completedVentureObjectives, obligations: activeObligations.count) else { return }
     apply(objective.reward)
     completedVentureObjectives += 1
@@ -2491,7 +2516,8 @@ final class GameStore {
     decisionHistory = save.decisionHistory
     completedObjectives = save.completedObjectives
     completedVentureObjectives = save.completedVentureObjectives
-    ventureObjective = save.ventureObjective ?? VentureObjective.selected(for: venture)
+    recentVentureObjectiveIDs = save.recentVentureObjectiveIDs
+    ventureObjective = save.ventureObjective ?? peekVentureObjective(for: venture)
     thesis = save.thesis ?? .sustainable
     selectedThesis = thesis
     thesisHistory = save.thesisHistory
@@ -2634,7 +2660,11 @@ final class GameStore {
 
   private func migrateV12(_ legacy: CareerSave) -> CareerSave {
     var migrated = legacy
-    migrated.ventureObjective = VentureObjective.selected(for: migrated.venture)
+    migrated.ventureObjective = VentureObjective.selected(
+      for: migrated.venture,
+      careerSeed: RivalEngine.careerSeed(founderName: migrated.founderName, productType: migrated.productType),
+      recent: migrated.recentVentureObjectiveIDs
+    )
     return migrated
   }
 
@@ -2756,6 +2786,7 @@ final class GameStore {
   private var dilemmaDeckTemplateIDs: [String] = []
   private var dilemmaDeckChapter: VentureChapter?
   private var recentObjectiveKinds: [SprintObjectiveKind] = []
+  private(set) var recentVentureObjectiveIDs: [String] = []
   private static let recentTaskTitleWindow = 10
 
   private func makeTaskDraft() -> (active: [SoloTask], backlog: [SoloTask]) {
@@ -3148,6 +3179,7 @@ final class GameStore {
       dilemmaDeckTemplateIDs: dilemmaDeckTemplateIDs,
       dilemmaDeckChapter: dilemmaDeckChapter,
       recentObjectiveKinds: recentObjectiveKinds,
+      recentVentureObjectiveIDs: recentVentureObjectiveIDs,
       companyFlags: companyFlags,
       activeObligations: activeObligations,
       decisionHistory: decisionHistory,

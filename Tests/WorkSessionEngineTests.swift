@@ -161,6 +161,29 @@ final class WorkSessionEngineTests: XCTestCase {
     XCTAssertTrue(decoded.workSessions.isEmpty)
   }
 
+  /// P0 audit (Task 3): the new no-immediate-repeat window must default
+  /// safely on saves written before it existed, with nothing else disturbed.
+  func testLegacyCareerSaveWithoutVentureObjectiveWindowDecodes() throws {
+    let save = CareerSave(founderName: "Legacy", doctrine: .guided, sprint: 4, venture: 2, intent: .learn, stats: FounderStats(), agents: ContentLibrary.initialAgents, tasks: [], evidence: [], outcome: nil, randomNumberGenerator: SeededRandomNumberGenerator(seed: 1), correlatedFailureEvent: nil, pendingEffects: [])
+    let encoded = try JSONEncoder().encode(save)
+    var json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+    json.removeValue(forKey: "recentVentureObjectiveIDs")
+    let legacyData = try JSONSerialization.data(withJSONObject: json)
+    let decoded = try JSONDecoder().decode(CareerSave.self, from: legacyData)
+    XCTAssertEqual(decoded.recentVentureObjectiveIDs, [], "Absent window defaults to empty")
+    XCTAssertEqual(decoded.venture, 2, "Zero data loss elsewhere")
+    XCTAssertEqual(decoded.sprint, 4)
+    XCTAssertEqual(decoded.founderName, "Legacy")
+  }
+
+  /// A populated window survives a round trip.
+  func testVentureObjectiveWindowRoundTripsThroughASave() throws {
+    var save = CareerSave(founderName: "Round", doctrine: .guided, sprint: 1, venture: 3, intent: .learn, stats: FounderStats(), agents: ContentLibrary.initialAgents, tasks: [], evidence: [], outcome: nil, randomNumberGenerator: SeededRandomNumberGenerator(seed: 1), correlatedFailureEvent: nil, pendingEffects: [])
+    save.recentVentureObjectiveIDs = ["pmf", "proof"]
+    let decoded = try JSONDecoder().decode(CareerSave.self, from: try JSONEncoder().encode(save))
+    XCTAssertEqual(decoded.recentVentureObjectiveIDs, ["pmf", "proof"])
+  }
+
   func testLegacyWorkSessionMistakesDecodeAsTypedFindings() throws {
     var record = makeRecord(potential: 80)
     record.findings = [.acceptedWeakEvidence, .correctlyDetectedContradiction]

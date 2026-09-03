@@ -1373,6 +1373,8 @@ struct CareerSave: Codable {
   var dilemmaDeckTemplateIDs: [String]
   var dilemmaDeckChapter: VentureChapter?
   var recentObjectiveKinds: [SprintObjectiveKind]
+  /// Recently selected venture-objective IDs, used to avoid immediate repeats.
+  var recentVentureObjectiveIDs: [String]
   var companyFlags: Set<CompanyFlag>
   var activeObligations: [CompanyObligation]
   var decisionHistory: [CareerDecisionRecord]
@@ -1407,6 +1409,7 @@ struct CareerSave: Codable {
     case pendingEffects, reportCache, precedents, awaitingFounderPass
     case careerMode, pendingVentureCheckpoint
     case recentTaskTitles, taskDeckTitles, dilemmaDeckTemplateIDs, dilemmaDeckChapter
+    case recentVentureObjectiveIDs
     case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, completedVentureObjectives, ventureObjective, thesis, thesisHistory, awaitingThesisSelection, pendingChapterMilestone
     case techComHeadlines, techComRivals, latentDefects, poachingOffer, exposedRivalIDs
     case activeDivergence, divergenceRecords, forksUsedThisVenture, doctrineProfile, unicornIdentity
@@ -1445,6 +1448,7 @@ struct CareerSave: Codable {
     dilemmaDeckTemplateIDs: [String] = [],
     dilemmaDeckChapter: VentureChapter? = nil,
     recentObjectiveKinds: [SprintObjectiveKind] = [],
+    recentVentureObjectiveIDs: [String] = [],
     companyFlags: Set<CompanyFlag> = [],
     activeObligations: [CompanyObligation] = [],
     decisionHistory: [CareerDecisionRecord] = [],
@@ -1503,6 +1507,7 @@ struct CareerSave: Codable {
     self.dilemmaDeckTemplateIDs = dilemmaDeckTemplateIDs
     self.dilemmaDeckChapter = dilemmaDeckChapter
     self.recentObjectiveKinds = recentObjectiveKinds
+    self.recentVentureObjectiveIDs = recentVentureObjectiveIDs
     self.companyFlags = companyFlags
     self.activeObligations = activeObligations
     self.decisionHistory = decisionHistory
@@ -1576,6 +1581,7 @@ struct CareerSave: Codable {
     dilemmaDeckTemplateIDs = try container.decodeIfPresent([String].self, forKey: .dilemmaDeckTemplateIDs) ?? []
     dilemmaDeckChapter = try container.decodeIfPresent(VentureChapter.self, forKey: .dilemmaDeckChapter)
     recentObjectiveKinds = try container.decodeIfPresent([SprintObjectiveKind].self, forKey: .recentObjectiveKinds) ?? []
+    recentVentureObjectiveIDs = try container.decodeIfPresent([String].self, forKey: .recentVentureObjectiveIDs) ?? []
     companyFlags = try container.decodeIfPresent(Set<CompanyFlag>.self, forKey: .companyFlags) ?? []
     activeObligations = try container.decodeIfPresent([CompanyObligation].self, forKey: .activeObligations) ?? []
     decisionHistory = try container.decodeIfPresent([CareerDecisionRecord].self, forKey: .decisionHistory) ?? []

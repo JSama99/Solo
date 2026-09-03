@@ -286,6 +286,85 @@ final class SimulationEngineTests: XCTestCase {
     XCTAssertEqual(ContentLibrary.dilemmaPool.count, 48)
   }
 
+  // MARK: - Venture objective selection (P0 audit, Task 3)
+
+  /// The core fix: selection is no longer a pure function of the venture
+  /// number, so two careers cannot share a predictable schedule.
+  func testDifferentCareerSeedsProduceDifferentObjectiveSequences() {
+    func sequence(seed: UInt64) -> [String] {
+      var recent: [String] = []
+      return (1...12).map { venture in
+        let objective = VentureObjective.selected(for: venture, careerSeed: seed, recent: recent)
+        recent.append(objective.id)
+        if recent.count > 4 { recent.removeFirst() }
+        return objective.id
+      }
+    }
+    let first = sequence(seed: RivalEngine.careerSeed(founderName: "Ada", productType: .saas))
+    let second = sequence(seed: RivalEngine.careerSeed(founderName: "Grace", productType: .marketplace))
+    XCTAssertNotEqual(first, second, "Two careers must not share an objective schedule")
+    XCTAssertEqual(first, sequence(seed: RivalEngine.careerSeed(founderName: "Ada", productType: .saas)),
+                   "…while a single career stays deterministic")
+  }
+
+  /// No immediate repeats while an eligible alternative exists.
+  func testObjectiveSelectionAvoidsImmediateRepeats() {
+    for seedBase in ["Ada", "Grace", "Lin", "Ida"] {
+      let seed = RivalEngine.careerSeed(founderName: seedBase, productType: .saas)
+      var recent: [String] = []
+      var previous: String?
+      for venture in 1...16 {
+        let objective = VentureObjective.selected(for: venture, careerSeed: seed, recent: recent)
+        let eligible = VentureObjective.all.filter {
+          $0.minimumEra == nil || $0.minimumEra!.rawValue <= VentureEra.era(for: venture).rawValue
+        }
+        if eligible.count > 1, let previous {
+          XCTAssertNotEqual(objective.id, previous, "\(seedBase) repeated \(previous) at venture \(venture)")
+        }
+        previous = objective.id
+        recent.append(objective.id)
+        if recent.count > 4 { recent.removeFirst() }
+      }
+    }
+  }
+
+  /// Guards against the failure mode the first implementation had: early eras
+  /// offer only three objectives, so blocking the two most recent left exactly
+  /// one legal pick and produced a rigid three-venture cycle that the seed only
+  /// phase-shifted. A schedule with a short fixed period is still predictable.
+  func testEarlyObjectiveSequenceIsNotAFixedCycle() {
+    for name in ["Ada", "Grace", "Lin", "Ida"] {
+      let seed = RivalEngine.careerSeed(founderName: name, productType: .saas)
+      var recent: [String] = []
+      let ids = (1...9).map { venture -> String in
+        let objective = VentureObjective.selected(for: venture, careerSeed: seed, recent: recent)
+        recent.append(objective.id)
+        if recent.count > 4 { recent.removeFirst() }
+        return objective.id
+      }
+      let isThreeCycle = zip(ids, ids.dropFirst(3)).allSatisfy(==)
+      XCTAssertFalse(isThreeCycle, "\(name) collapsed into a fixed 3-venture cycle: \(ids)")
+    }
+  }
+
+  /// Selection must always respect era gating.
+  func testObjectiveSelectionRespectsEraGating() {
+    for venture in 1...24 {
+      let era = VentureEra.era(for: venture)
+      for name in ["Ada", "Grace", "Lin"] {
+        let objective = VentureObjective.selected(
+          for: venture,
+          careerSeed: RivalEngine.careerSeed(founderName: name, productType: .saas),
+          recent: []
+        )
+        if let minimum = objective.minimumEra {
+          XCTAssertLessThanOrEqual(minimum.rawValue, era.rawValue,
+                                   "\(objective.id) is not available in the \(era.name) era")
+        }
+      }
+    }
+  }
+
   func testContentLibraryObjectiveCountUnchangedFromBuild4() {
     XCTAssertEqual(ContentLibrary.objectivePool.count, 6)
   }

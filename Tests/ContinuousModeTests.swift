@@ -16,6 +16,54 @@ final class ContinuousModeTests: XCTestCase {
     super.tearDown()
   }
 
+  // MARK: - Venture objective selection (P0 audit, Task 3)
+
+  /// The guarantee most likely to regress: whatever `nextObjectiveTitle` shows
+  /// at a checkpoint must be exactly what the next venture actually selects.
+  /// Driven through the real checkpoint path, not a re-derivation.
+  func testCheckpointPreviewMatchesTheNextVenturesActualObjective() throws {
+    let store = makeStore(mode: .continuous)
+    playToVentureEnd(store)
+    try XCTSkipUnless(store.pendingVentureCheckpoint != nil, "venture ended some other way for this seed")
+
+    let checkpoint = try XCTUnwrap(store.pendingVentureCheckpoint)
+    let previewed = checkpoint.nextObjectiveTitle
+
+    store.continueFromCheckpoint()
+
+    XCTAssertEqual(store.venture, 2)
+    XCTAssertEqual(store.ventureObjective?.title, previewed,
+                   "The checkpoint preview must match what venture 2 actually selected")
+  }
+
+  /// Peeking ahead must be free of side effects: repeated peeks, and peeks at
+  /// far-future ventures, cannot change what the current venture holds or what
+  /// the next venture will get.
+  func testPeekingAheadIsSideEffectFree() throws {
+    let store = makeStore(mode: .continuous)
+    let current = store.ventureObjective
+    let window = store.recentVentureObjectiveIDs
+
+    let first = store.peekVentureObjective(for: store.venture + 1).id
+    for horizon in 1...12 { _ = store.peekVentureObjective(for: store.venture + horizon) }
+    let second = store.peekVentureObjective(for: store.venture + 1).id
+
+    XCTAssertEqual(first, second, "Repeated peeks must agree")
+    XCTAssertEqual(store.ventureObjective, current, "Peeking must not change the live objective")
+    XCTAssertEqual(store.recentVentureObjectiveIDs, window, "Peeking must not touch the repeat window")
+  }
+
+  /// Objective selection must not disturb the shared simulation RNG, which
+  /// Divergence, Daily Challenge, and WorkSessionEngine all depend on.
+  func testObjectiveSelectionConsumesNoSharedGenerator() {
+    let generator = SeededRandomNumberGenerator(seed: 4_242)
+    let before = generator
+    for venture in 1...20 {
+      _ = VentureObjective.selected(for: venture, careerSeed: 8_675_309, recent: [])
+    }
+    XCTAssertEqual(generator, before, "Selection must draw from its own hash channel, not the shared RNG")
+  }
+
   private func makeStore(mode: CareerMode, hasPass: Bool = true, seed: UInt64 = 9_001) -> GameStore {
     let store = GameStore()
     store.resetCareer()
