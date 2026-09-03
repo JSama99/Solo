@@ -431,6 +431,7 @@ enum FounderEnvironmentWorldAnchor: String, CaseIterable, Sendable {
   case founderDeskSurface
   case founderDeskFloorSide
   case founderCommandDesk
+  case mainVentilationFan
   case signalTV
 }
 
@@ -490,9 +491,10 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       .founderDeskSurface: CGPoint(x: 680, y: 590),
       .founderDeskFloorSide: CGPoint(x: 870, y: 710),
       .founderCommandDesk: CGPoint(x: 535, y: 635),
+      .mainVentilationFan: CGPoint(x: 680, y: 112),
       // Keep the television above the rear-door header so both architectural
       // objects remain independently readable during the rightward look.
-      .signalTV: CGPoint(x: 835, y: 112)
+      .signalTV: CGPoint(x: 1_100, y: 132)
     ]
     if composition == .compactCockpit {
       result[.auroraStation] = CGPoint(x: 245, y: 315)
@@ -509,7 +511,7 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       result[.founderDeskRightEdge] = CGPoint(x: 855, y: 660)
       result[.founderDeskSurface] = CGPoint(x: 680, y: 600)
       result[.founderDeskFloorSide] = CGPoint(x: 900, y: 720)
-      result[.signalTV] = CGPoint(x: 840, y: 112)
+      result[.signalTV] = CGPoint(x: 980, y: 132)
       result[.founderCouch] = CGPoint(x: 1_140, y: 585)
       result[.workoutBench] = CGPoint(x: 250, y: 585)
     }
@@ -529,10 +531,13 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
   var floorHorizonY: CGFloat {
     viewportSize.height * (composition == .compactCockpit ? 0.58 : 0.55)
   }
+  var founderDeskHeadingY: CGFloat {
+    composition == .compactCockpit ? 52 : 64
+  }
 
   func depthScale(for anchor: FounderEnvironmentWorldAnchor) -> CGFloat {
     switch anchor {
-    case .garageEntrance, .rearGarageDoor, .storage, .signalTV: 0.78
+    case .garageEntrance, .rearGarageDoor, .storage, .mainVentilationFan, .signalTV: 0.78
     case .auroraStation: 0.90
     case .stacksStation: 0.84
     case .brioStation: 0.91
@@ -675,6 +680,7 @@ struct SignalTVHotspotLayout: Equatable, Sendable {
 /// accessibility landmark in lockstep across compact iPhone and iPad scenes.
 struct FounderGarageDoorLayout: Equatable, Sendable {
   static let unscaledSize = CGSize(width: 720, height: 527)
+  static let signVerticalOffset: CGFloat = -155
 
   var viewportSize: CGSize
 
@@ -1306,7 +1312,7 @@ struct FounderEnvironmentRendererView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 6)
         .background(.black.opacity(0.76), in: .rect(cornerRadius: 2))
-        .offset(y: -208)
+        .offset(y: FounderGarageDoorLayout.signVerticalOffset)
     }
     .scaleEffect(layout.depthScale(for: .rearGarageDoor) * layout.scale * 1.35)
     .position(layout.viewportPosition(for: .rearGarageDoor, camera: camera, layer: .background))
@@ -1955,10 +1961,12 @@ struct FounderEnvironmentRendererView: View {
     let active = motion.ambient.continuousMotionEnabled
     let lighting = FounderGarageAmbientRhythm.profile(for: .environmentalLight)
     let display = FounderGarageAmbientRhythm.profile(for: .founderDisplay)
+    let ventilationScale = layout.depthScale(for: .mainVentilationFan) * layout.scale
+    let ventilationWorldPoint = layout.anchors[.mainVentilationFan] ?? CGPoint(x: 680, y: 112)
     return ZStack {
       Path { path in
         let source = layout.viewportPosition(
-          worldPoint: CGPoint(x: 680, y: 104),
+          for: .mainVentilationFan,
           camera: camera,
           layer: .background
         )
@@ -1982,15 +1990,16 @@ struct FounderEnvironmentRendererView: View {
         mechanical: motion.mechanical,
         increasedContrast: increasedContrast
       )
+      .scaleEffect(ventilationScale)
       .position(layout.viewportPosition(
-        worldPoint: CGPoint(x: 680, y: 180),
+        for: .mainVentilationFan,
         camera: camera,
         layer: .background
       ))
 
       Ellipse()
         .fill(.black.opacity(0.075))
-        .frame(width: 155, height: 42)
+        .frame(width: 155 * ventilationScale, height: 42 * ventilationScale)
         .phaseAnimator(
           motion.mechanical.continuousRotationEnabled ? [-3.0, 3.0, -3.0] : [0.0]
         ) { content, angle in
@@ -2000,7 +2009,7 @@ struct FounderEnvironmentRendererView: View {
           .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .ventilationShadow).duration)
         }
         .position(layout.viewportPosition(
-          worldPoint: CGPoint(x: 700, y: 272),
+          worldPoint: CGPoint(x: ventilationWorldPoint.x + 20, y: ventilationWorldPoint.y + 40),
           camera: camera,
           layer: .background
         ))

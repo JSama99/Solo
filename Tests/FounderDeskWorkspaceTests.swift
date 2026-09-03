@@ -393,6 +393,32 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     }
   }
 
+  func testUpperWallHierarchyKeepsFanBetweenFounderIdentityAndDoorSign() {
+    let camera = FounderEnvironmentCameraState(mode: .freeLook)
+    for size in [
+      CGSize(width: 390, height: 844),
+      CGSize(width: 440, height: 956),
+      CGSize(width: 820, height: 1_180)
+    ] {
+      let layout = FounderEnvironmentLayout(viewportSize: size)
+      let fanScale = layout.depthScale(for: .mainVentilationFan) * layout.scale
+      let fanCenter = layout.viewportPosition(for: .mainVentilationFan, camera: camera, layer: .background)
+      let fanFrame = CGRect(
+        x: fanCenter.x - 64 * fanScale,
+        y: fanCenter.y - 71 * fanScale,
+        width: 128 * fanScale,
+        height: 142 * fanScale
+      )
+      let doorCenter = layout.viewportPosition(for: .rearGarageDoor, camera: camera, layer: .background)
+      let doorRenderScale = layout.depthScale(for: .rearGarageDoor) * layout.scale * 1.35
+      let doorSignCenterY = doorCenter.y + FounderGarageDoorLayout.signVerticalOffset * doorRenderScale
+
+      XCTAssertLessThan(layout.founderDeskHeadingY + 16, fanFrame.minY)
+      XCTAssertLessThan(fanFrame.maxY + 6, doorSignCenterY)
+      XCTAssertEqual(layout.anchors[.founderMonitor]?.x, 680)
+    }
+  }
+
   func testGarageDoorRenderAndAccessibilityGeometryRemainIdentical() {
     let door = FounderGarageDoorLayout(viewportSize: CGSize(width: 402, height: 874))
     for camera in [

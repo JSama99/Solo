@@ -102,22 +102,30 @@ final class SignalTVTests: XCTestCase {
     XCTAssertTrue(SignalTVProgram.allCases.contains(.breaking))
   }
 
-  func testResponsiveTVPlacementPreservesSameWorldObject() {
-    let phone = FounderEnvironmentLayout(viewportSize: CGSize(width: 390, height: 844))
-    let tablet = FounderEnvironmentLayout(viewportSize: CGSize(width: 1024, height: 768))
-    XCTAssertEqual(phone.anchors[.signalTV], CGPoint(x: 840, y: 112))
-    XCTAssertEqual(tablet.anchors[.signalTV], CGPoint(x: 835, y: 112))
-    let phonePosition = phone.viewportPosition(for: .signalTV, camera: FounderEnvironmentCameraState(mode: .freeLook), layer: .background)
-    let tabletPosition = tablet.viewportPosition(for: .signalTV, camera: FounderEnvironmentCameraState(mode: .freeLook), layer: .background)
-    XCTAssertGreaterThan(phonePosition.x, 300)
-    XCTAssertLessThan(phonePosition.x, 390)
-    XCTAssertGreaterThan(tabletPosition.x, 512)
-    XCTAssertLessThan(tabletPosition.x, 900)
-    let phoneHotspot = SignalTVHotspotLayout(viewportSize: CGSize(width: 390, height: 844))
-    let tabletHotspot = SignalTVHotspotLayout(viewportSize: CGSize(width: 1024, height: 768))
-    XCTAssertTrue(phoneHotspot.isSelectable(camera: FounderEnvironmentCameraState(mode: .freeLook)))
-    XCTAssertTrue(tabletHotspot.isSelectable(camera: FounderEnvironmentCameraState(mode: .freeLook)))
-    XCTAssertGreaterThanOrEqual(phoneHotspot.frame(camera: FounderEnvironmentCameraState(mode: .freeLook)).width, 44)
+  func testResponsiveTVPlacementPreservesUpperRightWallObjectAndHotspot() {
+    let rightLook = FounderEnvironmentCameraState(horizontalLook: 1, mode: .freeLook)
+    let sizes = [
+      CGSize(width: 390, height: 844),
+      CGSize(width: 440, height: 956),
+      CGSize(width: 820, height: 1_180)
+    ]
+
+    for size in sizes {
+      let layout = FounderEnvironmentLayout(viewportSize: size)
+      let hotspot = SignalTVHotspotLayout(viewportSize: size)
+      let frame = hotspot.frame(camera: rightLook)
+
+      XCTAssertEqual(
+        layout.anchors[.signalTV],
+        layout.composition == .compactCockpit ? CGPoint(x: 980, y: 132) : CGPoint(x: 1_100, y: 132)
+      )
+      XCTAssertGreaterThan(frame.midX, size.width / 2)
+      XCTAssertLessThanOrEqual(frame.maxX, size.width - 10)
+      XCTAssertGreaterThan(frame.minY, layout.founderDeskHeadingY + 10)
+      XCTAssertTrue(hotspot.isSelectable(camera: rightLook))
+      XCTAssertGreaterThanOrEqual(frame.width, 44)
+      XCTAssertGreaterThanOrEqual(frame.height, 44)
+    }
   }
 
   func testReduceMotionTickerAndAudioFocusMappings() {

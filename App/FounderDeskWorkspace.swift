@@ -233,6 +233,7 @@ struct FounderDeskWorkspace: View {
   }
 
   private func spatialOverview(size: CGSize, motion: FounderGarageMotionPresentation) -> some View {
+    let environmentLayout = FounderEnvironmentLayout(viewportSize: size)
     let equipment = FounderDeskEquipmentLayout(
       viewportSize: size,
       regularWidth: horizontalSizeClass == .regular
@@ -259,7 +260,7 @@ struct FounderDeskWorkspace: View {
         .accessibilityHidden(true)
 
       deskHeading
-        .position(x: size.width / 2, y: max(54, size.height * 0.09))
+        .position(x: size.width / 2, y: environmentLayout.founderDeskHeadingY)
 
       ForEach(FounderDeskDevice.allCases) { device in
         let visible = equipment.isVisible(device, camera: navigation.camera)
