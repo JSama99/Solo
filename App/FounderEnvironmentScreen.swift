@@ -2151,19 +2151,6 @@ struct FounderEnvironmentRendererView: View {
 
   private func ambientEquipmentLayer(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
     ZStack {
-      ambientFan(
-        station: motion.station(for: "aurora"),
-        tone: .cyan,
-        active: motion.ambient.continuousMotionEnabled
-      )
-      .position(
-        layout.viewportPosition(
-          worldPoint: CGPoint(x: 245, y: 385),
-          camera: camera,
-          layer: .middleGround
-        )
-      )
-
       networkHardware
         .position(
           layout.viewportPosition(
@@ -2182,32 +2169,6 @@ struct FounderEnvironmentRendererView: View {
           )
         )
 
-      ambientFan(
-        station: motion.station(for: "stacks"),
-        tone: .orange,
-        active: motion.ambient.continuousMotionEnabled
-      )
-      .position(
-        layout.viewportPosition(
-          worldPoint: CGPoint(x: 790, y: 365),
-          camera: camera,
-          layer: .middleGround
-        )
-      )
-
-      ambientFan(
-        station: motion.station(for: "brio"),
-        tone: .pink,
-        active: motion.ambient.continuousMotionEnabled
-      )
-      .opacity(motion.lighting.brioPublicSignalStability)
-      .position(
-        layout.viewportPosition(
-          worldPoint: CGPoint(x: 1_145, y: 385),
-          camera: camera,
-          layer: .middleGround
-        )
-      )
     }
     .allowsHitTesting(false)
   }
@@ -2244,26 +2205,6 @@ struct FounderEnvironmentRendererView: View {
     .padding(.horizontal, 9)
     .frame(height: 22)
     .background(.black.opacity(0.88), in: Capsule())
-  }
-
-  private func ambientFan(
-    station: FounderGarageStationMotion?,
-    tone: Color,
-    active: Bool
-  ) -> some View {
-    let cooling = station?.physical.coolingActivity ?? 0
-    let rotates = active && cooling > 0.08
-    return ZStack {
-      Circle().stroke(.white.opacity(0.18), lineWidth: 2).frame(width: 30, height: 30)
-      Image(systemName: "fanblades.fill")
-        .font(.system(size: 16))
-        .foregroundStyle(tone.opacity(0.34 + (station?.equipmentActivity ?? 0) * 0.54))
-        .phaseAnimator(rotates ? [0.0, 360.0] : [0.0]) { content, angle in
-          content.rotationEffect(.degrees(angle))
-        } animation: { _ in
-          .linear(duration: max(3.0, 7.8 - (station?.equipmentActivity ?? 0) * 4.2))
-        }
-    }
   }
 
   private func atmosphere(size: CGSize) -> some View {
