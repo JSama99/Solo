@@ -372,7 +372,7 @@ private extension WorkSessionCausalAttribution {
     case .agentOutput: "\(agentName)'s underlying output limited the available organizational result."
     case .founderReview: "\(agentName)'s underlying work was stronger than the result preserved by Founder Review."
     case .shared: "Both \(agentName)'s underlying output and Founder Review constrained the delivered result."
-    case .delegation: "Delegation preserved Founder Attention but left some of \(agentName)'s potential unextracted."
+    case .delegation: "Delegation finalized the handoff but left some of \(agentName)'s potential unextracted."
     case .potentialPreserved: "Founder management preserved \(agentName)'s available work quality."
     }
   }

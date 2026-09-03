@@ -66,7 +66,7 @@ struct EvidenceTriageView: View {
     VStack(alignment: .leading, spacing: 16) {
       operationalPanel(title: "FOUNDER DECISION") {
         decisionRow("Review Work", detail: "Classify \(session.cards.count) evidence items · Founder Attention -\(session.founderAttentionCost)", symbol: "eye.fill")
-        decisionRow("Delegate", detail: "Let Aurora finalize the packet · preserves Founder Attention", symbol: "arrow.triangle.branch")
+        decisionRow("Delegate", detail: "Let Aurora finalize the packet · Founder Attention -\(store.delegateAttentionCost)", symbol: "arrow.triangle.branch")
       }
       Button {
         guard store.beginManualEvidenceTriage(taskID: taskID) else { return }
