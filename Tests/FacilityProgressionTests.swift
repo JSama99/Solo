@@ -111,6 +111,71 @@ final class FacilityProgressionTests: XCTestCase {
     XCTAssertEqual(GarageEquipmentStage.derive(venture: 2, trackRecord: 18, capital: 7_000), .established)
   }
 
+  // MARK: - operatingTier fallback reachability (BUILD33 closeout, Item 2)
+
+  /// The raw decoder *can* produce an empty owned set. `decodeIfPresent ?? [...]`
+  /// supplies its default only when the key is absent, not when it is present
+  /// and empty — so a hand-edited or corrupted save can carry
+  /// `"ownedFacilities": []` alongside a non-Garage `currentFacility`. This
+  /// documents the hazard that the store is responsible for repairing.
+  func testRawSaveDecoderCanProduceAnEmptyOwnedFacilitySet() throws {
+    let json = """
+    {"version":2,"currentFacility":5,"ownedFacilities":[],"highestTrackRecord":40,"completedCareerCount":4}
+    """
+    let decoded = try JSONDecoder().decode(FounderProgressionSave.self, from: Data(json.utf8))
+    XCTAssertTrue(decoded.ownedFacilities.isEmpty, "The decoder alone does not repair an explicit empty set")
+    XCTAssertEqual(decoded.currentFacility, .unicornHeadquarters)
+  }
+
+  /// …and `sanitize()` repairs exactly that combination on load, which is what
+  /// makes `operatingTier`'s `?? .founderGarage` fallback unreachable through
+  /// the store. If the `sanitize()` call were ever dropped from `init`, the
+  /// fallback would go live and this test would fail.
+  func testStoreRepairsEmptyOwnedFacilitiesOnLoadSoTheFallbackNeverFires() throws {
+    let suite = "FallbackReachability-\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suite)!
+    defaults.removePersistentDomain(forName: suite)
+    let key = "progression"
+    let json = """
+    {"version":2,"currentFacility":5,"ownedFacilities":[],"highestTrackRecord":40,"completedCareerCount":4}
+    """
+    defaults.set(Data(json.utf8), forKey: key)
+
+    let store = FounderProgressionStore(defaults: defaults, saveKey: key)
+
+    XCTAssertFalse(store.ownedFacilities.isEmpty, "sanitize() must guarantee a non-empty owned set")
+    XCTAssertTrue(store.ownedFacilities.contains(.founderGarage))
+    XCTAssertEqual(store.currentFacility, .founderGarage,
+                   "A rendered facility the player does not own must be reset")
+    XCTAssertEqual(store.operatingTier, .founderGarage,
+                   "operatingTier resolves from a real owned tier, not the nil-coalescing fallback")
+    XCTAssertEqual(store.operatingTier.monthlyObligation, 0,
+                   "Rent correctly follows the repaired ownership, so nothing is silently unpaid")
+  }
+
+  /// No code path removes from `ownedFacilities` — purchase only inserts, and
+  /// sanitize only inserts. The Garage is therefore permanently owned once the
+  /// store exists, which is the invariant the fallback's unreachability rests on.
+  func testOwnedFacilitiesOnlyEverGrows() {
+    let context = makeStore(configuration: .build10)
+    context.store.observe(trackRecord: 40)
+    for _ in 0..<5 { context.store.beginCareer(); _ = context.store.recordCareerCompletion(trackRecord: 40) }
+    var previous = context.store.ownedFacilities
+    XCTAssertTrue(previous.contains(.founderGarage))
+    for tier in FacilityTier.allCases where tier.rawValue > 0 {
+      _ = context.store.purchase(tier, availableCapital: 500_000)
+      let current = context.store.ownedFacilities
+      XCTAssertTrue(previous.isSubset(of: current), "Purchasing \(tier.name) must not drop an owned tier")
+      XCTAssertTrue(current.contains(.founderGarage))
+      XCTAssertFalse(current.isEmpty)
+      previous = current
+    }
+    // Surviving a reload keeps the invariant.
+    let reloaded = FounderProgressionStore(defaults: context.defaults, saveKey: context.key)
+    XCTAssertEqual(reloaded.ownedFacilities, previous)
+    XCTAssertEqual(reloaded.operatingTier, .unicornHeadquarters)
+  }
+
   private func makeStore(
     configuration: FacilityProgressionConfiguration = .build2
   ) -> (store: FounderProgressionStore, defaults: UserDefaults, key: String) {
