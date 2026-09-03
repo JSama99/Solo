@@ -1037,6 +1037,54 @@ final class GameStoreTests: XCTestCase {
     }
   }
 
+  /// Task 2 acceptance: the monthly obligation must actually reach the
+  /// financial ledger, not merely exist as a number on the tier.
+  func testFacilityMonthlyObligationIsChargedToTheLedger() throws {
+    let garage = makeStore(seed: 5_150)
+    garage.progressionStore = makeProgression(saveKey: "garage-ledger", upTo: .founderGarage)
+    garage.advanceOperatingTime(hours: 24 * 30)
+    XCTAssertTrue(
+      garage.finance.transactions.filter { $0.category == .space }.isEmpty,
+      "The Founder Garage is rent-free and must post no space expense"
+    )
+
+    let office = makeStore(seed: 5_150)
+    office.progressionStore = makeProgression(saveKey: "office-ledger", upTo: .smallOffice)
+    office.advanceOperatingTime(hours: 24 * 30)
+    let charges = office.finance.transactions.filter { $0.category == .space }
+    XCTAssertEqual(charges.count, 1, "Exactly one monthly charge per 30 days")
+    let charge = try XCTUnwrap(charges.first)
+    XCTAssertEqual(charge.amount, OperatingCostTuning.smallOfficeMonthlyObligation)
+    XCTAssertEqual(charge.headquarters, .smallOffice)
+    XCTAssertTrue(charge.isRecurring)
+    XCTAssertTrue(charge.source.contains(FacilityTier.smallOffice.name))
+  }
+
+  /// The Founder Loft keeps its original transaction ID so saves that already
+  /// paid a month are never re-charged when the generalized code takes over.
+  func testFounderLoftRetainsItsLegacyTransactionID() throws {
+    let loft = makeStore(seed: 5_150)
+    loft.progressionStore = makeProgression(saveKey: "loft-ledger", upTo: .founderLoft)
+    loft.advanceOperatingTime(hours: 24 * 30)
+    let charge = try XCTUnwrap(loft.finance.transactions.first { $0.category == .space })
+    XCTAssertEqual(charge.id, "loft-monthly-1", "Legacy ID must be preserved for save compatibility")
+    XCTAssertEqual(charge.amount, OperatingCostTuning.founderLoftMonthlyObligation)
+  }
+
+  /// Obligations escalate with the tier actually occupied.
+  func testHigherTiersPostLargerMonthlyCharges() {
+    var amounts: [Int] = []
+    for tier in [FacilityTier.founderLoft, .smallOffice, .officeSuite, .companyBuilding, .unicornHeadquarters] {
+      let store = makeStore(seed: 5_150)
+      store.progressionStore = makeProgression(saveKey: "ledger-\(tier.rawValue)", upTo: tier)
+      store.advanceOperatingTime(hours: 24 * 30)
+      let total = store.finance.transactions.filter { $0.category == .space }.reduce(0) { $0 + $1.amount }
+      amounts.append(total)
+    }
+    XCTAssertEqual(amounts, amounts.sorted(), "Each tier must cost more to run than the one below it")
+    XCTAssertEqual(amounts.last, OperatingCostTuning.unicornHeadquartersMonthlyObligation)
+  }
+
   private func makeProgression(saveKey: String, upTo tier: FacilityTier) -> FounderProgressionStore {
     let suite = "FacilityTierTests-\(UUID().uuidString)"
     let defaults = UserDefaults(suiteName: suite)!
