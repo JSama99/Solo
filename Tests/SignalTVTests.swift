@@ -128,6 +128,47 @@ final class SignalTVTests: XCTestCase {
     XCTAssertGreaterThan(SignalTVAudioFocus.majorStory.volume, SignalTVAudioFocus.freeLook.volume)
   }
 
+  func testBroadcastPresentationDifferentiatesPublicCompanyStates() {
+    let idle = SignalTVBroadcastPresentation.derive(
+      event: SignalTVProgramming.marketPulse(venture: 1, sprint: 1),
+      reduceMotion: false
+    )
+    var update = event(id: "company-update", delta: 0)
+    var momentum = event(id: "company-momentum", delta: 7)
+    var pressure = event(id: "company-pressure", delta: -7)
+    var spotlight = event(id: "company-spotlight", delta: 10)
+    update.tone = .neutral
+    momentum.tone = .favorable
+    pressure.tone = .critical
+    spotlight.program = .founderSpotlight
+
+    XCTAssertEqual(idle.state, .idle)
+    XCTAssertEqual(SignalTVBroadcastPresentation.derive(event: update, reduceMotion: false).state, .companyUpdate)
+    XCTAssertEqual(SignalTVBroadcastPresentation.derive(event: momentum, reduceMotion: false).state, .momentum)
+    XCTAssertEqual(SignalTVBroadcastPresentation.derive(event: pressure, reduceMotion: false).state, .pressure)
+    XCTAssertEqual(SignalTVBroadcastPresentation.derive(event: spotlight, reduceMotion: false).state, .spotlight)
+  }
+
+  func testBroadcastPresentationPreservesStateWithoutMotion() {
+    let story = event(id: "reduced-motion-story", delta: -9)
+    let standard = SignalTVBroadcastPresentation.derive(event: story, reduceMotion: false)
+    let reduced = SignalTVBroadcastPresentation.derive(event: story, reduceMotion: true)
+    XCTAssertEqual(standard.state, reduced.state)
+    XCTAssertEqual(standard.banner, reduced.banner)
+    XCTAssertTrue(standard.continuousMotionEnabled)
+    XCTAssertFalse(reduced.continuousMotionEnabled)
+  }
+
+  func testPublicBroadcastFilterRejectsHiddenStories() {
+    let publicStory = event(id: "public-story", delta: 4)
+    var hiddenStory = event(id: "hidden-story", delta: -15)
+    hiddenStory.isPublic = false
+    hiddenStory.headline = "Unrevealed task quality"
+    let filtered = SignalTVProgramming.publicBroadcastEvents([hiddenStory, publicStory])
+    XCTAssertEqual(filtered.map(\.id), [publicStory.id])
+    XCTAssertFalse(filtered.contains { $0.headline.contains("Unrevealed") })
+  }
+
   func testCoverageRemainsMechanicallyIndependentFromTrust() {
     let store = activeStore()
     store.stats.trust = 85

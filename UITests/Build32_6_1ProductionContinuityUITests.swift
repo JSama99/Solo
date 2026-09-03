@@ -198,6 +198,16 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     cameraControls.tap()
     app.buttons["chevron.right"].tap()
     capture("09_RIGHT_BRIO_SERVER_VIEW", in: app)
+
+    let signalTV = app.buttons["signal-tv-hotspot"]
+    assertAccessibleTouchTarget(signalTV)
+    signalTV.tap()
+    XCTAssertTrue(app.navigationBars["Signal TV"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["THE STARTUP WORLD BROADCAST"].waitForExistence(timeout: 3))
+    capture("09A_SIGNAL_TV_PHYSICAL_BROADCAST", in: app)
+    app.buttons["close-signal-tv-viewer"].tap()
+    XCTAssertTrue(signalTV.waitForExistence(timeout: 4))
+
     XCTAssertTrue(cameraControls.waitForExistence(timeout: 3))
     cameraControls.tap()
     app.buttons["viewfinder"].tap()
