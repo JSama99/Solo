@@ -1155,11 +1155,6 @@ struct FounderEnvironmentRendererView: View {
         rearGarageDoor(layout: layout)
       }
 
-      garageEntrance
-        .position(layout.viewportPosition(for: .garageEntrance, camera: camera, layer: .middleGround))
-      storageShelves
-        .position(layout.viewportPosition(for: .storage, camera: camera, layer: .middleGround))
-
       if projection.garageIdentity.showsTireStack {
         garageTireStack
           .position(layout.viewportPosition(worldPoint: CGPoint(x: 1_292, y: 482), camera: camera, layer: .middleGround))
@@ -1294,59 +1289,6 @@ struct FounderEnvironmentRendererView: View {
       .position(x: position.x + 8 * scale, y: position.y + 122 * scale)
   }
 
-  private var garageEntrance: some View {
-    ZStack {
-      RoundedRectangle(cornerRadius: 5)
-        .fill(.black.opacity(0.68))
-        .frame(width: 174, height: 238)
-        .shadow(color: .black.opacity(0.56), radius: 8, x: 5, y: 5)
-      RoundedRectangle(cornerRadius: 4)
-        .fill(LinearGradient(
-          colors: [Color(red: 0.27, green: 0.28, blue: 0.27), Color(red: 0.13, green: 0.14, blue: 0.14)],
-          startPoint: .top,
-          endPoint: .bottom
-        ))
-        .frame(width: 154, height: 222)
-      VStack(spacing: 0) {
-        ForEach(0..<5, id: \.self) { row in
-          HStack(spacing: 5) {
-            ForEach(0..<2, id: \.self) { _ in
-              RoundedRectangle(cornerRadius: 2)
-                .fill(LinearGradient(
-                  colors: [.white.opacity(0.10), .black.opacity(0.16)],
-                  startPoint: .top,
-                  endPoint: .bottom
-                ))
-                .overlay {
-                  RoundedRectangle(cornerRadius: 2)
-                    .stroke(.black.opacity(0.34), lineWidth: 1)
-                }
-            }
-          }
-          .padding(.horizontal, 7)
-          .padding(.vertical, 5)
-          .frame(height: 43)
-          if row < 4 {
-            Rectangle().fill(.black.opacity(0.72)).frame(height: 2)
-            Rectangle().fill(.white.opacity(0.08)).frame(height: 1)
-          }
-        }
-      }
-      .frame(width: 154, height: 222)
-      HStack(spacing: 150) {
-        Capsule().fill(FounderGarageMaterial.satinMetal).frame(width: 6, height: 234)
-        Capsule().fill(FounderGarageMaterial.satinMetal).frame(width: 6, height: 234)
-      }
-      HStack(spacing: 136) {
-        VStack(spacing: 34) { ForEach(0..<6, id: \.self) { _ in Circle().fill(.white.opacity(0.28)).frame(width: 5, height: 5) } }
-        VStack(spacing: 34) { ForEach(0..<6, id: \.self) { _ in Circle().fill(.white.opacity(0.28)).frame(width: 5, height: 5) } }
-      }
-      Capsule().fill(.black.opacity(0.96)).frame(width: 158, height: 7).offset(y: 112)
-      Capsule().fill(.white.opacity(0.30)).frame(width: 24, height: 5).offset(y: 61)
-    }
-    .accessibilityHidden(true)
-  }
-
   /// A closed, sectional door is a room-scale object — not a wall texture or
   /// a Founder Computer decoration. Its frame is positioned in the rear world
   /// layer so it stays available when the player pans away from the desk.
@@ -1369,23 +1311,6 @@ struct FounderEnvironmentRendererView: View {
     .scaleEffect(layout.depthScale(for: .rearGarageDoor) * layout.scale * 1.35)
     .position(layout.viewportPosition(for: .rearGarageDoor, camera: camera, layer: .background))
     .accessibilityHidden(true)
-  }
-
-  private var storageShelves: some View {
-    ZStack {
-      RoundedRectangle(cornerRadius: 4).stroke(.white.opacity(0.28), lineWidth: 5).frame(width: 150, height: 188)
-      VStack(spacing: 37) { ForEach(0..<4, id: \.self) { _ in Rectangle().fill(.black.opacity(0.78)).frame(width: 150, height: 7) } }
-      VStack(spacing: 26) {
-        HStack { equipmentCase(.orange); equipmentCase(.gray) }
-        HStack { equipmentCase(.cyan); equipmentCase(.orange) }
-        HStack { equipmentCase(.gray); equipmentCase(.gray) }
-      }
-    }
-  }
-
-  private func equipmentCase(_ color: Color) -> some View {
-    RoundedRectangle(cornerRadius: 4).fill(color.opacity(0.55)).frame(width: 48, height: 25)
-      .overlay { RoundedRectangle(cornerRadius: 4).stroke(.black.opacity(0.65), lineWidth: 2) }
   }
 
   private func panoramicStations(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
