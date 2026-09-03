@@ -427,6 +427,7 @@ struct FounderDeskWorkspace: View {
       device: device,
       state: deviceStates[device] ?? .idle,
       safePending: preview.signal != nil,
+      visibleOperatingIntensity: motion.lighting.workActivityIntensity,
       reduceMotion: reduceMotion,
       sceneActive: scenePhase == .active,
       visible: visible
@@ -776,7 +777,7 @@ private struct FounderMonitorHardware: View {
     .overlay(alignment: .bottomTrailing) {
       Circle()
         .fill(presentation.safePendingIndicatorVisible ? SoloTheme.amber : .green)
-        .opacity(presentation.powerIndicatorIntensity)
+        .opacity(min(1, presentation.powerIndicatorIntensity + presentation.operatingIndicatorIntensity * 0.10))
         .frame(width: 5, height: 5)
         .padding(.trailing, 11)
         .padding(.bottom, 18)
@@ -844,7 +845,7 @@ private struct FounderPhoneHardware: View {
       Capsule().fill(.black.opacity(0.92)).frame(width: 24, height: 6).offset(y: -43)
       Circle()
         .fill(presentation.safePendingIndicatorVisible ? SoloTheme.amber : .green)
-        .opacity(presentation.powerIndicatorIntensity)
+        .opacity(min(1, presentation.powerIndicatorIntensity + presentation.operatingIndicatorIntensity * 0.08))
         .frame(width: 4, height: 4)
         .offset(x: 23, y: 40)
     }
@@ -906,7 +907,7 @@ private struct FounderTabletHardware: View {
           )
             .padding(5)
           Circle()
-            .fill(.green.opacity(presentation.powerIndicatorIntensity))
+            .fill(.green.opacity(min(1, presentation.powerIndicatorIntensity + presentation.operatingIndicatorIntensity * 0.08)))
             .frame(width: 4, height: 4)
             .offset(x: 45)
         }
@@ -959,7 +960,9 @@ private struct FounderServerHardware: View {
         .clipShape(.rect(cornerRadius: 7))
       VStack(spacing: 6) {
         HStack(spacing: 5) {
-          Circle().fill(SoloTheme.mint.opacity(0.82)).frame(width: 6, height: 6)
+          Circle()
+            .fill(SoloTheme.mint.opacity(0.38 + presentation.operatingIndicatorIntensity * 0.58))
+            .frame(width: 6, height: 6)
           FounderHardwareScreen(
             tone: SoloTheme.mint,
             preview: preview,

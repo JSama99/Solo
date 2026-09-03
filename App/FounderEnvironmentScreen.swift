@@ -807,6 +807,7 @@ struct FounderEnvironmentRendererView: View {
     ZStack {
       panoramicBackground(size: size, layout: layout)
       cinematicValueShaping(size: size)
+      operationalLightingGrade(size: size)
       practicalLighting(size: size, layout: layout)
       livingElectricalLayer(size: size, layout: layout)
       garageArchitecture(size: size, layout: layout)
@@ -851,6 +852,52 @@ struct FounderEnvironmentRendererView: View {
     .frame(width: size.width, height: size.height)
     .allowsHitTesting(false)
     .accessibilityHidden(true)
+  }
+
+  private func operationalLightingGrade(size: CGSize) -> some View {
+    let breathes = [.activeWork, .positiveMomentum].contains(motion.lighting.operationalState)
+    return RadialGradient(
+      colors: [
+        operationalLightingTone.opacity(
+          motion.lighting.ambientWashIntensity * (increasedContrast ? 0.045 : 0.075)
+        ),
+        operationalLightingTone.opacity(
+          motion.lighting.ambientWashIntensity * (increasedContrast ? 0.012 : 0.024)
+        ),
+        .clear
+      ],
+      center: operationalLightingCenter,
+      startRadius: 8,
+      endRadius: size.width * 0.82
+    )
+    .frame(width: size.width, height: size.height)
+    .phaseAnimator(
+      breathes && motion.ambient.continuousMotionEnabled ? [0.94, 1.0, 0.97] : [1.0]
+    ) { content, opacity in
+      content.opacity(opacity)
+    } animation: { _ in
+      .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .environmentalLight).duration)
+    }
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
+  }
+
+  private var operationalLightingTone: Color {
+    switch motion.lighting.operationalState {
+    case .quiet: Color(red: 0.32, green: 0.42, blue: 0.48)
+    case .activeWork: SoloTheme.cyan
+    case .reviewAttention: SoloTheme.amber
+    case .positiveMomentum: SoloTheme.mint
+    case .publicPressure: SoloTheme.coral
+    }
+  }
+
+  private var operationalLightingCenter: UnitPoint {
+    switch motion.lighting.operationalState {
+    case .publicPressure: UnitPoint(x: 0.76, y: 0.30)
+    case .reviewAttention: UnitPoint(x: 0.52, y: 0.58)
+    case .quiet, .activeWork, .positiveMomentum: UnitPoint(x: 0.50, y: 0.52)
+    }
   }
 
   private func signalTVLayer(layout: FounderEnvironmentLayout) -> some View {
@@ -1143,9 +1190,15 @@ struct FounderEnvironmentRendererView: View {
         ForEach(0..<3, id: \.self) { _ in
           ZStack {
             RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.92)).frame(width: 154, height: 20)
-            Capsule().fill(Color.white.opacity(0.88)).frame(width: 138, height: 8)
+            Capsule()
+              .fill(Color.white.opacity(0.66 + motion.lighting.practicalLightIntensity * 0.28))
+              .frame(width: 138, height: 8)
+            Capsule()
+              .fill(operationalLightingTone.opacity(0.08 + motion.lighting.ambientWashIntensity * 0.10))
+              .frame(width: 112, height: 3)
+              .offset(y: 4)
           }
-          .shadow(color: .white.opacity(0.22), radius: 12, y: 7)
+          .shadow(color: operationalLightingTone.opacity(0.08 + motion.lighting.practicalLightIntensity * 0.12), radius: 12, y: 7)
         }
       }
       .position(layout.viewportPosition(worldPoint: CGPoint(x: 680, y: 88), camera: camera, layer: .background))
@@ -1166,13 +1219,6 @@ struct FounderEnvironmentRendererView: View {
           .position(layout.viewportPosition(worldPoint: CGPoint(x: 1_292, y: 482), camera: camera, layer: .middleGround))
       }
 
-      Path { path in
-        let utility = layout.viewportPosition(worldPoint: CGPoint(x: 112, y: 250), camera: camera, layer: .middleGround)
-        let desk = layout.viewportPosition(for: .founderDesk, camera: camera, layer: .middleGround)
-        path.move(to: utility)
-        path.addLine(to: CGPoint(x: desk.x - 120, y: desk.y - 190))
-      }
-      .stroke(.orange.opacity(0.42), style: StrokeStyle(lineWidth: 4, lineCap: .round, dash: [10, 5]))
     }
     .allowsHitTesting(false)
   }
@@ -1550,6 +1596,8 @@ struct FounderEnvironmentRendererView: View {
 
   private func largeEquipment(_ item: InfrastructureVisual) -> some View {
     let tone: Color = item.state == .active ? .green : item.state == .uninstalled ? .gray : .cyan
+    let operating = item.state != .uninstalled && motion.infrastructure.continuousMotionEnabled
+    let indicatorIntensity = item.state == .uninstalled ? 0.22 : 0.42 + motion.lighting.equipmentActivityIntensity * 0.50
     return VStack(spacing: 4) {
       ZStack {
         RoundedRectangle(cornerRadius: 12).fill(.black.opacity(item.state == .uninstalled ? 0.54 : 0.90)).frame(width: 108, height: 76)
@@ -1559,7 +1607,25 @@ struct FounderEnvironmentRendererView: View {
       Text(item.title.uppercased()).font(.system(size: 8, weight: .black, design: .rounded)).tracking(0.5).foregroundStyle(tone)
     }
     .overlay(alignment: .topTrailing) {
-      Circle().fill(tone).frame(width: 9, height: 9).padding(8)
+      Circle()
+        .fill(tone)
+        .frame(width: 9, height: 9)
+        .phaseAnimator(operating ? [0.78, 1.0, 0.84] : [1.0]) { content, opacity in
+          content.opacity(opacity * indicatorIntensity)
+        } animation: { _ in
+          .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .serverCooling).duration)
+        }
+        .padding(8)
+    }
+    .background {
+      if item.state != .uninstalled {
+        RadialGradient(
+          colors: [tone.opacity(motion.lighting.equipmentActivityIntensity * 0.07), .clear],
+          center: .center,
+          startRadius: 2,
+          endRadius: 70
+        )
+      }
     }
     .background(alignment: .bottom) {
       Ellipse().fill(.black.opacity(0.46)).frame(width: 104, height: 12).offset(y: 3)
@@ -2133,7 +2199,18 @@ struct FounderEnvironmentRendererView: View {
     HStack(spacing: 8) {
       ForEach(0..<4, id: \.self) { index in
         Circle().stroke(.white.opacity(0.28), lineWidth: 1).frame(width: 11, height: 11)
-        if index < 3 { Circle().fill(.green.opacity(0.66)).frame(width: 3, height: 3) }
+        if index < 3 {
+          Circle()
+            .fill(.green.opacity(0.38 + motion.lighting.equipmentActivityIntensity * 0.42))
+            .frame(width: 3, height: 3)
+            .phaseAnimator(
+              motion.infrastructure.continuousMotionEnabled ? [0.76, 1.0, 0.82] : [1.0]
+            ) { content, opacity in
+              content.opacity(index == 1 ? opacity : 0.86)
+            } animation: { _ in
+              .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .serverNetwork).duration + Double(index) * 0.41)
+            }
+        }
       }
     }
     .padding(.horizontal, 9)

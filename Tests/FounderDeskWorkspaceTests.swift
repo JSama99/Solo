@@ -25,6 +25,20 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     XCTAssertEqual(pending.screenLuminance, quiet.screenLuminance)
   }
 
+  func testVisibleOperatingActivityStrengthensEquipmentWithoutInventingState() {
+    let quiet = devicePresentation(device: .computer, state: .idle, visibleOperatingIntensity: 0)
+    let operating = devicePresentation(device: .computer, state: .idle, visibleOperatingIntensity: 1)
+    let reduced = devicePresentation(device: .computer, state: .idle, visibleOperatingIntensity: 1, reduceMotion: true)
+    XCTAssertEqual(quiet.state, operating.state)
+    XCTAssertGreaterThan(operating.screenLuminance, quiet.screenLuminance)
+    XCTAssertGreaterThan(operating.localGlowIntensity, quiet.localGlowIntensity)
+    XCTAssertGreaterThan(operating.peripheralBacklightIntensity, quiet.peripheralBacklightIntensity)
+    XCTAssertGreaterThan(operating.operatingIndicatorIntensity, quiet.operatingIndicatorIntensity)
+    XCTAssertEqual(reduced.screenLuminance, operating.screenLuminance)
+    XCTAssertEqual(reduced.localGlowIntensity, operating.localGlowIntensity)
+    XCTAssertFalse(reduced.screenLifeEnabled)
+  }
+
   func testReduceMotionKeepsDeviceStateAndLightingButRemovesPhysicalTravel() {
     let standard = devicePresentation(device: .tablet, state: .waking)
     let reduced = devicePresentation(device: .tablet, state: .waking, reduceMotion: true)
@@ -331,6 +345,62 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     XCTAssertNil(hooks.eventToken)
   }
 
+  func testOperationalLightingUsesVisibleStatePrecedence() {
+    var momentumStats = FounderStats()
+    momentumStats.momentum = 82
+    let publicPressure = PublicMediaEvent(
+      id: "public-pressure",
+      program: .techComLive,
+      tone: .critical,
+      headline: "SOLO faces public scrutiny",
+      summary: "A published company story enters the broadcast cycle.",
+      tickerItems: ["SOLO PUBLIC UPDATE"],
+      coverageDelta: -6,
+      venture: 1,
+      sprint: 1,
+      concernsPlayerCompany: true
+    )
+
+    XCTAssertEqual(operationalMotion().lighting.operationalState, .quiet)
+    XCTAssertEqual(operationalMotion(stats: momentumStats).lighting.operationalState, .positiveMomentum)
+    XCTAssertEqual(
+      operationalMotion(agents: [visibleAgent(activity: .working)]).lighting.operationalState,
+      .activeWork
+    )
+    XCTAssertEqual(
+      operationalMotion(publicEvents: [publicPressure]).lighting.operationalState,
+      .publicPressure
+    )
+    XCTAssertEqual(
+      operationalMotion(
+        agents: [visibleAgent(activity: .awaitingReview, needsFounderAttention: true)],
+        publicEvents: [publicPressure]
+      ).lighting.operationalState,
+      .reviewAttention
+    )
+  }
+
+  func testOperationalLightingRejectsNonPublicPressureWithoutRNGInput() {
+    let hidden = PublicMediaEvent(
+      id: "hidden-pressure",
+      program: .breaking,
+      tone: .critical,
+      headline: "Unrevealed result",
+      summary: "Must not enter Garage presentation.",
+      tickerItems: [],
+      coverageDelta: -10,
+      venture: 1,
+      sprint: 1,
+      concernsPlayerCompany: true,
+      isPublic: false
+    )
+    let first = operationalMotion(publicEvents: [hidden])
+    let second = operationalMotion(publicEvents: [hidden])
+    XCTAssertEqual(first, second)
+    XCTAssertEqual(first.lighting.operationalState, .quiet)
+    XCTAssertEqual(first.lighting.publicPressureIntensity, 0)
+  }
+
   func testPhysicalDeviceSilhouettesRemainDistinctWithoutLabels() {
     for regularWidth in [false, true] {
       let viewport = regularWidth ? CGSize(width: 1_024, height: 1_366) : CGSize(width: 402, height: 874)
@@ -619,6 +689,7 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     device: FounderDeskDevice,
     state: FounderPhysicalDeviceState,
     safePending: Bool = false,
+    visibleOperatingIntensity: Double = 0,
     reduceMotion: Bool = false,
     visible: Bool = true
   ) -> FounderDevicePresentation {
@@ -626,9 +697,53 @@ final class FounderDeskWorkspaceTests: XCTestCase {
       device: device,
       state: state,
       safePending: safePending,
+      visibleOperatingIntensity: visibleOperatingIntensity,
       reduceMotion: reduceMotion,
       sceneActive: true,
       visible: visible
+    )
+  }
+
+  private func operationalMotion(
+    stats: FounderStats = FounderStats(),
+    agents: [LivingAgentProjection] = [],
+    publicEvents: [PublicMediaEvent] = []
+  ) -> FounderGarageMotionPresentation {
+    FounderGarageMotionPresentation.derive(
+      environment: FounderEnvironmentProjection(
+        facility: .founderGarage,
+        atmosphere: .derive(stats: stats, facility: .founderGarage, venture: 1),
+        infrastructure: [],
+        agents: agents,
+        signalTVEvents: publicEvents
+      ),
+      camera: FounderEnvironmentCameraState(mode: .freeLook),
+      reduceMotion: false,
+      sceneActive: true
+    )
+  }
+
+  private func visibleAgent(
+    activity: LivingAgentActivity,
+    needsFounderAttention: Bool = false
+  ) -> LivingAgentProjection {
+    LivingAgentProjection(
+      agentID: "stacks",
+      name: "Stacks",
+      initials: "ST",
+      role: .engineering,
+      taskID: UUID(uuidString: "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"),
+      taskTitle: "Visible work",
+      activity: activity,
+      conditions: [],
+      emphasis: needsFounderAttention ? .founderAttention : .normal,
+      progress: activity == .working ? 0.5 : 1,
+      reviewRevealStep: 0,
+      stressLabel: "Steady",
+      trustLabel: "Trusted",
+      level: 1,
+      needsFounderAttention: needsFounderAttention,
+      isResting: false
     )
   }
 }

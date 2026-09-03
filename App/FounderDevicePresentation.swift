@@ -17,6 +17,7 @@ struct FounderDevicePresentation: Equatable, Sendable {
   var reflectionOffset: Double
   var powerIndicatorIntensity: Double
   var peripheralBacklightIntensity: Double
+  var operatingIndicatorIntensity: Double
   var physicalResponseEnabled: Bool
   var screenLifeEnabled: Bool
   var safePendingIndicatorVisible: Bool
@@ -25,6 +26,7 @@ struct FounderDevicePresentation: Equatable, Sendable {
     device: FounderDeskDevice,
     state: FounderPhysicalDeviceState,
     safePending: Bool,
+    visibleOperatingIntensity: Double = 0,
     reduceMotion: Bool,
     sceneActive: Bool,
     visible: Bool
@@ -42,16 +44,31 @@ struct FounderDevicePresentation: Equatable, Sendable {
     case .tablet: -0.03
     case .server: -0.10
     }
+    let operating = min(1, max(0, visibleOperatingIntensity))
+    let luminanceBoost: Double = switch device {
+    case .computer: operating * 0.06
+    case .server: operating * 0.05
+    case .phone: operating * 0.015
+    case .tablet: operating * 0.02
+    }
+    let glowBoost: Double = switch device {
+    case .computer: operating * 0.18
+    case .server: operating * 0.14
+    case .phone: operating * 0.04
+    case .tablet: operating * 0.06
+    }
+    let baseGlow = state == .active ? 0.88 : state == .waking ? 0.76 : state == .settling ? 0.46 : 0.20
     let responseEnabled = sceneActive && visible && !reduceMotion
     return Self(
       state: state,
-      screenLuminance: min(1, max(0.18, baseLuminance + deviceBias)),
-      localGlowIntensity: state == .active ? 0.88 : state == .waking ? 0.76 : state == .settling ? 0.46 : 0.20,
+      screenLuminance: min(1, max(0.18, baseLuminance + deviceBias + luminanceBoost)),
+      localGlowIntensity: min(1, baseGlow + glowBoost),
       reflectionOffset: responseEnabled && state == .waking ? (device == .phone ? 9 : device == .tablet ? 6 : 4) : 0,
       powerIndicatorIntensity: state == .asleep ? 0.28 : safePending ? 1 : state == .idle ? 0.58 : 0.84,
       peripheralBacklightIntensity: device == .computer
-        ? (state == .active ? 0.90 : state == .waking ? 0.76 : state == .settling ? 0.50 : 0.28)
+        ? min(1, (state == .active ? 0.90 : state == .waking ? 0.76 : state == .settling ? 0.50 : 0.28) + operating * 0.10)
         : 0,
+      operatingIndicatorIntensity: 0.24 + operating * 0.68,
       physicalResponseEnabled: responseEnabled && [.waking, .settling].contains(state),
       screenLifeEnabled: sceneActive && visible && !reduceMotion && state != .asleep,
       safePendingIndicatorVisible: safePending
