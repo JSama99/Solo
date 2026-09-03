@@ -248,14 +248,18 @@ final class CampaignCalibrationStoreTests: XCTestCase {
     XCTAssertEqual(store.workSession(for: id)?.deliveredQuality, session.deliveredQuality)
   }
 
-  func testDelegateIsDeterministicFreeAndCannotReplay() throws {
+  /// P0 audit (Task 1): delegation now costs `delegateAttentionCost` instead
+  /// of being free, charged exactly once even across a rejected replay.
+  func testDelegateIsDeterministicCostsOneAttentionAndCannotReplay() throws {
     let (store, id) = try makeStore(title: "Launch founder analytics")
     let attention = store.attentionRemaining
     XCTAssertTrue(store.delegateCampaignCalibration(taskID: id))
     let delivered = store.workSession(for: id)?.deliveredQuality
+    XCTAssertEqual(store.attentionRemaining, attention - store.delegateAttentionCost)
     XCTAssertFalse(store.delegateCampaignCalibration(taskID: id))
     XCTAssertEqual(store.workSession(for: id)?.deliveredQuality, delivered)
-    XCTAssertEqual(store.attentionRemaining, attention)
+    XCTAssertEqual(store.attentionRemaining, attention - store.delegateAttentionCost,
+                   "A rejected replay must not charge Attention twice")
   }
 
   func testCompletedReviewFeedsEvidenceAndHindsight() throws {

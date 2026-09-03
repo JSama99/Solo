@@ -469,7 +469,7 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       // This is intentionally inside the neutral compact camera frame, while
       // the right look places the complete door near the visual center. Keep
       // the renderer and VoiceOver landmark on this single world anchor.
-      .rearGarageDoor: CGPoint(x: 920, y: 342),
+      .rearGarageDoor: CGPoint(x: 680, y: 328),
       .storage: CGPoint(x: 225, y: 320),
       .auroraStation: CGPoint(x: 325, y: 300),
       .verificationArray: CGPoint(x: 188, y: 505),
@@ -674,7 +674,7 @@ struct SignalTVHotspotLayout: Equatable, Sendable {
 /// Shared world geometry keeps the rear-wall door's rendered body and its
 /// accessibility landmark in lockstep across compact iPhone and iPad scenes.
 struct FounderGarageDoorLayout: Equatable, Sendable {
-  static let unscaledSize = CGSize(width: 470, height: 390)
+  static let unscaledSize = CGSize(width: 720, height: 527)
 
   var viewportSize: CGSize
 
@@ -722,6 +722,7 @@ struct FounderEnvironmentProjection: Equatable, Sendable {
   var signalTVEvents: [PublicMediaEvent] = []
 
   var spatialPresentation: CompanySpatialPresentation { .map(facility) }
+  var garageIdentity: FounderGarageIdentityProjection { .derive(spatialPresentation) }
   var agentAccessibilitySummary: String {
     agents.map { agent in
       let visibleConditions = agent.conditions.intersection([.focused, .stressed, .overloaded])
@@ -734,6 +735,46 @@ struct FounderEnvironmentProjection: Equatable, Sendable {
 
   static func physicalLocation(for upgrade: FacilityUpgradeID) -> InfrastructurePhysicalLocation {
     InfrastructurePhysicalLocation.map(upgrade)
+  }
+}
+
+/// Color-independent scenic contract for an unmistakable working garage.
+/// Keeping this separate from the renderer makes it regression-testable and
+/// prevents a future palette pass from quietly turning the room into a loft.
+struct FounderGarageIdentityProjection: Equatable, Sendable {
+  var showsSectionalDoor: Bool
+  var showsCeilingJoists: Bool
+  var showsToolWall: Bool
+  var showsTireStack: Bool
+  var showsConcreteWear: Bool
+  var usesResidentialSeating: Bool
+
+  var industrialCueCount: Int {
+    [showsSectionalDoor, showsCeilingJoists, showsToolWall, showsTireStack, showsConcreteWear]
+      .filter { $0 }.count
+  }
+
+  static func derive(_ presentation: CompanySpatialPresentation) -> Self {
+    switch presentation {
+    case .improvisedGarage:
+      Self(
+        showsSectionalDoor: true,
+        showsCeilingJoists: true,
+        showsToolWall: true,
+        showsTireStack: true,
+        showsConcreteWear: true,
+        usesResidentialSeating: false
+      )
+    case .elevatedLoft:
+      Self(
+        showsSectionalDoor: false,
+        showsCeilingJoists: false,
+        showsToolWall: false,
+        showsTireStack: false,
+        showsConcreteWear: false,
+        usesResidentialSeating: true
+      )
+    }
   }
 }
 
@@ -833,6 +874,16 @@ struct FounderEnvironmentRendererView: View {
   }
 
   private var couchView: some View {
+    Group {
+      if projection.garageIdentity.usesResidentialSeating {
+        residentialCouch
+      } else {
+        garageRecoveryCot
+      }
+    }
+  }
+
+  private var residentialCouch: some View {
     ZStack {
       Ellipse().fill(.black.opacity(0.48)).frame(width: 250, height: 26).offset(y: 74)
       RoundedRectangle(cornerRadius: 18).fill(LinearGradient(colors: [.brown.opacity(0.85), .black.opacity(0.9)], startPoint: .top, endPoint: .bottom)).frame(width: 230, height: 82).offset(y: 22)
@@ -843,6 +894,29 @@ struct FounderEnvironmentRendererView: View {
       }.offset(y: -11)
       HStack(spacing: 187) { Capsule().fill(.black.opacity(0.8)).frame(width: 10, height: 48); Capsule().fill(.black.opacity(0.8)).frame(width: 10, height: 48) }.offset(y: 55)
     }.frame(width: 260, height: 160)
+  }
+
+  private var garageRecoveryCot: some View {
+    ZStack {
+      Ellipse().fill(.black.opacity(0.52)).frame(width: 238, height: 22).offset(y: 65)
+      HStack(spacing: 188) {
+        Capsule().fill(FounderGarageMaterial.satinMetal).frame(width: 8, height: 82)
+        Capsule().fill(FounderGarageMaterial.satinMetal).frame(width: 8, height: 82)
+      }.offset(y: 24)
+      RoundedRectangle(cornerRadius: 7)
+        .fill(Color(red: 0.12, green: 0.15, blue: 0.14))
+        .frame(width: 224, height: 48)
+        .overlay { RoundedRectangle(cornerRadius: 7).stroke(.white.opacity(0.13), lineWidth: 1) }
+      RoundedRectangle(cornerRadius: 5)
+        .fill(Color(red: 0.30, green: 0.31, blue: 0.27))
+        .frame(width: 55, height: 34)
+        .offset(x: -76, y: -5)
+      Text("RECOVERY BAY")
+        .font(.system(size: 9, weight: .black, design: .monospaced))
+        .foregroundStyle(.orange.opacity(0.78))
+        .offset(y: 42)
+    }
+    .frame(width: 260, height: 160)
   }
 
   private var workoutBenchView: some View {
@@ -920,18 +994,22 @@ struct FounderEnvironmentRendererView: View {
 
   private func garageWallMaterial(size: CGSize) -> some View {
     Canvas { context, canvasSize in
-      let panelWidth = canvasSize.width / 9
-      for index in 0..<10 {
-        let rect = CGRect(x: CGFloat(index) * panelWidth, y: 0, width: panelWidth - 2, height: canvasSize.height)
-        context.fill(Path(rect), with: .color(index.isMultiple(of: 3) ? .white.opacity(0.025) : .black.opacity(0.035)))
-        context.stroke(Path(CGRect(x: rect.minX, y: 0, width: 1, height: rect.height)), with: .color(.black.opacity(0.36)), lineWidth: 2)
-      }
-      for row in 1..<6 {
-        let y = CGFloat(row) / 6 * canvasSize.height
-        var seam = Path()
-        seam.move(to: CGPoint(x: 0, y: y))
-        seam.addLine(to: CGPoint(x: canvasSize.width, y: y))
-        context.stroke(seam, with: .color(.black.opacity(0.30)), lineWidth: row.isMultiple(of: 2) ? 3 : 1)
+      let blockHeight: CGFloat = 44
+      let blockWidth: CGFloat = 108
+      let rows = Int(ceil(canvasSize.height / blockHeight))
+      let columns = Int(ceil(canvasSize.width / blockWidth)) + 1
+      for row in 0..<rows {
+        let offset = row.isMultiple(of: 2) ? -blockWidth / 2 : 0
+        for column in 0..<columns {
+          let rect = CGRect(
+            x: CGFloat(column) * blockWidth + offset,
+            y: CGFloat(row) * blockHeight,
+            width: blockWidth,
+            height: blockHeight
+          )
+          context.fill(Path(rect.insetBy(dx: 1.5, dy: 1.5)), with: .color(.white.opacity(row.isMultiple(of: 3) ? 0.030 : 0.016)))
+          context.stroke(Path(rect), with: .color(.black.opacity(0.46)), lineWidth: 2.5)
+        }
       }
       for index in 0..<18 {
         let x = CGFloat((index * 83) % 997) / 997 * canvasSize.width
@@ -1013,11 +1091,22 @@ struct FounderEnvironmentRendererView: View {
           with: .color(index.isMultiple(of: 4) ? .white.opacity(0.045) : .black.opacity(0.075))
         )
       }
+      if projection.garageIdentity.showsConcreteWear {
+        for index in 0..<5 {
+          let x = CGFloat(index * 73 + 31).truncatingRemainder(dividingBy: max(canvasSize.width, 1))
+          let y = horizon + (canvasSize.height - horizon) * CGFloat(0.42 + Double(index % 3) * 0.16)
+          let stain = CGRect(x: x, y: y, width: CGFloat(34 + index * 5), height: CGFloat(8 + index % 2 * 5))
+          context.fill(Path(ellipseIn: stain), with: .color(.black.opacity(0.16)))
+        }
+      }
     }
   }
 
   private func garageArchitecture(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
     ZStack {
+      if projection.garageIdentity.showsCeilingJoists {
+        garageCeilingJoists(layout: layout)
+      }
       ForEach(0..<7, id: \.self) { index in
         RoundedRectangle(cornerRadius: 2)
           .fill(LinearGradient(
@@ -1044,27 +1133,32 @@ struct FounderEnvironmentRendererView: View {
         .frame(width: size.width * 2.5, height: 13)
         .position(layout.viewportPosition(worldPoint: CGPoint(x: 680, y: 78), camera: camera, layer: .background))
 
-      HStack(spacing: 80) {
-        ForEach(0..<4, id: \.self) { _ in
+      HStack(spacing: 170) {
+        ForEach(0..<3, id: \.self) { _ in
           ZStack {
-            RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.86)).frame(width: 86, height: 15)
-            Capsule().fill(Color(red: 1, green: 0.78, blue: 0.48).opacity(0.82)).frame(width: 72, height: 6)
+            RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.92)).frame(width: 154, height: 20)
+            Capsule().fill(Color.white.opacity(0.88)).frame(width: 138, height: 8)
           }
-          .shadow(color: .orange.opacity(0.24), radius: 9, y: 5)
+          .shadow(color: .white.opacity(0.22), radius: 12, y: 7)
         }
       }
-      .position(layout.viewportPosition(worldPoint: CGPoint(x: 680, y: 105), camera: camera, layer: .background))
+      .position(layout.viewportPosition(worldPoint: CGPoint(x: 680, y: 88), camera: camera, layer: .background))
 
       wallUtilityDetails(layout: layout)
+
+      if projection.garageIdentity.showsToolWall {
+        garageToolWall
+          .position(layout.viewportPosition(worldPoint: CGPoint(x: 1_205, y: 230), camera: camera, layer: .background))
+      }
 
       if projection.spatialPresentation == .improvisedGarage {
         rearGarageDoor(layout: layout)
       }
 
-      garageEntrance
-        .position(layout.viewportPosition(for: .garageEntrance, camera: camera, layer: .middleGround))
-      storageShelves
-        .position(layout.viewportPosition(for: .storage, camera: camera, layer: .middleGround))
+      if projection.garageIdentity.showsTireStack {
+        garageTireStack
+          .position(layout.viewportPosition(worldPoint: CGPoint(x: 1_292, y: 482), camera: camera, layer: .middleGround))
+      }
 
       Path { path in
         let utility = layout.viewportPosition(worldPoint: CGPoint(x: 112, y: 250), camera: camera, layer: .middleGround)
@@ -1075,6 +1169,57 @@ struct FounderEnvironmentRendererView: View {
       .stroke(.orange.opacity(0.42), style: StrokeStyle(lineWidth: 4, lineCap: .round, dash: [10, 5]))
     }
     .allowsHitTesting(false)
+  }
+
+  private func garageCeilingJoists(layout: FounderEnvironmentLayout) -> some View {
+    ZStack {
+      ForEach(0..<6, id: \.self) { index in
+        Capsule()
+          .fill(LinearGradient(colors: [.black.opacity(0.92), FounderGarageMaterial.satinMetal.opacity(0.72)], startPoint: .top, endPoint: .bottom))
+          .frame(width: 300, height: 16)
+          .rotationEffect(.degrees(index.isMultiple(of: 2) ? 7 : -7))
+          .position(layout.viewportPosition(worldPoint: CGPoint(x: CGFloat(index) * 270 + 15, y: 48), camera: camera, layer: .background))
+      }
+    }
+  }
+
+  private var garageToolWall: some View {
+    ZStack {
+      RoundedRectangle(cornerRadius: 4)
+        .fill(Color(red: 0.14, green: 0.13, blue: 0.105))
+        .frame(width: 205, height: 142)
+        .overlay { FounderGaragePegboard() }
+        .overlay { RoundedRectangle(cornerRadius: 4).stroke(.black.opacity(0.8), lineWidth: 6) }
+      HStack(spacing: 20) {
+        Image(systemName: "hammer.fill")
+        Image(systemName: "wrench.adjustable.fill")
+        Image(systemName: "screwdriver.fill")
+      }
+      .font(.system(size: 28, weight: .bold))
+      .foregroundStyle(.orange.opacity(0.75))
+      .offset(y: -8)
+      Text("FOUNDER'S GARAGE")
+        .font(.system(size: 10, weight: .black, design: .monospaced))
+        .tracking(1.2)
+        .foregroundStyle(.white.opacity(0.72))
+        .offset(y: 48)
+    }
+    .frame(width: 215, height: 152)
+  }
+
+  private var garageTireStack: some View {
+    ZStack {
+      Ellipse().fill(.black.opacity(0.5)).frame(width: 102, height: 18).offset(y: 54)
+      VStack(spacing: -9) {
+        ForEach(0..<3, id: \.self) { _ in
+          Ellipse()
+            .stroke(Color.black.opacity(0.92), lineWidth: 14)
+            .background(Ellipse().fill(Color(red: 0.08, green: 0.08, blue: 0.075)))
+            .frame(width: 88, height: 39)
+        }
+      }
+    }
+    .frame(width: 112, height: 125)
   }
 
   private func wallUtilityDetails(layout: FounderEnvironmentLayout) -> some View {
@@ -1144,88 +1289,28 @@ struct FounderEnvironmentRendererView: View {
       .position(x: position.x + 8 * scale, y: position.y + 122 * scale)
   }
 
-  private var garageEntrance: some View {
-    ZStack {
-      RoundedRectangle(cornerRadius: 5)
-        .fill(.black.opacity(0.68))
-        .frame(width: 174, height: 238)
-        .shadow(color: .black.opacity(0.56), radius: 8, x: 5, y: 5)
-      RoundedRectangle(cornerRadius: 4)
-        .fill(LinearGradient(
-          colors: [Color(red: 0.27, green: 0.28, blue: 0.27), Color(red: 0.13, green: 0.14, blue: 0.14)],
-          startPoint: .top,
-          endPoint: .bottom
-        ))
-        .frame(width: 154, height: 222)
-      VStack(spacing: 0) {
-        ForEach(0..<5, id: \.self) { row in
-          HStack(spacing: 5) {
-            ForEach(0..<2, id: \.self) { _ in
-              RoundedRectangle(cornerRadius: 2)
-                .fill(LinearGradient(
-                  colors: [.white.opacity(0.10), .black.opacity(0.16)],
-                  startPoint: .top,
-                  endPoint: .bottom
-                ))
-                .overlay {
-                  RoundedRectangle(cornerRadius: 2)
-                    .stroke(.black.opacity(0.34), lineWidth: 1)
-                }
-            }
-          }
-          .padding(.horizontal, 7)
-          .padding(.vertical, 5)
-          .frame(height: 43)
-          if row < 4 {
-            Rectangle().fill(.black.opacity(0.72)).frame(height: 2)
-            Rectangle().fill(.white.opacity(0.08)).frame(height: 1)
-          }
-        }
-      }
-      .frame(width: 154, height: 222)
-      HStack(spacing: 150) {
-        Capsule().fill(FounderGarageMaterial.satinMetal).frame(width: 6, height: 234)
-        Capsule().fill(FounderGarageMaterial.satinMetal).frame(width: 6, height: 234)
-      }
-      HStack(spacing: 136) {
-        VStack(spacing: 34) { ForEach(0..<6, id: \.self) { _ in Circle().fill(.white.opacity(0.28)).frame(width: 5, height: 5) } }
-        VStack(spacing: 34) { ForEach(0..<6, id: \.self) { _ in Circle().fill(.white.opacity(0.28)).frame(width: 5, height: 5) } }
-      }
-      Capsule().fill(.black.opacity(0.96)).frame(width: 158, height: 7).offset(y: 112)
-      Capsule().fill(.white.opacity(0.30)).frame(width: 24, height: 5).offset(y: 61)
-    }
-    .accessibilityHidden(true)
-  }
-
   /// A closed, sectional door is a room-scale object — not a wall texture or
   /// a Founder Computer decoration. Its frame is positioned in the rear world
   /// layer so it stays available when the player pans away from the desk.
   private func rearGarageDoor(layout: FounderEnvironmentLayout) -> some View {
-    FounderGarageDoorView(
-      panelBrightness: motion.lighting.garageDoorPanelBrightness,
-      exteriorLeakIntensity: motion.lighting.garageDoorExteriorLeakIntensity,
-      increasedContrast: increasedContrast
-    )
-    .scaleEffect(layout.depthScale(for: .rearGarageDoor) * layout.scale)
+    ZStack {
+      FounderGarageDoorView(
+        panelBrightness: motion.lighting.garageDoorPanelBrightness,
+        exteriorLeakIntensity: motion.lighting.garageDoorExteriorLeakIntensity,
+        increasedContrast: increasedContrast
+      )
+      Text("OVERHEAD DOOR · KEEP CLEAR")
+        .font(.system(size: 10, weight: .black, design: .monospaced))
+        .tracking(1.4)
+        .foregroundStyle(.white.opacity(0.58))
+        .padding(.horizontal, 14)
+        .padding(.vertical, 6)
+        .background(.black.opacity(0.76), in: .rect(cornerRadius: 2))
+        .offset(y: -208)
+    }
+    .scaleEffect(layout.depthScale(for: .rearGarageDoor) * layout.scale * 1.35)
     .position(layout.viewportPosition(for: .rearGarageDoor, camera: camera, layer: .background))
     .accessibilityHidden(true)
-  }
-
-  private var storageShelves: some View {
-    ZStack {
-      RoundedRectangle(cornerRadius: 4).stroke(.white.opacity(0.28), lineWidth: 5).frame(width: 150, height: 188)
-      VStack(spacing: 37) { ForEach(0..<4, id: \.self) { _ in Rectangle().fill(.black.opacity(0.78)).frame(width: 150, height: 7) } }
-      VStack(spacing: 26) {
-        HStack { equipmentCase(.orange); equipmentCase(.gray) }
-        HStack { equipmentCase(.cyan); equipmentCase(.orange) }
-        HStack { equipmentCase(.gray); equipmentCase(.gray) }
-      }
-    }
-  }
-
-  private func equipmentCase(_ color: Color) -> some View {
-    RoundedRectangle(cornerRadius: 4).fill(color.opacity(0.55)).frame(width: 48, height: 25)
-      .overlay { RoundedRectangle(cornerRadius: 4).stroke(.black.opacity(0.65), lineWidth: 2) }
   }
 
   private func panoramicStations(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
@@ -1991,19 +2076,6 @@ struct FounderEnvironmentRendererView: View {
 
   private func ambientEquipmentLayer(size: CGSize, layout: FounderEnvironmentLayout) -> some View {
     ZStack {
-      ambientFan(
-        station: motion.station(for: "aurora"),
-        tone: .cyan,
-        active: motion.ambient.continuousMotionEnabled
-      )
-      .position(
-        layout.viewportPosition(
-          worldPoint: CGPoint(x: 245, y: 385),
-          camera: camera,
-          layer: .middleGround
-        )
-      )
-
       networkHardware
         .position(
           layout.viewportPosition(
@@ -2022,32 +2094,6 @@ struct FounderEnvironmentRendererView: View {
           )
         )
 
-      ambientFan(
-        station: motion.station(for: "stacks"),
-        tone: .orange,
-        active: motion.ambient.continuousMotionEnabled
-      )
-      .position(
-        layout.viewportPosition(
-          worldPoint: CGPoint(x: 790, y: 365),
-          camera: camera,
-          layer: .middleGround
-        )
-      )
-
-      ambientFan(
-        station: motion.station(for: "brio"),
-        tone: .pink,
-        active: motion.ambient.continuousMotionEnabled
-      )
-      .opacity(motion.lighting.brioPublicSignalStability)
-      .position(
-        layout.viewportPosition(
-          worldPoint: CGPoint(x: 1_145, y: 385),
-          camera: camera,
-          layer: .middleGround
-        )
-      )
     }
     .allowsHitTesting(false)
   }
@@ -2084,26 +2130,6 @@ struct FounderEnvironmentRendererView: View {
     .padding(.horizontal, 9)
     .frame(height: 22)
     .background(.black.opacity(0.88), in: Capsule())
-  }
-
-  private func ambientFan(
-    station: FounderGarageStationMotion?,
-    tone: Color,
-    active: Bool
-  ) -> some View {
-    let cooling = station?.physical.coolingActivity ?? 0
-    let rotates = active && cooling > 0.08
-    return ZStack {
-      Circle().stroke(.white.opacity(0.18), lineWidth: 2).frame(width: 30, height: 30)
-      Image(systemName: "fanblades.fill")
-        .font(.system(size: 16))
-        .foregroundStyle(tone.opacity(0.34 + (station?.equipmentActivity ?? 0) * 0.54))
-        .phaseAnimator(rotates ? [0.0, 360.0] : [0.0]) { content, angle in
-          content.rotationEffect(.degrees(angle))
-        } animation: { _ in
-          .linear(duration: max(3.0, 7.8 - (station?.equipmentActivity ?? 0) * 4.2))
-        }
-    }
   }
 
   private func atmosphere(size: CGSize) -> some View {
@@ -2167,6 +2193,29 @@ struct FounderEnvironmentRendererView: View {
       Image(systemName: "mug.fill").foregroundStyle(.orange.opacity(0.75)).offset(x: -size.width * 0.34, y: -size.height * 0.10)
     }
     .allowsHitTesting(false)
+  }
+}
+
+private struct FounderGaragePegboard: View {
+  var body: some View {
+    Canvas { context, size in
+      let spacing: CGFloat = 11
+      var y: CGFloat = spacing
+      while y < size.height - spacing {
+        var x: CGFloat = spacing
+        while x < size.width - spacing {
+          context.fill(
+            Path(ellipseIn: CGRect(x: x, y: y, width: 2.2, height: 2.2)),
+            with: .color(.black.opacity(0.58))
+          )
+          x += spacing
+        }
+        y += spacing
+      }
+    }
+    .clipShape(.rect(cornerRadius: 4))
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
   }
 }
 

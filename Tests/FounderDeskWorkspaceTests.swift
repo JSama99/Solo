@@ -383,12 +383,13 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     }
   }
 
-  func testRearGarageDoorIsNearlyCompleteInRightFreeLookOnIPhoneAndIPad() {
-    let camera = FounderEnvironmentCameraState(horizontalLook: 1, mode: .freeLook)
+  func testRearGarageDoorDominatesNeutralFreeLookOnIPhoneAndIPad() {
+    let camera = FounderEnvironmentCameraState(mode: .freeLook)
     for size in [CGSize(width: 402, height: 874), CGSize(width: 1_024, height: 1_366)] {
       let door = FounderGarageDoorLayout(viewportSize: size)
       XCTAssertTrue(door.isVisible(camera: camera))
-      XCTAssertGreaterThanOrEqual(door.visibleWidthRatio(camera: camera), 0.98)
+      XCTAssertGreaterThanOrEqual(door.visibleWidthRatio(camera: camera), 0.72)
+      XCTAssertGreaterThan(door.frame(camera: camera).width, size.width * 0.70)
     }
   }
 

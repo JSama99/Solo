@@ -1030,8 +1030,22 @@ final class GameStore {
     save()
   }
 
-  var workSessionAttentionCost: Int { min(3, attentionMaximum) }
+  /// A manual Work Session costs a flat 2 Attention, deliberately decoupled
+  /// from `attentionMaximum`. The old `min(3, attentionMaximum)` scaled with
+  /// the budget, so a manual session always consumed *the entire* sprint
+  /// allowance — including the boosted allowance the Founder Command Desk
+  /// grants every third sprint, which made the upgrade pay for nothing on the
+  /// very sprints it applied to. A flat cost keeps manual review affordable
+  /// and leaves the periodic bonus genuinely spendable.
+  var workSessionAttentionCost: Int { 2 }
   var evidenceTriageAttentionCost: Int { workSessionAttentionCost }
+
+  /// Delegation is the cheap path, not the free one. Charging 1 Attention is
+  /// what makes it a tradeoff against manual review rather than a strictly
+  /// dominant action, and it flows through `founderAttentionSpent` so
+  /// attention-sensitive objectives (notably `protectFounder`) stay meaningful
+  /// without needing their own thresholds changed.
+  var delegateAttentionCost: Int { 1 }
 
   func isEvidenceTriageEligible(taskID: UUID) -> Bool {
     guard let task = tasks.first(where: { $0.id == taskID }), let agentID = task.assignedAgentID else { return false }
@@ -1203,11 +1217,56 @@ final class GameStore {
   @discardableResult
   func delegateWorkSession(taskID: UUID) -> Bool {
     guard prepareWorkSession(taskID: taskID),
-          let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
-          WorkSessionEngine.delegate(&workSessions[index]) else { return false }
+          let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }) else { return false }
+    // Charged before the path is committed, and only once, exactly like
+    // `beginManualWorkSession`. `review()` skips its own charge whenever a
+    // completed session exists, so this is the single point at which a
+    // delegated task costs Attention.
+    let cost = delegateAttentionCost
+    if !workSessions[index].founderAttentionCharged {
+      guard attentionRemaining >= cost else {
+        alertMessage = "Delegation needs \(cost) Founder Attention. Leave the work unverified to preserve the remaining budget."
+        return false
+      }
+    }
+    guard WorkSessionEngine.delegate(&workSessions[index]) else { return false }
+    if !workSessions[index].founderAttentionCharged {
+      founderAttentionSpent += cost
+      workSessions[index].founderAttentionCharged = true
+      // The record is created with the *manual* cost, since either path is
+      // still open at that point. Once delegation is chosen, correct it to
+      // what was actually charged so the session summary and any later
+      // accounting report the truth rather than the manual price.
+      workSessions[index].founderAttentionCost = cost
+    }
     applyWorkSessionOutcome(at: index)
     save()
     return true
+  }
+
+  /// Whether a task's verification came from delegation rather than the
+  /// founder's own review. Derived from the already-persisted work-session
+  /// `path`, so this adds no save state: a task with no work session at all
+  /// (Brio's critical work, Talent Board hires) was reviewed by hand and is
+  /// never treated as delegated.
+  func isDelegatedVerification(taskID: UUID) -> Bool {
+    workSessions.first(where: { $0.assignmentID == taskID })?.path == .delegate
+  }
+
+  /// Same question, keyed by the task-instance string an `EvidenceEntry`
+  /// carries. `evidence` and `workSessions` share a lifecycle — both are
+  /// cleared only on career reset — so this stays accurate for every entry
+  /// that can still contribute to the career score.
+  func isDelegatedVerification(taskInstanceID: String) -> Bool {
+    workSessions.contains { $0.assignmentID.uuidString == taskInstanceID && $0.path == .delegate }
+  }
+
+  /// Verification the founder actually performed. Delegation still clears the
+  /// neglect penalty — it is a legitimate safety valve — but it is a lesser
+  /// tier that does not satisfy objectives written around real founder review.
+  func isFounderVerified(taskID: UUID) -> Bool {
+    guard let task = tasks.first(where: { $0.id == taskID }) else { return false }
+    return task.isReviewed && !isDelegatedVerification(taskID: taskID)
   }
 
   @discardableResult
@@ -2109,7 +2168,7 @@ final class GameStore {
     }
     switch currentObjective.kind {
     case .evidenceFirst:
-      return assignedIndices.filter { tasks[$0].isReviewed }.count >= 2
+      return assignedIndices.filter { isFounderVerified(taskID: tasks[$0].id) }.count >= 2
     case .diversifiedModels:
       let roleFit = assignedIndices.allSatisfy { index in
         guard let agentID = tasks[index].assignedAgentID,
@@ -2130,7 +2189,7 @@ final class GameStore {
     case .repairTrust:
       guard let targetID = currentObjective.targetAgentID,
             let target = agents.first(where: { $0.id == targetID }) else { return false }
-      return target.drift < 35 && tasks.contains { $0.assignedAgentID == targetID && $0.isReviewed }
+      return target.drift < 35 && tasks.contains { $0.assignedAgentID == targetID && isFounderVerified(taskID: $0.id) }
     }
   }
 
@@ -3209,7 +3268,9 @@ final class GameStore {
   private var careerScore: Int {
     SimulationEngine.careerScore(
       stats: stats,
-      verifiedEvidence: evidence.filter(\.evidenceVerified).count,
+      // Delegated work is a lesser verification tier and does not earn the
+      // career-score quality bonus that real founder review does.
+      verifiedEvidence: evidence.filter { $0.evidenceVerified && !isDelegatedVerification(taskInstanceID: $0.taskInstanceID) }.count,
       completedObjectives: completedObjectives,
       averageRelationship: averageRelationship,
       unresolvedObligations: activeObligations.count,

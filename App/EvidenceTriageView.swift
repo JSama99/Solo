@@ -66,7 +66,7 @@ struct EvidenceTriageView: View {
     VStack(alignment: .leading, spacing: 16) {
       operationalPanel(title: "FOUNDER DECISION") {
         decisionRow("Review Work", detail: "Classify \(session.cards.count) evidence items · Founder Attention -\(session.founderAttentionCost)", symbol: "eye.fill")
-        decisionRow("Delegate", detail: "Let Aurora finalize the packet · preserves Founder Attention", symbol: "arrow.triangle.branch")
+        decisionRow("Delegate", detail: "Let Aurora finalize the packet · costs \(store.delegateAttentionCost) Founder Attention", symbol: "arrow.triangle.branch")
       }
       Button {
         guard store.beginManualEvidenceTriage(taskID: taskID) else { return }
@@ -92,10 +92,10 @@ struct EvidenceTriageView: View {
           .background(.secondary.opacity(0.14), in: RoundedRectangle(cornerRadius: 14))
       }
       .buttonStyle(.plain)
-      .accessibilityHint("Lets Aurora finalize the packet without Founder Review and preserves Founder Attention")
+      .accessibilityHint("Lets Aurora finalize the packet without Founder Review for \(store.delegateAttentionCost) Founder Attention, less than a manual review")
 
       if store.attentionRemaining < session.founderAttentionCost {
-        Label("Insufficient Founder Attention for manual review. Delegation remains available.", systemImage: "eye.slash")
+        Label("Insufficient Founder Attention for manual review. Delegation costs \(store.delegateAttentionCost) and remains available.", systemImage: "eye.slash")
           .font(.footnote.weight(.semibold))
           .foregroundStyle(SoloTheme.amber)
           .accessibilityLabel("Insufficient Founder Attention for manual review. Delegate remains available.")
@@ -189,7 +189,7 @@ struct EvidenceTriageView: View {
           resultRow("Founder Attention", "-\(session.founderAttentionCost)")
         } else {
           resultRow("Review Path", "Delegated")
-          resultRow("Founder Attention", "0")
+          resultRow("Founder Attention", "-\(session.founderAttentionCost)")
         }
       }
       Text("Aurora’s operational report is ready. Evidence truth remains governed by the normal verification and Hindsight flow.")

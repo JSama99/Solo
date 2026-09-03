@@ -40,8 +40,23 @@ struct FacilityBonuses: Equatable {
   var sprintEnergyRecovery = 0
   var periodicAttentionBonus = 0
   var ventureEnergyBonus = 0
+  /// Role-matched XP multiplier (Founder Garage equipment).
   var agentXPBonusMultiplier = 1.0
+  /// XP multiplier that applies regardless of role fit (Small Company
+  /// Building). Kept separate from `agentXPBonusMultiplier` because the two
+  /// have different application conditions and compound multiplicatively when
+  /// both are owned: role-matched work at a Company Building earns 1.1 x 1.2.
+  var agentXPAnyRoleMultiplier = 1.0
   var stressAccumulationMultiplier = 1.0
+  /// Extra roster slots beyond the base five (Small Office Room).
+  var talentSlotBonus = 0
+  /// Energy shaved off each founder review (Office Suite). Applied with a
+  /// floor of 1 so it can never make review free, which would erase the
+  /// doctrine differentiation that `reviewEnergyCost` carries.
+  var reviewEnergyDiscount = 0
+  /// Fraction of a rival move's negative pressure on the founder's own stats
+  /// that is absorbed (Unicorn Headquarters). 0 = none, 0.5 = halved.
+  var rivalPressureResistance = 0.0
 
   static let none = Self()
 }

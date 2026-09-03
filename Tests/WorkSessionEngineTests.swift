@@ -268,14 +268,128 @@ final class WorkSessionStoreTests: XCTestCase {
     XCTAssertFalse(evidence.hindsightNotes.isEmpty)
   }
 
-  func testDelegateCostsNoAttentionAndIsIdempotent() throws {
+  /// Rewritten for the P0 audit (Task 1). Delegation used to be free, which
+  /// made it strictly dominant: full `isReviewed` credit at zero Attention.
+  /// It now costs `delegateAttentionCost`, charged exactly once.
+  func testDelegateCostsOneAttentionAndIsIdempotent() throws {
     let (store, taskID) = try makeEligibleStore()
     let before = store.attentionRemaining
     XCTAssertTrue(store.delegateEvidenceTriage(taskID: taskID))
     let first = try XCTUnwrap(store.workSession(for: taskID)?.deliveredQuality)
+    XCTAssertEqual(store.attentionRemaining, before - store.delegateAttentionCost)
+    // Re-delegating is rejected and must not double-charge.
     XCTAssertFalse(store.delegateEvidenceTriage(taskID: taskID))
     XCTAssertEqual(store.workSession(for: taskID)?.deliveredQuality, first)
-    XCTAssertEqual(store.attentionRemaining, before)
+    XCTAssertEqual(store.attentionRemaining, before - store.delegateAttentionCost)
+    XCTAssertEqual(store.workSession(for: taskID)?.founderAttentionCost, store.delegateAttentionCost)
+  }
+
+  /// Delegation is cheaper than manual review but no longer free.
+  func testDelegateIsCheaperThanManualButNotFree() throws {
+    let (store, taskID) = try makeEligibleStore()
+    XCTAssertEqual(store.delegateAttentionCost, 1)
+    XCTAssertEqual(store.workSessionAttentionCost, 2)
+    XCTAssertGreaterThan(store.workSessionAttentionCost, store.delegateAttentionCost)
+    XCTAssertGreaterThan(store.delegateAttentionCost, 0)
+  }
+
+  /// The regression this fix exists to prevent: the manual cost must stay a
+  /// flat 2 even on a sprint where the Founder Command Desk raises
+  /// `attentionMaximum`, leaving the bonus Attention actually spendable.
+  /// Under the old `min(3, attentionMaximum)` this cost 3 and consumed the
+  /// entire boosted budget.
+  func testManualWorkSessionCostsFlatTwoEvenOnABoostedSprint() throws {
+    let (store, taskID) = try makeEligibleStore()
+    let suite = "WorkSessionAttentionTests-\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suite)!
+    defaults.removePersistentDomain(forName: suite)
+    let progression = FounderProgressionStore(defaults: defaults, saveKey: "progression")
+    XCTAssertEqual(progression.currentFacility, .founderGarage)
+    XCTAssertEqual(
+      progression.purchaseUpgrade(.founderCommandDesk, availableCapital: 10_000),
+      .purchased(cost: 1_800)
+    )
+    store.progressionStore = progression
+    store.sprint = 3
+    XCTAssertTrue(store.sprint.isMultiple(of: 3))
+    XCTAssertEqual(progression.bonuses.periodicAttentionBonus, 1)
+    XCTAssertEqual(store.attentionMaximum, 3, "Boosted sprint should grant the periodic bonus")
+    XCTAssertEqual(store.workSessionAttentionCost, 2, "Manual cost must not scale with the boosted budget")
+
+    XCTAssertTrue(store.beginManualEvidenceTriage(taskID: taskID))
+    XCTAssertEqual(store.founderAttentionSpent, 2)
+    XCTAssertEqual(store.attentionRemaining, 1, "The bonus Attention must survive a manual session")
+  }
+
+  /// Delegation still clears the neglect penalty, but it is a lesser tier: it
+  /// does not satisfy objectives written around real founder review.
+  func testDelegatedVerificationIsADistinctLesserTier() throws {
+    let (store, taskID) = try makeEligibleStore()
+    XCTAssertTrue(store.delegateEvidenceTriage(taskID: taskID))
+    store.review(taskID: taskID)
+    XCTAssertTrue(store.tasks[0].isReviewed, "Delegation still clears the neglect penalty")
+    XCTAssertTrue(store.isDelegatedVerification(taskID: taskID))
+    XCTAssertFalse(store.isFounderVerified(taskID: taskID), "Delegated work is not founder-verified")
+  }
+
+  /// Delegated evidence must not earn the career-score quality bonus that
+  /// founder review does, even though both leave the task `isReviewed`.
+  func testDelegatedEvidenceDoesNotEarnTheCareerScoreQualityBonus() throws {
+    let (delegatedStore, delegatedID) = try makeEligibleStore()
+    XCTAssertTrue(delegatedStore.delegateEvidenceTriage(taskID: delegatedID))
+    delegatedStore.review(taskID: delegatedID)
+    let delegatedEvidence = try XCTUnwrap(
+      delegatedStore.evidence.first(where: { $0.taskInstanceID == delegatedID.uuidString })
+    )
+    XCTAssertTrue(delegatedEvidence.evidenceVerified, "The underlying evidence is still verified")
+    XCTAssertTrue(delegatedStore.isDelegatedVerification(taskInstanceID: delegatedID.uuidString),
+                  "…but it is attributable to delegation, so it must not score as founder-verified")
+
+    let (manualStore, manualID) = try makeEligibleStore()
+    XCTAssertTrue(manualStore.beginManualEvidenceTriage(taskID: manualID))
+    try finish(store: manualStore, taskID: manualID, action: .verify)
+    manualStore.review(taskID: manualID)
+    XCTAssertFalse(manualStore.isDelegatedVerification(taskInstanceID: manualID.uuidString))
+  }
+
+  func testManualReviewCountsAsFounderVerified() throws {
+    let (store, taskID) = try makeEligibleStore()
+    XCTAssertTrue(store.beginManualEvidenceTriage(taskID: taskID))
+    try finish(store: store, taskID: taskID, action: .verify)
+    store.review(taskID: taskID)
+    XCTAssertFalse(store.isDelegatedVerification(taskID: taskID))
+    XCTAssertTrue(store.isFounderVerified(taskID: taskID))
+  }
+
+  /// Under every doctrine, delegating every eligible task can no longer end
+  /// the sprint fully verified at zero cost.
+  func testDelegatingEveryEligibleTaskIsNoLongerFreeUnderAnyDoctrine() throws {
+    for doctrine in FounderDoctrine.allCases {
+      let store = GameStore()
+      store.resetCareer()
+      store.selectedDoctrine = doctrine
+      store.selectedProductType = .saas
+      store.founderName = "Doctrine \(doctrine.rawValue)"
+      store.startCareer(seed: 55)
+      store.confirmVentureThesisIfNeeded()
+      XCTAssertEqual(store.attentionMaximum, 2, "All doctrines now share a 2-Attention baseline")
+
+      var delegated = 0
+      for index in store.tasks.indices {
+        store.tasks[index].role = .research
+        store.tasks[index].category = .research
+        store.tasks[index].urgency = .important
+        let id = store.tasks[index].id
+        store.assign(agentID: "aurora", to: id)
+        guard store.isEvidenceTriageEligible(taskID: id) else { continue }
+        if store.delegateEvidenceTriage(taskID: id) { delegated += 1 }
+      }
+      XCTAssertGreaterThan(delegated, 0, "\(doctrine) should have at least one eligible task")
+      XCTAssertEqual(store.founderAttentionSpent, delegated * store.delegateAttentionCost,
+                     "\(doctrine): delegation must cost real Attention")
+      XCTAssertLessThanOrEqual(delegated, store.attentionMaximum,
+                               "\(doctrine): the budget must cap how many tasks can be delegated")
+    }
   }
 
   func testInterruptedSessionRestoresCardsDecisionsAndCharge() throws {
