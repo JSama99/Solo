@@ -66,7 +66,7 @@ struct EvidenceTriageView: View {
     VStack(alignment: .leading, spacing: 16) {
       operationalPanel(title: "FOUNDER DECISION") {
         decisionRow("Review Work", detail: "Classify \(session.cards.count) evidence items · Founder Attention -\(session.founderAttentionCost)", symbol: "eye.fill")
-        decisionRow("Delegate", detail: "Let Aurora finalize the packet · costs \(store.delegateAttentionCost) Founder Attention", symbol: "arrow.triangle.branch")
+        decisionRow("Delegate", detail: "Let Aurora finalize the packet · preserves Founder Attention", symbol: "arrow.triangle.branch")
       }
       Button {
         guard store.beginManualEvidenceTriage(taskID: taskID) else { return }
@@ -81,10 +81,6 @@ struct EvidenceTriageView: View {
       .buttonStyle(.plain)
       .disabled(store.attentionRemaining < session.founderAttentionCost)
       .accessibilityHint("Costs \(session.founderAttentionCost) Founder Attention and begins an untimed evidence review")
-    Text("Let Aurora finalize the packet · preserves Founder Attention")
-      .font(.subheadline)
-      .foregroundStyle(.secondary)
-
       Button {
         guard store.delegateEvidenceTriage(taskID: taskID) else { return }
         settings.playFeedback(.dispatch)
