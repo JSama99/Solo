@@ -44,7 +44,7 @@ struct EvidenceTriageView: View {
       }
     }
     .interactiveDismissDisabled(session?.path == .manualReview && session?.completed == false)
-    .sensoryFeedback(.selection, trigger: decisionTrigger)
+    .appSensoryFeedback(.selection, trigger: decisionTrigger)
   }
 
   private var header: some View {
@@ -66,7 +66,7 @@ struct EvidenceTriageView: View {
     VStack(alignment: .leading, spacing: 16) {
       operationalPanel(title: "FOUNDER DECISION") {
         decisionRow("Review Work", detail: "Classify \(session.cards.count) evidence items · Founder Attention -\(session.founderAttentionCost)", symbol: "eye.fill")
-        decisionRow("Delegate", detail: "Let Aurora finalize the packet · costs \(store.delegateAttentionCost) Founder Attention", symbol: "arrow.triangle.branch")
+        decisionRow("Delegate", detail: "Let Aurora finalize the packet · Founder Attention -\(store.delegateAttentionCost)", symbol: "arrow.triangle.branch")
       }
       Button {
         guard store.beginManualEvidenceTriage(taskID: taskID) else { return }
@@ -81,7 +81,6 @@ struct EvidenceTriageView: View {
       .buttonStyle(.plain)
       .disabled(store.attentionRemaining < session.founderAttentionCost)
       .accessibilityHint("Costs \(session.founderAttentionCost) Founder Attention and begins an untimed evidence review")
-
       Button {
         guard store.delegateEvidenceTriage(taskID: taskID) else { return }
         settings.playFeedback(.dispatch)

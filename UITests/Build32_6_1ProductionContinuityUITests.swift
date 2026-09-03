@@ -70,7 +70,11 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     app.launch()
 
     XCTAssertTrue(app.buttons["DELEGATE"].waitForExistence(timeout: 6))
-    XCTAssertTrue(app.staticTexts["Let Aurora finalize the packet · preserves Founder Attention"].exists)
+    XCTAssertTrue(app.staticTexts["Let Aurora finalize the packet · Founder Attention -1"].exists)
+    XCTAssertEqual(
+      app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS[c] 'preserves Founder Attention'")).count,
+      0
+    )
     XCTAssertEqual(
       app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS[c] 'deterministic baseline'")).count,
       0
@@ -194,6 +198,16 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     cameraControls.tap()
     app.buttons["chevron.right"].tap()
     capture("09_RIGHT_BRIO_SERVER_VIEW", in: app)
+
+    let signalTV = app.buttons["signal-tv-hotspot"]
+    assertAccessibleTouchTarget(signalTV)
+    signalTV.tap()
+    XCTAssertTrue(app.navigationBars["Signal TV"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["THE STARTUP WORLD BROADCAST"].waitForExistence(timeout: 3))
+    capture("09A_SIGNAL_TV_PHYSICAL_BROADCAST", in: app)
+    app.buttons["close-signal-tv-viewer"].tap()
+    XCTAssertTrue(signalTV.waitForExistence(timeout: 4))
+
     XCTAssertTrue(cameraControls.waitForExistence(timeout: 3))
     cameraControls.tap()
     app.buttons["viewfinder"].tap()

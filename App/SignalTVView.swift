@@ -19,17 +19,21 @@ struct SignalTVView: View {
   }
 
   private func currentEvent(elapsed: TimeInterval) -> PublicMediaEvent {
-    guard !events.isEmpty else { return SignalTVProgramming.marketPulse(venture: 1, sprint: 1) }
-    return events[SignalTVProgramming.presentationIndex(elapsed: elapsed, count: events.count, reduceMotion: reduceMotion)]
+    let publicEvents = SignalTVProgramming.publicBroadcastEvents(events)
+    guard !publicEvents.isEmpty else { return SignalTVProgramming.marketPulse(venture: 1, sprint: 1) }
+    return publicEvents[SignalTVProgramming.presentationIndex(elapsed: elapsed, count: publicEvents.count, reduceMotion: reduceMotion)]
   }
 
   private var accessibilitySummary: String {
-    let event = events.first ?? SignalTVProgramming.marketPulse(venture: 1, sprint: 1)
-    return "\(event.program.rawValue). \(event.headline). \(event.summary)"
+    let event = SignalTVProgramming.publicBroadcastEvents(events).first
+      ?? SignalTVProgramming.marketPulse(venture: 1, sprint: 1)
+    let presentation = broadcastPresentation(for: event)
+    return "\(presentation.accessibilityState). \(event.program.rawValue). \(event.headline). \(event.summary)"
   }
 
   private func televisionBody(event: PublicMediaEvent, elapsed: TimeInterval) -> some View {
-    ZStack {
+    let presentation = broadcastPresentation(for: event)
+    return ZStack {
       Ellipse().fill(.black.opacity(0.52)).frame(width: 270, height: 35).offset(x: 8, y: 80)
       wallMount
       RoundedRectangle(cornerRadius: 10)
@@ -38,11 +42,15 @@ struct SignalTVView: View {
         .overlay { FounderGarageSurfaceTexture(kind: .powderCoat).clipShape(.rect(cornerRadius: 10)) }
         .overlay { RoundedRectangle(cornerRadius: 10).stroke(.white.opacity(increasedContrast ? 0.72 : 0.19), lineWidth: increasedContrast ? 2 : 1) }
         .shadow(color: .black.opacity(0.66), radius: 9, x: 7, y: 8)
-      broadcastScreen(event: event, elapsed: elapsed)
+      broadcastScreen(event: event, presentation: presentation, elapsed: elapsed)
         .frame(width: 268, height: 151)
         .clipShape(.rect(cornerRadius: 5))
         .overlay { RoundedRectangle(cornerRadius: 5).stroke(.white.opacity(0.13), lineWidth: 1) }
-      Circle().fill(Color.cyan.opacity(0.48)).frame(width: 3, height: 3).offset(x: 130, y: 80)
+        .shadow(color: broadcastColor(presentation).opacity(0.22 + presentation.intensity * 0.22), radius: 8)
+      Circle()
+        .fill(broadcastColor(presentation).opacity(powerIndicatorOpacity(presentation: presentation, elapsed: elapsed)))
+        .frame(width: 3, height: 3)
+        .offset(x: 130, y: 80)
     }
   }
 
@@ -61,12 +69,17 @@ struct SignalTVView: View {
     .offset(y: 4)
   }
 
-  private func broadcastScreen(event: PublicMediaEvent, elapsed: TimeInterval) -> some View {
+  private func broadcastScreen(
+    event: PublicMediaEvent,
+    presentation: SignalTVBroadcastPresentation,
+    elapsed: TimeInterval
+  ) -> some View {
     ZStack {
-      LinearGradient(colors: broadcastColors(for: event), startPoint: .topLeading, endPoint: .bottomTrailing)
+      LinearGradient(colors: broadcastColors(for: presentation), startPoint: .topLeading, endPoint: .bottomTrailing)
       screenGrid
+      broadcastLife(presentation: presentation, elapsed: elapsed)
       VStack(spacing: 0) {
-        networkIdent(event)
+        networkIdent(presentation: presentation)
         Spacer(minLength: 2)
         programGraphic(event: event, elapsed: elapsed)
         Spacer(minLength: 2)
@@ -79,16 +92,53 @@ struct SignalTVView: View {
     }
   }
 
-  private func networkIdent(_ event: PublicMediaEvent) -> some View {
+  private func networkIdent(presentation: SignalTVBroadcastPresentation) -> some View {
     HStack(spacing: 6) {
       Text("SIGNAL").font(.system(size: 9, weight: .black, design: .rounded)).tracking(1.2)
       Text("THE STARTUP WORLD BROADCAST").font(.system(size: 4.6, weight: .bold, design: .monospaced)).foregroundStyle(.white.opacity(0.66))
       Spacer()
-      if event.program == .breaking { Text("LIVE").foregroundStyle(.white).padding(.horizontal, 4).background(.red.opacity(0.80), in: .capsule) }
+      Label(presentation.banner, systemImage: presentation.symbol)
+        .labelStyle(.titleAndIcon)
+        .font(.system(size: 4.5, weight: .black, design: .monospaced))
+        .foregroundStyle(.white)
+        .padding(.horizontal, 4)
+        .frame(height: 9)
+        .background(broadcastColor(presentation).opacity(0.82), in: .capsule)
     }
     .font(.system(size: 6, weight: .black, design: .monospaced))
     .foregroundStyle(.white)
     .padding(.horizontal, 8)
+  }
+
+  private func broadcastLife(presentation: SignalTVBroadcastPresentation, elapsed: TimeInterval) -> some View {
+    let wave = presentation.continuousMotionEnabled ? (sin(elapsed * 1.8) + 1) / 2 : 0.5
+    let sweep = presentation.continuousMotionEnabled
+      ? CGFloat(elapsed.truncatingRemainder(dividingBy: 5.5) / 5.5) * 151 - 75
+      : -48
+    return ZStack {
+      Rectangle()
+        .fill(LinearGradient(colors: [.clear, .white.opacity(0.07), .clear], startPoint: .top, endPoint: .bottom))
+        .frame(height: 18)
+        .offset(y: sweep)
+      HStack(alignment: .bottom, spacing: 2) {
+        ForEach(0..<5, id: \.self) { index in
+          Capsule()
+            .fill(broadcastColor(presentation).opacity(0.34 + wave * 0.20))
+            .frame(width: 2, height: presentation.continuousMotionEnabled ? 3 + CGFloat((index * 3 + Int(elapsed * 2)) % 8) : 4 + CGFloat(index % 3))
+        }
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+      .padding(.leading, 9)
+      .padding(.top, 20)
+      RadialGradient(
+        colors: [broadcastColor(presentation).opacity((0.025 + wave * 0.035) * presentation.intensity), .clear],
+        center: .center,
+        startRadius: 3,
+        endRadius: 120
+      )
+    }
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
   }
 
   @ViewBuilder
@@ -189,12 +239,35 @@ struct SignalTVView: View {
     .allowsHitTesting(false)
   }
 
-  private func broadcastColors(for event: PublicMediaEvent) -> [Color] {
-    switch event.program {
-    case .breaking: [Color(red: 0.34, green: 0.035, blue: 0.05), Color(red: 0.07, green: 0.025, blue: 0.045)]
-    case .founderSpotlight: [Color(red: 0.13, green: 0.07, blue: 0.25), Color(red: 0.025, green: 0.055, blue: 0.10)]
-    default: [Color(red: 0.025, green: 0.11, blue: 0.16), Color(red: 0.025, green: 0.035, blue: 0.075)]
+  private func broadcastColors(for presentation: SignalTVBroadcastPresentation) -> [Color] {
+    switch presentation.state {
+    case .idle: [Color(red: 0.025, green: 0.11, blue: 0.16), Color(red: 0.025, green: 0.035, blue: 0.075)]
+    case .companyUpdate: [Color(red: 0.02, green: 0.16, blue: 0.22), Color(red: 0.02, green: 0.045, blue: 0.11)]
+    case .momentum: [Color(red: 0.025, green: 0.22, blue: 0.18), Color(red: 0.02, green: 0.055, blue: 0.095)]
+    case .pressure: [Color(red: 0.34, green: 0.035, blue: 0.05), Color(red: 0.07, green: 0.025, blue: 0.045)]
+    case .spotlight: [Color(red: 0.17, green: 0.075, blue: 0.30), Color(red: 0.025, green: 0.095, blue: 0.11)]
     }
+  }
+
+  private func broadcastColor(_ presentation: SignalTVBroadcastPresentation) -> Color {
+    switch presentation.state {
+    case .idle, .companyUpdate: SoloTheme.cyan
+    case .momentum: SoloTheme.mint
+    case .pressure: SoloTheme.coral
+    case .spotlight: Color(red: 0.72, green: 0.50, blue: 1)
+    }
+  }
+
+  private func broadcastPresentation(for event: PublicMediaEvent) -> SignalTVBroadcastPresentation {
+    .derive(event: event, reduceMotion: reduceMotion, continuousMotionEnabled: continuousMotionEnabled)
+  }
+
+  private func powerIndicatorOpacity(
+    presentation: SignalTVBroadcastPresentation,
+    elapsed: TimeInterval
+  ) -> Double {
+    guard presentation.continuousMotionEnabled else { return 0.66 }
+    return 0.46 + (sin(elapsed * 2.2) + 1) * 0.14
   }
 
   private func programColor(_ event: PublicMediaEvent) -> Color {
@@ -341,20 +414,20 @@ struct SignalTVViewer: View {
   private var selectedEvent: PublicMediaEvent {
     switch section {
     case .currentStory:
-      if let selectedEventID, let event = events.first(where: { $0.id == selectedEventID }) {
+      if let selectedEventID, let event = publicEvents.first(where: { $0.id == selectedEventID }) {
         return event
       }
-      guard !events.isEmpty else { return fallbackMarketPulse }
+      guard !publicEvents.isEmpty else { return fallbackMarketPulse }
       let index = SignalTVProgramming.presentationIndex(
         elapsed: Date.now.timeIntervalSinceReferenceDate,
-        count: events.count,
+        count: publicEvents.count,
         reduceMotion: reduceMotion
       )
-      return events[index]
+      return publicEvents[index]
     case .marketPulse:
-      return events.first(where: { $0.program == .marketPulse }) ?? fallbackMarketPulse
+      return publicEvents.first(where: { $0.program == .marketPulse }) ?? fallbackMarketPulse
     case .rivalWatch:
-      return events.first(where: { $0.program == .rivalWatch }) ?? PublicMediaEvent(
+      return publicEvents.first(where: { $0.program == .rivalWatch }) ?? PublicMediaEvent(
         id: "rival-watch-unavailable",
         program: .rivalWatch,
         tone: .neutral,
@@ -372,11 +445,15 @@ struct SignalTVViewer: View {
   }
 
   private var recentEvents: [PublicMediaEvent] {
-    Array(events.filter(\.isPublic).prefix(12))
+    Array(publicEvents.prefix(12))
+  }
+
+  private var publicEvents: [PublicMediaEvent] {
+    SignalTVProgramming.publicBroadcastEvents(events)
   }
 
   private var fallbackMarketPulse: PublicMediaEvent {
-    events.first(where: { $0.program == .marketPulse }) ?? SignalTVProgramming.marketPulse(venture: 1, sprint: 1)
+    publicEvents.first(where: { $0.program == .marketPulse }) ?? SignalTVProgramming.marketPulse(venture: 1, sprint: 1)
   }
 
   private var coverageColor: Color {

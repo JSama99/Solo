@@ -73,7 +73,7 @@ struct ContentView: View {
         withAnimation(MotionKind.state.resolved(reduceMotion: reduceMotion)) { achievementToast = nil }
       }
     }
-    .sensoryFeedback(.success, trigger: achievementToast?.id)
+    .appSensoryFeedback(.success, trigger: achievementToast?.id)
     .alert("Garage Console", isPresented: Binding(
       get: { store.alertMessage != nil },
       set: { if !$0 { store.alertMessage = nil } }

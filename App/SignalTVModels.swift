@@ -98,7 +98,7 @@ enum SignalTVProgramming {
     venture: Int,
     sprint: Int
   ) -> [PublicMediaEvent] {
-    var result = publicEvents.filter(\.isPublic)
+    var result = publicBroadcastEvents(publicEvents)
     result.append(marketPulse(venture: venture, sprint: sprint))
 
     if let headline = techComHeadlines.first {
@@ -148,6 +148,13 @@ enum SignalTVProgramming {
     return deduplicated(result)
   }
 
+  /// The final secrecy gate before stories enter presentation. Production
+  /// callers already supply the public ledger, but keeping this boundary here
+  /// prevents a future preview or fixture from accidentally airing hidden truth.
+  static func publicBroadcastEvents(_ events: [PublicMediaEvent]) -> [PublicMediaEvent] {
+    events.filter(\.isPublic)
+  }
+
   static func marketPulse(venture: Int, sprint: Int) -> PublicMediaEvent {
     PublicMediaEvent(
       id: "market-pulse-v\(venture)-s\(sprint)",
@@ -186,6 +193,88 @@ enum SignalTVProgramming {
   private static func deduplicated(_ events: [PublicMediaEvent]) -> [PublicMediaEvent] {
     var seen: Set<String> = []
     return events.filter { seen.insert($0.id).inserted }
+  }
+}
+
+enum SignalTVBroadcastState: String, Equatable, Sendable {
+  case idle
+  case companyUpdate
+  case momentum
+  case pressure
+  case spotlight
+}
+
+/// Presentation-only broadcast emphasis derived exclusively from public facts.
+/// It consumes no simulation RNG and never mutates Coverage or the event ledger.
+struct SignalTVBroadcastPresentation: Equatable, Sendable {
+  var state: SignalTVBroadcastState
+  var banner: String
+  var symbol: String
+  var intensity: Double
+  var continuousMotionEnabled: Bool
+
+  var isMeaningfulCompanyEvent: Bool { state != .idle }
+
+  var accessibilityState: String {
+    switch state {
+    case .idle: "Startup world programming"
+    case .companyUpdate: "Public SOLO update"
+    case .momentum: "Favorable SOLO momentum"
+    case .pressure: "Critical public SOLO pressure"
+    case .spotlight: "SOLO founder spotlight"
+    }
+  }
+
+  static func derive(
+    event: PublicMediaEvent,
+    reduceMotion: Bool,
+    continuousMotionEnabled: Bool = true
+  ) -> Self {
+    let motionEnabled = continuousMotionEnabled && !reduceMotion
+    guard event.isPublic, event.concernsPlayerCompany else {
+      return Self(
+        state: .idle,
+        banner: "SIGNAL ONLINE",
+        symbol: "antenna.radiowaves.left.and.right",
+        intensity: 0.24,
+        continuousMotionEnabled: motionEnabled
+      )
+    }
+
+    if event.program == .founderSpotlight {
+      return Self(
+        state: .spotlight,
+        banner: "FOUNDER SPOTLIGHT",
+        symbol: "person.crop.rectangle",
+        intensity: 0.92,
+        continuousMotionEnabled: motionEnabled
+      )
+    }
+    if event.tone == .critical || event.coverageDelta < 0 {
+      return Self(
+        state: .pressure,
+        banner: "PUBLIC PRESSURE",
+        symbol: "exclamationmark.triangle.fill",
+        intensity: 0.86,
+        continuousMotionEnabled: motionEnabled
+      )
+    }
+    if event.tone == .favorable || event.coverageDelta > 0 {
+      return Self(
+        state: .momentum,
+        banner: "SOLO RISING",
+        symbol: "arrow.up.right",
+        intensity: 0.78,
+        continuousMotionEnabled: motionEnabled
+      )
+    }
+    return Self(
+      state: .companyUpdate,
+      banner: "SOLO UPDATE",
+      symbol: "building.2.fill",
+      intensity: 0.56,
+      continuousMotionEnabled: motionEnabled
+    )
   }
 }
 

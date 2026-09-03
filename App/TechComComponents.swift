@@ -376,7 +376,7 @@ struct TechComDecisionCard: View {
         .frame(width: 3)
     }
     .gameplayMotion(.emphasis, value: post.resolvedActionID)
-    .sensoryFeedback(.success, trigger: feedbackTrigger)
+    .appSensoryFeedback(.success, trigger: feedbackTrigger)
     .accessibilityElement(children: .contain)
   }
 
@@ -553,8 +553,8 @@ struct TechComRivalCard: View {
         .stroke(identityColor.opacity(0.22), lineWidth: 1)
     }
     .gameplayMotion(.impact, value: rival.isVerified)
-    .sensoryFeedback(.success, trigger: verificationSuccessTrigger)
-    .sensoryFeedback(.warning, trigger: overclaimTrigger)
+    .appSensoryFeedback(.success, trigger: verificationSuccessTrigger)
+    .appSensoryFeedback(.warning, trigger: overclaimTrigger)
     .accessibilityElement(children: .contain)
   }
 
@@ -875,7 +875,7 @@ struct TechComRankingBoard: View {
     .onChange(of: entries) { oldEntries, newEntries in
       handleRankingChange(from: oldEntries, to: newEntries)
     }
-    .sensoryFeedback(.success, trigger: rankImprovementTrigger)
+    .appSensoryFeedback(.success, trigger: rankImprovementTrigger)
   }
 
   private func rankingRow(_ entry: TechComRankingEntry, rank: Int, index: Int) -> some View {

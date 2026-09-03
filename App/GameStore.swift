@@ -1172,7 +1172,7 @@ final class GameStore {
     guard workSessions[index].path == nil, !workSessions[index].completed else { return false }
     let cost = workSessions[index].founderAttentionCost
     guard attentionRemaining >= cost else {
-      alertMessage = "This Work Session needs \(cost) Founder Attention. Delegate to preserve the remaining budget."
+      alertMessage = "This Work Session needs \(cost) Founder Attention. Delegation needs \(delegateAttentionCost)."
       return false
     }
     workSessions[index].path = .manualReview

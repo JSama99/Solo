@@ -44,7 +44,7 @@ struct SystemsReviewView: View {
       }
     }
     .interactiveDismissDisabled(session?.path == .manualReview && session?.completed == false)
-    .sensoryFeedback(.selection, trigger: selectionTrigger)
+    .appSensoryFeedback(.selection, trigger: selectionTrigger)
   }
 
   private var header: some View {
