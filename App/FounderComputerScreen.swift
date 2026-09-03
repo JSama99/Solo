@@ -107,12 +107,12 @@ struct FounderComputerScreen: View {
         presentLevelUpIfNeeded(levels)
       }
     }
-    .sensoryFeedback(.selection, trigger: commandInteraction.focus)
-    .sensoryFeedback(.success, trigger: store.sprint)
-    .sensoryFeedback(.impact(weight: .light), trigger: resolutionTick)
-    .sensoryFeedback(.impact(weight: .medium), trigger: assignmentArrivalAgentID)
-    .sensoryFeedback(.success, trigger: activeReviewTaskID)
-    .sensoryFeedback(.success, trigger: levelUpAgentID)
+    .appSensoryFeedback(.selection, trigger: commandInteraction.focus)
+    .appSensoryFeedback(.success, trigger: store.sprint)
+    .appSensoryFeedback(.impact(weight: .light), trigger: resolutionTick)
+    .appSensoryFeedback(.impact(weight: .medium), trigger: assignmentArrivalAgentID)
+    .appSensoryFeedback(.success, trigger: activeReviewTaskID)
+    .appSensoryFeedback(.success, trigger: levelUpAgentID)
     .onChange(of: presentation.latestEvent?.id) { _, _ in handlePresentationEvent() }
     .onChange(of: assignmentIdentity) { _, _ in reconcilePresentationAfterAssignmentChange() }
     .sheet(item: $assignmentDestination) { destination in
@@ -637,7 +637,7 @@ struct AgentWorkspaceCard: View {
     .accessibilityHint("Select this agent workspace")
     .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
     .accessibilityAction { action() }
-    .sensoryFeedback(.success, trigger: effectivePhase == .workComplete)
+    .appSensoryFeedback(.success, trigger: effectivePhase == .workComplete)
     .onChange(of: effectivePhase) { _, phase in
       if phase == .workComplete { settings.playFeedback(.workComplete) }
     }
@@ -1000,7 +1000,7 @@ private struct TaskAssignmentSheet: View {
       .navigationTitle("Assign \(agent?.name ?? "Agent")")
       .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
     }
-    .sensoryFeedback(.impact(weight: .medium), trigger: assignmentTap)
+    .appSensoryFeedback(.impact(weight: .medium), trigger: assignmentTap)
   }
 
   private func assignmentConfirmation(task: SoloTask, agent: SoloAgent) -> some View {
@@ -1208,7 +1208,7 @@ private struct FounderWorkstationCard: View {
         coverageFeedbackToken += 1
         settings.playFeedback(change.delta > 0 ? .coveragePositive : .coverageNegative)
       }
-      .sensoryFeedback(change.delta > 0 ? .success : .warning, trigger: coverageFeedbackToken)
+      .appSensoryFeedback(change.delta > 0 ? .success : .warning, trigger: coverageFeedbackToken)
     }
   }
 

@@ -32,7 +32,7 @@ struct VentureThesisScreen: View {
       .padding(20)
       .frame(maxWidth: .infinity, alignment: .leading)
     }
-    .sensoryFeedback(.selection, trigger: store.selectedThesis)
+    .appSensoryFeedback(.selection, trigger: store.selectedThesis)
   }
 }
 
@@ -107,7 +107,7 @@ struct ChapterMilestoneScreen: View {
       .padding(20)
       .frame(maxWidth: .infinity, alignment: .leading)
       .background(SoloTheme.background)
-      .sensoryFeedback(.success, trigger: milestone.beginning.name)
+      .appSensoryFeedback(.success, trigger: milestone.beginning.name)
     }
   }
 }

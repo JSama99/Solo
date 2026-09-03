@@ -44,7 +44,7 @@ struct EvidenceTriageView: View {
       }
     }
     .interactiveDismissDisabled(session?.path == .manualReview && session?.completed == false)
-    .sensoryFeedback(.selection, trigger: decisionTrigger)
+    .appSensoryFeedback(.selection, trigger: decisionTrigger)
   }
 
   private var header: some View {
@@ -81,6 +81,9 @@ struct EvidenceTriageView: View {
       .buttonStyle(.plain)
       .disabled(store.attentionRemaining < session.founderAttentionCost)
       .accessibilityHint("Costs \(session.founderAttentionCost) Founder Attention and begins an untimed evidence review")
+    Text("Let Aurora finalize the packet · preserves Founder Attention")
+      .font(.subheadline)
+      .foregroundStyle(.secondary)
 
       Button {
         guard store.delegateEvidenceTriage(taskID: taskID) else { return }

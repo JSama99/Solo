@@ -79,7 +79,7 @@ struct FounderDeskWorkspace: View {
       .clipped()
       .animation(reduceMotion ? .easeOut(duration: 0.14) : .smooth(duration: 0.38), value: navigation.selection)
       .animation(reduceMotion ? nil : .smooth(duration: 0.34), value: navigation.camera)
-      .sensoryFeedback(.selection, trigger: selectionFeedback)
+      .appSensoryFeedback(.selection, trigger: selectionFeedback)
       .onChange(of: motion.audioHooks.eventToken, initial: true) { _, _ in
         settings.playGarageAudioHooks(motion.audioHooks)
       }

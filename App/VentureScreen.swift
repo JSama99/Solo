@@ -90,8 +90,8 @@ struct VentureScreen: View {
           newConsequenceIDs.subtract(additions)
         }
       }
-      .sensoryFeedback(.success, trigger: chapterFeedback)
-      .sensoryFeedback(.success, trigger: objectiveFeedback)
+      .appSensoryFeedback(.success, trigger: chapterFeedback)
+      .appSensoryFeedback(.success, trigger: objectiveFeedback)
     }
   }
 

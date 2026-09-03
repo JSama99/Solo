@@ -152,7 +152,7 @@ struct VerificationImpact: View {
           } animation: { phase in phase == 1 ? .bouncy(duration: 0.24) : .smooth(duration: 0.18) }
       }
     }
-    .sensoryFeedback(isSuccess ? .success : .warning, trigger: active)
+    .appSensoryFeedback(isSuccess ? .success : .warning, trigger: active)
   }
 
   private var isSuccess: Bool { state == .confirmed || state == .verified }
