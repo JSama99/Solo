@@ -11,6 +11,7 @@ struct AIOperationsFloor: View {
   var sprint: Int
   var finance: CompanyFinance
   var calendar: OperatingCalendar
+  var fundingOpportunities: [FundingOpportunityPresentation] = []
   var stats: FounderStats
   var availability: [String: CompanyCommandAgentAvailability]
   var reduceMotion: Bool
@@ -28,7 +29,14 @@ struct AIOperationsFloor: View {
   private var isWide: Bool { horizontalSizeClass == .regular && !dynamicTypeSize.isAccessibilitySize }
   private var motionReduced: Bool { reduceMotion || systemReduceMotion }
   private var projection: AIOperationsFloorProjection {
-    .derive(agents: agents, tasks: tasks, summary: summary, finance: finance, calendar: calendar)
+    .derive(
+      agents: agents,
+      tasks: tasks,
+      summary: summary,
+      finance: finance,
+      calendar: calendar,
+      fundingOpportunities: fundingOpportunities
+    )
   }
 
   var body: some View {
@@ -106,6 +114,9 @@ struct AIOperationsFloor: View {
           .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
       }
       nextActionSurface
+      if let fundingMilestone = projection.fundingMilestone {
+        fundingMilestoneSurface(fundingMilestone)
+      }
       if dynamicTypeSize.isAccessibilitySize {
         companyStatus
         founderCondition
@@ -154,6 +165,39 @@ struct AIOperationsFloor: View {
       metricRow("Net burn", finance.recentDailyNetBurn.formatted(.currency(code: "USD").precision(.fractionLength(0))), "flame.fill")
       metricRow("Runway", finance.runwayLabel(fallbackDailyBurn: 120), "calendar")
     }
+  }
+
+  private func fundingMilestoneSurface(
+    _ milestone: AIOperationsFloorProjection.FundingMilestone
+  ) -> some View {
+    VStack(alignment: .leading, spacing: 6) {
+      Label("ACTIVE FUNDING MILESTONE", systemImage: "flag.checkered")
+        .font(.caption2.weight(.black))
+        .foregroundStyle(SoloTheme.mint)
+      Text(milestone.title)
+        .font(.subheadline.weight(.bold))
+      HStack {
+        Label(milestone.progress, systemImage: "chart.bar.fill")
+        Spacer(minLength: 8)
+        Label(milestone.deadline, systemImage: "calendar")
+      }
+      .font(.caption.weight(.semibold))
+      Text(milestone.consequence)
+        .font(.caption2)
+        .foregroundStyle(.secondary)
+      Text("Next: \(milestone.nextAction)")
+        .font(.caption2.weight(.semibold))
+        .foregroundStyle(SoloTheme.mint)
+    }
+    .padding(11)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(SoloTheme.mint.opacity(0.09), in: .rect(cornerRadius: 11))
+    .overlay {
+      RoundedRectangle(cornerRadius: 11)
+        .stroke(SoloTheme.mint.opacity(0.45), lineWidth: differentiateWithoutColor ? 2 : 1)
+    }
+    .accessibilityElement(children: .combine)
+    .accessibilityIdentifier("founder-command-funding-milestone")
   }
 
   private var founderCondition: some View {
@@ -489,8 +533,16 @@ struct AIOperationsFloorProjection: Equatable {
     var accessibilityLabel: String { "\(priority.title) priority. \(agentName). \(title). \(lifecycle). \(decisionSummary). \(implication). \(reviewability)." }
   }
   struct NextAction: Equatable { var eyebrow: String; var title: String; var shortTitle: String; var detail: String; var symbol: String; var color: Color }
+  struct FundingMilestone: Equatable {
+    var title: String
+    var progress: String
+    var deadline: String
+    var consequence: String
+    var nextAction: String
+  }
   var queue: [QueueItem]
   var nextAction: NextAction
+  var fundingMilestone: FundingMilestone?
 
   static var primarySurfaceIDs: [String] { ["founder-command-console", "founder-review-queue", "operations-station-aurora", "operations-station-stacks", "operations-station-brio"] }
   static var emptyQueueText: String { "No reports awaiting Founder Review. Aurora, Stacks and Brio will route reported outputs here." }
@@ -498,7 +550,14 @@ struct AIOperationsFloorProjection: Equatable {
   static func queueActionEnabled(item: QueueItem, availability: CompanyCommandAgentAvailability?) -> Bool {
     switch item.action { case .review: item.isReviewable && availability?.canReview == true; case .resolve: availability?.requiresResolution == true; case .inspect: true }
   }
-  static func derive(agents: [LivingAgentProjection], tasks: [SoloTask] = [], summary: CompanyCommandFounderSummary, finance: CompanyFinance, calendar: OperatingCalendar) -> Self {
+  static func derive(
+    agents: [LivingAgentProjection],
+    tasks: [SoloTask] = [],
+    summary: CompanyCommandFounderSummary,
+    finance: CompanyFinance,
+    calendar: OperatingCalendar,
+    fundingOpportunities: [FundingOpportunityPresentation] = []
+  ) -> Self {
     let items = agents.compactMap { agent -> QueueItem? in
       guard [.workComplete, .awaitingReview, .reviewing, .reviewed, .resolving].contains(agent.activity) else { return nil }
       let title = tasks.first { $0.id == agent.taskID }?.title ?? agent.taskTitle ?? "Reported output"
@@ -514,7 +573,25 @@ struct AIOperationsFloorProjection: Equatable {
       default: return nil
       }
     }.sorted { $0.priority != $1.priority ? $0.priority > $1.priority : $0.agentID < $1.agentID }
-    return .init(queue: items, nextAction: deriveNextAction(summary: summary, finance: finance, calendar: calendar))
+    return .init(
+      queue: items,
+      nextAction: deriveNextAction(summary: summary, finance: finance, calendar: calendar),
+      fundingMilestone: deriveFundingMilestone(fundingOpportunities)
+    )
+  }
+  private static func deriveFundingMilestone(
+    _ opportunities: [FundingOpportunityPresentation]
+  ) -> FundingMilestone? {
+    guard let presentation = opportunities.first(where: {
+      $0.application?.milestoneObligation?.status == .active
+    }), let obligation = presentation.application?.milestoneObligation else { return nil }
+    return FundingMilestone(
+      title: "\(presentation.opportunity.name) · \(obligation.metric.title)",
+      progress: presentation.milestoneProgressLabel ?? "Target \(obligation.target)",
+      deadline: presentation.milestoneDeadlineLabel ?? FundingOpportunity.sprintLabel(obligation.dueCareerSprint),
+      consequence: "If missed: Company Trust −\(obligation.missedTrustConsequence)",
+      nextAction: presentation.nextAction
+    )
   }
   private static func deriveNextAction(summary: CompanyCommandFounderSummary, finance: CompanyFinance, calendar: OperatingCalendar) -> NextAction {
     if summary.resolutionCount > 0 { return .init(eyebrow: "BLOCKING DECISION", title: "Resolve the reviewed Founder decision", shortTitle: "Resolve decision", detail: "A reviewed output still needs an explicit consequence path before the Sprint can commit.", symbol: "lock.open.fill", color: SoloTheme.coral) }

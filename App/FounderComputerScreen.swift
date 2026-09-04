@@ -48,6 +48,7 @@ struct FounderComputerScreen: View {
             sprint: store.sprint,
             finance: store.finance,
             calendar: store.operatingCalendar,
+            fundingOpportunities: store.fundingBoardOpportunities,
             stats: store.stats,
             availability: agentAvailability,
             reduceMotion: reduceMotion,
@@ -1072,7 +1073,20 @@ struct FounderWorkstationSummary: Equatable {
   var inProgressCount: Int
   var reviewCount: Int
   var resolutionCount: Int
+  var hasAssignedWork: Bool
+  var agentWorkComplete: Bool
+  var founderReviewsHandled: Bool
+  var resolutionDecisionsLocked: Bool
+  var canonicalBlockersCleared: Bool
   var readiness: Readiness
+
+  var canCommit: Bool {
+    readiness == .ready
+      && agentWorkComplete
+      && founderReviewsHandled
+      && resolutionDecisionsLocked
+      && canonicalBlockersCleared
+  }
 
   @MainActor
   init(store: GameStore, presentation: PresentationCoordinator) {
@@ -1082,6 +1096,11 @@ struct FounderWorkstationSummary: Equatable {
     }.count
     reviewCount = store.tasks.filter { $0.assignedAgentID != nil && !$0.isReviewed && $0.result != nil }.count
     resolutionCount = store.tasks.filter { $0.isReviewed && !$0.resolutionLocked }.count
+    hasAssignedWork = store.tasks.contains { $0.assignedAgentID != nil }
+    agentWorkComplete = hasAssignedWork && inProgressCount == 0
+    founderReviewsHandled = hasAssignedWork && (reviewCount == 0 || store.attentionRemaining == 0)
+    resolutionDecisionsLocked = hasAssignedWork && resolutionCount == 0
+    canonicalBlockersCleared = store.commitBlockerMessage == nil
 
     if inProgressCount > 0 {
       readiness = .workInProgress
@@ -1286,10 +1305,10 @@ private struct FounderWorkstationCard: View {
       Label(summary.readiness.message, systemImage: readinessSymbol)
         .font(.headline)
         .foregroundStyle(isReady ? accent : .primary)
-      readinessCheck("Agent work complete", complete: summary.inProgressCount == 0)
-      readinessCheck("Founder reviews handled or Attention exhausted", complete: summary.reviewCount == 0 || store.attentionRemaining == 0)
-      readinessCheck("Resolution decisions locked", complete: summary.resolutionCount == 0)
-      readinessCheck("Canonical sprint blockers cleared", complete: store.commitBlockerMessage == nil)
+      readinessCheck("Agent work complete", complete: summary.agentWorkComplete)
+      readinessCheck("Founder reviews handled or Attention exhausted", complete: summary.founderReviewsHandled)
+      readinessCheck("Resolution decisions locked", complete: summary.resolutionDecisionsLocked)
+      readinessCheck("Canonical sprint blockers cleared", complete: summary.canonicalBlockersCleared)
     }
   }
 
@@ -1322,7 +1341,7 @@ private struct FounderWorkstationCard: View {
     task.isReviewed ? "Resolve \(task.title)" : "Review \(task.title)"
   }
 
-  private var isReady: Bool { summary.readiness == .ready && store.canCommitSprint }
+  private var isReady: Bool { summary.canCommit }
   private var readinessSymbol: String {
     switch summary.readiness {
     case .workInProgress: "waveform.path.ecg"

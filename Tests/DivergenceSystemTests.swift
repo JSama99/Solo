@@ -118,8 +118,84 @@ final class DivergenceSystemTests: XCTestCase {
     XCTAssertLessThan(elapsed, .seconds(1), "100 ghost runs should remain comfortably outside a frame-scale concern")
   }
 
+  func testShipAllExecutesScriptedBoundedDivergenceExactlyOnce() throws {
+    let store = divergenceStore(seed: 71_001)
+    let assignedBefore = store.tasks.filter { $0.assignedAgentID != nil }.count
+
+    XCTAssertTrue(store.chooseDivergence(.shipAll))
+    let branch = try XCTUnwrap(store.activeDivergence)
+    XCTAssertEqual(branch.takenChoice, .shipAll)
+    XCTAssertEqual(branch.ghostRival.archetype, .copycat)
+    XCTAssertEqual(store.tasks.filter { $0.assignedAgentID != nil }.count, assignedBefore)
+    XCTAssertNil(store.pendingDivergenceOffer)
+    XCTAssertEqual(store.forksUsedThisVenture, 1)
+
+    XCTAssertFalse(store.chooseDivergence(.holdUnverified))
+    XCTAssertEqual(store.activeDivergence?.takenChoice, .shipAll)
+    XCTAssertEqual(store.forksUsedThisVenture, 1)
+    commitChosenDivergence(in: store, suiteName: "divergence-ship-all")
+    XCTAssertNotNil(store.report)
+  }
+
+  func testHoldUnverifiedExecutesScriptedBoundedDivergenceExactlyOnce() throws {
+    let store = divergenceStore(seed: 71_002)
+    let assignedBefore = store.tasks.filter { $0.assignedAgentID != nil }.count
+
+    XCTAssertTrue(store.chooseDivergence(.holdUnverified))
+    let branch = try XCTUnwrap(store.activeDivergence)
+    XCTAssertEqual(branch.takenChoice, .holdUnverified)
+    XCTAssertEqual(branch.ghostRival.archetype, .copycat)
+    XCTAssertEqual(store.tasks.filter { $0.assignedAgentID != nil }.count, assignedBefore - 1)
+    XCTAssertTrue(branch.takenSummary.contains("held"))
+    XCTAssertNil(store.pendingDivergenceOffer)
+    XCTAssertEqual(store.forksUsedThisVenture, 1)
+
+    XCTAssertFalse(store.chooseDivergence(.holdUnverified))
+    XCTAssertEqual(store.tasks.filter { $0.assignedAgentID != nil }.count, assignedBefore - 1)
+    XCTAssertEqual(store.forksUsedThisVenture, 1)
+    commitChosenDivergence(in: store, suiteName: "divergence-hold-unverified")
+    XCTAssertNotNil(store.report)
+  }
+
   private func coordinate(task: String, agent: String, salt: UInt64) -> DrawCoordinate {
     DrawCoordinate(careerSeed: 77, venture: 3, sprint: 7, taskInstanceID: task, agentID: agent, channel: .quality, divergenceSalt: salt)
+  }
+
+  private func divergenceStore(seed: UInt64) -> GameStore {
+    let store = GameStore()
+    store.resetCareer()
+    store.entitlements = StaticEntitlementProvider(hasFounderPass: true)
+    store.startCareer(seed: seed)
+    store.confirmVentureThesisIfNeeded()
+    store.sprint = 6
+    if let choice = store.activeDilemma?.choices.first {
+      store.selectDilemmaChoice(choice.id)
+    }
+    for (index, task) in store.tasks.prefix(store.agents.count).enumerated() {
+      store.assign(agentID: store.agents[index].id, to: task.id)
+    }
+    store.pendingDivergenceOffer = DivergenceOffer(
+      id: "FORK-V1-S6",
+      venture: 1,
+      sprint: 6,
+      context: PrecedentContext(
+        doctrine: .guided,
+        intent: .build,
+        driftBand: .low,
+        runwayBand: .high,
+        unverifiedBand: .medium
+      )
+    )
+    return store
+  }
+
+  private func commitChosenDivergence(in store: GameStore, suiteName: String) {
+    let presentation = PresentationCoordinator(timing: .immediate)
+    let progressionDefaults = UserDefaults(suiteName: suiteName)!
+    progressionDefaults.removePersistentDomain(forName: suiteName)
+    let progression = FounderProgressionStore(defaults: progressionDefaults, saveKey: "progress")
+    presentation.commit(in: store, progression: progression)
+    XCTAssertNotNil(presentation.visibleSprintResult)
   }
 
   private func emptyBranch() -> DivergenceBranch {

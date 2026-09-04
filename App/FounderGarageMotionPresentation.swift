@@ -455,6 +455,7 @@ struct FounderGarageLightingPresentation: Equatable, Sendable {
   var ambientWashIntensity: Double
   var equipmentActivityIntensity: Double
   var publicPressureIntensity: Double
+  var fundingAcknowledgmentIntensity: Double
   var practicalLightIntensity: Double
   var founderMonitorGlow: Double
   var warningIntensity: Double
@@ -486,6 +487,15 @@ struct FounderGarageLightingPresentation: Equatable, Sendable {
     let publicPressure = latestPublicCompanyEvent.map {
       $0.tone == .critical || $0.coverageDelta < 0
     } ?? false
+    let currentBroadcastPosition = publicEvents.first(where: { $0.program == .marketPulse })
+    let fundingAcknowledgment = currentBroadcastPosition.map { position in
+      publicEvents.contains {
+        $0.isFundingSuccess
+          && $0.venture == position.venture
+          && $0.sprint == position.sprint
+      }
+    } ?? false
+    let fundingIntensity = fundingAcknowledgment ? 0.58 : 0
     let operationalState: FounderGarageOperationalState
     if attention {
       operationalState = .reviewAttention
@@ -511,21 +521,22 @@ struct FounderGarageLightingPresentation: Equatable, Sendable {
     return Self(
       operationalState: operationalState,
       workActivityIntensity: workActivity,
-      ambientWashIntensity: ambientWash,
+      ambientWashIntensity: min(0.82, ambientWash + fundingIntensity * 0.16),
       equipmentActivityIntensity: equipmentActivity,
       publicPressureIntensity: publicPressure ? 0.72 : 0,
-      practicalLightIntensity: max(0.32, min(0.88, 0.34 + atmosphere.energy * 0.34 + workActivity * 0.12 + (attention ? 0.05 : 0))),
-      founderMonitorGlow: min(0.96, 0.42 + Double(activeCount) * 0.09 + (attention ? 0.08 : 0)),
+      fundingAcknowledgmentIntensity: fundingIntensity,
+      practicalLightIntensity: max(0.32, min(0.90, 0.34 + atmosphere.energy * 0.34 + workActivity * 0.12 + (attention ? 0.05 : 0) + fundingIntensity * 0.08)),
+      founderMonitorGlow: min(0.96, 0.42 + Double(activeCount) * 0.09 + (attention ? 0.08 : 0) + fundingIntensity * 0.12),
       warningIntensity: atmosphere.isLowRunway ? 0.62 : 0,
-      momentumConnectionIntensity: atmosphere.isHighMomentum ? 0.72 : 0.14,
+      momentumConnectionIntensity: max(atmosphere.isHighMomentum ? 0.72 : 0.14, fundingIntensity),
       brioPublicSignalStability: atmosphere.isLowTrust ? 0.52 : 1,
-      founderNotificationIntensity: attention ? 0.88 : event.kind == .none ? 0 : 0.52,
+      founderNotificationIntensity: max(attention ? 0.88 : event.kind == .none ? 0 : 0.52, fundingIntensity),
       operatingPeriod: period,
       garageDoorPanelBrightness: doorLight.panelBrightness,
       garageDoorExteriorLeakIntensity: doorLight.exteriorLeakIntensity,
       roomExposure: periodLight.exposure,
       rearWallClarity: periodLight.rearClarity,
-      practicalWarmth: periodLight.warmth,
+      practicalWarmth: min(1, periodLight.warmth + fundingIntensity * 0.10),
       shadowLength: periodLight.shadowLength,
       displayGlowMultiplier: periodLight.displayGlow
     )

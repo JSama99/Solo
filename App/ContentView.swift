@@ -486,7 +486,7 @@ private struct GameDashboard: View {
       set: { if $0 == nil { store.pendingDivergenceOffer = nil } }
     )) { offer in
       ForkPromptView(offer: offer) { choice in
-        store.chooseDivergence(choice)
+        guard store.chooseDivergence(choice) else { return }
         presentation.commit(in: store, progression: progression)
       }
       .presentationDetents([.medium, .large])

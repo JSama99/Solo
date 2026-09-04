@@ -177,6 +177,49 @@ final class SignalTVTests: XCTestCase {
     XCTAssertFalse(filtered.contains { $0.headline.contains("Unrevealed") })
   }
 
+  func testFundingProjectionPublishesOnlySuccessfulFounderVisibleTruth() throws {
+    let grant = try XCTUnwrap(FundingBoardCatalog.opportunities.first {
+      $0.id == "pioneer-ai-grant"
+    })
+    let awarded = try XCTUnwrap(FundingPublicMediaProjection.resolution(
+      opportunity: grant,
+      outcome: .awarded,
+      venture: 1,
+      sprint: 2
+    ))
+
+    XCTAssertTrue(awarded.isFundingSuccess)
+    XCTAssertEqual(awarded.program, .breaking)
+    XCTAssertEqual(awarded.coverageDelta, 0)
+    XCTAssertTrue(awarded.headline.contains(grant.name))
+    XCTAssertNil(FundingPublicMediaProjection.resolution(
+      opportunity: grant,
+      outcome: .declined,
+      venture: 1,
+      sprint: 2
+    ))
+    XCTAssertEqual(
+      SignalTVBroadcastPresentation.derive(event: awarded, reduceMotion: false).state,
+      .momentum
+    )
+    let programming = SignalTVProgramming.ambientEvents(
+      publicEvents: [awarded, awarded], techComHeadlines: [], rivals: [],
+      coverage: 0, venture: 1, sprint: 2
+    )
+    XCTAssertEqual(programming.filter { $0.id == awarded.id }, [awarded])
+    let round = try XCTUnwrap(FundingBoardCatalog.opportunities.first { $0.kind == .fundraising })
+    let funded = try XCTUnwrap(FundingPublicMediaProjection.resolution(
+      opportunity: round, outcome: .funded, venture: 1, sprint: 7
+    ))
+    XCTAssertTrue(awarded.summary.contains("non-dilutive"))
+    XCTAssertTrue(funded.summary.contains("outside funding"))
+    XCTAssertEqual(funded.coverageDelta, 0)
+    let allCopy = ([awarded.headline, awarded.summary] + awarded.tickerItems).joined(separator: " ")
+    for hiddenTerm in ["quality", "drift", "overclaim", "verification"] {
+      XCTAssertFalse(allCopy.localizedCaseInsensitiveContains(hiddenTerm))
+    }
+  }
+
   func testCoverageRemainsMechanicallyIndependentFromTrust() {
     let store = activeStore()
     store.stats.trust = 85

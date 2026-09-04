@@ -124,6 +124,66 @@ final class AIOperationsFloorTests: XCTestCase {
     XCTAssertFalse(reported.accessibilityValue.localizedCaseInsensitiveContains("verified"))
   }
 
+  func testActiveFundingMilestoneAppearsInFounderCommandProjection() throws {
+    let opportunity = try XCTUnwrap(FundingBoardCatalog.opportunities.first {
+      $0.id == "founder-conviction-round"
+    })
+    let application = FundingApplicationRecord(
+      opportunityID: opportunity.id,
+      status: .resolved,
+      appliedCareerSprint: 6,
+      resolvedCareerSprint: 7,
+      outcome: .funded,
+      outcomeReason: "Every visible requirement remained met.",
+      milestoneObligation: FundingMilestoneObligation(
+        metric: .revenue,
+        target: 6_000,
+        createdCareerSprint: 7,
+        dueCareerSprint: 11,
+        missedTrustConsequence: 6,
+        status: .active,
+        resolvedCareerSprint: nil
+      )
+    )
+    let presentations = FundingBoardEngine.presentations(
+      snapshot: FundingBoardSnapshot(
+        revenue: 4_200,
+        trust: 70,
+        momentum: 45,
+        coverage: 10,
+        venture: 1,
+        evidenceCount: 2,
+        careerSprint: 9,
+        attentionRemaining: 2
+      ),
+      applications: [application]
+    )
+    let projection = AIOperationsFloorProjection.derive(
+      agents: [],
+      summary: summary(),
+      finance: .init(),
+      calendar: .init(),
+      fundingOpportunities: presentations
+    )
+    let milestone = try XCTUnwrap(projection.fundingMilestone)
+
+    XCTAssertTrue(milestone.title.contains(opportunity.name))
+    XCTAssertTrue(milestone.progress.contains("$4,200"))
+    XCTAssertTrue(milestone.progress.contains("$6,000"))
+    XCTAssertTrue(milestone.deadline.contains("sprints remaining"))
+    XCTAssertEqual(milestone.consequence, "If missed: Company Trust −6")
+
+    for status: FundingMilestoneStatus in [.met, .missed] {
+      var resolved = presentations
+      let index = try XCTUnwrap(resolved.firstIndex { $0.id == opportunity.id })
+      resolved[index].application?.milestoneObligation?.status = status
+      XCTAssertNil(AIOperationsFloorProjection.derive(
+        agents: [], summary: summary(), finance: .init(), calendar: .init(),
+        fundingOpportunities: resolved
+      ).fundingMilestone)
+    }
+  }
+
   private func agent(id: String, activity: LivingAgentActivity, conditions: Set<LivingAgentCondition>) -> LivingAgentProjection {
     LivingAgentProjection(agentID: id, name: id.capitalized, initials: String(id.prefix(1)).uppercased(), role: id == "aurora" ? .research : id == "stacks" ? .engineering : .marketing, taskID: UUID(), taskTitle: "Canonical task", activity: activity, conditions: conditions, emphasis: .normal, progress: 0.5, reviewRevealStep: 0, stressLabel: "Stable", trustLabel: "Trust 85 or higher", level: 1, needsFounderAttention: false, isResting: false)
   }

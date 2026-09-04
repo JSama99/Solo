@@ -57,6 +57,88 @@ struct PublicMediaEvent: Codable, Hashable, Identifiable, Sendable {
     self.concernsPlayerCompany = concernsPlayerCompany
     self.isPublic = isPublic
   }
+
+  /// Funding stories are intentionally recognizable from their public event
+  /// namespace, never from private finance or application state.
+  var isFundingSuccess: Bool {
+    isPublic
+      && concernsPlayerCompany
+      && tone == .favorable
+      && id.hasPrefix("funding-")
+  }
+}
+
+/// Projects only completed, founder-visible funding successes into the shared
+/// public media ledger. Declines, applications, and missed obligations remain
+/// private company records on their canonical surfaces.
+enum FundingPublicMediaProjection {
+  static func resolution(
+    opportunity: FundingOpportunity,
+    outcome: FundingResolutionOutcome,
+    venture: Int,
+    sprint: Int
+  ) -> PublicMediaEvent? {
+    switch outcome {
+    case .awarded:
+      return event(
+        id: "funding-\(opportunity.id)-awarded",
+        headline: "SOLO secures \(opportunity.name)",
+        summary: "The company received \(opportunity.amountLabel) in non-dilutive funding.",
+        tickerItems: ["SOLO AWARDED \(opportunity.amountLabel)", "\(opportunity.name.uppercased())"],
+        venture: venture,
+        sprint: sprint
+      )
+    case .funded:
+      return event(
+        id: "funding-\(opportunity.id)-funded",
+        headline: "SOLO closes \(opportunity.name)",
+        summary: "The company closed \(opportunity.amountLabel) in outside funding.",
+        tickerItems: ["SOLO FUNDED \(opportunity.amountLabel)", "\(opportunity.name.uppercased())"],
+        venture: venture,
+        sprint: sprint
+      )
+    case .declined:
+      return nil
+    }
+  }
+
+  static func milestoneMet(
+    opportunity: FundingOpportunity,
+    obligation: FundingMilestoneObligation,
+    venture: Int,
+    sprint: Int
+  ) -> PublicMediaEvent {
+    event(
+      id: "funding-\(opportunity.id)-milestone-met",
+      headline: "SOLO delivers on its \(opportunity.name) milestone",
+      summary: "The company reached its published \(obligation.metric.title) target.",
+      tickerItems: ["SOLO MILESTONE MET", "\(obligation.metric.title.uppercased()) TARGET REACHED"],
+      venture: venture,
+      sprint: sprint
+    )
+  }
+
+  private static func event(
+    id: String,
+    headline: String,
+    summary: String,
+    tickerItems: [String],
+    venture: Int,
+    sprint: Int
+  ) -> PublicMediaEvent {
+    PublicMediaEvent(
+      id: id,
+      program: .breaking,
+      tone: .favorable,
+      headline: headline,
+      summary: summary,
+      tickerItems: tickerItems,
+      coverageDelta: 0,
+      venture: venture,
+      sprint: sprint,
+      concernsPlayerCompany: true
+    )
+  }
 }
 
 enum CoverageTuning {

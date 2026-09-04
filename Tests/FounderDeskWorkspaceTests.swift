@@ -401,6 +401,33 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     XCTAssertEqual(first.lighting.publicPressureIntensity, 0)
   }
 
+  func testCurrentSprintPublicFundingSuccessAddsStaticGarageAcknowledgment() throws {
+    let opportunity = try XCTUnwrap(FundingBoardCatalog.opportunities.first {
+      $0.id == "pioneer-ai-grant"
+    })
+    let fundingEvent = try XCTUnwrap(FundingPublicMediaProjection.resolution(
+      opportunity: opportunity,
+      outcome: .awarded,
+      venture: 1,
+      sprint: 2
+    ))
+    let currentEvents = [fundingEvent, SignalTVProgramming.marketPulse(venture: 1, sprint: 2)]
+    let previousEvents = [fundingEvent, SignalTVProgramming.marketPulse(venture: 1, sprint: 3)]
+    let standard = operationalMotion(publicEvents: currentEvents)
+    let reduced = operationalMotion(publicEvents: currentEvents, reduceMotion: true)
+
+    XCTAssertGreaterThan(standard.lighting.fundingAcknowledgmentIntensity, 0)
+    XCTAssertEqual(
+      standard.lighting.fundingAcknowledgmentIntensity,
+      reduced.lighting.fundingAcknowledgmentIntensity
+    )
+    XCTAssertFalse(reduced.ambient.continuousMotionEnabled)
+    XCTAssertEqual(
+      operationalMotion(publicEvents: previousEvents).lighting.fundingAcknowledgmentIntensity,
+      0
+    )
+  }
+
   func testPhysicalDeviceSilhouettesRemainDistinctWithoutLabels() {
     for regularWidth in [false, true] {
       let viewport = regularWidth ? CGSize(width: 1_024, height: 1_366) : CGSize(width: 402, height: 874)
@@ -822,7 +849,8 @@ final class FounderDeskWorkspaceTests: XCTestCase {
   private func operationalMotion(
     stats: FounderStats = FounderStats(),
     agents: [LivingAgentProjection] = [],
-    publicEvents: [PublicMediaEvent] = []
+    publicEvents: [PublicMediaEvent] = [],
+    reduceMotion: Bool = false
   ) -> FounderGarageMotionPresentation {
     FounderGarageMotionPresentation.derive(
       environment: FounderEnvironmentProjection(
@@ -833,7 +861,7 @@ final class FounderDeskWorkspaceTests: XCTestCase {
         signalTVEvents: publicEvents
       ),
       camera: FounderEnvironmentCameraState(mode: .freeLook),
-      reduceMotion: false,
+      reduceMotion: reduceMotion,
       sceneActive: true
     )
   }

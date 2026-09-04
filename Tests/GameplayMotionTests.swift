@@ -321,6 +321,115 @@ final class GameplayMotionTests: XCTestCase {
     XCTAssertTrue(store.canCommitSprint)
   }
 
+  func testSprintReadinessWithNoAssignmentKeepsWorkAndCommitIncomplete() {
+    let store = makeStore(seed: 9_110)
+    let summary = FounderWorkstationSummary(store: store, presentation: PresentationCoordinator())
+
+    XCTAssertFalse(summary.hasAssignedWork)
+    XCTAssertFalse(summary.agentWorkComplete)
+    XCTAssertFalse(summary.founderReviewsHandled)
+    XCTAssertFalse(summary.resolutionDecisionsLocked)
+    XCTAssertFalse(summary.canonicalBlockersCleared)
+    XCTAssertFalse(summary.canCommit)
+    XCTAssertEqual(store.commitBlockerMessage, "Assign at least one agent before committing the sprint.")
+  }
+
+  func testSprintReadinessTracksAssignedWorkUntilPresentationCompletes() throws {
+    let store = makeStore(seed: 9_111)
+    let task = try XCTUnwrap(store.tasks.first)
+    let agent = try XCTUnwrap(store.agents.first)
+    let presentation = PresentationCoordinator()
+
+    presentation.assign(agentID: agent.id, to: task.id, in: store)
+    var summary = FounderWorkstationSummary(store: store, presentation: presentation)
+    XCTAssertTrue(summary.hasAssignedWork)
+    XCTAssertFalse(summary.agentWorkComplete)
+    XCTAssertEqual(summary.readiness, .workInProgress)
+    XCTAssertFalse(summary.canCommit)
+
+    presentation.skipPresentation(for: agent.id)
+    summary = FounderWorkstationSummary(store: store, presentation: presentation)
+    XCTAssertTrue(summary.agentWorkComplete)
+    XCTAssertFalse(summary.founderReviewsHandled)
+    XCTAssertEqual(summary.readiness, .founderReviewPending)
+    XCTAssertFalse(summary.canCommit)
+  }
+
+  func testSprintReadinessShowsReviewHandledButResolutionUnlocked() throws {
+    let store = makeStore(seed: 9_112)
+    let task = try XCTUnwrap(store.tasks.first)
+    let agent = try XCTUnwrap(store.agents.first)
+    let presentation = PresentationCoordinator(timing: .immediate)
+    presentation.assign(agentID: agent.id, to: task.id, in: store)
+    presentation.skipPresentation(for: agent.id)
+    presentation.review(taskID: task.id, in: store)
+
+    let summary = FounderWorkstationSummary(store: store, presentation: presentation)
+    XCTAssertTrue(summary.agentWorkComplete)
+    XCTAssertTrue(summary.founderReviewsHandled)
+    XCTAssertFalse(summary.resolutionDecisionsLocked)
+    XCTAssertEqual(summary.readiness, .resolutionRequired)
+    XCTAssertFalse(summary.canCommit)
+  }
+
+  func testSprintReadinessAllowsReviewExhaustionThroughCanonicalAttentionRule() throws {
+    let store = makeStore(seed: 9_113)
+    if let choice = store.activeDilemma?.choices.first {
+      store.selectDilemmaChoice(choice.id)
+    }
+    for (index, task) in store.tasks.enumerated() {
+      store.assign(agentID: store.agents[index].id, to: task.id)
+    }
+    for task in store.tasks.prefix(store.attentionMaximum) {
+      store.review(taskID: task.id)
+      store.resolveReviewedTask(taskID: task.id, choice: .approve)
+    }
+
+    let summary = FounderWorkstationSummary(store: store, presentation: PresentationCoordinator())
+    XCTAssertEqual(store.attentionRemaining, 0)
+    XCTAssertGreaterThan(summary.reviewCount, 0)
+    XCTAssertTrue(summary.founderReviewsHandled)
+    XCTAssertTrue(summary.resolutionDecisionsLocked)
+    XCTAssertTrue(summary.canonicalBlockersCleared)
+    XCTAssertTrue(summary.canCommit)
+  }
+
+  func testSprintReadinessLocksResolutionAndBecomesFullyReady() throws {
+    let store = makeStore(seed: 9_114)
+    let task = try XCTUnwrap(store.tasks.first)
+    let agent = try XCTUnwrap(store.agents.first)
+    if let choice = store.activeDilemma?.choices.first {
+      store.selectDilemmaChoice(choice.id)
+    }
+    store.assign(agentID: agent.id, to: task.id)
+    store.review(taskID: task.id)
+    var summary = FounderWorkstationSummary(store: store, presentation: PresentationCoordinator())
+    XCTAssertFalse(summary.resolutionDecisionsLocked)
+    XCTAssertFalse(summary.canCommit)
+
+    store.resolveReviewedTask(taskID: task.id, choice: .approve)
+    summary = FounderWorkstationSummary(store: store, presentation: PresentationCoordinator())
+    XCTAssertTrue(summary.agentWorkComplete)
+    XCTAssertTrue(summary.founderReviewsHandled)
+    XCTAssertTrue(summary.resolutionDecisionsLocked)
+    XCTAssertTrue(summary.canonicalBlockersCleared)
+    XCTAssertEqual(summary.readiness, .ready)
+    XCTAssertTrue(summary.canCommit)
+    XCTAssertTrue(store.canCommitSprint)
+  }
+
+  func testSprintReadinessRetainsCanonicalDilemmaBlocker() throws {
+    let store = makeStore(seed: 9_115)
+    let task = try XCTUnwrap(store.tasks.first)
+    store.assign(agentID: store.agents[0].id, to: task.id)
+    let summary = FounderWorkstationSummary(store: store, presentation: PresentationCoordinator())
+
+    XCTAssertTrue(summary.agentWorkComplete)
+    XCTAssertFalse(summary.canonicalBlockersCleared)
+    XCTAssertFalse(summary.canCommit)
+    XCTAssertEqual(store.commitBlockerMessage, "Choose a response to the founder dilemma before committing.")
+  }
+
   func testFounderSummaryDerivationDoesNotMutateSimulation() throws {
     let store = makeStore(seed: 9_107)
     let presentation = PresentationCoordinator()
