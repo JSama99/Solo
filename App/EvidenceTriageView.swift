@@ -103,9 +103,13 @@ struct EvidenceTriageView: View {
   }
 
   private func activeReview(_ session: WorkSessionRecord) -> some View {
-    VStack(alignment: .leading, spacing: 18) {
+    let progress = EvidenceTriageProgress(
+      decisionCount: session.decisions.count,
+      cardCount: session.cards.count
+    )
+    return VStack(alignment: .leading, spacing: 18) {
       HStack {
-        Text("EVIDENCE \(session.decisions.count + 1) OF \(session.cards.count)")
+        Text("EVIDENCE \(progress.currentItem) OF \(progress.itemCount)")
           .font(.caption.monospacedDigit().weight(.black))
           .foregroundStyle(.secondary)
         Spacer()
@@ -113,7 +117,10 @@ struct EvidenceTriageView: View {
           .font(.caption2.weight(.bold))
           .foregroundStyle(SoloTheme.mint)
       }
-      ProgressView(value: Double(session.decisions.count), total: Double(session.cards.count))
+      ProgressView(
+        value: progress.value,
+        total: progress.total
+      )
         .tint(SoloTheme.cyan)
 
       if let card = session.nextCardPresentation {
@@ -257,6 +264,25 @@ struct EvidenceTriageView: View {
     case .verify: SoloTheme.amber
     case .use: SoloTheme.cyan
     }
+  }
+}
+
+/// Presentation-only normalization for legacy or transitional Work Session
+/// records. It never mutates the canonical cards or decisions.
+struct EvidenceTriageProgress: Equatable, Sendable {
+  let completedCount: Int
+  let itemCount: Int
+
+  init(decisionCount: Int, cardCount: Int) {
+    itemCount = max(0, cardCount)
+    completedCount = min(max(0, decisionCount), max(itemCount, 1))
+  }
+
+  var value: Double { Double(completedCount) }
+  var total: Double { Double(max(itemCount, 1)) }
+  var currentItem: Int {
+    guard itemCount > 0 else { return 0 }
+    return min(completedCount + 1, itemCount)
   }
 }
 

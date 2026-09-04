@@ -157,7 +157,7 @@ private struct PrecedentRecordRow: View {
     Button(action: onToggle) {
       VStack(alignment: .leading, spacing: 8) {
         HStack(alignment: .top, spacing: 10) {
-          Image(systemName: precedent.isFlagged ? "exclamationmark.triangle.fill" : "brain.head.profile")
+          Image(systemName: precedent.isFundingRecord ? "banknote.fill" : (precedent.isFlagged ? "exclamationmark.triangle.fill" : "brain.head.profile"))
             .foregroundStyle(precedent.isFlagged ? SoloTheme.amber : SoloTheme.cyan)
             .frame(width: 22)
           VStack(alignment: .leading, spacing: 3) {
@@ -185,7 +185,7 @@ private struct PrecedentRecordRow: View {
             .animation(MotionKind.emphasis.resolved(reduceMotion: reduceMotion), value: isExpanded)
             .accessibilityHidden(true)
         }
-        Text(precedent.outcome.summary)
+        Text(precedent.observedOutcomeSummary)
           .font(.caption)
           .foregroundStyle(precedent.isFlagged ? SoloTheme.amber : .secondary)
           .lineLimit(isExpanded ? nil : 2)
@@ -195,7 +195,7 @@ private struct PrecedentRecordRow: View {
             Divider()
             detail("Decision", value: precedent.decisionSummary)
             detail("Recorded context", value: precedent.context.summary)
-            detail("Observed outcome", value: precedent.outcome.summary)
+            detail("Observed outcome", value: precedent.observedOutcomeSummary)
             if let counterfactual = precedent.counterfactual {
               detail("Rival branch", value: counterfactual.summary)
             }
@@ -229,7 +229,7 @@ private struct PrecedentRecordRow: View {
       withAnimation(SoloMotion.settle) { impactPulse = false }
     }
     .accessibilityElement(children: .combine)
-    .accessibilityLabel("\(precedent.recallTitle). \(precedent.outcome.summary)")
+    .accessibilityLabel("\(precedent.recallTitle). \(precedent.observedOutcomeSummary)")
     .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
     .accessibilityHint(isExpanded ? "Double tap to hide recorded detail" : "Double tap to show recorded detail")
   }

@@ -515,12 +515,14 @@ final class GameStore {
         careerSprint: careerSprintIndex,
         attentionRemaining: attentionRemaining
       ),
-      applications: finance.fundingApplications
+      applications: finance.fundingApplications,
+      expiredOpportunityIDs: finance.expiredFundingOpportunityIDs
     )
   }
 
   @discardableResult
   func pursueFundingOpportunity(id: String) -> Bool {
+    synchronizeFundingOpportunityExpirations()
     guard let presentation = fundingBoardOpportunities.first(where: { $0.id == id }) else {
       alertMessage = "That funding notice is no longer on the board."
       return false
@@ -542,6 +544,12 @@ final class GameStore {
       return false
     }
     founderAttentionSpent += cost
+    recordFundingHindsight(
+      opportunity: presentation.opportunity,
+      event: "application-submitted",
+      decision: "Submitted the \(presentation.opportunity.name) application for \(cost) Founder Attention.",
+      outcome: "The application entered review with every visible requirement met."
+    )
     alertMessage = "Application sent. Return after the next sprint for the response."
     save()
     return true
@@ -549,6 +557,7 @@ final class GameStore {
 
   @discardableResult
   func resolveFundingOpportunity(id: String) -> Bool {
+    synchronizeFundingOpportunityExpirations()
     guard let presentation = fundingBoardOpportunities.first(where: { $0.id == id }) else {
       alertMessage = "That funding notice is no longer on the board."
       return false
@@ -558,19 +567,50 @@ final class GameStore {
       return false
     }
     let opportunity = presentation.opportunity
+    let unmetRequirements = presentation.requirements.filter { !$0.isMet }
+    let outcome: FundingResolutionOutcome
+    let reason: String
+    let milestoneObligation: FundingMilestoneObligation?
+    if unmetRequirements.isEmpty {
+      outcome = opportunity.kind == .grant ? .awarded : .funded
+      reason = "Every visible requirement remained met when the response arrived."
+      milestoneObligation = opportunity.milestone.map { milestone in
+        FundingMilestoneObligation(
+          metric: milestone.metric,
+          target: milestone.target,
+          createdCareerSprint: careerSprintIndex,
+          dueCareerSprint: careerSprintIndex + milestone.deadlineSprints,
+          missedTrustConsequence: milestone.missedTrustConsequence,
+          status: .active,
+          resolvedCareerSprint: nil
+        )
+      }
+    } else {
+      outcome = .declined
+      let missing = unmetRequirements.map { requirement in
+        "\(requirement.requirement.metric.title) \(requirement.valueLabel)"
+      }.joined(separator: ", ")
+      reason = "Declined because these visible requirements were no longer met: \(missing)."
+      milestoneObligation = nil
+    }
     guard finance.resolveFundingApplication(
       opportunityID: id,
-      careerSprint: careerSprintIndex
+      careerSprint: careerSprintIndex,
+      outcome: outcome,
+      reason: reason,
+      milestoneObligation: milestoneObligation
     ) else {
       alertMessage = "This response has already been recorded."
       return false
     }
-    recordCapitalRaised(
-      id: "funding-board-\(id)",
-      amount: opportunity.amount,
-      source: opportunity.name
-    )
-    if opportunity.kind == .fundraising,
+    if outcome != .declined {
+      recordCapitalRaised(
+        id: "funding-board-\(id)",
+        amount: opportunity.amount,
+        source: opportunity.name
+      )
+    }
+    if outcome == .funded,
        opportunity.obligationSprints > 0,
        !activeObligations.contains(where: { $0.id == "funding-board-investor-updates" }) {
       activeObligations.append(CompanyObligation(
@@ -582,9 +622,139 @@ final class GameStore {
         effectsPerSprint: SimulationEffects(energy: -1)
       ))
     }
-    alertMessage = "\(opportunity.name) approved \(opportunity.amountLabel). The funds are now in the company account."
+    switch outcome {
+    case .awarded:
+      recordFundingHindsight(
+        opportunity: opportunity,
+        event: "awarded",
+        decision: "Reviewed the \(opportunity.name) response.",
+        outcome: "Awarded \(opportunity.amountLabel) because every visible requirement remained met."
+      )
+      alertMessage = "\(opportunity.name) awarded \(opportunity.amountLabel). The funds are now in the company account."
+    case .funded:
+      recordFundingHindsight(
+        opportunity: opportunity,
+        event: "funded",
+        decision: "Reviewed the \(opportunity.name) response.",
+        outcome: "Funded \(opportunity.amountLabel) because every visible requirement remained met."
+      )
+      if let milestoneObligation {
+        recordFundingHindsight(
+          opportunity: opportunity,
+          event: "obligation-created",
+          decision: "Accepted the disclosed post-funding milestone.",
+          outcome: "Reach \(fundingValueLabel(metric: milestoneObligation.metric, value: milestoneObligation.target)) \(milestoneObligation.metric.title) by \(FundingOpportunity.sprintLabel(milestoneObligation.dueCareerSprint)); missing it reduces Company Trust by \(milestoneObligation.missedTrustConsequence)."
+        )
+      }
+      alertMessage = "\(opportunity.name) funded \(opportunity.amountLabel). The disclosed milestone is now active."
+    case .declined:
+      recordFundingHindsight(
+        opportunity: opportunity,
+        event: "declined",
+        decision: "Reviewed the \(opportunity.name) response.",
+        outcome: reason
+      )
+      alertMessage = reason
+    }
     save()
     return true
+  }
+
+  private func synchronizeFundingOpportunityExpirations() {
+    for opportunity in FundingBoardCatalog.opportunities
+    where careerSprintIndex > opportunity.expiresAfterCareerSprint {
+      _ = finance.expireFundingOpportunity(opportunityID: opportunity.id)
+    }
+  }
+
+  /// Canonical sprint-boundary funding maintenance. Internal visibility keeps
+  /// deterministic lifecycle behavior directly testable without exposing a
+  /// second UI mutation path.
+  func updateFundingLifecycleForCurrentSprint() {
+    synchronizeFundingOpportunityExpirations()
+    resolveFundingMilestonesIfNeeded()
+  }
+
+  private func resolveFundingMilestonesIfNeeded() {
+    let applications = finance.fundingApplications
+    for application in applications {
+      guard let obligation = application.milestoneObligation,
+            obligation.status == .active,
+            let opportunity = FundingBoardCatalog.opportunities.first(where: {
+              $0.id == application.opportunityID
+            }) else { continue }
+      let currentValue = fundingMetricValue(obligation.metric)
+      if currentValue >= obligation.target {
+        guard finance.resolveFundingMilestone(
+          opportunityID: application.opportunityID,
+          status: .met,
+          careerSprint: careerSprintIndex
+        ) else { continue }
+        recordFundingHindsight(
+          opportunity: opportunity,
+          event: "obligation-met",
+          decision: "Completed the \(opportunity.name) milestone.",
+          outcome: "Met the visible \(obligation.metric.title) target at \(fundingValueLabel(metric: obligation.metric, value: currentValue)) before the deadline."
+        )
+      } else if careerSprintIndex >= obligation.dueCareerSprint {
+        guard finance.resolveFundingMilestone(
+          opportunityID: application.opportunityID,
+          status: .missed,
+          careerSprint: careerSprintIndex
+        ) else { continue }
+        apply(SimulationEffects(trust: -obligation.missedTrustConsequence))
+        recordFundingHindsight(
+          opportunity: opportunity,
+          event: "obligation-missed",
+          decision: "Reached the \(opportunity.name) milestone deadline.",
+          outcome: "Missed the visible \(obligation.metric.title) target at \(fundingValueLabel(metric: obligation.metric, value: currentValue)); Company Trust fell by \(obligation.missedTrustConsequence).",
+          precedentOutcome: PrecedentOutcome(trustDelta: -obligation.missedTrustConsequence)
+        )
+      }
+    }
+  }
+
+  private func recordFundingHindsight(
+    opportunity: FundingOpportunity,
+    event: String,
+    decision: String,
+    outcome: String,
+    precedentOutcome: PrecedentOutcome = PrecedentOutcome()
+  ) {
+    let id = HindsightEngine.fundingIdentifier(
+      opportunityID: opportunity.id,
+      event: event,
+      careerSprint: careerSprintIndex
+    )
+    guard !precedents.contains(where: { $0.id == id }) else { return }
+    precedents.append(Precedent(
+      id: id,
+      venture: venture,
+      sprint: sprint,
+      context: currentPrecedentContext(),
+      decisionSummary: decision,
+      outcome: precedentOutcome,
+      recordKind: .funding,
+      founderVisibleOutcome: outcome
+    ))
+  }
+
+  private func fundingMetricValue(_ metric: FundingRequirementMetric) -> Int {
+    switch metric {
+    case .revenue: stats.revenue
+    case .trust: stats.trust
+    case .momentum: stats.momentum
+    case .coverage: stats.coverage
+    case .venture: venture
+    case .evidence: evidence.count
+    }
+  }
+
+  private func fundingValueLabel(metric: FundingRequirementMetric, value: Int) -> String {
+    if metric == .revenue {
+      return value.formatted(.currency(code: "USD").precision(.fractionLength(0)))
+    }
+    return "\(value)"
   }
 
   var chapter: VentureChapter { .chapter(for: sprint) }
@@ -2004,6 +2174,7 @@ final class GameStore {
     reportCache = []
     founderAttentionSpent = 0
     restingAgentIDs = []
+    updateFundingLifecycleForCurrentSprint()
     defer { refreshHindsightRecall() }
     if let offer = poachingOffer, offer.dueCareerSprint <= careerSprintIndex {
       if agents.count > 3 {

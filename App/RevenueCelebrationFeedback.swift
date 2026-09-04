@@ -1,18 +1,24 @@
-import AudioToolbox
 import SwiftUI
 import UIKit
 
 enum RevenueCelebrationFeedback {
-  /// A brief, original confirmation using the system’s standard positive tone.
-  static func play(isEnabled: Bool = true) {
-    guard isEnabled else { return }
-#if targetEnvironment(simulator)
-    AudioServicesPlaySystemSound(1104)
-#else
+  static func shouldPlay(isEnabled: Bool, audioContext: AppAudioContext) -> Bool {
+    isEnabled && audioContext != .background
+  }
+
+  /// Routes audible confirmation through the canonical app audio engine while
+  /// retaining device-only success haptics as a bounded sensory enhancement.
+  @MainActor
+  static func play(settings: AppSettingsStore) {
+    guard shouldPlay(
+      isEnabled: settings.soundEffectsEnabled,
+      audioContext: settings.audioContext
+    ) else { return }
+    settings.playFeedback(.revenueCelebration)
+#if !targetEnvironment(simulator)
     let generator = UINotificationFeedbackGenerator()
     generator.prepare()
     generator.notificationOccurred(.success)
-    AudioServicesPlaySystemSound(1104)
 #endif
   }
 }

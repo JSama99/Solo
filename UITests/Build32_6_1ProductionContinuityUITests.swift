@@ -83,6 +83,21 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     app.terminate()
   }
 
+  func testEvidenceTriageProgressPresentationContinuity() throws {
+    let app = XCUIApplication()
+    app.terminate()
+    app.launchArguments = ["--work-session-qa-active"]
+    app.launch()
+
+    XCTAssertTrue(app.navigationBars["Evidence Triage"].waitForExistence(timeout: 6))
+    XCTAssertTrue(
+      app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'EVIDENCE 1 OF '")).firstMatch.exists
+    )
+    XCTAssertTrue(app.progressIndicators.firstMatch.exists)
+    capture("WORK_SESSION_PROGRESS_PRESENTATION", in: app)
+    app.terminate()
+  }
+
   func testBuild3277AuthoredMotionAndLightingEvidence() throws {
     let fixtures: [(String, String)] = [
       ("Idle overview", "20_AGENT_IDLE"),
@@ -220,6 +235,10 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     fundingBoard.tap()
     XCTAssertTrue(app.navigationBars["Founder Funding Board"].waitForExistence(timeout: 5))
     XCTAssertTrue(app.staticTexts["GRANTS & FUNDRAISING"].waitForExistence(timeout: 3))
+    XCTAssertTrue(app.staticTexts["ELIGIBLE"].firstMatch.waitForExistence(timeout: 3))
+    XCTAssertTrue(app.staticTexts["Deadline: 3 sprints"].waitForExistence(timeout: 3))
+    XCTAssertTrue(app.staticTexts["1 Attention"].firstMatch.waitForExistence(timeout: 3))
+    XCTAssertTrue(app.staticTexts["Next: Submit the application."].waitForExistence(timeout: 3))
     capture("09B_FOUNDER_FUNDING_BOARD", in: app)
     app.buttons["close-funding-board-viewer"].tap()
     XCTAssertTrue(fundingBoard.waitForExistence(timeout: 4))

@@ -243,7 +243,7 @@ struct SprintOutcomeScreen: View {
   private func deliverRevenueFeedback() {
     guard report.revenueDelta > 0, !deliveredRevenueFeedback else { return }
     deliveredRevenueFeedback = true
-    RevenueCelebrationFeedback.play(isEnabled: settings.soundEffectsEnabled)
+    RevenueCelebrationFeedback.play(settings: settings)
   }
 
   private func reveal() async {
