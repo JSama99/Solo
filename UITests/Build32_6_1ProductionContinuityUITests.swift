@@ -83,6 +83,21 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     app.terminate()
   }
 
+  func testEvidenceTriageProgressPresentationContinuity() throws {
+    let app = XCUIApplication()
+    app.terminate()
+    app.launchArguments = ["--work-session-qa-active"]
+    app.launch()
+
+    XCTAssertTrue(app.navigationBars["Evidence Triage"].waitForExistence(timeout: 6))
+    XCTAssertTrue(
+      app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'EVIDENCE 1 OF '")).firstMatch.exists
+    )
+    XCTAssertTrue(app.progressIndicators.firstMatch.exists)
+    capture("WORK_SESSION_PROGRESS_PRESENTATION", in: app)
+    app.terminate()
+  }
+
   func testBuild3277AuthoredMotionAndLightingEvidence() throws {
     let fixtures: [(String, String)] = [
       ("Idle overview", "20_AGENT_IDLE"),

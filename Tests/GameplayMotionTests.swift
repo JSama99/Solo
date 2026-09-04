@@ -13,6 +13,34 @@ import XCTest
 ///    being reproducible the moment a view redrew.
 @MainActor
 final class GameplayMotionTests: XCTestCase {
+  func testFeedbackPlaybackTrackerQueuesWithoutPrematureAmbienceRestore() {
+    var tracker = FeedbackPlaybackTracker()
+    tracker.schedule()
+    tracker.schedule()
+    XCTAssertEqual(tracker.buffersInFlight, 2)
+    XCTAssertFalse(tracker.complete(), "The first completion must not restore ambience while another cue remains")
+    XCTAssertEqual(tracker.buffersInFlight, 1)
+    XCTAssertTrue(tracker.complete(), "The final completion may restore ambience")
+    XCTAssertEqual(tracker.buffersInFlight, 0)
+    XCTAssertTrue(tracker.complete(), "A duplicate completion must not underflow the queue")
+  }
+
+  func testEveryFeedbackKindProducesFiniteBoundedAudio() throws {
+    let format = try XCTUnwrap(AVAudioFormat(standardFormatWithSampleRate: 44_100, channels: 2))
+    for kind in GameFeedbackKind.allCases {
+      let buffer = try XCTUnwrap(FeedbackToneBuffer.make(kind: kind, format: format))
+      XCTAssertGreaterThan(buffer.frameLength, 0)
+      XCTAssertLessThanOrEqual(buffer.frameLength, AVAudioFrameCount(format.sampleRate * 0.12))
+    }
+  }
+
+  func testRevenueCelebrationRespectsSettingsAndBackgroundContext() {
+    XCTAssertTrue(RevenueCelebrationFeedback.shouldPlay(isEnabled: true, audioContext: .garage))
+    XCTAssertTrue(RevenueCelebrationFeedback.shouldPlay(isEnabled: true, audioContext: .founderReview))
+    XCTAssertFalse(RevenueCelebrationFeedback.shouldPlay(isEnabled: false, audioContext: .garage))
+    XCTAssertFalse(RevenueCelebrationFeedback.shouldPlay(isEnabled: true, audioContext: .background))
+  }
+
   func testAudioContextDucksAndSuspendsWithoutChangingSettings() {
     XCTAssertEqual(AppAudioContext.garage.musicGain, 1)
     XCTAssertEqual(AppAudioContext.companyCommand.musicGain, 0.35)

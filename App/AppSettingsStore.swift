@@ -20,7 +20,7 @@ final class AppSettingsStore {
   private var audioFile: AVAudioFile?
   private var securityScopedURL: URL?
   private var ambienceScheduled = false
-  private var feedbackDuckToken = UUID()
+  private var feedbackPlaybackTracker = FeedbackPlaybackTracker()
   private var garageCueDeduplicator = GarageAudioCueDeduplicator()
 
   init(defaults: UserDefaults = .standard) {
@@ -75,10 +75,15 @@ final class AppSettingsStore {
     }
     let format = feedbackPlayer.outputFormat(forBus: 0)
     guard let buffer = FeedbackToneBuffer.make(kind: kind, format: format) else { return }
-    feedbackPlayer.stop()
-    feedbackPlayer.scheduleBuffer(buffer)
-    feedbackPlayer.play()
-    duckAmbience(for: kind.duration + 0.10)
+    feedbackPlaybackTracker.schedule()
+    applyAmbienceGain(multiplier: 0.34)
+    feedbackPlayer.scheduleBuffer(buffer, completionCallbackType: .dataPlayedBack) { [weak self] _ in
+      Task { @MainActor in
+        guard let self else { return }
+        if self.feedbackPlaybackTracker.complete() { self.applyAmbienceGain() }
+      }
+    }
+    if !feedbackPlayer.isPlaying { feedbackPlayer.play() }
   }
 
   /// Converts sanitized Garage presentation hooks into real local audio. The
@@ -127,17 +132,6 @@ final class AppSettingsStore {
     if !ambiencePlayer.isPlaying { ambiencePlayer.play() }
   }
 
-  private func duckAmbience(for duration: TimeInterval) {
-    let token = UUID()
-    feedbackDuckToken = token
-    applyAmbienceGain(multiplier: 0.34)
-    Task { @MainActor in
-      try? await Task.sleep(for: .seconds(duration))
-      guard feedbackDuckToken == token else { return }
-      applyAmbienceGain()
-    }
-  }
-
   private func restoreMusic() {
     guard let data = defaults.data(forKey: "solo.settings.musicBookmark") else { return }
     var stale = false
@@ -170,6 +164,24 @@ final class AppSettingsStore {
         self.scheduleLoop(file)
       }
     }
+  }
+}
+
+/// Tracks short synthesized cues independently of simulation state. Multiple
+/// cues may queue without clipping one another; ambience restores only after
+/// the final queued buffer has actually played.
+struct FeedbackPlaybackTracker: Equatable, Sendable {
+  private(set) var buffersInFlight = 0
+
+  mutating func schedule() {
+    buffersInFlight += 1
+  }
+
+  /// Returns true only when ambience may safely return to its context gain.
+  mutating func complete() -> Bool {
+    guard buffersInFlight > 0 else { return true }
+    buffersInFlight -= 1
+    return buffersInFlight == 0
   }
 }
 
@@ -268,7 +280,7 @@ enum FeedbackToneBuffer {
   }
 }
 
-enum GameFeedbackKind {
+enum GameFeedbackKind: CaseIterable {
   case companyCommandFocus
   case companyCommandClose
   case dispatch
@@ -287,6 +299,7 @@ enum GameFeedbackKind {
   case infrastructureInstall
   case levelUp
   case chapterAdvance
+  case revenueCelebration
   case coveragePositive
   case coverageNegative
   case environmentalRest
@@ -316,6 +329,7 @@ enum GameFeedbackKind {
     case .infrastructureInstall: 610
     case .levelUp: 920
     case .chapterAdvance: 820
+    case .revenueCelebration: 860
     case .coveragePositive: 790
     case .coverageNegative: 310
     case .environmentalRest: 540
@@ -329,7 +343,7 @@ enum GameFeedbackKind {
 
   var duration: Double {
     switch self {
-    case .verificationWarning, .resolutionLock, .coverageNegative, .financialWarning, .shipAnyway: 0.12
+    case .verificationWarning, .resolutionLock, .coverageNegative, .financialWarning, .shipAnyway, .revenueCelebration: 0.12
     default: 0.08
     }
   }

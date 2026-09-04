@@ -2,6 +2,37 @@ import XCTest
 @testable import Solo_Unicorn_Run
 
 final class WorkSessionEngineTests: XCTestCase {
+  func testEvidenceTriageProgressNormalizesEveryPresentationBoundary() {
+    let empty = EvidenceTriageProgress(decisionCount: 0, cardCount: 0)
+    XCTAssertEqual(empty.value, 0)
+    XCTAssertEqual(empty.total, 1)
+    XCTAssertEqual(empty.currentItem, 0)
+    XCTAssertEqual(empty.itemCount, 0)
+
+    let untouched = EvidenceTriageProgress(decisionCount: 0, cardCount: 5)
+    XCTAssertEqual(untouched.value, 0)
+    XCTAssertEqual(untouched.total, 5)
+    XCTAssertEqual(untouched.currentItem, 1)
+
+    let partial = EvidenceTriageProgress(decisionCount: 2, cardCount: 5)
+    XCTAssertEqual(partial.value, 2)
+    XCTAssertEqual(partial.currentItem, 3)
+
+    let complete = EvidenceTriageProgress(decisionCount: 5, cardCount: 5)
+    XCTAssertEqual(complete.value, complete.total)
+    XCTAssertEqual(complete.currentItem, 5)
+
+    let overflow = EvidenceTriageProgress(decisionCount: 8, cardCount: 5)
+    XCTAssertEqual(overflow.value, overflow.total)
+    XCTAssertEqual(overflow.currentItem, 5)
+
+    let invalidNegative = EvidenceTriageProgress(decisionCount: -3, cardCount: -2)
+    XCTAssertEqual(invalidNegative.value, 0)
+    XCTAssertEqual(invalidNegative.total, 1)
+    XCTAssertTrue(invalidNegative.value.isFinite)
+    XCTAssertTrue(invalidNegative.total.isFinite)
+  }
+
   private let assignmentID = UUID(uuidString: "A0A0A0A0-B1B1-C2C2-D3D3-E4E4E4E4E4E4")!
 
   func testPotentialExistsBeforeAnyPlayerDecision() {
