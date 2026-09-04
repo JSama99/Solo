@@ -25,6 +25,20 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     XCTAssertEqual(pending.screenLuminance, quiet.screenLuminance)
   }
 
+  func testVisibleOperatingActivityStrengthensEquipmentWithoutInventingState() {
+    let quiet = devicePresentation(device: .computer, state: .idle, visibleOperatingIntensity: 0)
+    let operating = devicePresentation(device: .computer, state: .idle, visibleOperatingIntensity: 1)
+    let reduced = devicePresentation(device: .computer, state: .idle, visibleOperatingIntensity: 1, reduceMotion: true)
+    XCTAssertEqual(quiet.state, operating.state)
+    XCTAssertGreaterThan(operating.screenLuminance, quiet.screenLuminance)
+    XCTAssertGreaterThan(operating.localGlowIntensity, quiet.localGlowIntensity)
+    XCTAssertGreaterThan(operating.peripheralBacklightIntensity, quiet.peripheralBacklightIntensity)
+    XCTAssertGreaterThan(operating.operatingIndicatorIntensity, quiet.operatingIndicatorIntensity)
+    XCTAssertEqual(reduced.screenLuminance, operating.screenLuminance)
+    XCTAssertEqual(reduced.localGlowIntensity, operating.localGlowIntensity)
+    XCTAssertFalse(reduced.screenLifeEnabled)
+  }
+
   func testReduceMotionKeepsDeviceStateAndLightingButRemovesPhysicalTravel() {
     let standard = devicePresentation(device: .tablet, state: .waking)
     let reduced = devicePresentation(device: .tablet, state: .waking, reduceMotion: true)
@@ -331,6 +345,62 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     XCTAssertNil(hooks.eventToken)
   }
 
+  func testOperationalLightingUsesVisibleStatePrecedence() {
+    var momentumStats = FounderStats()
+    momentumStats.momentum = 82
+    let publicPressure = PublicMediaEvent(
+      id: "public-pressure",
+      program: .techComLive,
+      tone: .critical,
+      headline: "SOLO faces public scrutiny",
+      summary: "A published company story enters the broadcast cycle.",
+      tickerItems: ["SOLO PUBLIC UPDATE"],
+      coverageDelta: -6,
+      venture: 1,
+      sprint: 1,
+      concernsPlayerCompany: true
+    )
+
+    XCTAssertEqual(operationalMotion().lighting.operationalState, .quiet)
+    XCTAssertEqual(operationalMotion(stats: momentumStats).lighting.operationalState, .positiveMomentum)
+    XCTAssertEqual(
+      operationalMotion(agents: [visibleAgent(activity: .working)]).lighting.operationalState,
+      .activeWork
+    )
+    XCTAssertEqual(
+      operationalMotion(publicEvents: [publicPressure]).lighting.operationalState,
+      .publicPressure
+    )
+    XCTAssertEqual(
+      operationalMotion(
+        agents: [visibleAgent(activity: .awaitingReview, needsFounderAttention: true)],
+        publicEvents: [publicPressure]
+      ).lighting.operationalState,
+      .reviewAttention
+    )
+  }
+
+  func testOperationalLightingRejectsNonPublicPressureWithoutRNGInput() {
+    let hidden = PublicMediaEvent(
+      id: "hidden-pressure",
+      program: .breaking,
+      tone: .critical,
+      headline: "Unrevealed result",
+      summary: "Must not enter Garage presentation.",
+      tickerItems: [],
+      coverageDelta: -10,
+      venture: 1,
+      sprint: 1,
+      concernsPlayerCompany: true,
+      isPublic: false
+    )
+    let first = operationalMotion(publicEvents: [hidden])
+    let second = operationalMotion(publicEvents: [hidden])
+    XCTAssertEqual(first, second)
+    XCTAssertEqual(first.lighting.operationalState, .quiet)
+    XCTAssertEqual(first.lighting.publicPressureIntensity, 0)
+  }
+
   func testPhysicalDeviceSilhouettesRemainDistinctWithoutLabels() {
     for regularWidth in [false, true] {
       let viewport = regularWidth ? CGSize(width: 1_024, height: 1_366) : CGSize(width: 402, height: 874)
@@ -374,6 +444,61 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     XCTAssertEqual(FounderDeskLayoutPolicy.layout(regularWidth: true, accessibilityText: false, height: 800), .spatialRegular)
   }
 
+  func testFundingBoardUsesCanonicalUpperLeftWallAnchor() throws {
+    for size in [
+      CGSize(width: 390, height: 844),
+      CGSize(width: 440, height: 956),
+      CGSize(width: 820, height: 1_180)
+    ] {
+      let layout = FounderEnvironmentLayout(viewportSize: size)
+      let board = try XCTUnwrap(layout.anchors[.fundingBoard])
+      let fan = try XCTUnwrap(layout.anchors[.mainVentilationFan])
+      let television = try XCTUnwrap(layout.anchors[.signalTV])
+      XCTAssertLessThan(board.x, fan.x)
+      XCTAssertLessThan(fan.x, television.x)
+      XCTAssertLessThanOrEqual(board.x, 280)
+      XCTAssertLessThan(board.y, 200)
+    }
+  }
+
+  func testFundingBoardHotspotIsReadableAndClearsGarageDoorAcrossIPhoneAndIPad() {
+    let leftLook = FounderEnvironmentCameraState(horizontalLook: -1, mode: .freeLook)
+    for size in [
+      CGSize(width: 390, height: 844),
+      CGSize(width: 440, height: 956),
+      CGSize(width: 820, height: 1_180)
+    ] {
+      let hotspot = FundingBoardHotspotLayout(viewportSize: size)
+      let frame = hotspot.frame(camera: leftLook)
+      let activationFrame = hotspot.activationFrame(camera: leftLook)
+      let doorFrame = FounderGarageDoorLayout(viewportSize: size).frame(camera: leftLook)
+      let visibleFrame = frame.intersection(CGRect(origin: .zero, size: size))
+      XCTAssertTrue(hotspot.isSelectable(camera: leftLook))
+      XCTAssertGreaterThanOrEqual(frame.width, 44)
+      XCTAssertGreaterThanOrEqual(frame.height, 44)
+      XCTAssertGreaterThanOrEqual(visibleFrame.width / frame.width, 0.60)
+      XCTAssertLessThan(frame.maxX, doorFrame.minX)
+      XCTAssertGreaterThanOrEqual(activationFrame.width, 44)
+      XCTAssertGreaterThanOrEqual(activationFrame.height, 44)
+      XCTAssertTrue(CGRect(origin: .zero, size: size).contains(activationFrame))
+      if size.width >= 700 {
+        XCTAssertEqual(visibleFrame.width, frame.width, accuracy: 0.001)
+      }
+    }
+  }
+
+  func testFundingBoardFounderCopyContainsNoHiddenSimulationTruth() {
+    let text = FundingBoardCatalog.opportunities.flatMap { opportunity in
+      [opportunity.name, opportunity.summary, opportunity.terms]
+        + opportunity.requirements.map { $0.metric.title }
+    }
+    .joined(separator: " ")
+    .lowercased()
+    for forbidden in ["actual quality", "overclaim", "drift", "verification", "seed", "probability", "deterministic baseline"] {
+      XCTAssertFalse(text.contains(forbidden), "Funding Board leaked \(forbidden)")
+    }
+  }
+
   func testRearGarageDoorIsDiscoverableAtNeutralFreeLookOnIPhoneAndIPad() {
     let camera = FounderEnvironmentCameraState(mode: .freeLook)
     for size in [CGSize(width: 402, height: 874), CGSize(width: 1_024, height: 1_366)] {
@@ -390,6 +515,32 @@ final class FounderDeskWorkspaceTests: XCTestCase {
       XCTAssertTrue(door.isVisible(camera: camera))
       XCTAssertGreaterThanOrEqual(door.visibleWidthRatio(camera: camera), 0.72)
       XCTAssertGreaterThan(door.frame(camera: camera).width, size.width * 0.70)
+    }
+  }
+
+  func testUpperWallHierarchyKeepsFanBetweenFounderIdentityAndDoorSign() {
+    let camera = FounderEnvironmentCameraState(mode: .freeLook)
+    for size in [
+      CGSize(width: 390, height: 844),
+      CGSize(width: 440, height: 956),
+      CGSize(width: 820, height: 1_180)
+    ] {
+      let layout = FounderEnvironmentLayout(viewportSize: size)
+      let fanScale = layout.depthScale(for: .mainVentilationFan) * layout.scale
+      let fanCenter = layout.viewportPosition(for: .mainVentilationFan, camera: camera, layer: .background)
+      let fanFrame = CGRect(
+        x: fanCenter.x - 64 * fanScale,
+        y: fanCenter.y - 71 * fanScale,
+        width: 128 * fanScale,
+        height: 142 * fanScale
+      )
+      let doorCenter = layout.viewportPosition(for: .rearGarageDoor, camera: camera, layer: .background)
+      let doorRenderScale = layout.depthScale(for: .rearGarageDoor) * layout.scale * 1.35
+      let doorSignCenterY = doorCenter.y + FounderGarageDoorLayout.signVerticalOffset * doorRenderScale
+
+      XCTAssertLessThan(layout.founderDeskHeadingY + 16, fanFrame.minY)
+      XCTAssertLessThan(fanFrame.maxY + 6, doorSignCenterY)
+      XCTAssertEqual(layout.anchors[.founderMonitor]?.x, 680)
     }
   }
 
@@ -593,6 +744,7 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     device: FounderDeskDevice,
     state: FounderPhysicalDeviceState,
     safePending: Bool = false,
+    visibleOperatingIntensity: Double = 0,
     reduceMotion: Bool = false,
     visible: Bool = true
   ) -> FounderDevicePresentation {
@@ -600,9 +752,53 @@ final class FounderDeskWorkspaceTests: XCTestCase {
       device: device,
       state: state,
       safePending: safePending,
+      visibleOperatingIntensity: visibleOperatingIntensity,
       reduceMotion: reduceMotion,
       sceneActive: true,
       visible: visible
+    )
+  }
+
+  private func operationalMotion(
+    stats: FounderStats = FounderStats(),
+    agents: [LivingAgentProjection] = [],
+    publicEvents: [PublicMediaEvent] = []
+  ) -> FounderGarageMotionPresentation {
+    FounderGarageMotionPresentation.derive(
+      environment: FounderEnvironmentProjection(
+        facility: .founderGarage,
+        atmosphere: .derive(stats: stats, facility: .founderGarage, venture: 1),
+        infrastructure: [],
+        agents: agents,
+        signalTVEvents: publicEvents
+      ),
+      camera: FounderEnvironmentCameraState(mode: .freeLook),
+      reduceMotion: false,
+      sceneActive: true
+    )
+  }
+
+  private func visibleAgent(
+    activity: LivingAgentActivity,
+    needsFounderAttention: Bool = false
+  ) -> LivingAgentProjection {
+    LivingAgentProjection(
+      agentID: "stacks",
+      name: "Stacks",
+      initials: "ST",
+      role: .engineering,
+      taskID: UUID(uuidString: "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"),
+      taskTitle: "Visible work",
+      activity: activity,
+      conditions: [],
+      emphasis: needsFounderAttention ? .founderAttention : .normal,
+      progress: activity == .working ? 0.5 : 1,
+      reviewRevealStep: 0,
+      stressLabel: "Steady",
+      trustLabel: "Trusted",
+      level: 1,
+      needsFounderAttention: needsFounderAttention,
+      isResting: false
     )
   }
 }

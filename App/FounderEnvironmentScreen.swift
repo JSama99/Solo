@@ -431,6 +431,8 @@ enum FounderEnvironmentWorldAnchor: String, CaseIterable, Sendable {
   case founderDeskSurface
   case founderDeskFloorSide
   case founderCommandDesk
+  case mainVentilationFan
+  case fundingBoard
   case signalTV
 }
 
@@ -490,9 +492,15 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       .founderDeskSurface: CGPoint(x: 680, y: 590),
       .founderDeskFloorSide: CGPoint(x: 870, y: 710),
       .founderCommandDesk: CGPoint(x: 535, y: 635),
+      .mainVentilationFan: CGPoint(x: 680, y: 112),
+      // The Funding Board occupies the far-left planning wall, opposite
+      // Signal TV and physically clear of the garage-door frame. Free Look
+      // reveals the complete board on regular-width layouts while compact
+      // layouts retain a readable, tappable portion at the left boundary.
+      .fundingBoard: CGPoint(x: 280, y: 160),
       // Keep the television above the rear-door header so both architectural
       // objects remain independently readable during the rightward look.
-      .signalTV: CGPoint(x: 835, y: 112)
+      .signalTV: CGPoint(x: 1_100, y: 132)
     ]
     if composition == .compactCockpit {
       result[.auroraStation] = CGPoint(x: 245, y: 315)
@@ -509,7 +517,7 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       result[.founderDeskRightEdge] = CGPoint(x: 855, y: 660)
       result[.founderDeskSurface] = CGPoint(x: 680, y: 600)
       result[.founderDeskFloorSide] = CGPoint(x: 900, y: 720)
-      result[.signalTV] = CGPoint(x: 840, y: 112)
+      result[.signalTV] = CGPoint(x: 980, y: 132)
       result[.founderCouch] = CGPoint(x: 1_140, y: 585)
       result[.workoutBench] = CGPoint(x: 250, y: 585)
     }
@@ -529,10 +537,13 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
   var floorHorizonY: CGFloat {
     viewportSize.height * (composition == .compactCockpit ? 0.58 : 0.55)
   }
+  var founderDeskHeadingY: CGFloat {
+    composition == .compactCockpit ? 52 : 64
+  }
 
   func depthScale(for anchor: FounderEnvironmentWorldAnchor) -> CGFloat {
     switch anchor {
-    case .garageEntrance, .rearGarageDoor, .storage, .signalTV: 0.78
+    case .garageEntrance, .rearGarageDoor, .storage, .mainVentilationFan, .fundingBoard, .signalTV: 0.78
     case .auroraStation: 0.90
     case .stacksStation: 0.84
     case .brioStation: 0.91
@@ -671,10 +682,54 @@ struct SignalTVHotspotLayout: Equatable, Sendable {
   }
 }
 
+/// Keeps the physical planning board and its Free Look target on the same
+/// upper-left wall anchor across compact iPhone and regular-width layouts.
+struct FundingBoardHotspotLayout: Equatable, Sendable {
+  static let unscaledSize = CGSize(width: 276, height: 188)
+  static let activationSize = CGSize(width: 112, height: 48)
+
+  var viewportSize: CGSize
+
+  func frame(camera: FounderEnvironmentCameraState) -> CGRect {
+    let layout = FounderEnvironmentLayout(viewportSize: viewportSize)
+    let scale = layout.depthScale(for: .fundingBoard) * layout.scale
+    let size = CGSize(
+      width: Self.unscaledSize.width * scale,
+      height: Self.unscaledSize.height * scale
+    )
+    let position = layout.viewportPosition(for: .fundingBoard, camera: camera, layer: .background)
+    return CGRect(
+      x: position.x - size.width / 2,
+      y: position.y - size.height / 2,
+      width: max(44, size.width),
+      height: max(44, size.height)
+    )
+  }
+
+  func isSelectable(camera: FounderEnvironmentCameraState) -> Bool {
+    let target = activationFrame(camera: camera)
+    return target.width >= 44 && target.height >= 44
+  }
+
+  func activationFrame(camera: FounderEnvironmentCameraState) -> CGRect {
+    let visibleBoard = frame(camera: camera)
+      .intersection(CGRect(origin: .zero, size: viewportSize))
+    let width = min(Self.activationSize.width, visibleBoard.width)
+    let height = min(Self.activationSize.height, visibleBoard.height)
+    return CGRect(
+      x: visibleBoard.maxX - width,
+      y: visibleBoard.maxY - height,
+      width: width,
+      height: height
+    )
+  }
+}
+
 /// Shared world geometry keeps the rear-wall door's rendered body and its
 /// accessibility landmark in lockstep across compact iPhone and iPad scenes.
 struct FounderGarageDoorLayout: Equatable, Sendable {
   static let unscaledSize = CGSize(width: 720, height: 527)
+  static let signVerticalOffset: CGFloat = -155
 
   var viewportSize: CGSize
 
@@ -720,6 +775,7 @@ struct FounderEnvironmentProjection: Equatable, Sendable {
   var period: OperatingCalendar.Period = .morning
   var visibleEvent: FounderGarageVisibleEvent? = nil
   var signalTVEvents: [PublicMediaEvent] = []
+  var fundingOpportunities: [FundingOpportunityPresentation] = []
 
   var spatialPresentation: CompanySpatialPresentation { .map(facility) }
   var garageIdentity: FounderGarageIdentityProjection { .derive(spatialPresentation) }
@@ -801,9 +857,11 @@ struct FounderEnvironmentRendererView: View {
     ZStack {
       panoramicBackground(size: size, layout: layout)
       cinematicValueShaping(size: size)
+      operationalLightingGrade(size: size)
       practicalLighting(size: size, layout: layout)
       livingElectricalLayer(size: size, layout: layout)
       garageArchitecture(size: size, layout: layout)
+      fundingBoardLayer(layout: layout)
       signalTVLayer(layout: layout)
       groundingShadows(size: size, layout: layout)
       founderRecoveryZone(size: size, layout: layout)
@@ -847,6 +905,52 @@ struct FounderEnvironmentRendererView: View {
     .accessibilityHidden(true)
   }
 
+  private func operationalLightingGrade(size: CGSize) -> some View {
+    let breathes = [.activeWork, .positiveMomentum].contains(motion.lighting.operationalState)
+    return RadialGradient(
+      colors: [
+        operationalLightingTone.opacity(
+          motion.lighting.ambientWashIntensity * (increasedContrast ? 0.045 : 0.075)
+        ),
+        operationalLightingTone.opacity(
+          motion.lighting.ambientWashIntensity * (increasedContrast ? 0.012 : 0.024)
+        ),
+        .clear
+      ],
+      center: operationalLightingCenter,
+      startRadius: 8,
+      endRadius: size.width * 0.82
+    )
+    .frame(width: size.width, height: size.height)
+    .phaseAnimator(
+      breathes && motion.ambient.continuousMotionEnabled ? [0.94, 1.0, 0.97] : [1.0]
+    ) { content, opacity in
+      content.opacity(opacity)
+    } animation: { _ in
+      .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .environmentalLight).duration)
+    }
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
+  }
+
+  private var operationalLightingTone: Color {
+    switch motion.lighting.operationalState {
+    case .quiet: Color(red: 0.32, green: 0.42, blue: 0.48)
+    case .activeWork: SoloTheme.cyan
+    case .reviewAttention: SoloTheme.amber
+    case .positiveMomentum: SoloTheme.mint
+    case .publicPressure: SoloTheme.coral
+    }
+  }
+
+  private var operationalLightingCenter: UnitPoint {
+    switch motion.lighting.operationalState {
+    case .publicPressure: UnitPoint(x: 0.76, y: 0.30)
+    case .reviewAttention: UnitPoint(x: 0.52, y: 0.58)
+    case .quiet, .activeWork, .positiveMomentum: UnitPoint(x: 0.50, y: 0.52)
+    }
+  }
+
   private func signalTVLayer(layout: FounderEnvironmentLayout) -> some View {
     SignalTVView(
       events: projection.signalTVEvents,
@@ -856,6 +960,16 @@ struct FounderEnvironmentRendererView: View {
     )
     .scaleEffect(layout.depthScale(for: .signalTV) * layout.scale)
     .position(layout.viewportPosition(for: .signalTV, camera: camera, layer: .background))
+    .allowsHitTesting(false)
+  }
+
+  private func fundingBoardLayer(layout: FounderEnvironmentLayout) -> some View {
+    FounderFundingBoardPhysicalView(
+      opportunities: projection.fundingOpportunities,
+      increasedContrast: increasedContrast
+    )
+    .scaleEffect(layout.depthScale(for: .fundingBoard) * layout.scale)
+    .position(layout.viewportPosition(for: .fundingBoard, camera: camera, layer: .background))
     .allowsHitTesting(false)
   }
 
@@ -1137,9 +1251,15 @@ struct FounderEnvironmentRendererView: View {
         ForEach(0..<3, id: \.self) { _ in
           ZStack {
             RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.92)).frame(width: 154, height: 20)
-            Capsule().fill(Color.white.opacity(0.88)).frame(width: 138, height: 8)
+            Capsule()
+              .fill(Color.white.opacity(0.66 + motion.lighting.practicalLightIntensity * 0.28))
+              .frame(width: 138, height: 8)
+            Capsule()
+              .fill(operationalLightingTone.opacity(0.08 + motion.lighting.ambientWashIntensity * 0.10))
+              .frame(width: 112, height: 3)
+              .offset(y: 4)
           }
-          .shadow(color: .white.opacity(0.22), radius: 12, y: 7)
+          .shadow(color: operationalLightingTone.opacity(0.08 + motion.lighting.practicalLightIntensity * 0.12), radius: 12, y: 7)
         }
       }
       .position(layout.viewportPosition(worldPoint: CGPoint(x: 680, y: 88), camera: camera, layer: .background))
@@ -1160,13 +1280,6 @@ struct FounderEnvironmentRendererView: View {
           .position(layout.viewportPosition(worldPoint: CGPoint(x: 1_292, y: 482), camera: camera, layer: .middleGround))
       }
 
-      Path { path in
-        let utility = layout.viewportPosition(worldPoint: CGPoint(x: 112, y: 250), camera: camera, layer: .middleGround)
-        let desk = layout.viewportPosition(for: .founderDesk, camera: camera, layer: .middleGround)
-        path.move(to: utility)
-        path.addLine(to: CGPoint(x: desk.x - 120, y: desk.y - 190))
-      }
-      .stroke(.orange.opacity(0.42), style: StrokeStyle(lineWidth: 4, lineCap: .round, dash: [10, 5]))
     }
     .allowsHitTesting(false)
   }
@@ -1306,7 +1419,7 @@ struct FounderEnvironmentRendererView: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 6)
         .background(.black.opacity(0.76), in: .rect(cornerRadius: 2))
-        .offset(y: -208)
+        .offset(y: FounderGarageDoorLayout.signVerticalOffset)
     }
     .scaleEffect(layout.depthScale(for: .rearGarageDoor) * layout.scale * 1.35)
     .position(layout.viewportPosition(for: .rearGarageDoor, camera: camera, layer: .background))
@@ -1544,6 +1657,8 @@ struct FounderEnvironmentRendererView: View {
 
   private func largeEquipment(_ item: InfrastructureVisual) -> some View {
     let tone: Color = item.state == .active ? .green : item.state == .uninstalled ? .gray : .cyan
+    let operating = item.state != .uninstalled && motion.infrastructure.continuousMotionEnabled
+    let indicatorIntensity = item.state == .uninstalled ? 0.22 : 0.42 + motion.lighting.equipmentActivityIntensity * 0.50
     return VStack(spacing: 4) {
       ZStack {
         RoundedRectangle(cornerRadius: 12).fill(.black.opacity(item.state == .uninstalled ? 0.54 : 0.90)).frame(width: 108, height: 76)
@@ -1553,7 +1668,25 @@ struct FounderEnvironmentRendererView: View {
       Text(item.title.uppercased()).font(.system(size: 8, weight: .black, design: .rounded)).tracking(0.5).foregroundStyle(tone)
     }
     .overlay(alignment: .topTrailing) {
-      Circle().fill(tone).frame(width: 9, height: 9).padding(8)
+      Circle()
+        .fill(tone)
+        .frame(width: 9, height: 9)
+        .phaseAnimator(operating ? [0.78, 1.0, 0.84] : [1.0]) { content, opacity in
+          content.opacity(opacity * indicatorIntensity)
+        } animation: { _ in
+          .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .serverCooling).duration)
+        }
+        .padding(8)
+    }
+    .background {
+      if item.state != .uninstalled {
+        RadialGradient(
+          colors: [tone.opacity(motion.lighting.equipmentActivityIntensity * 0.07), .clear],
+          center: .center,
+          startRadius: 2,
+          endRadius: 70
+        )
+      }
     }
     .background(alignment: .bottom) {
       Ellipse().fill(.black.opacity(0.46)).frame(width: 104, height: 12).offset(y: 3)
@@ -1955,10 +2088,12 @@ struct FounderEnvironmentRendererView: View {
     let active = motion.ambient.continuousMotionEnabled
     let lighting = FounderGarageAmbientRhythm.profile(for: .environmentalLight)
     let display = FounderGarageAmbientRhythm.profile(for: .founderDisplay)
+    let ventilationScale = layout.depthScale(for: .mainVentilationFan) * layout.scale
+    let ventilationWorldPoint = layout.anchors[.mainVentilationFan] ?? CGPoint(x: 680, y: 112)
     return ZStack {
       Path { path in
         let source = layout.viewportPosition(
-          worldPoint: CGPoint(x: 680, y: 104),
+          for: .mainVentilationFan,
           camera: camera,
           layer: .background
         )
@@ -1982,15 +2117,16 @@ struct FounderEnvironmentRendererView: View {
         mechanical: motion.mechanical,
         increasedContrast: increasedContrast
       )
+      .scaleEffect(ventilationScale)
       .position(layout.viewportPosition(
-        worldPoint: CGPoint(x: 680, y: 180),
+        for: .mainVentilationFan,
         camera: camera,
         layer: .background
       ))
 
       Ellipse()
         .fill(.black.opacity(0.075))
-        .frame(width: 155, height: 42)
+        .frame(width: 155 * ventilationScale, height: 42 * ventilationScale)
         .phaseAnimator(
           motion.mechanical.continuousRotationEnabled ? [-3.0, 3.0, -3.0] : [0.0]
         ) { content, angle in
@@ -2000,7 +2136,7 @@ struct FounderEnvironmentRendererView: View {
           .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .ventilationShadow).duration)
         }
         .position(layout.viewportPosition(
-          worldPoint: CGPoint(x: 700, y: 272),
+          worldPoint: CGPoint(x: ventilationWorldPoint.x + 20, y: ventilationWorldPoint.y + 40),
           camera: camera,
           layer: .background
         ))
@@ -2124,7 +2260,18 @@ struct FounderEnvironmentRendererView: View {
     HStack(spacing: 8) {
       ForEach(0..<4, id: \.self) { index in
         Circle().stroke(.white.opacity(0.28), lineWidth: 1).frame(width: 11, height: 11)
-        if index < 3 { Circle().fill(.green.opacity(0.66)).frame(width: 3, height: 3) }
+        if index < 3 {
+          Circle()
+            .fill(.green.opacity(0.38 + motion.lighting.equipmentActivityIntensity * 0.42))
+            .frame(width: 3, height: 3)
+            .phaseAnimator(
+              motion.infrastructure.continuousMotionEnabled ? [0.76, 1.0, 0.82] : [1.0]
+            ) { content, opacity in
+              content.opacity(index == 1 ? opacity : 0.86)
+            } animation: { _ in
+              .easeInOut(duration: FounderGarageAmbientRhythm.profile(for: .serverNetwork).duration + Double(index) * 0.41)
+            }
+        }
       }
     }
     .padding(.horizontal, 9)

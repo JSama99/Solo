@@ -438,7 +438,23 @@ struct FounderGarageStationMotion: Equatable, Sendable {
   }
 }
 
+/// A room-scale operating read derived only from already-visible company state.
+/// It coordinates restrained lighting and equipment presentation without
+/// becoming simulation authority or encoding task-result truth.
+enum FounderGarageOperationalState: String, CaseIterable, Equatable, Sendable {
+  case quiet
+  case activeWork
+  case reviewAttention
+  case positiveMomentum
+  case publicPressure
+}
+
 struct FounderGarageLightingPresentation: Equatable, Sendable {
+  var operationalState: FounderGarageOperationalState
+  var workActivityIntensity: Double
+  var ambientWashIntensity: Double
+  var equipmentActivityIntensity: Double
+  var publicPressureIntensity: Double
   var practicalLightIntensity: Double
   var founderMonitorGlow: Double
   var warningIntensity: Double
@@ -458,15 +474,48 @@ struct FounderGarageLightingPresentation: Equatable, Sendable {
     atmosphere: CompanyAtmosphere,
     stations: [FounderGarageStationMotion],
     event: FounderGarageEventEmphasis,
+    publicEvents: [PublicMediaEvent],
     period: OperatingCalendar.Period
   ) -> Self {
     let activeCount = stations.filter { $0.activityIntensity >= 0.5 }.count
+    let workActivity = min(1, Double(activeCount) / 3)
     let attention = stations.contains { $0.needsFounderAttention }
+    let latestPublicCompanyEvent = publicEvents.first {
+      $0.isPublic && $0.concernsPlayerCompany
+    }
+    let publicPressure = latestPublicCompanyEvent.map {
+      $0.tone == .critical || $0.coverageDelta < 0
+    } ?? false
+    let operationalState: FounderGarageOperationalState
+    if attention {
+      operationalState = .reviewAttention
+    } else if publicPressure {
+      operationalState = .publicPressure
+    } else if activeCount > 0 {
+      operationalState = .activeWork
+    } else if atmosphere.isHighMomentum {
+      operationalState = .positiveMomentum
+    } else {
+      operationalState = .quiet
+    }
+    let ambientWash: Double = switch operationalState {
+    case .quiet: 0.18
+    case .activeWork: 0.58
+    case .reviewAttention: 0.70
+    case .positiveMomentum: 0.62
+    case .publicPressure: 0.68
+    }
+    let equipmentActivity = min(1, 0.22 + workActivity * 0.62 + (attention ? 0.16 : 0))
     let doorLight = garageDoorLight(for: period)
     let periodLight = wholeGarageLight(for: period)
     return Self(
-      practicalLightIntensity: max(0.32, min(0.86, 0.38 + atmosphere.energy * 0.42)),
-      founderMonitorGlow: min(0.92, 0.42 + Double(activeCount) * 0.09),
+      operationalState: operationalState,
+      workActivityIntensity: workActivity,
+      ambientWashIntensity: ambientWash,
+      equipmentActivityIntensity: equipmentActivity,
+      publicPressureIntensity: publicPressure ? 0.72 : 0,
+      practicalLightIntensity: max(0.32, min(0.88, 0.34 + atmosphere.energy * 0.34 + workActivity * 0.12 + (attention ? 0.05 : 0))),
+      founderMonitorGlow: min(0.96, 0.42 + Double(activeCount) * 0.09 + (attention ? 0.08 : 0)),
       warningIntensity: atmosphere.isLowRunway ? 0.62 : 0,
       momentumConnectionIntensity: atmosphere.isHighMomentum ? 0.72 : 0.14,
       brioPublicSignalStability: atmosphere.isLowTrust ? 0.52 : 1,
@@ -687,6 +736,7 @@ struct FounderGarageMotionPresentation: Equatable, Sendable {
         atmosphere: environment.atmosphere,
         stations: stations,
         event: event,
+        publicEvents: environment.signalTVEvents,
         period: environment.period
       ),
       environment: .derive(

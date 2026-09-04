@@ -503,6 +503,90 @@ final class GameStore {
     max(0, attentionMaximum - founderAttentionSpent)
   }
 
+  var fundingBoardOpportunities: [FundingOpportunityPresentation] {
+    FundingBoardEngine.presentations(
+      snapshot: FundingBoardSnapshot(
+        revenue: stats.revenue,
+        trust: stats.trust,
+        momentum: stats.momentum,
+        coverage: stats.coverage,
+        venture: venture,
+        evidenceCount: evidence.count,
+        careerSprint: careerSprintIndex,
+        attentionRemaining: attentionRemaining
+      ),
+      applications: finance.fundingApplications
+    )
+  }
+
+  @discardableResult
+  func pursueFundingOpportunity(id: String) -> Bool {
+    guard let presentation = fundingBoardOpportunities.first(where: { $0.id == id }) else {
+      alertMessage = "That funding notice is no longer on the board."
+      return false
+    }
+    guard presentation.status == .eligible else {
+      alertMessage = presentation.statusDetail
+      return false
+    }
+    let cost = presentation.opportunity.founderAttentionCost
+    guard attentionRemaining >= cost else {
+      alertMessage = "This application needs \(cost) Founder Attention."
+      return false
+    }
+    guard finance.beginFundingApplication(
+      opportunityID: id,
+      careerSprint: careerSprintIndex
+    ) else {
+      alertMessage = "This opportunity is already in motion."
+      return false
+    }
+    founderAttentionSpent += cost
+    alertMessage = "Application sent. Return after the next sprint for the response."
+    save()
+    return true
+  }
+
+  @discardableResult
+  func resolveFundingOpportunity(id: String) -> Bool {
+    guard let presentation = fundingBoardOpportunities.first(where: { $0.id == id }) else {
+      alertMessage = "That funding notice is no longer on the board."
+      return false
+    }
+    guard presentation.canResolve else {
+      alertMessage = presentation.statusDetail
+      return false
+    }
+    let opportunity = presentation.opportunity
+    guard finance.resolveFundingApplication(
+      opportunityID: id,
+      careerSprint: careerSprintIndex
+    ) else {
+      alertMessage = "This response has already been recorded."
+      return false
+    }
+    recordCapitalRaised(
+      id: "funding-board-\(id)",
+      amount: opportunity.amount,
+      source: opportunity.name
+    )
+    if opportunity.kind == .fundraising,
+       opportunity.obligationSprints > 0,
+       !activeObligations.contains(where: { $0.id == "funding-board-investor-updates" }) {
+      activeObligations.append(CompanyObligation(
+        id: "funding-board-investor-updates",
+        title: "Investor Updates",
+        detail: "The funding terms require a concise operating update each sprint.",
+        sourceDecision: opportunity.name,
+        remainingSprints: opportunity.obligationSprints,
+        effectsPerSprint: SimulationEffects(energy: -1)
+      ))
+    }
+    alertMessage = "\(opportunity.name) approved \(opportunity.amountLabel). The funds are now in the company account."
+    save()
+    return true
+  }
+
   var chapter: VentureChapter { .chapter(for: sprint) }
 
   var selectedDilemmaChoice: DilemmaChoice? {

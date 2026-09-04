@@ -212,6 +212,22 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     cameraControls.tap()
     app.buttons["viewfinder"].tap()
 
+    XCTAssertTrue(cameraControls.waitForExistence(timeout: 3))
+    cameraControls.tap()
+    app.buttons["chevron.left"].tap()
+    let fundingBoard = app.buttons["funding-board-hotspot"]
+    assertAccessibleTouchTarget(fundingBoard)
+    fundingBoard.tap()
+    XCTAssertTrue(app.navigationBars["Founder Funding Board"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["GRANTS & FUNDRAISING"].waitForExistence(timeout: 3))
+    capture("09B_FOUNDER_FUNDING_BOARD", in: app)
+    app.buttons["close-funding-board-viewer"].tap()
+    XCTAssertTrue(fundingBoard.waitForExistence(timeout: 4))
+
+    XCTAssertTrue(cameraControls.waitForExistence(timeout: 3))
+    cameraControls.tap()
+    app.buttons["viewfinder"].tap()
+
     focusDevice(.phone, expectedTitle: "Tech.com iPhone", in: app)
     XCTAssertTrue(app.navigationBars["Tech.com"].waitForExistence(timeout: 4))
     capture("03_TECHCOM_IPHONE_FOCUSED", in: app)
