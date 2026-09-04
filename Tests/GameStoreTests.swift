@@ -721,6 +721,7 @@ final class GameStoreTests: XCTestCase {
     let cashBefore = store.finance.cash
     let raisedBefore = store.finance.capitalRaised
     let attentionBefore = store.attentionRemaining
+    let evidenceBefore = store.evidence.count
 
     XCTAssertTrue(store.pursueFundingOpportunity(id: opportunity.id))
     XCTAssertEqual(store.attentionRemaining, attentionBefore - opportunity.opportunity.founderAttentionCost)
@@ -729,14 +730,67 @@ final class GameStoreTests: XCTestCase {
 
     store.sprint = 2
     XCTAssertTrue(store.resolveFundingOpportunity(id: opportunity.id))
+    XCTAssertEqual(
+      store.fundingBoardOpportunities.first(where: { $0.id == opportunity.id })?.status,
+      .awarded
+    )
     XCTAssertEqual(store.finance.cash, cashBefore + opportunity.opportunity.amount)
     XCTAssertEqual(store.finance.capitalRaised, raisedBefore + opportunity.opportunity.amount)
     XCTAssertEqual(store.stats.capital, store.finance.cash)
+    XCTAssertEqual(store.evidence.count, evidenceBefore)
     XCTAssertFalse(store.resolveFundingOpportunity(id: opportunity.id))
     XCTAssertEqual(
       store.finance.transactions.filter { $0.id == "funding-board-\(opportunity.id)" }.count,
       1
     )
+    XCTAssertTrue(store.precedents.contains(where: {
+      $0.isFundingRecord && $0.founderVisibleOutcome?.contains("Awarded") == true
+    }))
+  }
+
+  func testFundingResponseDeclinesWhenVisibleRequirementNoLongerPasses() throws {
+    let store = makeStore(seed: 19_404)
+    let opportunity = try XCTUnwrap(store.fundingBoardOpportunities.first(where: {
+      $0.id == "pioneer-ai-grant"
+    }))
+    let cashBefore = store.finance.cash
+    XCTAssertTrue(store.pursueFundingOpportunity(id: opportunity.id))
+
+    store.stats.trust = 40
+    store.sprint = 2
+    XCTAssertTrue(store.resolveFundingOpportunity(id: opportunity.id))
+
+    let declined = try XCTUnwrap(store.fundingBoardOpportunities.first(where: {
+      $0.id == opportunity.id
+    }))
+    XCTAssertEqual(declined.status, .declined)
+    XCTAssertTrue(declined.resultLabel?.contains("Company Trust") == true)
+    XCTAssertEqual(store.finance.cash, cashBefore)
+    XCTAssertFalse(store.finance.transactions.contains(where: {
+      $0.id == "funding-board-\(opportunity.id)"
+    }))
+    XCTAssertTrue(store.precedents.contains(where: {
+      $0.isFundingRecord && $0.founderVisibleOutcome?.contains("Declined") == true
+    }))
+  }
+
+  func testFundingExpirationIsTerminalAcrossCareerReload() throws {
+    let store = makeStore(seed: 19_405)
+    store.sprint = 4
+    try assignFirstTask(in: store)
+    store.stats.runway = 100
+    store.stats.energy = 100
+    store.commitSprint()
+
+    XCTAssertTrue(store.finance.expiredFundingOpportunityIDs.contains("pioneer-ai-grant"))
+    let relaunched = GameStore()
+    relaunched.continueCareer()
+    relaunched.stats.trust = 100
+    let expired = try XCTUnwrap(relaunched.fundingBoardOpportunities.first(where: {
+      $0.id == "pioneer-ai-grant"
+    }))
+    XCTAssertEqual(expired.status, .expired)
+    XCTAssertFalse(relaunched.pursueFundingOpportunity(id: expired.id))
   }
 
   func testFundingApplicationSurvivesCareerReloadWithoutChangingSeed() throws {
@@ -772,6 +826,18 @@ final class GameStoreTests: XCTestCase {
     store.sprint = 7
     XCTAssertTrue(store.resolveFundingOpportunity(id: round.id))
     XCTAssertEqual(store.finance.cash, cashBefore + round.opportunity.amount)
+    XCTAssertEqual(
+      store.fundingBoardOpportunities.first(where: { $0.id == round.id })?.status,
+      .funded
+    )
+    let application = try XCTUnwrap(store.finance.fundingApplications.first(where: {
+      $0.opportunityID == round.id
+    }))
+    let milestone = try XCTUnwrap(application.milestoneObligation)
+    XCTAssertEqual(milestone.metric, .revenue)
+    XCTAssertEqual(milestone.target, 6_000)
+    XCTAssertEqual(milestone.dueCareerSprint, 11)
+    XCTAssertEqual(milestone.missedTrustConsequence, 6)
     let obligation = try XCTUnwrap(store.activeObligations.first(where: {
       $0.id == "funding-board-investor-updates"
     }))
@@ -779,6 +845,49 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(obligation.effectsPerSprint, SimulationEffects(energy: -1))
     XCTAssertFalse(store.resolveFundingOpportunity(id: round.id))
     XCTAssertEqual(store.activeObligations.filter { $0.id == obligation.id }.count, 1)
+    XCTAssertTrue(store.precedents.contains(where: {
+      $0.isFundingRecord && $0.decisionSummary.contains("post-funding milestone")
+    }))
+  }
+
+  func testFundingMilestoneMetResolvesOnceWithoutTrustPenalty() throws {
+    let store = makeStore(seed: 19_406)
+    store.sprint = 9
+    store.stats.revenue = 6_200
+    store.stats.trust = 72
+    store.finance.fundingApplications = [fundedApplication(
+      dueCareerSprint: 11,
+      status: .active
+    )]
+
+    store.updateFundingLifecycleForCurrentSprint()
+    store.updateFundingLifecycleForCurrentSprint()
+
+    XCTAssertEqual(store.finance.fundingApplications.first?.milestoneObligation?.status, .met)
+    XCTAssertEqual(store.stats.trust, 72)
+    XCTAssertEqual(store.precedents.filter {
+      $0.isFundingRecord && $0.founderVisibleOutcome?.contains("Met the visible Revenue target") == true
+    }.count, 1)
+  }
+
+  func testFundingMilestoneMissAppliesDisclosedTrustConsequenceOnce() throws {
+    let store = makeStore(seed: 19_407)
+    store.sprint = 11
+    store.stats.revenue = 4_500
+    store.stats.trust = 72
+    store.finance.fundingApplications = [fundedApplication(
+      dueCareerSprint: 11,
+      status: .active
+    )]
+
+    store.updateFundingLifecycleForCurrentSprint()
+    store.updateFundingLifecycleForCurrentSprint()
+
+    XCTAssertEqual(store.finance.fundingApplications.first?.milestoneObligation?.status, .missed)
+    XCTAssertEqual(store.stats.trust, 66)
+    XCTAssertEqual(store.precedents.filter {
+      $0.isFundingRecord && $0.founderVisibleOutcome?.contains("Company Trust fell by 6") == true
+    }.count, 1)
   }
 
   func testBuild6TaskDeckDoesNotRepeatAcrossFirstVenture() throws {
@@ -1071,6 +1180,29 @@ final class GameStoreTests: XCTestCase {
       confidenceLowerBound: reported - 8,
       confidenceUpperBound: reported + 8,
       knownOperationalRisk: "Normal operational variance"
+    )
+  }
+
+  private func fundedApplication(
+    dueCareerSprint: Int,
+    status: FundingMilestoneStatus
+  ) -> FundingApplicationRecord {
+    FundingApplicationRecord(
+      opportunityID: "founder-conviction-round",
+      status: .resolved,
+      appliedCareerSprint: 6,
+      resolvedCareerSprint: 7,
+      outcome: .funded,
+      outcomeReason: "Every visible requirement remained met.",
+      milestoneObligation: FundingMilestoneObligation(
+        metric: .revenue,
+        target: 6_000,
+        createdCareerSprint: 7,
+        dueCareerSprint: dueCareerSprint,
+        missedTrustConsequence: 6,
+        status: status,
+        resolvedCareerSprint: status == .active ? nil : dueCareerSprint
+      )
     )
   }
 

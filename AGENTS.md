@@ -117,6 +117,9 @@ For implementation work:
    environment failures.
 5. Do not claim visual, audio, haptic, or animation correctness from tests alone.
 
+For visual, layout, or presentation work, verify both iPhone 17 Pro Max and
+iPad Air 11-inch (M4) simulators when those destinations are available.
+
 Simulator or device verification remains a human acceptance step.
 
 For inspection-only tasks, do not build or run commands that generate repository or

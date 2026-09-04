@@ -1132,6 +1132,9 @@ struct FounderFundingBoardPhysicalView: View {
     case .eligible: SoloTheme.mint
     case .pursuing: SoloTheme.cyan
     case .resolved: .green
+    case .awarded: SoloTheme.mint
+    case .funded: Color(red: 0.72, green: 0.35, blue: 0.55)
+    case .declined: SoloTheme.coral
     case .expired: SoloTheme.coral
     }
   }
@@ -1244,12 +1247,16 @@ struct FounderFundingBoardViewer: View {
       }
 
       HStack {
-        Label("Deadline: \(opportunity.deadlineLabel)", systemImage: "calendar")
+        Label(presentation.deadlineRemainingLabel, systemImage: "calendar")
         Spacer()
         Label("\(opportunity.founderAttentionCost) Attention", systemImage: "scope")
       }
       .font(.caption2.weight(.semibold))
       .foregroundStyle(.secondary)
+
+      Text("Closes \(opportunity.deadlineLabel)")
+        .font(.caption2)
+        .foregroundStyle(.tertiary)
 
       Text(opportunity.terms)
         .font(.caption)
@@ -1258,10 +1265,28 @@ struct FounderFundingBoardViewer: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.white.opacity(0.045), in: .rect(cornerRadius: 9))
 
-      HStack {
-        Text(presentation.statusDetail)
+      if let result = presentation.resultLabel {
+        Label(result, systemImage: resultSymbol(presentation.status))
           .font(.caption.weight(.semibold))
           .foregroundStyle(statusTone(presentation.status))
+          .padding(10)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .background(statusTone(presentation.status).opacity(0.08), in: .rect(cornerRadius: 9))
+      }
+
+      if let obligation = presentation.application?.milestoneObligation {
+        milestoneCard(obligation, presentation: presentation)
+      }
+
+      HStack {
+        VStack(alignment: .leading, spacing: 3) {
+          Text(presentation.statusDetail)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(statusTone(presentation.status))
+          Text("Next: \(presentation.nextAction)")
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+        }
         Spacer(minLength: 12)
         actionButton(presentation)
       }
@@ -1300,6 +1325,7 @@ struct FounderFundingBoardViewer: View {
       }
       .buttonStyle(.borderedProminent)
       .tint(SoloTheme.cyan)
+      .accessibilityHint("Rechecks only the visible requirements shown on this card.")
     default:
       EmptyView()
     }
@@ -1309,6 +1335,66 @@ struct FounderFundingBoardViewer: View {
     kind == .grant ? SoloTheme.mint : Color(red: 0.72, green: 0.35, blue: 0.55)
   }
 
+  private func milestoneCard(
+    _ obligation: FundingMilestoneObligation,
+    presentation: FundingOpportunityPresentation
+  ) -> some View {
+    VStack(alignment: .leading, spacing: 7) {
+      HStack {
+        Label("INVESTOR MILESTONE", systemImage: "flag.checkered")
+          .font(.caption2.weight(.black))
+          .tracking(0.8)
+        Spacer()
+        Text(obligation.status.title.uppercased())
+          .font(.caption2.weight(.black))
+          .foregroundStyle(milestoneTone(obligation.status))
+      }
+      Text("Reach \(fundingValueLabel(metric: obligation.metric, value: obligation.target)) \(obligation.metric.title)")
+        .font(.subheadline.weight(.semibold))
+      if let progress = presentation.milestoneProgressLabel,
+         let deadline = presentation.milestoneDeadlineLabel {
+        Text("Progress: \(progress) · \(deadline) · Due \(FundingOpportunity.sprintLabel(obligation.dueCareerSprint))")
+          .font(.caption)
+          .foregroundStyle(.secondary)
+      }
+      Text("If missed: Company Trust -\(obligation.missedTrustConsequence), applied once.")
+        .font(.caption2.weight(.semibold))
+        .foregroundStyle(SoloTheme.amber)
+    }
+    .padding(11)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(Color(red: 0.72, green: 0.35, blue: 0.55).opacity(0.09), in: .rect(cornerRadius: 10))
+    .overlay {
+      RoundedRectangle(cornerRadius: 10)
+        .stroke(contrast == .increased ? .white : .white.opacity(0.12), lineWidth: contrast == .increased ? 2 : 1)
+    }
+    .accessibilityElement(children: .combine)
+  }
+
+  private func fundingValueLabel(metric: FundingRequirementMetric, value: Int) -> String {
+    if metric == .revenue {
+      return value.formatted(.currency(code: "USD").precision(.fractionLength(0)))
+    }
+    return "\(value)"
+  }
+
+  private func milestoneTone(_ status: FundingMilestoneStatus) -> Color {
+    switch status {
+    case .active: SoloTheme.cyan
+    case .met: SoloTheme.mint
+    case .missed: SoloTheme.coral
+    }
+  }
+
+  private func resultSymbol(_ status: FundingOpportunityStatus) -> String {
+    switch status {
+    case .awarded: "checkmark.seal.fill"
+    case .funded: "banknote.fill"
+    case .declined, .expired: "xmark.circle.fill"
+    default: "info.circle.fill"
+    }
+  }
+
   private func statusTone(_ status: FundingOpportunityStatus) -> Color {
     switch status {
     case .locked: .gray
@@ -1316,6 +1402,9 @@ struct FounderFundingBoardViewer: View {
     case .eligible: SoloTheme.mint
     case .pursuing: SoloTheme.cyan
     case .resolved: .green
+    case .awarded: SoloTheme.mint
+    case .funded: Color(red: 0.72, green: 0.35, blue: 0.55)
+    case .declined: SoloTheme.coral
     case .expired: SoloTheme.coral
     }
   }

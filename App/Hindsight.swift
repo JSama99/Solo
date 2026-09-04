@@ -88,8 +88,19 @@ struct Precedent: Codable, Hashable, Identifiable {
   var decisionSummary: String
   var outcome: PrecedentOutcome
   var counterfactual: PrecedentOutcome? = nil
+  /// Optional so saves written before funding history continue to decode
+  /// through synthesized `decodeIfPresent` behavior.
+  var recordKind: PrecedentRecordKind? = nil
+  var founderVisibleOutcome: String? = nil
 
   var recallTitle: String { "Venture \(venture), Sprint \(sprint)" }
+  var isFundingRecord: Bool { recordKind == .funding }
+  var observedOutcomeSummary: String { founderVisibleOutcome ?? outcome.summary }
+}
+
+enum PrecedentRecordKind: String, Codable, Hashable {
+  case operatingSprint
+  case funding
 }
 
 /// A surfaced Precedent plus how strongly it matches the live situation.
@@ -125,6 +136,29 @@ enum HindsightEngine {
     ))
   }
 
+  /// Funding history shares the Hindsight archive without consuming simulation
+  /// randomness or colliding with the one operating precedent per sprint.
+  static func fundingIdentifier(
+    opportunityID: String,
+    event: String,
+    careerSprint: Int
+  ) -> UUID {
+    let source = Array("\(opportunityID)|\(event)|\(max(0, careerSprint))".utf8)
+    var first: UInt64 = 14_695_981_039_346_656_037
+    var second: UInt64 = 10_995_116_282_11
+    for byte in source {
+      first = (first ^ UInt64(byte)) &* 1_099_511_628_211
+      second = (second ^ UInt64(byte &+ 31)) &* 1_099_511_628_211
+    }
+    var bytes = Array("SOLOFUND".utf8)
+    for index in 0..<4 { bytes.append(UInt8(truncatingIfNeeded: first >> (24 - index * 8))) }
+    for index in 0..<4 { bytes.append(UInt8(truncatingIfNeeded: second >> (24 - index * 8))) }
+    return UUID(uuid: (
+      bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7],
+      bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]
+    ))
+  }
+
   /// Below this, do not surface. Weak matches are noise, not memory.
   static let similarityFloor = 0.62
   /// A resource, not a nag.
@@ -150,7 +184,7 @@ enum HindsightEngine {
     recallsAlreadyShown: Int
   ) -> HindsightRecall? {
     guard recallsAlreadyShown < maximumRecallsPerVenture else { return nil }
-    let earlier = precedents.filter { $0.venture < currentVenture }
+    let earlier = precedents.filter { $0.venture < currentVenture && !$0.isFundingRecord }
     let recalls = earlier.map { precedent in
       HindsightRecall(precedent: precedent, similarity: similarity(precedent, context))
     }

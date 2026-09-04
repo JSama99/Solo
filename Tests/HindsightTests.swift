@@ -176,6 +176,45 @@ final class HindsightTests: XCTestCase {
     let decoded = try JSONDecoder().decode(Precedent.self, from: data)
     XCTAssertEqual(decoded, original)
   }
+
+  func testLegacyPrecedentWithoutFundingFieldsDecodesAsOperatingRecord() throws {
+    let original = precedent()
+    let data = try JSONEncoder().encode(original)
+    var object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    object.removeValue(forKey: "recordKind")
+    object.removeValue(forKey: "founderVisibleOutcome")
+    let decoded = try JSONDecoder().decode(
+      Precedent.self,
+      from: JSONSerialization.data(withJSONObject: object)
+    )
+    XCTAssertFalse(decoded.isFundingRecord)
+    XCTAssertEqual(decoded.observedOutcomeSummary, decoded.outcome.summary)
+  }
+
+  func testFundingRecordsNeverParticipateInOperatingRecall() {
+    let live = context()
+    let funding = Precedent(
+      id: HindsightEngine.fundingIdentifier(
+        opportunityID: "pioneer-ai-grant",
+        event: "awarded",
+        careerSprint: 2
+      ),
+      venture: 1,
+      sprint: 2,
+      context: live,
+      decisionSummary: "Reviewed a grant response.",
+      outcome: PrecedentOutcome(),
+      recordKind: .funding,
+      founderVisibleOutcome: "Awarded $2,400."
+    )
+    XCTAssertNil(HindsightEngine.recall(
+      from: [funding],
+      matching: live,
+      currentVenture: 2,
+      recallsAlreadyShown: 0
+    ))
+    XCTAssertEqual(funding.observedOutcomeSummary, "Awarded $2,400.")
+  }
 }
 
 /// The career layer must never perturb the seeded simulation.
@@ -251,6 +290,31 @@ final class PrecedentIdentityTests: XCTestCase {
   func testIdentityHandlesOutOfRangeInputSafely() {
     // Must not trap on negative input from a corrupted save.
     XCTAssertNoThrow(HindsightEngine.identifier(venture: -5, sprint: -9))
+  }
+
+  func testFundingIdentityIsStableNamespacedAndEventSpecific() {
+    let submitted = HindsightEngine.fundingIdentifier(
+      opportunityID: "pioneer-ai-grant",
+      event: "application-submitted",
+      careerSprint: 1
+    )
+    XCTAssertEqual(
+      submitted,
+      HindsightEngine.fundingIdentifier(
+        opportunityID: "pioneer-ai-grant",
+        event: "application-submitted",
+        careerSprint: 1
+      )
+    )
+    XCTAssertNotEqual(
+      submitted,
+      HindsightEngine.fundingIdentifier(
+        opportunityID: "pioneer-ai-grant",
+        event: "awarded",
+        careerSprint: 2
+      )
+    )
+    XCTAssertNotEqual(submitted, HindsightEngine.identifier(venture: 1, sprint: 1))
   }
 }
 

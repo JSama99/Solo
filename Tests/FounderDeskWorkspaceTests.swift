@@ -499,6 +499,66 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     }
   }
 
+  func testFundingBoardPresentationShowsDeadlineResultAndNextAction() throws {
+    let snapshot = FundingBoardSnapshot(
+      revenue: 500,
+      trust: 68,
+      momentum: 18,
+      coverage: 0,
+      venture: 1,
+      evidenceCount: 0,
+      careerSprint: 2,
+      attentionRemaining: 2
+    )
+    let opportunity = try XCTUnwrap(FundingBoardEngine.presentations(
+      snapshot: snapshot,
+      applications: []
+    ).first(where: { $0.id == "pioneer-ai-grant" }))
+    XCTAssertEqual(opportunity.deadlineRemainingLabel, "Deadline: 2 sprints")
+    XCTAssertEqual(opportunity.status, .eligible)
+    XCTAssertEqual(opportunity.nextAction, "Submit the application.")
+    XCTAssertNil(opportunity.resultLabel)
+  }
+
+  func testFundingBoardPresentationShowsActiveMilestoneProgressAndConsequence() throws {
+    let application = FundingApplicationRecord(
+      opportunityID: "founder-conviction-round",
+      status: .resolved,
+      appliedCareerSprint: 6,
+      resolvedCareerSprint: 7,
+      outcome: .funded,
+      outcomeReason: "Every visible requirement remained met.",
+      milestoneObligation: FundingMilestoneObligation(
+        metric: .revenue,
+        target: 6_000,
+        createdCareerSprint: 7,
+        dueCareerSprint: 11,
+        missedTrustConsequence: 6,
+        status: .active,
+        resolvedCareerSprint: nil
+      )
+    )
+    let snapshot = FundingBoardSnapshot(
+      revenue: 3_400,
+      trust: 72,
+      momentum: 45,
+      coverage: 10,
+      venture: 1,
+      evidenceCount: 3,
+      careerSprint: 8,
+      attentionRemaining: 2
+    )
+    let round = try XCTUnwrap(FundingBoardEngine.presentations(
+      snapshot: snapshot,
+      applications: [application]
+    ).first(where: { $0.id == application.opportunityID }))
+    XCTAssertEqual(round.status, .funded)
+    XCTAssertEqual(round.milestoneProgressLabel, "$3,400 of $6,000")
+    XCTAssertEqual(round.milestoneDeadlineLabel, "3 sprints remaining")
+    XCTAssertEqual(round.nextAction, "Track the active investor milestone.")
+    XCTAssertEqual(round.application?.milestoneObligation?.missedTrustConsequence, 6)
+  }
+
   func testRearGarageDoorIsDiscoverableAtNeutralFreeLookOnIPhoneAndIPad() {
     let camera = FounderEnvironmentCameraState(mode: .freeLook)
     for size in [CGSize(width: 402, height: 874), CGSize(width: 1_024, height: 1_366)] {
