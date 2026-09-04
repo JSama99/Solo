@@ -714,6 +714,73 @@ final class GameStoreTests: XCTestCase {
     )
   }
 
+  func testFundingGrantConsumesAttentionThenEntersCanonicalFinanceNextSprint() throws {
+    let store = makeStore(seed: 19_401)
+    let opportunity = try XCTUnwrap(store.fundingBoardOpportunities.first(where: { $0.id == "pioneer-ai-grant" }))
+    XCTAssertEqual(opportunity.status, .eligible)
+    let cashBefore = store.finance.cash
+    let raisedBefore = store.finance.capitalRaised
+    let attentionBefore = store.attentionRemaining
+
+    XCTAssertTrue(store.pursueFundingOpportunity(id: opportunity.id))
+    XCTAssertEqual(store.attentionRemaining, attentionBefore - opportunity.opportunity.founderAttentionCost)
+    XCTAssertEqual(store.finance.cash, cashBefore)
+    XCTAssertFalse(store.resolveFundingOpportunity(id: opportunity.id))
+
+    store.sprint = 2
+    XCTAssertTrue(store.resolveFundingOpportunity(id: opportunity.id))
+    XCTAssertEqual(store.finance.cash, cashBefore + opportunity.opportunity.amount)
+    XCTAssertEqual(store.finance.capitalRaised, raisedBefore + opportunity.opportunity.amount)
+    XCTAssertEqual(store.stats.capital, store.finance.cash)
+    XCTAssertFalse(store.resolveFundingOpportunity(id: opportunity.id))
+    XCTAssertEqual(
+      store.finance.transactions.filter { $0.id == "funding-board-\(opportunity.id)" }.count,
+      1
+    )
+  }
+
+  func testFundingApplicationSurvivesCareerReloadWithoutChangingSeed() throws {
+    let store = makeStore(seed: 19_402)
+    let generatorBefore = store.randomNumberGenerator
+    XCTAssertTrue(store.pursueFundingOpportunity(id: "pioneer-ai-grant"))
+    XCTAssertEqual(store.randomNumberGenerator, generatorBefore)
+
+    let relaunched = GameStore()
+    relaunched.continueCareer()
+    let application = try XCTUnwrap(relaunched.finance.fundingApplications.first(where: {
+      $0.opportunityID == "pioneer-ai-grant"
+    }))
+    XCTAssertEqual(application.status, .pursuing)
+    XCTAssertEqual(relaunched.randomNumberGenerator, generatorBefore)
+  }
+
+  func testFundraisingUsesVisibleThresholdsAndCreatesDisclosedObligation() throws {
+    let store = makeStore(seed: 19_403)
+    store.sprint = 6
+    store.stats.revenue = 3_000
+    store.stats.momentum = 45
+    store.stats.coverage = 10
+    let round = try XCTUnwrap(store.fundingBoardOpportunities.first(where: {
+      $0.id == "founder-conviction-round"
+    }))
+    XCTAssertEqual(round.status, .eligible)
+    XCTAssertEqual(round.opportunity.founderAttentionCost, 2)
+    let cashBefore = store.finance.cash
+
+    XCTAssertTrue(store.pursueFundingOpportunity(id: round.id))
+    XCTAssertEqual(store.attentionRemaining, 0)
+    store.sprint = 7
+    XCTAssertTrue(store.resolveFundingOpportunity(id: round.id))
+    XCTAssertEqual(store.finance.cash, cashBefore + round.opportunity.amount)
+    let obligation = try XCTUnwrap(store.activeObligations.first(where: {
+      $0.id == "funding-board-investor-updates"
+    }))
+    XCTAssertEqual(obligation.remainingSprints, 4)
+    XCTAssertEqual(obligation.effectsPerSprint, SimulationEffects(energy: -1))
+    XCTAssertFalse(store.resolveFundingOpportunity(id: round.id))
+    XCTAssertEqual(store.activeObligations.filter { $0.id == obligation.id }.count, 1)
+  }
+
   func testBuild6TaskDeckDoesNotRepeatAcrossFirstVenture() throws {
     let store = makeStore(seed: 61_001)
     var draftedTitles: [String] = []

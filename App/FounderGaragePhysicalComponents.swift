@@ -1015,3 +1015,308 @@ struct FounderGarageTaskArtifactView: View {
     }
   }
 }
+
+/// A physical cork-and-paper planning surface. It intentionally avoids the
+/// luminous chart language used by the Venture tablet.
+struct FounderFundingBoardPhysicalView: View {
+  var opportunities: [FundingOpportunityPresentation]
+  var increasedContrast: Bool
+
+  private let columns = [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)]
+
+  var body: some View {
+    ZStack {
+      RoundedRectangle(cornerRadius: 9)
+        .fill(.black.opacity(0.50))
+        .frame(width: 268, height: 180)
+        .offset(x: 5, y: 7)
+
+      RoundedRectangle(cornerRadius: 8)
+        .fill(Color(red: 0.22, green: 0.12, blue: 0.075))
+        .frame(width: 268, height: 180)
+
+      RoundedRectangle(cornerRadius: 4)
+        .fill(Color(red: 0.43, green: 0.27, blue: 0.15))
+        .frame(width: 250, height: 162)
+        .overlay {
+          FounderGarageSurfaceTexture(kind: .laminate, strength: 1.2)
+            .clipShape(.rect(cornerRadius: 4))
+        }
+
+      VStack(spacing: 7) {
+        Text("FUNDING VISION BOARD")
+          .font(.system(size: 11, weight: .black, design: .rounded))
+          .tracking(1.2)
+          .foregroundStyle(.white.opacity(0.90))
+          .padding(.horizontal, 12)
+          .frame(height: 24)
+          .background(Color(red: 0.08, green: 0.16, blue: 0.18), in: .rect(cornerRadius: 3))
+
+        LazyVGrid(columns: columns, spacing: 7) {
+          ForEach(Array(opportunities.prefix(4))) { presentation in
+            physicalCard(presentation)
+          }
+          if opportunities.isEmpty {
+            physicalPlaceholder("GRANTS", tone: SoloTheme.mint)
+            physicalPlaceholder("RAISE", tone: SoloTheme.cyan)
+            physicalPlaceholder("MILESTONES", tone: Color(red: 0.72, green: 0.35, blue: 0.55))
+            physicalPlaceholder("DEADLINES", tone: .white)
+          }
+        }
+      }
+      .frame(width: 226)
+
+      ForEach(0..<4, id: \.self) { index in
+        Circle()
+          .fill(.black.opacity(0.72))
+          .frame(width: 7, height: 7)
+          .overlay { Circle().stroke(.white.opacity(0.30), lineWidth: 1) }
+          .offset(x: index.isMultiple(of: 2) ? -124 : 124, y: index < 2 ? -80 : 80)
+      }
+    }
+    .frame(width: 276, height: 188)
+    .overlay {
+      RoundedRectangle(cornerRadius: 9)
+        .stroke(increasedContrast ? .white : .white.opacity(0.20), lineWidth: increasedContrast ? 2 : 1)
+        .frame(width: 268, height: 180)
+    }
+    .shadow(color: .black.opacity(0.48), radius: 9, y: 7)
+    .allowsHitTesting(false)
+    .accessibilityHidden(true)
+  }
+
+  private func physicalCard(_ presentation: FundingOpportunityPresentation) -> some View {
+    let tone = statusTone(presentation.status)
+    return VStack(alignment: .leading, spacing: 2) {
+      HStack(spacing: 4) {
+        Circle().fill(tone).frame(width: 5, height: 5)
+        Text(presentation.opportunity.kind.title.uppercased())
+          .font(.system(size: 6, weight: .black, design: .rounded))
+          .foregroundStyle(tone)
+        Spacer(minLength: 0)
+      }
+      Text(presentation.opportunity.name)
+        .font(.system(size: 7, weight: .bold, design: .rounded))
+        .foregroundStyle(.black.opacity(0.82))
+        .lineLimit(1)
+      Text(presentation.opportunity.amountLabel)
+        .font(.system(size: 7, weight: .black, design: .monospaced))
+        .foregroundStyle(.black.opacity(0.70))
+      Text(presentation.status.title.uppercased())
+        .font(.system(size: 6, weight: .black, design: .rounded))
+        .foregroundStyle(tone)
+    }
+    .padding(6)
+    .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
+    .background(Color(red: 0.90, green: 0.87, blue: 0.77), in: .rect(cornerRadius: 2))
+    .overlay(alignment: .top) {
+      Circle().fill(Color(red: 0.72, green: 0.18, blue: 0.20)).frame(width: 6, height: 6).offset(y: -3)
+    }
+    .rotationEffect(.degrees(presentation.opportunity.kind == .grant ? -0.7 : 0.8))
+  }
+
+  private func physicalPlaceholder(_ title: String, tone: Color) -> some View {
+    Text(title)
+      .font(.system(size: 7, weight: .black, design: .rounded))
+      .foregroundStyle(.black.opacity(0.72))
+      .padding(6)
+      .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
+      .background(Color(red: 0.90, green: 0.87, blue: 0.77), in: .rect(cornerRadius: 2))
+      .overlay(alignment: .leading) { Rectangle().fill(tone.opacity(0.72)).frame(width: 4) }
+  }
+
+  private func statusTone(_ status: FundingOpportunityStatus) -> Color {
+    switch status {
+    case .locked: .gray
+    case .available: Color(red: 0.42, green: 0.30, blue: 0.65)
+    case .eligible: SoloTheme.mint
+    case .pursuing: SoloTheme.cyan
+    case .resolved: .green
+    case .expired: SoloTheme.coral
+    }
+  }
+}
+
+struct FounderFundingBoardViewer: View {
+  var store: GameStore
+
+  @Environment(\.dismiss) private var dismiss
+  @Environment(\.colorSchemeContrast) private var contrast
+  @State private var feedback: String?
+
+  var body: some View {
+    NavigationStack {
+      ScrollView {
+        LazyVStack(spacing: 14) {
+          boardIntroduction
+          if let feedback {
+            Text(feedback)
+              .font(.subheadline.weight(.semibold))
+              .foregroundStyle(SoloTheme.cyan)
+              .padding(12)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .background(SoloTheme.cyan.opacity(0.08), in: .rect(cornerRadius: 12))
+          }
+          ForEach(store.fundingBoardOpportunities) { presentation in
+            opportunityCard(presentation)
+          }
+        }
+        .padding(18)
+      }
+      .background(Color(red: 0.055, green: 0.060, blue: 0.065))
+      .navigationTitle("Founder Funding Board")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .topBarTrailing) {
+          Button("Close", systemImage: "xmark") { dismiss() }
+            .accessibilityIdentifier("close-funding-board-viewer")
+        }
+      }
+    }
+  }
+
+  private var boardIntroduction: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      Text("GRANTS & FUNDRAISING")
+        .font(.caption.weight(.black))
+        .tracking(1.4)
+        .foregroundStyle(SoloTheme.mint)
+      Text("Pin the opportunities worth pursuing. Every application shows its deadline, visible requirements, and Founder Attention cost before you commit.")
+        .font(.subheadline)
+        .foregroundStyle(.secondary)
+      HStack {
+        Label("\(store.attentionRemaining) Attention", systemImage: "scope")
+        Spacer()
+        Label(store.finance.cash.formatted(.currency(code: "USD").precision(.fractionLength(0))), systemImage: "banknote.fill")
+      }
+      .font(.caption.weight(.semibold))
+    }
+    .padding(15)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(Color(red: 0.31, green: 0.19, blue: 0.105), in: .rect(cornerRadius: 14))
+    .overlay {
+      RoundedRectangle(cornerRadius: 14)
+        .stroke(contrast == .increased ? .white : .white.opacity(0.16), lineWidth: contrast == .increased ? 2 : 1)
+    }
+  }
+
+  private func opportunityCard(_ presentation: FundingOpportunityPresentation) -> some View {
+    let opportunity = presentation.opportunity
+    return VStack(alignment: .leading, spacing: 12) {
+      HStack(alignment: .top, spacing: 10) {
+        Image(systemName: opportunity.kind.symbol)
+          .font(.headline)
+          .foregroundStyle(kindTone(opportunity.kind))
+          .frame(width: 38, height: 38)
+          .background(kindTone(opportunity.kind).opacity(0.12), in: .rect(cornerRadius: 9))
+        VStack(alignment: .leading, spacing: 3) {
+          Text(opportunity.kind.title.uppercased())
+            .font(.caption2.weight(.black))
+            .tracking(1)
+            .foregroundStyle(kindTone(opportunity.kind))
+          Text(opportunity.name).font(.headline.weight(.bold))
+          Text(opportunity.amountLabel).font(.title3.weight(.black))
+        }
+        Spacer(minLength: 0)
+        Text(presentation.status.title.uppercased())
+          .font(.caption2.weight(.black))
+          .foregroundStyle(statusTone(presentation.status))
+          .padding(.horizontal, 8)
+          .padding(.vertical, 5)
+          .background(statusTone(presentation.status).opacity(0.12), in: .capsule)
+      }
+
+      Text(opportunity.summary)
+        .font(.subheadline)
+        .foregroundStyle(.secondary)
+
+      VStack(alignment: .leading, spacing: 7) {
+        ForEach(presentation.requirements) { requirement in
+          HStack(spacing: 8) {
+            Image(systemName: requirement.isMet ? "checkmark.circle.fill" : "circle")
+              .foregroundStyle(requirement.isMet ? SoloTheme.mint : .secondary)
+            Text(requirement.requirement.metric.title)
+            Spacer()
+            Text(requirement.valueLabel).foregroundStyle(.secondary)
+          }
+          .font(.caption)
+        }
+      }
+
+      HStack {
+        Label("Deadline: \(opportunity.deadlineLabel)", systemImage: "calendar")
+        Spacer()
+        Label("\(opportunity.founderAttentionCost) Attention", systemImage: "scope")
+      }
+      .font(.caption2.weight(.semibold))
+      .foregroundStyle(.secondary)
+
+      Text(opportunity.terms)
+        .font(.caption)
+        .foregroundStyle(.secondary)
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.white.opacity(0.045), in: .rect(cornerRadius: 9))
+
+      HStack {
+        Text(presentation.statusDetail)
+          .font(.caption.weight(.semibold))
+          .foregroundStyle(statusTone(presentation.status))
+        Spacer(minLength: 12)
+        actionButton(presentation)
+      }
+    }
+    .padding(15)
+    .background(Color.black.opacity(0.32), in: .rect(cornerRadius: 15))
+    .overlay {
+      RoundedRectangle(cornerRadius: 15)
+        .stroke(contrast == .increased ? .white : .white.opacity(0.14), lineWidth: contrast == .increased ? 2 : 1)
+    }
+    .accessibilityElement(children: .contain)
+  }
+
+  @ViewBuilder
+  private func actionButton(_ presentation: FundingOpportunityPresentation) -> some View {
+    switch presentation.status {
+    case .eligible:
+      Button("Apply") {
+        if store.pursueFundingOpportunity(id: presentation.id) {
+          feedback = "\(presentation.opportunity.name) is now being pursued."
+        } else {
+          feedback = store.alertMessage
+        }
+      }
+      .buttonStyle(.borderedProminent)
+      .tint(SoloTheme.mint)
+      .disabled(!presentation.canApply)
+      .accessibilityHint("Uses \(presentation.opportunity.founderAttentionCost) Founder Attention.")
+    case .pursuing where presentation.canResolve:
+      Button("Review response") {
+        if store.resolveFundingOpportunity(id: presentation.id) {
+          feedback = "\(presentation.opportunity.amountLabel) entered the company account."
+        } else {
+          feedback = store.alertMessage
+        }
+      }
+      .buttonStyle(.borderedProminent)
+      .tint(SoloTheme.cyan)
+    default:
+      EmptyView()
+    }
+  }
+
+  private func kindTone(_ kind: FundingOpportunityKind) -> Color {
+    kind == .grant ? SoloTheme.mint : Color(red: 0.72, green: 0.35, blue: 0.55)
+  }
+
+  private func statusTone(_ status: FundingOpportunityStatus) -> Color {
+    switch status {
+    case .locked: .gray
+    case .available: Color(red: 0.60, green: 0.50, blue: 0.82)
+    case .eligible: SoloTheme.mint
+    case .pursuing: SoloTheme.cyan
+    case .resolved: .green
+    case .expired: SoloTheme.coral
+    }
+  }
+}

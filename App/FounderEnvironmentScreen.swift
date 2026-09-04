@@ -432,6 +432,7 @@ enum FounderEnvironmentWorldAnchor: String, CaseIterable, Sendable {
   case founderDeskFloorSide
   case founderCommandDesk
   case mainVentilationFan
+  case fundingBoard
   case signalTV
 }
 
@@ -492,6 +493,11 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
       .founderDeskFloorSide: CGPoint(x: 870, y: 710),
       .founderCommandDesk: CGPoint(x: 535, y: 635),
       .mainVentilationFan: CGPoint(x: 680, y: 112),
+      // The Funding Board occupies the far-left planning wall, opposite
+      // Signal TV and physically clear of the garage-door frame. Free Look
+      // reveals the complete board on regular-width layouts while compact
+      // layouts retain a readable, tappable portion at the left boundary.
+      .fundingBoard: CGPoint(x: 280, y: 160),
       // Keep the television above the rear-door header so both architectural
       // objects remain independently readable during the rightward look.
       .signalTV: CGPoint(x: 1_100, y: 132)
@@ -537,7 +543,7 @@ struct FounderEnvironmentLayout: Equatable, Sendable {
 
   func depthScale(for anchor: FounderEnvironmentWorldAnchor) -> CGFloat {
     switch anchor {
-    case .garageEntrance, .rearGarageDoor, .storage, .mainVentilationFan, .signalTV: 0.78
+    case .garageEntrance, .rearGarageDoor, .storage, .mainVentilationFan, .fundingBoard, .signalTV: 0.78
     case .auroraStation: 0.90
     case .stacksStation: 0.84
     case .brioStation: 0.91
@@ -676,6 +682,49 @@ struct SignalTVHotspotLayout: Equatable, Sendable {
   }
 }
 
+/// Keeps the physical planning board and its Free Look target on the same
+/// upper-left wall anchor across compact iPhone and regular-width layouts.
+struct FundingBoardHotspotLayout: Equatable, Sendable {
+  static let unscaledSize = CGSize(width: 276, height: 188)
+  static let activationSize = CGSize(width: 112, height: 48)
+
+  var viewportSize: CGSize
+
+  func frame(camera: FounderEnvironmentCameraState) -> CGRect {
+    let layout = FounderEnvironmentLayout(viewportSize: viewportSize)
+    let scale = layout.depthScale(for: .fundingBoard) * layout.scale
+    let size = CGSize(
+      width: Self.unscaledSize.width * scale,
+      height: Self.unscaledSize.height * scale
+    )
+    let position = layout.viewportPosition(for: .fundingBoard, camera: camera, layer: .background)
+    return CGRect(
+      x: position.x - size.width / 2,
+      y: position.y - size.height / 2,
+      width: max(44, size.width),
+      height: max(44, size.height)
+    )
+  }
+
+  func isSelectable(camera: FounderEnvironmentCameraState) -> Bool {
+    let target = activationFrame(camera: camera)
+    return target.width >= 44 && target.height >= 44
+  }
+
+  func activationFrame(camera: FounderEnvironmentCameraState) -> CGRect {
+    let visibleBoard = frame(camera: camera)
+      .intersection(CGRect(origin: .zero, size: viewportSize))
+    let width = min(Self.activationSize.width, visibleBoard.width)
+    let height = min(Self.activationSize.height, visibleBoard.height)
+    return CGRect(
+      x: visibleBoard.maxX - width,
+      y: visibleBoard.maxY - height,
+      width: width,
+      height: height
+    )
+  }
+}
+
 /// Shared world geometry keeps the rear-wall door's rendered body and its
 /// accessibility landmark in lockstep across compact iPhone and iPad scenes.
 struct FounderGarageDoorLayout: Equatable, Sendable {
@@ -726,6 +775,7 @@ struct FounderEnvironmentProjection: Equatable, Sendable {
   var period: OperatingCalendar.Period = .morning
   var visibleEvent: FounderGarageVisibleEvent? = nil
   var signalTVEvents: [PublicMediaEvent] = []
+  var fundingOpportunities: [FundingOpportunityPresentation] = []
 
   var spatialPresentation: CompanySpatialPresentation { .map(facility) }
   var garageIdentity: FounderGarageIdentityProjection { .derive(spatialPresentation) }
@@ -811,6 +861,7 @@ struct FounderEnvironmentRendererView: View {
       practicalLighting(size: size, layout: layout)
       livingElectricalLayer(size: size, layout: layout)
       garageArchitecture(size: size, layout: layout)
+      fundingBoardLayer(layout: layout)
       signalTVLayer(layout: layout)
       groundingShadows(size: size, layout: layout)
       founderRecoveryZone(size: size, layout: layout)
@@ -909,6 +960,16 @@ struct FounderEnvironmentRendererView: View {
     )
     .scaleEffect(layout.depthScale(for: .signalTV) * layout.scale)
     .position(layout.viewportPosition(for: .signalTV, camera: camera, layer: .background))
+    .allowsHitTesting(false)
+  }
+
+  private func fundingBoardLayer(layout: FounderEnvironmentLayout) -> some View {
+    FounderFundingBoardPhysicalView(
+      opportunities: projection.fundingOpportunities,
+      increasedContrast: increasedContrast
+    )
+    .scaleEffect(layout.depthScale(for: .fundingBoard) * layout.scale)
+    .position(layout.viewportPosition(for: .fundingBoard, camera: camera, layer: .background))
     .allowsHitTesting(false)
   }
 

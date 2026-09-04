@@ -444,6 +444,61 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     XCTAssertEqual(FounderDeskLayoutPolicy.layout(regularWidth: true, accessibilityText: false, height: 800), .spatialRegular)
   }
 
+  func testFundingBoardUsesCanonicalUpperLeftWallAnchor() throws {
+    for size in [
+      CGSize(width: 390, height: 844),
+      CGSize(width: 440, height: 956),
+      CGSize(width: 820, height: 1_180)
+    ] {
+      let layout = FounderEnvironmentLayout(viewportSize: size)
+      let board = try XCTUnwrap(layout.anchors[.fundingBoard])
+      let fan = try XCTUnwrap(layout.anchors[.mainVentilationFan])
+      let television = try XCTUnwrap(layout.anchors[.signalTV])
+      XCTAssertLessThan(board.x, fan.x)
+      XCTAssertLessThan(fan.x, television.x)
+      XCTAssertLessThanOrEqual(board.x, 280)
+      XCTAssertLessThan(board.y, 200)
+    }
+  }
+
+  func testFundingBoardHotspotIsReadableAndClearsGarageDoorAcrossIPhoneAndIPad() {
+    let leftLook = FounderEnvironmentCameraState(horizontalLook: -1, mode: .freeLook)
+    for size in [
+      CGSize(width: 390, height: 844),
+      CGSize(width: 440, height: 956),
+      CGSize(width: 820, height: 1_180)
+    ] {
+      let hotspot = FundingBoardHotspotLayout(viewportSize: size)
+      let frame = hotspot.frame(camera: leftLook)
+      let activationFrame = hotspot.activationFrame(camera: leftLook)
+      let doorFrame = FounderGarageDoorLayout(viewportSize: size).frame(camera: leftLook)
+      let visibleFrame = frame.intersection(CGRect(origin: .zero, size: size))
+      XCTAssertTrue(hotspot.isSelectable(camera: leftLook))
+      XCTAssertGreaterThanOrEqual(frame.width, 44)
+      XCTAssertGreaterThanOrEqual(frame.height, 44)
+      XCTAssertGreaterThanOrEqual(visibleFrame.width / frame.width, 0.60)
+      XCTAssertLessThan(frame.maxX, doorFrame.minX)
+      XCTAssertGreaterThanOrEqual(activationFrame.width, 44)
+      XCTAssertGreaterThanOrEqual(activationFrame.height, 44)
+      XCTAssertTrue(CGRect(origin: .zero, size: size).contains(activationFrame))
+      if size.width >= 700 {
+        XCTAssertEqual(visibleFrame.width, frame.width, accuracy: 0.001)
+      }
+    }
+  }
+
+  func testFundingBoardFounderCopyContainsNoHiddenSimulationTruth() {
+    let text = FundingBoardCatalog.opportunities.flatMap { opportunity in
+      [opportunity.name, opportunity.summary, opportunity.terms]
+        + opportunity.requirements.map { $0.metric.title }
+    }
+    .joined(separator: " ")
+    .lowercased()
+    for forbidden in ["actual quality", "overclaim", "drift", "verification", "seed", "probability", "deterministic baseline"] {
+      XCTAssertFalse(text.contains(forbidden), "Funding Board leaked \(forbidden)")
+    }
+  }
+
   func testRearGarageDoorIsDiscoverableAtNeutralFreeLookOnIPhoneAndIPad() {
     let camera = FounderEnvironmentCameraState(mode: .freeLook)
     for size in [CGSize(width: 402, height: 874), CGSize(width: 1_024, height: 1_366)] {

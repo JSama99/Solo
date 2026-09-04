@@ -38,4 +38,81 @@ final class CompanyFinanceTests: XCTestCase {
     XCTAssertTrue(finance.apply(.init(id: "sale", kind: .revenue, amount: 400, category: nil, simulationDay: 1, source: "Customer", isRecurring: false, agentID: nil, headquarters: nil)))
     XCTAssertEqual(finance.runwayLabel(fallbackDailyBurn: 0), "Cash-flow positive")
   }
+
+  func testLegacyFinanceDecodesWithEmptyFundingApplications() throws {
+    let legacy = """
+    {
+      "cash": 900,
+      "capitalRaised": 1200,
+      "lifetimeRevenue": 300,
+      "revenueToday": 0,
+      "revenueThisSprint": 0,
+      "transactions": [],
+      "appliedTransactionIDs": []
+    }
+    """
+    let finance = try JSONDecoder().decode(CompanyFinance.self, from: Data(legacy.utf8))
+    XCTAssertEqual(finance.cash, 900)
+    XCTAssertTrue(finance.fundingApplications.isEmpty)
+  }
+
+  func testFundingApplicationLifecycleIsStableAndIdempotent() {
+    var finance = CompanyFinance()
+    XCTAssertTrue(finance.beginFundingApplication(opportunityID: "pioneer-ai-grant", careerSprint: 1))
+    XCTAssertFalse(finance.beginFundingApplication(opportunityID: "pioneer-ai-grant", careerSprint: 1))
+    XCTAssertEqual(finance.fundingApplications.first?.status, .pursuing)
+    XCTAssertTrue(finance.resolveFundingApplication(opportunityID: "pioneer-ai-grant", careerSprint: 2))
+    XCTAssertFalse(finance.resolveFundingApplication(opportunityID: "pioneer-ai-grant", careerSprint: 2))
+    XCTAssertEqual(finance.fundingApplications.first?.status, .resolved)
+  }
+
+  func testFundingBoardUsesOnlyVisibleMetricsAndFixedCareerWindows() throws {
+    let snapshot = FundingBoardSnapshot(
+      revenue: 500,
+      trust: 68,
+      momentum: 18,
+      coverage: 0,
+      venture: 1,
+      evidenceCount: 0,
+      careerSprint: 1,
+      attentionRemaining: 2
+    )
+    let first = FundingBoardEngine.presentations(snapshot: snapshot, applications: [])
+    let second = FundingBoardEngine.presentations(snapshot: snapshot, applications: [])
+    XCTAssertEqual(first, second)
+    XCTAssertEqual(try XCTUnwrap(first.first(where: { $0.id == "pioneer-ai-grant" })).status, .eligible)
+    XCTAssertEqual(try XCTUnwrap(first.first(where: { $0.id == "garage-innovation-fund" })).status, .locked)
+
+    var late = snapshot
+    late.careerSprint = 9
+    XCTAssertEqual(
+      try XCTUnwrap(FundingBoardEngine.presentations(snapshot: late, applications: []).first(where: { $0.id == "garage-innovation-fund" })).status,
+      .expired
+    )
+  }
+
+  func testPursuingOpportunityBecomesResolvableOnlyAfterNextSprint() throws {
+    let application = FundingApplicationRecord(
+      opportunityID: "pioneer-ai-grant",
+      status: .pursuing,
+      appliedCareerSprint: 1,
+      resolvedCareerSprint: nil
+    )
+    var snapshot = FundingBoardSnapshot(
+      revenue: 500,
+      trust: 68,
+      momentum: 18,
+      coverage: 0,
+      venture: 1,
+      evidenceCount: 0,
+      careerSprint: 1,
+      attentionRemaining: 1
+    )
+    let sameSprint = try XCTUnwrap(FundingBoardEngine.presentations(snapshot: snapshot, applications: [application]).first)
+    XCTAssertEqual(sameSprint.status, .pursuing)
+    XCTAssertFalse(sameSprint.canResolve)
+    snapshot.careerSprint = 2
+    let nextSprint = try XCTUnwrap(FundingBoardEngine.presentations(snapshot: snapshot, applications: [application]).first)
+    XCTAssertTrue(nextSprint.canResolve)
+  }
 }

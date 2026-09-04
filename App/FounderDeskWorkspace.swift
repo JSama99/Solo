@@ -18,7 +18,7 @@ struct FounderDeskWorkspace: View {
   @State private var computerRequest: FounderComputerWorkspaceRequest?
   @State private var selectionFeedback = 0
   @State private var hasUsedFreeLook = false
-  @State private var showsSignalTVViewer = false
+  @State private var selectedGarageViewer: FounderGarageViewer?
   @State private var selectedEnvironmentalAction: FounderEnvironmentalAction?
   @State private var deviceStates = Dictionary(
     uniqueKeysWithValues: FounderDeskDevice.allCases.map { ($0, FounderPhysicalDeviceState.idle) }
@@ -100,8 +100,15 @@ struct FounderDeskWorkspace: View {
       .accessibilityAction(named: Text("Look Down")) { moveCamera(horizontal: 0, vertical: -0.30) }
       .accessibilityAction(named: Text("Return to Founder Computer")) { select(.computer) }
     }
-    .sheet(isPresented: $showsSignalTVViewer) {
-      SignalTVViewer(events: environmentProjection.signalTVEvents, coverage: store.stats.coverage)
+    .sheet(item: $selectedGarageViewer, onDismiss: {
+      selectedGarageViewer = nil
+    }) { viewer in
+      switch viewer {
+      case .signalTV:
+        SignalTVViewer(events: environmentProjection.signalTVEvents, coverage: store.stats.coverage)
+      case .fundingBoard:
+        FounderFundingBoardViewer(store: store)
+      }
     }
     .sheet(item: $selectedEnvironmentalAction) { action in
       FounderEnvironmentalActionCard(store: store, action: action) {
@@ -152,7 +159,8 @@ struct FounderDeskWorkspace: View {
         coverage: store.stats.coverage,
         venture: store.venture,
         sprint: store.sprint
-      )
+      ),
+      fundingOpportunities: store.fundingBoardOpportunities
     )
   }
 
@@ -221,8 +229,12 @@ struct FounderDeskWorkspace: View {
         deviceButton(.phone, style: .wide, visible: true, motion: motion)
         deviceButton(.tablet, style: .wide, visible: true, motion: motion)
         deviceButton(.server, style: .wide, visible: true, motion: motion)
-        Button("Open Signal TV", systemImage: "tv") { showsSignalTVViewer = true }
+        Button("Open Signal TV", systemImage: "tv") { selectedGarageViewer = .signalTV }
           .buttonStyle(.bordered)
+        Button("Open Founder Funding Board", systemImage: "pin.fill") { selectedGarageViewer = .fundingBoard }
+          .buttonStyle(.bordered)
+          .accessibilityHint("Opens visible grant and fundraising opportunities.")
+          .accessibilityIdentifier("funding-board-hotspot")
         environmentalButton(.rest)
         environmentalButton(.train)
       }
@@ -275,6 +287,8 @@ struct FounderDeskWorkspace: View {
       }
 
       signalTVHotspot(size: size)
+
+      fundingBoardHotspot(size: size)
 
       environmentalHotspots(size: size)
 
@@ -335,7 +349,7 @@ struct FounderDeskWorkspace: View {
     let visible = hotspot.isSelectable(camera: navigation.camera)
     return Button {
       selectionFeedback += 1
-      showsSignalTVViewer = true
+      selectedGarageViewer = .signalTV
     } label: {
       Color.clear
         .contentShape(.rect(cornerRadius: 10))
@@ -360,6 +374,35 @@ struct FounderDeskWorkspace: View {
     .accessibilityValue(environmentProjection.signalTVEvents.first.map { "\($0.program.rawValue). \($0.headline)" } ?? "Market Pulse")
     .accessibilityHint("Opens the current broadcast, Market Pulse, Rival Watch, and recent public headlines.")
     .accessibilityIdentifier("signal-tv-hotspot")
+  }
+
+  private func fundingBoardHotspot(size: CGSize) -> some View {
+    let hotspot = FundingBoardHotspotLayout(viewportSize: size)
+    let frame = hotspot.activationFrame(camera: navigation.camera)
+    let visible = hotspot.isSelectable(camera: navigation.camera)
+    let actionable = store.fundingBoardOpportunities.filter { $0.status == .eligible || $0.canResolve }.count
+    return Button {
+      selectionFeedback += 1
+      selectedGarageViewer = .fundingBoard
+    } label: {
+      Label("Funding", systemImage: "pin.fill")
+        .font(.caption2.weight(.black))
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(red: 0.20, green: 0.12, blue: 0.07).opacity(0.92), in: .capsule)
+        .overlay { Capsule().stroke(.white.opacity(0.30), lineWidth: 1) }
+        .contentShape(.capsule)
+    }
+    .buttonStyle(.plain)
+    .frame(width: frame.width, height: frame.height)
+    .position(x: frame.midX, y: frame.midY)
+    .opacity(visible ? 1 : 0)
+    .allowsHitTesting(visible && navigation.lookOutActive)
+    .accessibilityHidden(!visible || !navigation.lookOutActive)
+    .accessibilityLabel("Founder Funding Board")
+    .accessibilityValue("\(actionable) opportunities ready for attention")
+    .accessibilityHint("Opens grants, fundraising opportunities, deadlines, and visible eligibility requirements.")
+    .accessibilityIdentifier("funding-board-hotspot")
   }
 
   private func spatialStyle(for device: FounderDeskDevice) -> DeskDeviceStyle {
@@ -633,6 +676,13 @@ struct FounderDeskWorkspace: View {
       }
     }
   }
+}
+
+private enum FounderGarageViewer: String, Identifiable {
+  case signalTV
+  case fundingBoard
+
+  var id: String { rawValue }
 }
 
 private enum DeskDeviceStyle {
