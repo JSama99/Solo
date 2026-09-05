@@ -5,10 +5,12 @@ struct FounderComputerScreen: View {
   var store: GameStore
   var presentation: PresentationCoordinator
   var workspaceRequest: FounderComputerWorkspaceRequest? = nil
+  var isFocused = true
 
   @Environment(FounderProgressionStore.self) private var progression
   @Environment(AppSettingsStore.self) private var settings
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.scenePhase) private var scenePhase
   @State private var commandInteraction = CompanyCommandInteractionState()
   @State private var expandedWorkstationAgentID: String?
   @State private var detailDestination: DetailedWorkstationDestination?
@@ -17,6 +19,8 @@ struct FounderComputerScreen: View {
   @AccessibilityFocusState private var accessibilityWorkstationID: String?
   @State private var assignmentDestination: AssignmentDestination?
   @State private var workSessionDestination: WorkSessionDestination?
+  @State private var pendingWorkSessionReview: UUID?
+  @State private var workSessionDismissed = false
   @State private var restCandidate: RestCandidate?
   @State private var evidenceExpanded = false
   @State private var resolutionTick = 0
@@ -25,6 +29,7 @@ struct FounderComputerScreen: View {
   @State private var assignmentArrivalAgentID: String?
   @State private var activeReviewTaskID: UUID?
   @State private var reviewStage = 0
+  @State private var reviewFeedbackEventID: UUID?
   @State private var resolutionFocus: TaskResolutionChoice?
   @State private var evidencePulse = false
   @State private var hasPresentedRoster = false
@@ -38,7 +43,10 @@ struct FounderComputerScreen: View {
   var body: some View {
     ScrollViewReader { proxy in
       ScrollView {
-        LazyVStack(spacing: 16) {
+        // These three sections have stable outer geometry. The compact floor
+        // owns lazy station layout; nesting it in another lazy stack can keep
+        // SwiftUI recalculating visible placements after an iPhone scroll.
+        VStack(spacing: 16) {
           AIOperationsFloor(
             agents: livingAgentProjections,
             tasks: store.tasks,
@@ -122,7 +130,22 @@ struct FounderComputerScreen: View {
         announce(feedback)
       }
     }
-    .sheet(item: $workSessionDestination) { destination in
+    .onChange(of: scenePhase) { _, phase in
+      if phase != .active { reviewFeedbackEventID = nil }
+      continueDismissedWorkSession()
+    }
+    .onChange(of: isFocused) { _, focused in
+      if !focused { reviewFeedbackEventID = nil }
+      continueDismissedWorkSession()
+    }
+    .onChange(of: canonicalReviewRevealStep) { _, step in
+      reviewStage = step
+      finishReviewFeedbackIfReady()
+    }
+    .sheet(item: $workSessionDestination, onDismiss: {
+      workSessionDismissed = true
+      continueDismissedWorkSession()
+    }) { destination in
       Group {
         switch store.workSessionFamily(taskID: destination.taskID) {
         case .evidenceTriage:
@@ -201,26 +224,19 @@ struct FounderComputerScreen: View {
         assignmentArrivalAgentID = nil
       }
       if reduceMotion { presentation.skipPresentation(for: agentID) }
-    case .review(_, let taskID, let agentID, let result, let evidenceChanged):
+    case .review(let eventID, let taskID, let agentID, _, let evidenceChanged):
       settings.playFeedback(.review)
       // Build 32.4: review presentation stays in the overview scene. It records
       // the presented agent but never opens the agent-focus layout.
       commandInteraction.observePresentation(agentID: agentID)
       activeReviewTaskID = taskID
+      reviewFeedbackEventID = eventID
       reviewStage = reduceMotion ? 5 : 1
       if evidenceChanged { evidencePulse.toggle() }
       if reduceMotion {
         presentation.skipPresentation(for: agentID)
-        playVerificationFeedback(result)
+        finishReviewFeedbackIfReady()
         return
-      }
-      Task { @MainActor in
-        for stage in 2...5 {
-          try? await Task.sleep(for: .milliseconds(320))
-          guard activeReviewTaskID == taskID else { return }
-          withAnimation(SoloMotion.arrival) { reviewStage = stage }
-        }
-        playVerificationFeedback(result)
       }
     case .sprint:
       commandInteraction.clearAfterSprintCommit()
@@ -354,7 +370,8 @@ struct FounderComputerScreen: View {
       task: task(for: agentID),
       presentation: presentation.presentation(for: agentID),
       isResting: store.restingAgentIDs.contains(agentID),
-      attentionRemaining: store.attentionRemaining
+      attentionRemaining: store.attentionRemaining,
+      completedWorkSession: task(for: agentID).map { store.workSession(for: $0.id)?.completed == true } ?? false
     )
   }
   private func task(for agentID: String) -> SoloTask? { store.tasks.first { $0.assignedAgentID == agentID } }
@@ -447,8 +464,9 @@ struct FounderComputerScreen: View {
     guard availability(for: id).canReview, let task = task(for: id) else { return }
     if let family = store.workSessionFamily(taskID: task.id) {
       guard store.prepareWorkSession(taskID: task.id, expectedFamily: family) else { return }
+      workSessionDismissed = false
       workSessionDestination = .init(taskID: task.id)
-      let agentName = family == .systemsReview ? "Stacks" : "Aurora"
+      let agentName = agent(for: id)?.name ?? id.capitalized
       announce("\(agentName) work complete. Choose Review Work or Delegate.")
       return
     }
@@ -456,7 +474,18 @@ struct FounderComputerScreen: View {
   }
 
   private func finishWorkSessionReview(taskID: UUID) {
+    guard pendingWorkSessionReview == nil,
+          workSessionDestination?.taskID == taskID,
+          store.workSession(for: taskID)?.completed == true else { return }
+    pendingWorkSessionReview = taskID
+  }
+
+  private func continueDismissedWorkSession() {
+    guard workSessionDismissed, workSessionDestination == nil, scenePhase == .active, isFocused,
+          let taskID = pendingWorkSessionReview else { return }
+    pendingWorkSessionReview = nil
     guard let task = store.tasks.first(where: { $0.id == taskID }),
+          !task.isReviewed,
           let agentID = task.assignedAgentID,
           store.workSession(for: taskID)?.completed == true else { return }
     startCanonicalReview(task: task, agentID: agentID)
@@ -469,12 +498,7 @@ struct FounderComputerScreen: View {
       activeReviewTaskID = task.id
       reviewStage = 0
     }
-    Task { @MainActor in
-      if !reduceMotion { try? await Task.sleep(for: .milliseconds(150)) }
-      guard activeReviewTaskID == task.id,
-            self.task(for: id)?.id == task.id else { return }
-      presentation.review(taskID: task.id, in: store)
-    }
+    presentation.review(taskID: task.id, in: store)
     announce("Founder review started.")
   }
 
@@ -519,7 +543,19 @@ struct FounderComputerScreen: View {
     }
   }
 
-  private func playVerificationFeedback(_ result: VisibleTaskResult) {
+  private var canonicalReviewRevealStep: Int {
+    guard let activeReviewTaskID,
+          let agentID = store.tasks.first(where: { $0.id == activeReviewTaskID })?.assignedAgentID else { return 0 }
+    return presentation.presentation(for: agentID)?.reviewRevealStep ?? 0
+  }
+
+  private func finishReviewFeedbackIfReady() {
+    guard canonicalReviewRevealStep == 5,
+          case .review(let eventID, let taskID, _, let result, _) = presentation.latestEvent,
+          taskID == activeReviewTaskID, reviewFeedbackEventID == eventID else { return }
+    reviewFeedbackEventID = nil
+    guard scenePhase == .active, isFocused,
+          settings.audioContext == .founderReview else { return }
     switch result.verificationState {
     case .verified, .confirmed:
       settings.playFeedback(.verificationSuccess)
@@ -528,6 +564,8 @@ struct FounderComputerScreen: View {
     case .reported, .unverified:
       break
     }
+    // Only restore the context we still own; backgrounding/navigation cancel
+    // the pending feedback and never get overwritten by a delayed return.
     settings.setAudioContext(.companyCommand)
   }
 

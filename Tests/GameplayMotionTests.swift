@@ -265,6 +265,66 @@ final class GameplayMotionTests: XCTestCase {
     XCTAssertEqual(presentedStation.semanticState, .working)
   }
 
+  func testAuroraCompletedSessionRecoversAfterReloadWithoutAttentionOrReplay() throws {
+    try assertCompletedSessionRecovery(agentID: "aurora", role: .research)
+  }
+
+  func testStacksCompletedSessionRecoversAfterReloadWithoutAttentionOrReplay() throws {
+    try assertCompletedSessionRecovery(agentID: "stacks", role: .engineering)
+  }
+
+  func testBrioCompletedSessionRecoversAfterReloadWithoutAttentionOrReplay() throws {
+    try assertCompletedSessionRecovery(agentID: "brio", role: .marketing)
+  }
+
+  private func assertCompletedSessionRecovery(agentID: String, role: AgentRole) throws {
+    let store = makeStore(seed: 9_120)
+    if let choice = store.activeDilemma?.choices.first { store.selectDilemmaChoice(choice.id) }
+    store.tasks[0].role = role
+    store.tasks[0].urgency = .important
+    let id = store.tasks[0].id
+    store.assign(agentID: agentID, to: id)
+    for agent in store.agents where agent.id != agentID { store.restAgent(agentID: agent.id) }
+    XCTAssertTrue(store.prepareWorkSession(taskID: id))
+    XCTAssertFalse(CompanyCommandAgentAvailability.derive(
+      sprintPhase: store.sprintPhase, task: store.tasks[0], presentation: nil,
+      isResting: false, attentionRemaining: 0, completedWorkSession: false
+    ).canReview)
+    XCTAssertTrue(store.pursueFundingOpportunity(id: "pioneer-ai-grant"))
+    XCTAssertTrue(store.delegateWorkSession(taskID: id))
+    XCTAssertEqual(store.attentionRemaining, 0)
+    let rng = store.randomNumberGenerator
+    let restored = GameStore()
+    restored.continueCareer()
+    let task = try XCTUnwrap(restored.tasks.first { $0.id == id })
+    XCTAssertTrue(restored.workSession(for: id)?.completed == true)
+    XCTAssertFalse(task.isReviewed)
+    XCTAssertTrue(CompanyCommandAgentAvailability.derive(
+      sprintPhase: restored.sprintPhase, task: task, presentation: nil,
+      isResting: false, attentionRemaining: restored.attentionRemaining,
+      completedWorkSession: restored.workSession(for: id)?.completed == true
+    ).canReview)
+    let presentation = PresentationCoordinator()
+    presentation.review(taskID: id, in: restored)
+    XCTAssertEqual(presentation.presentation(for: agentID)?.reviewRevealStep, 0)
+    let projection = LivingAgentProjection.derive(
+      agent: try XCTUnwrap(restored.agents.first { $0.id == agentID }),
+      task: restored.tasks.first { $0.id == id }, presentation: presentation.presentation(for: agentID),
+      isResting: false, isSelected: false, founderStats: restored.stats
+    )
+    XCTAssertTrue(projection.conditions.intersection([.verified, .overclaimed, .drifting, .evidenceIncomplete]).isEmpty)
+    let event = presentation.latestEvent
+    let energy = restored.stats.energy
+    let evidence = restored.evidence.count
+    presentation.review(taskID: id, in: restored)
+    XCTAssertEqual(presentation.latestEvent, event)
+    XCTAssertEqual(restored.evidence.count, evidence)
+    XCTAssertEqual(restored.stats.energy, energy)
+    XCTAssertEqual(restored.attentionRemaining, 0)
+    XCTAssertEqual(restored.randomNumberGenerator, rng)
+    XCTAssertEqual(GameStore.saveVersion, 19)
+  }
+
   func testFounderReviewRevealsFiveFactsInOrder() async throws {
     let store = makeStore(seed: 9_105)
     let task = try XCTUnwrap(store.tasks.first)

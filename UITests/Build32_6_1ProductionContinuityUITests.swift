@@ -1,6 +1,63 @@
 import XCTest
 
 final class Build32_6_2ProductionContinuityUITests: XCTestCase {
+  func testAuroraContinuousWorkSessionReturn() throws {
+    try exerciseWorkSessionReturn(argument: "--work-session-qa-handoff", title: "Evidence Triage")
+  }
+
+  func testStacksContinuousWorkSessionReturn() throws {
+    try exerciseWorkSessionReturn(argument: "--systems-review-qa-handoff", title: "Systems Review")
+  }
+
+  func testBrioContinuousWorkSessionReturn() throws {
+    try exerciseWorkSessionReturn(argument: "--campaign-calibration-qa-handoff", title: "Campaign Calibration")
+  }
+
+  private func exerciseWorkSessionReturn(argument: String, title: String) throws {
+    let app = XCUIApplication()
+    app.launchArguments = [argument]
+    app.launch()
+    let review = app.buttons["Open Founder Review"].firstMatch
+    for _ in 0..<8 where !review.isHittable { app.swipeUp() }
+    XCTAssertTrue(review.waitForExistence(timeout: 5))
+    review.tap()
+    XCTAssertTrue(app.navigationBars[title].waitForExistence(timeout: 5))
+    XCTAssertFalse(app.buttons["CONTINUE"].exists, "Unfinished sessions must not offer Continue")
+    let delegate = app.buttons["DELEGATE"]
+    for _ in 0..<6 where !delegate.isHittable { app.swipeUp() }
+    XCTAssertTrue(delegate.isHittable)
+    delegate.tap()
+    let next = app.buttons["CONTINUE"]
+    for _ in 0..<6 where !next.isHittable { app.swipeUp() }
+    XCTAssertTrue(next.waitForExistence(timeout: 5))
+    capture("\(title)_COMPLETED_BEFORE_RETURN", in: app)
+    // Reopen the completed sheet with zero Attention before continuing.
+    // The actual production callback, not a pre-reviewed fixture, must reveal it.
+    app.buttons["Close"].tap()
+    XCTAssertTrue(app.staticTexts["0/2"].firstMatch.exists, "Completion must exhaust the fixture's remaining Attention")
+    for _ in 0..<8 where !review.isHittable { app.swipeUp() }
+    XCTAssertTrue(review.isEnabled)
+    review.tap()
+    XCTAssertTrue(app.navigationBars[title].waitForExistence(timeout: 5))
+    for _ in 0..<6 where !next.isHittable { app.swipeUp() }
+    // Repeated production input must still dismiss and apply review only once.
+    next.doubleTap()
+    if argument.contains("campaign") {
+      XCUIDevice.shared.press(.home)
+      app.activate()
+    }
+    let dismissed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: app.navigationBars[title])
+    XCTAssertEqual(XCTWaiter.wait(for: [dismissed], timeout: 5), .completed)
+    let resolve = app.buttons["Resolve Founder Decision"].firstMatch
+    for _ in 0..<8 where !resolve.isHittable { app.swipeUp() }
+    XCTAssertTrue(resolve.waitForExistence(timeout: 5))
+    XCTAssertTrue(resolve.isEnabled)
+    XCTAssertTrue(app.staticTexts["Reviewed"].firstMatch.waitForExistence(timeout: 5))
+    XCTAssertFalse(app.buttons["CONTINUE"].exists)
+    capture("\(title)_DISMISSED_REVIEWED_PRODUCTION", in: app)
+    app.terminate()
+  }
+
   func testBrioCampaignCalibrationProductionSequence() throws {
     let phases: [(String, String, String)] = [
       ("choice", "REVIEW WORK", "BRIO_CAMPAIGN_01_WORK_COMPLETE"),

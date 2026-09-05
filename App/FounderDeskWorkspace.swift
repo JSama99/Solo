@@ -501,7 +501,8 @@ struct FounderDeskWorkspace: View {
         FounderComputerScreen(
           store: store,
           presentation: presentation,
-          workspaceRequest: computerRequest
+          workspaceRequest: computerRequest,
+          isFocused: navigation.selection == .device(.computer)
         )
       }
       focusedDevice(.phone, size: size) { TechComScreen(store: store) }
