@@ -10,6 +10,7 @@ struct SystemsReviewView: View {
   @Environment(\.dismiss) private var dismiss
   @State private var selectionTrigger = 0
   @State private var actionInFlight = false
+  @State private var isContinuing = false
 
   private var session: WorkSessionRecord? { store.workSession(for: taskID) }
   private var task: SoloTask? { store.tasks.first(where: { $0.id == taskID }) }
@@ -260,6 +261,8 @@ struct SystemsReviewView: View {
         .font(.footnote)
         .foregroundStyle(.secondary)
       Button {
+        guard !isContinuing else { return }
+        isContinuing = true
         onContinue()
         dismiss()
       } label: {
@@ -270,8 +273,8 @@ struct SystemsReviewView: View {
           .foregroundStyle(.black)
       }
       .buttonStyle(.plain)
+      .disabled(isContinuing)
     }
-    .onAppear { settings.playFeedback(.verificationRequest) }
   }
 
   private func submit(challenge: SystemsReviewChallenge) {
@@ -317,6 +320,7 @@ struct SystemsReviewView: View {
 
 #if DEBUG
 enum SystemsReviewQAPhase: String, CaseIterable {
+  case handoff
   case choice
   case active
   case selected
@@ -348,7 +352,12 @@ struct SystemsReviewQAHost: View {
     fixture.tasks[0].urgency = .important
     fixture.assign(agentID: "stacks", to: id)
     _ = fixture.prepareSystemsReview(taskID: id)
-    if phase != .choice {
+    if phase == .handoff {
+      _ = fixture.pursueFundingOpportunity(id: "pioneer-ai-grant")
+      if let choice = fixture.activeDilemma?.choices.first { fixture.selectDilemmaChoice(choice.id) }
+      for agent in fixture.agents where agent.id != "stacks" { fixture.restAgent(agentID: agent.id) }
+    }
+    if phase != .choice && phase != .handoff {
       _ = fixture.beginManualSystemsReview(taskID: id)
       let order = ["backup", "prepare", "migrate", "validate", "switch", "monitor"]
       let selectionCount = phase == .active ? 0 : phase == .selected ? 3 : order.count
@@ -366,7 +375,7 @@ struct SystemsReviewQAHost: View {
 
   var body: some View {
     Group {
-      if phase == .report {
+      if phase == .report || phase == .handoff {
         FounderComputerScreen(store: store, presentation: presentation)
       } else {
         SystemsReviewView(store: store, taskID: taskID) { }

@@ -10,6 +10,7 @@ struct EvidenceTriageView: View {
   @Environment(\.dismiss) private var dismiss
   @State private var decisionTrigger = 0
   @State private var actionInFlight = false
+  @State private var isContinuing = false
 
   private var session: WorkSessionRecord? { store.workSession(for: taskID) }
   private var task: SoloTask? { store.tasks.first(where: { $0.id == taskID }) }
@@ -202,6 +203,8 @@ struct EvidenceTriageView: View {
         .font(.footnote)
         .foregroundStyle(.secondary)
       Button {
+        guard !isContinuing else { return }
+        isContinuing = true
         onContinue()
         dismiss()
       } label: {
@@ -212,8 +215,8 @@ struct EvidenceTriageView: View {
           .foregroundStyle(.black)
       }
       .buttonStyle(.plain)
+      .disabled(isContinuing)
     }
-    .onAppear { settings.playFeedback(.verificationRequest) }
   }
 
   private func operationalPanel<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
@@ -288,6 +291,7 @@ struct EvidenceTriageProgress: Equatable, Sendable {
 
 #if DEBUG
 enum WorkSessionQAPhase: String, CaseIterable {
+  case handoff
   case choice
   case active
   case complete
@@ -319,7 +323,12 @@ struct WorkSessionQAHost: View {
     fixture.tasks[0].urgency = .important
     fixture.assign(agentID: "aurora", to: id)
     _ = fixture.prepareEvidenceTriage(taskID: id)
-    if phase != .choice {
+    if phase == .handoff {
+      _ = fixture.pursueFundingOpportunity(id: "pioneer-ai-grant")
+      if let choice = fixture.activeDilemma?.choices.first { fixture.selectDilemmaChoice(choice.id) }
+      for agent in fixture.agents where agent.id != "aurora" { fixture.restAgent(agentID: agent.id) }
+    }
+    if phase != .choice && phase != .handoff {
       _ = fixture.beginManualEvidenceTriage(taskID: id)
       if phase == .complete || phase == .report {
         let count = fixture.workSession(for: id)?.cards.count ?? 0
@@ -333,7 +342,7 @@ struct WorkSessionQAHost: View {
 
   var body: some View {
     Group {
-      if phase == .report {
+      if phase == .report || phase == .handoff {
         FounderComputerScreen(store: store, presentation: presentation)
       } else {
         EvidenceTriageView(store: store, taskID: taskID) { }

@@ -71,6 +71,33 @@ struct TechComRankingEntry: Identifiable, Equatable {
 enum TechComEngine {
   static let maximumHeadlinesPerSprint = 3
 
+  /// Reflects the canonical public ledger in Tech.com without writing a second
+  /// persisted headline or consuming simulation randomness.
+  static func mergedOwnCompanyHeadlines(
+    headlines: [TechComHeadline],
+    publicEvents: [PublicMediaEvent]
+  ) -> [TechComHeadline] {
+    var seenPublicIDs = Set<String>()
+    let publicHeadlines = publicEvents
+      .filter { $0.isPublic && $0.concernsPlayerCompany && seenPublicIDs.insert($0.id).inserted }
+      .map { event in
+        TechComHeadline(
+          id: stableHeadlineID(event.id),
+          category: .ownCompany,
+          text: event.headline,
+          venture: event.venture,
+          sprint: event.sprint,
+          publicEventID: event.id
+        )
+      }
+    let publicIDs = Set(publicHeadlines.compactMap(\.publicEventID))
+    let existing = headlines.filter {
+      $0.category == .ownCompany
+        && ($0.publicEventID.map { !publicIDs.contains($0) } ?? true)
+    }
+    return Array((publicHeadlines + existing).prefix(60))
+  }
+
   static func headlines(
     snapshot: TechComSnapshot,
     events: [PresentationCoordinator.Event],
@@ -133,5 +160,25 @@ enum TechComEngine {
       let template = choices.remove(at: index)
       return TechComHeadline(id: UUID(), category: .trend, text: template.resolve(["sprint": "\(snapshot.sprint)"]), venture: snapshot.venture, sprint: snapshot.sprint)
     }
+  }
+
+  private static func stableHeadlineID(_ eventID: String) -> UUID {
+    let source = Array(eventID.utf8)
+    var first: UInt64 = 14_695_981_039_346_656_037
+    var second: UInt64 = 10_995_116_282_11
+    for byte in source {
+      first = (first ^ UInt64(byte)) &* 1_099_511_628_211
+      second = (second ^ UInt64(byte &+ 31)) &* 1_099_511_628_211
+    }
+    return UUID(uuid: (
+      UInt8(truncatingIfNeeded: first >> 56), UInt8(truncatingIfNeeded: first >> 48),
+      UInt8(truncatingIfNeeded: first >> 40), UInt8(truncatingIfNeeded: first >> 32),
+      UInt8(truncatingIfNeeded: first >> 24), UInt8(truncatingIfNeeded: first >> 16),
+      UInt8(truncatingIfNeeded: first >> 8), UInt8(truncatingIfNeeded: first),
+      UInt8(truncatingIfNeeded: second >> 56), UInt8(truncatingIfNeeded: second >> 48),
+      UInt8(truncatingIfNeeded: second >> 40), UInt8(truncatingIfNeeded: second >> 32),
+      UInt8(truncatingIfNeeded: second >> 24), UInt8(truncatingIfNeeded: second >> 16),
+      UInt8(truncatingIfNeeded: second >> 8), UInt8(truncatingIfNeeded: second)
+    ))
   }
 }

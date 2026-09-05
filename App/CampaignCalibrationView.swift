@@ -10,6 +10,7 @@ struct CampaignCalibrationView: View {
   @Environment(\.dismiss) private var dismiss
   @State private var selectionTrigger = 0
   @State private var actionInFlight = false
+  @State private var isContinuing = false
 
   private var session: WorkSessionRecord? { store.workSession(for: taskID) }
   private var task: SoloTask? { store.tasks.first(where: { $0.id == taskID }) }
@@ -177,11 +178,17 @@ struct CampaignCalibrationView: View {
       panel(title: "CAMPAIGN CALIBRATION COMPLETE") {
         resultRow("Founder Review", session.founderReviewLabel)
         resultRow("Campaign Elements", session.path == .manualReview ? "3" : "Delegated")
-        resultRow("Founder Attention", session.path == .manualReview ? "-\(session.founderAttentionCost)" : "0")
+        resultRow("Founder Attention", "-\(session.founderAttentionCost)")
       }
       Text("Brio’s campaign report is ready. Underlying campaign quality and market response remain governed by the normal report and Hindsight flow.")
         .font(.footnote).foregroundStyle(.secondary)
-      actionButton("CONTINUE", symbol: "arrow.right", primary: true) { onContinue() }
+      actionButton("CONTINUE", symbol: "arrow.right", primary: true) {
+        guard !isContinuing else { return }
+        isContinuing = true
+        onContinue()
+        dismiss()
+      }
+      .disabled(isContinuing)
     }
   }
 
@@ -232,7 +239,7 @@ struct CampaignCalibrationView: View {
 }
 
 #if DEBUG
-enum CampaignCalibrationQAPhase: String, CaseIterable { case choice, audience, message, preview, complete, report }
+enum CampaignCalibrationQAPhase: String, CaseIterable { case choice, audience, message, preview, complete, report, handoff }
 
 struct CampaignCalibrationQAHost: View {
   @State private var store: GameStore
@@ -257,7 +264,12 @@ struct CampaignCalibrationQAHost: View {
     fixture.tasks[0].urgency = .important
     fixture.assign(agentID: "brio", to: id)
     _ = fixture.prepareCampaignCalibration(taskID: id)
-    if phase != .choice {
+    if phase == .handoff {
+      _ = fixture.pursueFundingOpportunity(id: "pioneer-ai-grant")
+      if let choice = fixture.activeDilemma?.choices.first { fixture.selectDilemmaChoice(choice.id) }
+      for agent in fixture.agents where agent.id != "brio" { fixture.restAgent(agentID: agent.id) }
+    }
+    if phase != .choice && phase != .handoff {
       _ = fixture.beginManualCampaignCalibration(taskID: id)
       if phase != .audience {
         _ = fixture.selectCampaignOption(taskID: id, slot: .audience, optionID: "alternate-audience")
@@ -277,7 +289,7 @@ struct CampaignCalibrationQAHost: View {
 
   var body: some View {
     Group {
-      if phase == .report {
+      if phase == .report || phase == .handoff {
         FounderComputerScreen(store: store, presentation: presentation)
       } else {
         CampaignCalibrationView(store: store, taskID: taskID) { }

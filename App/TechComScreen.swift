@@ -58,7 +58,10 @@ struct TechComScreen: View {
   }
 
   private var ownCompanyHeadlines: [TechComHeadline] {
-    store.techComHeadlines.filter { $0.category == .ownCompany }
+    TechComEngine.mergedOwnCompanyHeadlines(
+      headlines: store.techComHeadlines,
+      publicEvents: store.publicMediaEvents
+    )
   }
 
   private var trendHeadlines: [TechComHeadline] {

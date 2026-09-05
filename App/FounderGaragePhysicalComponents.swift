@@ -1143,6 +1143,7 @@ struct FounderFundingBoardPhysicalView: View {
 struct FounderFundingBoardViewer: View {
   var store: GameStore
 
+  @Environment(AppSettingsStore.self) private var settings
   @Environment(\.dismiss) private var dismiss
   @Environment(\.colorSchemeContrast) private var contrast
   @State private var feedback: String?
@@ -1318,7 +1319,13 @@ struct FounderFundingBoardViewer: View {
     case .pursuing where presentation.canResolve:
       Button("Review response") {
         if store.resolveFundingOpportunity(id: presentation.id) {
-          feedback = "\(presentation.opportunity.amountLabel) entered the company account."
+          feedback = store.alertMessage
+          let resolvedStatus = store.fundingBoardOpportunities.first {
+            $0.id == presentation.id
+          }?.status
+          if resolvedStatus == .awarded || resolvedStatus == .funded {
+            settings.playFeedback(.revenueCelebration)
+          }
         } else {
           feedback = store.alertMessage
         }

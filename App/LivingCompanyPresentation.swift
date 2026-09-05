@@ -139,7 +139,8 @@ struct CompanyCommandAgentAvailability: Equatable, Sendable {
     task: SoloTask?,
     presentation: PresentationCoordinator.AgentPresentation?,
     isResting: Bool,
-    attentionRemaining: Int
+    attentionRemaining: Int,
+    completedWorkSession: Bool = false
   ) -> Self {
     let isPlanning = sprintPhase == .chooseCommitments || sprintPhase == .assignTeam
     let presentationReady = presentation == nil || presentation?.phase == .awaitingReview
@@ -148,11 +149,11 @@ struct CompanyCommandAgentAvailability: Equatable, Sendable {
     } ?? false
     return Self(
       canAssign: isPlanning && task == nil && !isResting,
-      canReview: sprintPhase == .reviewAndResolve
+      canReview: (sprintPhase == .reviewAndResolve || (completedWorkSession && sprintPhase == .readyToCommit))
         && presentationReady
         && task?.isReviewed == false
         && task?.result != nil
-        && attentionRemaining > 0,
+        && (attentionRemaining > 0 || completedWorkSession),
       canRest: isPlanning && !isResting && (task == nil || task?.isReviewed == false),
       canSkipPresentation: activePresentation,
       requiresResolution: task?.isReviewed == true && task?.resolutionLocked == false

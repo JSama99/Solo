@@ -313,16 +313,17 @@ final class GameStore {
     return true
   }
 
-  func chooseDivergence(_ choice: ForkChoice) {
-    guard let offer = pendingDivergenceOffer else { return }
+  @discardableResult
+  func chooseDivergence(_ choice: ForkChoice) -> Bool {
+    guard let offer = pendingDivergenceOffer else { return false }
     let profile = currentDoctrineProfile
     let activeRivals = ContentLibrary.rivalSimulationCompanies.filter { $0.debutVenture <= venture }
     let rival = careerMode == .bounded
-      ? activeRivals.first(where: { $0.archetype == .copycat })
+      ? ContentLibrary.rivalSimulationCompanies.first(where: { $0.archetype == .copycat })
       : GhostPolicy.selectRival(from: activeRivals, profile: profile)
     guard let rival else {
       pendingDivergenceOffer = nil
-      return
+      return false
     }
     let policy = GhostPolicy.policy(for: rival.archetype, profile: profile)
     let ghostChoice = choice.opposite
@@ -361,6 +362,7 @@ final class GameStore {
     forksUsedThisVenture += 1
     pendingDivergenceOffer = nil
     save()
+    return true
   }
 
   private func projectedPrecedentOutcome() -> PrecedentOutcome {
@@ -656,6 +658,14 @@ final class GameStore {
       )
       alertMessage = reason
     }
+    if let publicEvent = FundingPublicMediaProjection.resolution(
+      opportunity: opportunity,
+      outcome: outcome,
+      venture: venture,
+      sprint: sprint
+    ) {
+      _ = applyPublicMediaEvent(publicEvent, persist: false)
+    }
     save()
     return true
   }
@@ -695,6 +705,15 @@ final class GameStore {
           event: "obligation-met",
           decision: "Completed the \(opportunity.name) milestone.",
           outcome: "Met the visible \(obligation.metric.title) target at \(fundingValueLabel(metric: obligation.metric, value: currentValue)) before the deadline."
+        )
+        _ = applyPublicMediaEvent(
+          FundingPublicMediaProjection.milestoneMet(
+            opportunity: opportunity,
+            obligation: obligation,
+            venture: venture,
+            sprint: sprint
+          ),
+          persist: false
         )
       } else if careerSprintIndex >= obligation.dueCareerSprint {
         guard finance.resolveFundingMilestone(

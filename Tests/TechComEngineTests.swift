@@ -35,6 +35,50 @@ final class TechComEngineTests: XCTestCase {
     }
   }
 
+  func testPublicCompanyEventsMergeDeterministicallyWithoutDuplicateHeadline() {
+    let publicEvent = PublicMediaEvent(
+      id: "funding-pioneer-ai-grant-awarded",
+      program: .breaking,
+      tone: .favorable,
+      headline: "SOLO secures Pioneer AI Grant",
+      summary: "The public award was announced.",
+      tickerItems: ["SOLO AWARDED"],
+      coverageDelta: 0,
+      venture: 1,
+      sprint: 2,
+      concernsPlayerCompany: true
+    )
+    let duplicate = TechComHeadline(
+      id: UUID(),
+      category: .ownCompany,
+      text: "Duplicate",
+      venture: 1,
+      sprint: 2,
+      publicEventID: publicEvent.id
+    )
+    let first = TechComEngine.mergedOwnCompanyHeadlines(
+      headlines: [duplicate],
+      publicEvents: [publicEvent, publicEvent]
+    )
+    let second = TechComEngine.mergedOwnCompanyHeadlines(
+      headlines: [duplicate],
+      publicEvents: [publicEvent]
+    )
+
+    XCTAssertEqual(first, second)
+    XCTAssertEqual(first.count, 1)
+    XCTAssertEqual(first[0].text, publicEvent.headline)
+    XCTAssertEqual(first[0].publicEventID, publicEvent.id)
+
+    var privateEvent = publicEvent
+    privateEvent.isPublic = false
+    var rivalEvent = publicEvent
+    rivalEvent.concernsPlayerCompany = false
+    XCTAssertTrue(TechComEngine.mergedOwnCompanyHeadlines(
+      headlines: [], publicEvents: [privateEvent, rivalEvent]
+    ).isEmpty)
+  }
+
   private func snapshot(tasks: [SoloTask] = [], agents: [SoloAgent] = []) -> TechComSnapshot { TechComSnapshot(founderName: "Founder", venture: 1, sprint: 1, stats: FounderStats(), agents: agents, tasks: tasks, dilemmaChoice: nil) }
   private func sprintResult() -> VisibleSprintResult { VisibleSprintResult(id: UUID(), venture: 1, sprint: 1, headline: "Evidence shaped the outcome", revenueDelta: 20, capitalDelta: 5, momentumDelta: 2, trustDelta: 0, energyDelta: -1, runwayDelta: -2, reviewsCompleted: 1, verifiedStrongOutcomes: 0, visibleRiskFlags: 1, evidenceRecorded: 1, transition: .nextSprint) }
 }

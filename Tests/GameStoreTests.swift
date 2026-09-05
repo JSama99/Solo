@@ -722,6 +722,7 @@ final class GameStoreTests: XCTestCase {
     let raisedBefore = store.finance.capitalRaised
     let attentionBefore = store.attentionRemaining
     let evidenceBefore = store.evidence.count
+    let coverageBefore = store.stats.coverage
 
     XCTAssertTrue(store.pursueFundingOpportunity(id: opportunity.id))
     XCTAssertEqual(store.attentionRemaining, attentionBefore - opportunity.opportunity.founderAttentionCost)
@@ -738,14 +739,26 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(store.finance.capitalRaised, raisedBefore + opportunity.opportunity.amount)
     XCTAssertEqual(store.stats.capital, store.finance.cash)
     XCTAssertEqual(store.evidence.count, evidenceBefore)
+    XCTAssertEqual(store.stats.coverage, coverageBefore)
     XCTAssertFalse(store.resolveFundingOpportunity(id: opportunity.id))
     XCTAssertEqual(
       store.finance.transactions.filter { $0.id == "funding-board-\(opportunity.id)" }.count,
       1
     )
+    XCTAssertEqual(store.publicMediaEvents.filter {
+      $0.id == "funding-\(opportunity.id)-awarded"
+    }.count, 1)
+    XCTAssertTrue(store.publicMediaEvents.contains {
+      $0.id == "funding-\(opportunity.id)-awarded" && $0.isFundingSuccess
+    })
     XCTAssertTrue(store.precedents.contains(where: {
       $0.isFundingRecord && $0.founderVisibleOutcome?.contains("Awarded") == true
     }))
+    let relaunched = GameStore()
+    relaunched.continueCareer()
+    XCTAssertEqual(relaunched.publicMediaEvents.filter {
+      $0.id == "funding-\(opportunity.id)-awarded"
+    }.count, 1)
   }
 
   func testFundingResponseDeclinesWhenVisibleRequirementNoLongerPasses() throws {
@@ -772,6 +785,7 @@ final class GameStoreTests: XCTestCase {
     XCTAssertTrue(store.precedents.contains(where: {
       $0.isFundingRecord && $0.founderVisibleOutcome?.contains("Declined") == true
     }))
+    XCTAssertFalse(store.publicMediaEvents.contains { $0.id.hasPrefix("funding-") })
   }
 
   func testFundingExpirationIsTerminalAcrossCareerReload() throws {
@@ -791,6 +805,8 @@ final class GameStoreTests: XCTestCase {
     }))
     XCTAssertEqual(expired.status, .expired)
     XCTAssertFalse(relaunched.pursueFundingOpportunity(id: expired.id))
+    XCTAssertFalse(relaunched.resolveFundingOpportunity(id: expired.id))
+    XCTAssertFalse(relaunched.publicMediaEvents.contains { $0.isFundingSuccess })
   }
 
   func testFundingApplicationSurvivesCareerReloadWithoutChangingSeed() throws {
@@ -848,6 +864,55 @@ final class GameStoreTests: XCTestCase {
     XCTAssertTrue(store.precedents.contains(where: {
       $0.isFundingRecord && $0.decisionSummary.contains("post-funding milestone")
     }))
+    XCTAssertEqual(store.publicMediaEvents.filter {
+      $0.id == "funding-\(round.id)-funded"
+    }.count, 1)
+    XCTAssertEqual(store.stats.coverage, 10)
+    let history = store.precedents.filter(\.isFundingRecord)
+    let rng = store.randomNumberGenerator
+    let restored = GameStore()
+    restored.continueCareer()
+    XCTAssertFalse(restored.resolveFundingOpportunity(id: round.id))
+    restored.updateFundingLifecycleForCurrentSprint()
+    XCTAssertEqual(restored.publicMediaEvents, store.publicMediaEvents)
+    XCTAssertEqual(restored.precedents.filter(\.isFundingRecord), history)
+    XCTAssertEqual(restored.randomNumberGenerator, rng)
+    XCTAssertEqual(restored.finance, store.finance)
+    let evidenceEncoder = JSONEncoder()
+    evidenceEncoder.outputFormatting = .sortedKeys
+    XCTAssertEqual(try evidenceEncoder.encode(restored.evidence), try evidenceEncoder.encode(store.evidence))
+  }
+
+  func testLegacySuccessfulFundingWithoutPublicLedgerDoesNotReplayAward() throws {
+    let store = makeStore(seed: 19_408)
+    XCTAssertTrue(store.pursueFundingOpportunity(id: "pioneer-ai-grant"))
+    store.sprint = 2
+    XCTAssertTrue(store.resolveFundingOpportunity(id: "pioneer-ai-grant"))
+    let cash = store.finance.cash
+    let data = try XCTUnwrap(UserDefaults.standard.data(forKey: GameStore.saveKey))
+    var envelope = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    var career = try XCTUnwrap(envelope["career"] as? [String: Any])
+    career.removeValue(forKey: "publicMediaEvents")
+    var finance = try XCTUnwrap(career["finance"] as? [String: Any])
+    var applications = try XCTUnwrap(finance["fundingApplications"] as? [[String: Any]])
+    applications[0].removeValue(forKey: "outcome")
+    applications[0].removeValue(forKey: "outcomeReason")
+    applications[0].removeValue(forKey: "milestoneObligation")
+    finance["fundingApplications"] = applications
+    career["finance"] = finance
+    envelope["career"] = career
+    UserDefaults.standard.set(try JSONSerialization.data(withJSONObject: envelope), forKey: GameStore.saveKey)
+
+    let restored = GameStore()
+    restored.continueCareer()
+    XCTAssertEqual(restored.stage, .game)
+    XCTAssertEqual(restored.fundingBoardOpportunities.first { $0.id == "pioneer-ai-grant" }?.status, .awarded)
+    XCTAssertFalse(restored.resolveFundingOpportunity(id: "pioneer-ai-grant"))
+    restored.updateFundingLifecycleForCurrentSprint()
+    XCTAssertEqual(restored.finance.cash, cash)
+    XCTAssertTrue(restored.publicMediaEvents.isEmpty)
+    XCTAssertEqual(restored.precedents, store.precedents)
+    XCTAssertEqual(GameStore.saveVersion, 19)
   }
 
   func testFundingMilestoneMetResolvesOnceWithoutTrustPenalty() throws {
@@ -867,6 +932,9 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(store.stats.trust, 72)
     XCTAssertEqual(store.precedents.filter {
       $0.isFundingRecord && $0.founderVisibleOutcome?.contains("Met the visible Revenue target") == true
+    }.count, 1)
+    XCTAssertEqual(store.publicMediaEvents.filter {
+      $0.id == "funding-founder-conviction-round-milestone-met"
     }.count, 1)
   }
 
@@ -888,6 +956,9 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(store.precedents.filter {
       $0.isFundingRecord && $0.founderVisibleOutcome?.contains("Company Trust fell by 6") == true
     }.count, 1)
+    XCTAssertFalse(store.publicMediaEvents.contains {
+      $0.id == "funding-founder-conviction-round-milestone-met"
+    })
   }
 
   func testBuild6TaskDeckDoesNotRepeatAcrossFirstVenture() throws {
