@@ -19,29 +19,25 @@ struct SoloUnicornRunApp: App {
     #endif
   }
 
+  #if DEBUG
   private var workSessionQAPhase: WorkSessionQAPhase? {
-    #if DEBUG
-    WorkSessionQAPhase.allCases.first { ProcessInfo.processInfo.arguments.contains("--work-session-qa-\($0.rawValue)") }
-    #else
-    nil
-    #endif
+    WorkSessionQAPhase.allCases.first {
+      ProcessInfo.processInfo.arguments.contains("--work-session-qa-\($0.rawValue)")
+    }
   }
 
   private var systemsReviewQAPhase: SystemsReviewQAPhase? {
-    #if DEBUG
-    SystemsReviewQAPhase.allCases.first { ProcessInfo.processInfo.arguments.contains("--systems-review-qa-\($0.rawValue)") }
-    #else
-    nil
-    #endif
+    SystemsReviewQAPhase.allCases.first {
+      ProcessInfo.processInfo.arguments.contains("--systems-review-qa-\($0.rawValue)")
+    }
   }
 
   private var campaignCalibrationQAPhase: CampaignCalibrationQAPhase? {
-    #if DEBUG
-    CampaignCalibrationQAPhase.allCases.first { ProcessInfo.processInfo.arguments.contains("--campaign-calibration-qa-\($0.rawValue)") }
-    #else
-    nil
-    #endif
+    CampaignCalibrationQAPhase.allCases.first {
+      ProcessInfo.processInfo.arguments.contains("--campaign-calibration-qa-\($0.rawValue)")
+    }
   }
+  #endif
 
   init() {
     #if DEBUG
