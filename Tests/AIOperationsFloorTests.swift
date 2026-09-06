@@ -2,6 +2,31 @@ import XCTest
 @testable import Solo_Unicorn_Run
 
 final class AIOperationsFloorTests: XCTestCase {
+  func testPortraitImageFramingNormalizesOnlyCanonicalAgentArtwork() {
+    XCTAssertEqual(AIOperationsFloorProjection.portraitFootprint, 48)
+    XCTAssertEqual(AIOperationsFloorProjection.portraitImageScale(agentID: "aurora"), 1, accuracy: 0.0001)
+    XCTAssertEqual(AIOperationsFloorProjection.portraitImageOffset(agentID: "aurora"), .zero)
+    XCTAssertEqual(AIOperationsFloorProjection.portraitImageScale(agentID: "stacks"), 1.04, accuracy: 0.0001)
+    XCTAssertEqual(AIOperationsFloorProjection.portraitImageOffset(agentID: "stacks"), .zero)
+    XCTAssertEqual(AIOperationsFloorProjection.portraitImageScale(agentID: "brio"), 1.05, accuracy: 0.0001)
+    XCTAssertEqual(AIOperationsFloorProjection.portraitImageOffset(agentID: "brio"), CGSize(width: 0, height: -0.7))
+    XCTAssertEqual(AIOperationsFloorProjection.portraitImageScale(agentID: "unknown"), 1, accuracy: 0.0001)
+    XCTAssertEqual(AIOperationsFloorProjection.portraitImageOffset(agentID: "unknown"), .zero)
+  }
+
+  func testPortraitFramingCannotDependOnLifecycleOutcomeWidthOrReduceMotion() {
+    for agentID in ["aurora", "stacks", "brio"] {
+      let scale = AIOperationsFloorProjection.portraitImageScale(agentID: agentID)
+      let offset = AIOperationsFloorProjection.portraitImageOffset(agentID: agentID)
+      for phase in LivingAgentActivity.allCases {
+        var projection = agent(id: agentID, activity: phase, conditions: [.verified, .drifting, .overclaimed, .evidenceIncomplete])
+        projection.reviewRevealStep = 5
+        XCTAssertEqual(AIOperationsFloorProjection.portraitImageScale(agentID: projection.agentID), scale)
+        XCTAssertEqual(AIOperationsFloorProjection.portraitImageOffset(agentID: projection.agentID), offset)
+      }
+    }
+  }
+
   func testRegularWidthTunesOnlyExistingPortraitMotionAmplitudes() {
     for agentID in ["aurora", "stacks", "brio"] {
       XCTAssertEqual(AIOperationsFloorProjection.portraitWorkingTravel(isWide: false, agentID: agentID), 0.65, accuracy: 0.0001)

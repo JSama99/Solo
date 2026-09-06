@@ -104,6 +104,25 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     try exercisePortraitNativeAcceptance(name: "Brio", taskIndex: 2)
   }
 
+  func testPortraitFramingNativeAcceptanceHold() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--founder-desk-production-proof"]
+    app.launch()
+    enterFreshProductionCareer(in: app)
+    focusDevice(.computer, expectedTitle: "Founder Computer", in: app)
+    resolveInitialFounderCommand(in: app)
+
+    for name in ["Aurora", "Stacks", "Brio"] {
+      let station = app.otherElements["operations-station-\(name.lowercased())"].firstMatch
+      XCTAssertTrue(station.waitForExistence(timeout: 6), name)
+      for _ in 0..<10 where !station.isHittable { app.swipeUp() }
+      XCTAssertTrue(station.isHittable, name)
+      capture("PORTRAIT_FRAMING_\(name.uppercased())", in: app)
+      sleep(4)
+    }
+    app.terminate()
+  }
+
   func testPositiveOutcomePortraitNativeAcceptanceHold() throws {
     let app = XCUIApplication()
     app.launchArguments = ["--work-session-qa-handoff"]

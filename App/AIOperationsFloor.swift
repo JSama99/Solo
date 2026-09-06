@@ -538,7 +538,11 @@ private struct OperationsStationCard: View {
   }
   @ViewBuilder private var portraitArtwork: some View {
     if let asset = AgentPortraitAsset.name(for: agent.agentID) {
-      Image(asset).resizable().scaledToFill()
+      Image(asset)
+        .resizable()
+        .scaledToFill()
+        .scaleEffect(AIOperationsFloorProjection.portraitImageScale(agentID: agent.agentID))
+        .offset(AIOperationsFloorProjection.portraitImageOffset(agentID: agent.agentID))
     } else {
       Text(agent.initials).font(.headline.weight(.black))
     }
@@ -574,6 +578,18 @@ private struct StationPipeline: View {
 
 struct AIOperationsFloorProjection: Equatable {
   static let portraitFootprint: CGFloat = 48
+
+  static func portraitImageScale(agentID: String) -> CGFloat {
+    switch agentID {
+    case "stacks": 1.04
+    case "brio": 1.05
+    default: 1
+    }
+  }
+
+  static func portraitImageOffset(agentID: String) -> CGSize {
+    agentID == "brio" ? CGSize(width: 0, height: -0.7) : .zero
+  }
 
   static func portraitWorkingTravel(isWide: Bool, agentID: String) -> CGFloat {
     guard isWide else { return 0.65 }
