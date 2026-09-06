@@ -2,6 +2,320 @@ import XCTest
 @testable import Solo_Unicorn_Run
 
 final class AIOperationsFloorTests: XCTestCase {
+  func testRegularWidthTunesOnlyExistingPortraitMotionAmplitudes() {
+    for agentID in ["aurora", "stacks", "brio"] {
+      XCTAssertEqual(AIOperationsFloorProjection.portraitWorkingTravel(isWide: false, agentID: agentID), 0.65, accuracy: 0.0001)
+      XCTAssertEqual(AIOperationsFloorProjection.portraitCompletionScaleDelta(isWide: false, agentID: agentID), 0.025, accuracy: 0.0001)
+    }
+    XCTAssertEqual(AIOperationsFloorProjection.portraitWorkingTravel(isWide: true, agentID: "aurora"), 1.0, accuracy: 0.0001)
+    XCTAssertEqual(AIOperationsFloorProjection.portraitCompletionScaleDelta(isWide: true, agentID: "aurora"), 0.035, accuracy: 0.0001)
+    for agentID in ["stacks", "brio"] {
+      XCTAssertEqual(AIOperationsFloorProjection.portraitWorkingTravel(isWide: true, agentID: agentID), 1.2, accuracy: 0.0001)
+      XCTAssertEqual(AIOperationsFloorProjection.portraitCompletionScaleDelta(isWide: true, agentID: agentID), 0.040, accuracy: 0.0001)
+    }
+  }
+
+  private func observePortraits(_ agents: [LivingAgentProjection], visible: Set<String> = ["aurora", "stacks", "brio"], eligible: Bool = true, reduced: Bool = false, transitions: Bool = true, observed: inout [String: String], cues: inout [String: String]) {
+    AIOperationsFloorProjection.reconcilePortraits(agents: agents, visibleIDs: visible, eligible: eligible, reduceMotion: reduced, allowTransitions: transitions, observed: &observed, cues: &cues)
+  }
+
+  private func observeOutcomes(_ agents: [LivingAgentProjection], visible: Set<String> = ["aurora", "stacks", "brio"], eligible: Bool = true, reduced: Bool = false, transitions: Bool = true, observed: inout [String: String], cues: inout [String: String]) {
+    AIOperationsFloorProjection.reconcilePortraitOutcomes(agents: agents, visibleIDs: visible, eligible: eligible, reduceMotion: reduced, allowTransitions: transitions, observed: &observed, cues: &cues)
+  }
+
+  func testLiveAssignmentAndCompletionConsumeDistinctPhaseIdentitiesOnce() {
+    var a = agent(id: "aurora", activity: .idle, conditions: [])
+    a.presentationSequenceID = UUID()
+    var observed: [String: String] = [:], cues: [String: String] = [:]
+    observePortraits([a], observed: &observed, cues: &cues)
+    XCTAssertTrue(cues.isEmpty)
+    a.activity = .assignmentReceived
+    observePortraits([a], observed: &observed, cues: &cues)
+    let acknowledgment = cues["aurora"]
+    XCTAssertEqual(acknowledgment, AIOperationsFloorProjection.portraitIdentity(a))
+    a.activity = .working
+    observePortraits([a], observed: &observed, cues: &cues)
+    XCTAssertTrue(cues.isEmpty)
+    XCTAssertTrue(AIOperationsFloorProjection.portraitWorks(activity: a.activity, eligible: true, reduceMotion: false))
+    a.activity = .workComplete
+    observePortraits([a], observed: &observed, cues: &cues)
+    XCTAssertNotNil(cues["aurora"])
+    XCTAssertNotEqual(cues["aurora"], acknowledgment)
+    observePortraits([a], visible: [], observed: &observed, cues: &cues)
+    observePortraits([a], observed: &observed, cues: &cues)
+    XCTAssertTrue(cues.isEmpty, "Remount cannot replay a consumed completion")
+    a.activity = .awaitingReview
+    observePortraits([a], observed: &observed, cues: &cues)
+    XCTAssertTrue(cues.isEmpty)
+    XCTAssertFalse(AIOperationsFloorProjection.portraitWorks(activity: a.activity, eligible: true, reduceMotion: false))
+  }
+
+  func testInitialAndReloadedTransientOrDurablePhasesNeverReconstructCues() {
+    for phase in [LivingAgentActivity.assignmentReceived, .workComplete, .awaitingReview] {
+      var a = agent(id: "aurora", activity: phase, conditions: [])
+      a.presentationSequenceID = UUID()
+      var observed: [String: String] = [:], cues: [String: String] = [:]
+      observePortraits([a], observed: &observed, cues: &cues)
+      XCTAssertTrue(cues.isEmpty, phase.rawValue)
+      observePortraits([a], observed: &observed, cues: &cues)
+      XCTAssertTrue(cues.isEmpty, phase.rawValue)
+    }
+  }
+
+  func testHiddenTransitionsAreConsumedAcrossSceneFocusAndSheetReturn() {
+    for phase in [LivingAgentActivity.assignmentReceived, .workComplete] {
+      var a = agent(id: "stacks", activity: .idle, conditions: [])
+      a.presentationSequenceID = UUID()
+      var observed: [String: String] = [:], cues: [String: String] = [:]
+      observePortraits([a], observed: &observed, cues: &cues)
+      a.activity = phase
+      observePortraits([a], eligible: false, observed: &observed, cues: &cues)
+      observePortraits([a], transitions: false, observed: &observed, cues: &cues)
+      observePortraits([a], observed: &observed, cues: &cues)
+      XCTAssertTrue(cues.isEmpty)
+    }
+  }
+
+  func testBecomingVisibleInSameUpdateAsTransitionOnlyAdoptsBaseline() {
+    var a = agent(id: "brio", activity: .working, conditions: [])
+    a.presentationSequenceID = UUID()
+    var observed: [String: String] = [:], cues: [String: String] = [:]
+    observePortraits([a], visible: [], observed: &observed, cues: &cues)
+    a.activity = .workComplete
+    observePortraits([a], transitions: false, observed: &observed, cues: &cues)
+    observePortraits([a], observed: &observed, cues: &cues)
+    XCTAssertTrue(cues.isEmpty)
+  }
+
+  func testReduceMotionKeepsEveryLifecycleStaticAndConsumesTransitions() {
+    for phase in LivingAgentActivity.allCases {
+      XCTAssertFalse(AIOperationsFloorProjection.portraitWorks(activity: phase, eligible: true, reduceMotion: true))
+      XCTAssertFalse(AIOperationsFloorProjection.portraitWorks(activity: phase, eligible: false, reduceMotion: false))
+      XCTAssertEqual(AIOperationsFloorProjection.portraitWorks(activity: phase, eligible: true, reduceMotion: false), phase == .working)
+      var a = agent(id: "aurora", activity: .idle, conditions: [])
+      a.presentationSequenceID = UUID()
+      var observed: [String: String] = [:], cues: [String: String] = [:]
+      observePortraits([a], observed: &observed, cues: &cues)
+      a.activity = phase
+      observePortraits([a], reduced: true, observed: &observed, cues: &cues)
+      observePortraits([a], observed: &observed, cues: &cues)
+      XCTAssertTrue(cues.isEmpty)
+    }
+  }
+
+  func testReduceMotionToggleCancelsActiveCueWithoutReplayWhenDisabled() {
+    for phase in [LivingAgentActivity.assignmentReceived, .workComplete] {
+      var a = agent(id: "aurora", activity: .working, conditions: [])
+      a.presentationSequenceID = UUID()
+      var observed: [String: String] = [:], cues: [String: String] = [:]
+      observePortraits([a], observed: &observed, cues: &cues)
+      a.activity = phase
+      observePortraits([a], observed: &observed, cues: &cues)
+      XCTAssertNotNil(cues[a.agentID])
+      observePortraits([a], reduced: true, observed: &observed, cues: &cues)
+      observePortraits([a], observed: &observed, cues: &cues)
+      XCTAssertTrue(cues.isEmpty)
+    }
+  }
+
+  func testConcurrentAgentTransitionsDoNotSuppressEachOther() {
+    var agents = ["aurora", "stacks", "brio"].map { id in
+      var a = agent(id: id, activity: .idle, conditions: [])
+      a.presentationSequenceID = UUID()
+      return a
+    }
+    var observed: [String: String] = [:], cues: [String: String] = [:]
+    observePortraits(agents, observed: &observed, cues: &cues)
+    for i in agents.indices { agents[i].activity = .assignmentReceived }
+    observePortraits(agents, observed: &observed, cues: &cues)
+    XCTAssertEqual(cues.count, 3)
+    for i in agents.indices { agents[i].activity = .working }
+    observePortraits(agents, observed: &observed, cues: &cues)
+    XCTAssertTrue(cues.isEmpty)
+    XCTAssertTrue(agents.allSatisfy { AIOperationsFloorProjection.portraitWorks(activity: $0.activity, eligible: true, reduceMotion: false) })
+    agents[0].activity = .awaitingReview
+    agents[1].activity = .workComplete
+    agents[2].activity = .assignmentReceived
+    observePortraits(agents, observed: &observed, cues: &cues)
+    XCTAssertEqual(Set(cues.keys), ["stacks", "brio"])
+    let stacksCue = cues["stacks"]
+    observePortraits(agents, visible: ["stacks"], observed: &observed, cues: &cues)
+    XCTAssertEqual(cues, ["stacks": stacksCue!])
+  }
+
+  func testReplacementAndRemovalCannotLeaveStalePortraitEffects() {
+    var a = agent(id: "aurora", activity: .working, conditions: [])
+    a.presentationSequenceID = UUID()
+    var observed: [String: String] = [:], cues: [String: String] = [:]
+    observePortraits([a], observed: &observed, cues: &cues)
+    a.activity = .workComplete
+    observePortraits([a], observed: &observed, cues: &cues)
+    let oldCue = cues[a.agentID]
+    a.taskID = UUID(); a.presentationSequenceID = UUID(); a.activity = .assignmentReceived
+    observePortraits([a], observed: &observed, cues: &cues)
+    XCTAssertNotNil(cues[a.agentID])
+    XCTAssertNotEqual(cues[a.agentID], oldCue)
+    a.activity = .idle; a.taskID = nil; a.presentationSequenceID = nil
+    observePortraits([a], observed: &observed, cues: &cues)
+    XCTAssertTrue(cues.isEmpty)
+    observePortraits([], observed: &observed, cues: &cues)
+    XCTAssertTrue(observed.isEmpty)
+  }
+
+  func testPortraitIdentityAndWorkingPolicyIgnoreOutcomeConditions() {
+    var a = agent(id: "aurora", activity: .working, conditions: [])
+    a.presentationSequenceID = UUID()
+    let neutral = AIOperationsFloorProjection.portraitIdentity(a)
+    a.conditions = [.verified, .overclaimed, .drifting, .evidenceIncomplete]
+    a.reviewRevealStep = 5
+    XCTAssertEqual(AIOperationsFloorProjection.portraitIdentity(a), neutral)
+    XCTAssertTrue(AIOperationsFloorProjection.portraitWorks(activity: a.activity, eligible: true, reduceMotion: false))
+  }
+
+  func testOutcomeReactionStaysNeutralBeforeCanonicalRevealForEveryResultClass() {
+    for condition in [LivingAgentCondition.verified, .evidenceIncomplete, .overclaimed, .drifting] {
+      for phase in [LivingAgentActivity.assignmentReceived, .working, .workComplete, .awaitingReview] {
+        var a = outcomeAgent(id: "aurora", activity: phase, condition: condition, revealStep: 5)
+        XCTAssertNil(AIOperationsFloorProjection.portraitOutcomeReaction(a), "\(condition.rawValue) leaked during \(phase.rawValue)")
+        a.reviewRevealStep = 0
+        XCTAssertNil(AIOperationsFloorProjection.portraitOutcomeReaction(a))
+      }
+      let earlyReview = outcomeAgent(id: "aurora", activity: .reviewing, condition: condition, revealStep: 4)
+      XCTAssertNil(AIOperationsFloorProjection.portraitOutcomeReaction(earlyReview), "\(condition.rawValue) leaked before step five")
+    }
+  }
+
+  func testCanonicalRevealMapsExistingResultsWithoutInventingOutcomeSemantics() {
+    let expected: [(LivingAgentCondition, ReviewResultVisual)] = [
+      (.verified, .verified),
+      (.evidenceIncomplete, .evidenceIncomplete),
+      (.overclaimed, .overclaimed),
+      (.drifting, .driftDetected)
+    ]
+    for (condition, result) in expected {
+      let a = outcomeAgent(id: "aurora", activity: .reviewing, condition: condition, revealStep: 5)
+      XCTAssertEqual(AIOperationsFloorProjection.portraitOutcomeReaction(a), result)
+    }
+  }
+
+  func testLiveSameSequenceRevealProducesEachOutcomeCueOnce() {
+    let expected: [(LivingAgentCondition, ReviewResultVisual)] = [
+      (.verified, .verified),
+      (.evidenceIncomplete, .evidenceIncomplete),
+      (.overclaimed, .overclaimed),
+      (.drifting, .driftDetected)
+    ]
+    for (condition, result) in expected {
+      let taskID = UUID(), sequenceID = UUID()
+      var a = outcomeAgent(id: "aurora", activity: .reviewing, condition: condition, revealStep: 4, taskID: taskID, sequenceID: sequenceID)
+      var observed: [String: String] = [:], cues: [String: String] = [:]
+      observeOutcomes([a], observed: &observed, cues: &cues)
+      XCTAssertTrue(cues.isEmpty)
+      a.reviewRevealStep = 5
+      observeOutcomes([a], observed: &observed, cues: &cues)
+      XCTAssertEqual(AIOperationsFloorProjection.portraitOutcomeReaction(a), result)
+      XCTAssertEqual(cues[a.agentID], AIOperationsFloorProjection.portraitOutcomeObservationIdentity(a))
+      a.activity = .reviewed
+      observeOutcomes([a], observed: &observed, cues: &cues)
+      XCTAssertTrue(cues.isEmpty, "stable reviewed state must consume the trigger without creating a second one")
+    }
+  }
+
+  func testInitialReviewedMountAndCardRemountNeverReplayOutcomeReaction() {
+    let a = outcomeAgent(id: "aurora", activity: .reviewed, condition: .verified, revealStep: 5)
+    var observed: [String: String] = [:], cues: [String: String] = [:]
+    observeOutcomes([a], observed: &observed, cues: &cues)
+    XCTAssertTrue(cues.isEmpty, "restore/relaunch must adopt the reviewed baseline")
+    observeOutcomes([a], visible: [], observed: &observed, cues: &cues)
+    observeOutcomes([a], transitions: false, observed: &observed, cues: &cues)
+    observeOutcomes([a], observed: &observed, cues: &cues)
+    XCTAssertTrue(cues.isEmpty, "scroll or card remount must not reconstruct a reaction")
+  }
+
+  func testHiddenOrCoveredRevealIsConsumedInsteadOfQueued() {
+    for (visible, eligible) in [(Set<String>(), true), (["aurora"], false)] {
+      var a = outcomeAgent(id: "aurora", activity: .reviewing, condition: .evidenceIncomplete, revealStep: 4)
+      var observed: [String: String] = [:], cues: [String: String] = [:]
+      observeOutcomes([a], visible: visible, eligible: eligible, observed: &observed, cues: &cues)
+      a.reviewRevealStep = 5
+      observeOutcomes([a], visible: visible, eligible: eligible, observed: &observed, cues: &cues)
+      observeOutcomes([a], transitions: false, observed: &observed, cues: &cues)
+      observeOutcomes([a], observed: &observed, cues: &cues)
+      XCTAssertTrue(cues.isEmpty)
+    }
+  }
+
+  func testReduceMotionConsumesEveryOutcomeAndCannotReconstructReaction() {
+    for condition in [LivingAgentCondition.verified, .evidenceIncomplete, .overclaimed, .drifting] {
+      var a = outcomeAgent(id: "aurora", activity: .reviewing, condition: condition, revealStep: 4)
+      var observed: [String: String] = [:], cues: [String: String] = [:]
+      observeOutcomes([a], observed: &observed, cues: &cues)
+      a.reviewRevealStep = 5
+      observeOutcomes([a], reduced: true, observed: &observed, cues: &cues)
+      observeOutcomes([a], transitions: false, observed: &observed, cues: &cues)
+      observeOutcomes([a], observed: &observed, cues: &cues)
+      XCTAssertTrue(cues.isEmpty)
+      XCTAssertNotNil(AIOperationsFloorProjection.portraitOutcomeReaction(a), "static condition semantics remain present")
+    }
+  }
+
+  func testOutcomeReplacementClearsStaleCueAndNewSequenceCanReactLater() {
+    let oldTask = UUID(), oldSequence = UUID()
+    var a = outcomeAgent(id: "stacks", activity: .reviewing, condition: .overclaimed, revealStep: 4, taskID: oldTask, sequenceID: oldSequence)
+    var observed: [String: String] = [:], cues: [String: String] = [:]
+    observeOutcomes([a], observed: &observed, cues: &cues)
+    a.reviewRevealStep = 5
+    observeOutcomes([a], observed: &observed, cues: &cues)
+    XCTAssertNotNil(cues[a.agentID])
+
+    let newTask = UUID(), newSequence = UUID()
+    a = outcomeAgent(id: "stacks", activity: .reviewed, condition: .verified, revealStep: 5, taskID: newTask, sequenceID: newSequence)
+    observeOutcomes([a], observed: &observed, cues: &cues)
+    XCTAssertTrue(cues.isEmpty, "replacement cannot inherit or fabricate a reaction")
+    a.activity = .reviewing
+    a.reviewRevealStep = 4
+    observeOutcomes([a], observed: &observed, cues: &cues)
+    a.reviewRevealStep = 5
+    observeOutcomes([a], observed: &observed, cues: &cues)
+    XCTAssertNotNil(cues[a.agentID], "a later live reveal for the new sequence may react")
+  }
+
+  func testOutcomeReactionsRemainIndependentPerAgent() {
+    var agents = [
+      outcomeAgent(id: "aurora", activity: .reviewing, condition: .verified, revealStep: 4),
+      outcomeAgent(id: "stacks", activity: .reviewing, condition: .evidenceIncomplete, revealStep: 4),
+      outcomeAgent(id: "brio", activity: .reviewing, condition: .drifting, revealStep: 4)
+    ]
+    var observed: [String: String] = [:], cues: [String: String] = [:]
+    observeOutcomes(agents, observed: &observed, cues: &cues)
+    agents[0].reviewRevealStep = 5
+    observeOutcomes(agents, observed: &observed, cues: &cues)
+    XCTAssertEqual(Set(cues.keys), ["aurora"])
+    agents[1].reviewRevealStep = 5
+    observeOutcomes(agents, observed: &observed, cues: &cues)
+    XCTAssertEqual(Set(cues.keys), ["stacks"])
+    agents[2].reviewRevealStep = 5
+    observeOutcomes(agents, observed: &observed, cues: &cues)
+    XCTAssertEqual(Set(cues.keys), ["brio"])
+    XCTAssertEqual(agents.map(AIOperationsFloorProjection.portraitOutcomeReaction), [.verified, .evidenceIncomplete, .driftDetected])
+  }
+
+  func testOutcomeMotionIsRestrainedAndKeepsTheFixedPortraitFootprint() {
+    XCTAssertEqual(AIOperationsFloorProjection.portraitFootprint, 48)
+    let positive = AIOperationsFloorProjection.portraitOutcomeOffset(.verified, phase: 1)
+    let caution = AIOperationsFloorProjection.portraitOutcomeOffset(.evidenceIncomplete, phase: 1)
+    let serious = AIOperationsFloorProjection.portraitOutcomeOffset(.overclaimed, phase: 1)
+    XCTAssertEqual(positive, CGSize(width: 0, height: -1.4))
+    XCTAssertEqual(caution, CGSize(width: 0.9, height: 0))
+    XCTAssertEqual(serious, CGSize(width: 0, height: 1.2))
+    XCTAssertEqual(AIOperationsFloorProjection.portraitOutcomeOffset(.driftDetected, phase: 1), serious)
+    XCTAssertEqual(AIOperationsFloorProjection.portraitOutcomeScale(.verified, phase: 1), 1.025, accuracy: 0.0001)
+    XCTAssertEqual(AIOperationsFloorProjection.portraitOutcomeScale(.evidenceIncomplete, phase: 1), 0.985, accuracy: 0.0001)
+    XCTAssertEqual(AIOperationsFloorProjection.portraitOutcomeScale(.overclaimed, phase: 1), 0.975, accuracy: 0.0001)
+    XCTAssertEqual(AIOperationsFloorProjection.portraitOutcomeOffset(.pending, phase: 1), .zero)
+    XCTAssertEqual(AIOperationsFloorProjection.portraitOutcomeScale(.pending, phase: 1), 1)
+  }
+
   func testReviewQueueProjectsReportedOutputWithoutVerifiedClaim() {
     let reported = agent(id: "aurora", activity: .awaitingReview, conditions: [.focused])
     let queue = AIOperationsFloorProjection.derive(
@@ -186,6 +500,17 @@ final class AIOperationsFloorTests: XCTestCase {
 
   private func agent(id: String, activity: LivingAgentActivity, conditions: Set<LivingAgentCondition>) -> LivingAgentProjection {
     LivingAgentProjection(agentID: id, name: id.capitalized, initials: String(id.prefix(1)).uppercased(), role: id == "aurora" ? .research : id == "stacks" ? .engineering : .marketing, taskID: UUID(), taskTitle: "Canonical task", activity: activity, conditions: conditions, emphasis: .normal, progress: 0.5, reviewRevealStep: 0, stressLabel: "Stable", trustLabel: "Trust 85 or higher", level: 1, needsFounderAttention: false, isResting: false)
+  }
+
+  private func outcomeAgent(
+    id: String, activity: LivingAgentActivity, condition: LivingAgentCondition,
+    revealStep: Int, taskID: UUID = UUID(), sequenceID: UUID = UUID()
+  ) -> LivingAgentProjection {
+    var value = agent(id: id, activity: activity, conditions: [condition])
+    value.taskID = taskID
+    value.presentationSequenceID = sequenceID
+    value.reviewRevealStep = revealStep
+    return value
   }
 
   private func summary() -> CompanyCommandFounderSummary {

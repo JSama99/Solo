@@ -1,6 +1,163 @@
 import XCTest
 
 final class Build32_6_2ProductionContinuityUITests: XCTestCase {
+  func testCommandCenterPortraitProductionAssignmentsAndReturn() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--founder-desk-production-proof"]
+    app.launch()
+    enterFreshProductionCareer(in: app)
+    focusDevice(.computer, expectedTitle: "Founder Computer", in: app)
+    app.buttons["founder-next-action"].tap()
+    let founderChoice = app.buttons.matching(NSPredicate(format: "label IN %@", [
+      "Cut the Feature", "Build It", "Time-Box a Spike", "Narrow the Claim",
+      "Use the Bold Claim", "Delay for Proof", "Protect Sleep", "Push Through", "Delegate the Demo"
+    ])).firstMatch
+    for _ in 0..<8 where !founderChoice.isHittable { app.swipeUp() }
+    XCTAssertTrue(founderChoice.isHittable)
+    founderChoice.tap()
+    let founderSheet = app.navigationBars["Founder Command"]
+    for _ in 0..<3 where founderSheet.exists {
+      // A full drag dismisses both the iPad form sheet and iPhone detents;
+      // a short swipe confined to the navigation bar can only collapse it.
+      founderSheet.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.96)))
+    }
+    XCTAssertFalse(founderSheet.exists)
+    XCTAssertTrue(app.buttons["founder-computer-look-out"].waitForExistence(timeout: 5))
+
+    for (index, name) in ["Aurora", "Stacks", "Brio"].enumerated() {
+      let assign = app.buttons["Assign \(name)"].firstMatch
+      for _ in 0..<10 where !assign.isHittable { app.swipeUp() }
+      XCTAssertTrue(assign.isHittable, name)
+      assign.tap()
+      XCTAssertTrue(app.navigationBars["Assign \(name)"].waitForExistence(timeout: 5))
+      // Choose different real tasks through the existing confirmation UI.
+      let choices = app.buttons.matching(identifier: "Review assignment")
+      let choice = choices.element(boundBy: index)
+      for _ in 0..<8 where !choice.isHittable { app.swipeUp() }
+      XCTAssertTrue(choice.isHittable)
+      choice.tap()
+      let confirm = app.buttons["Confirm assignment"]
+      for _ in 0..<8 where !confirm.isHittable { app.swipeUp() }
+      XCTAssertTrue(confirm.isHittable)
+      confirm.tap()
+      let dismissed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: app.navigationBars["Assign \(name)"])
+      XCTAssertEqual(XCTWaiter.wait(for: [dismissed], timeout: 5), .completed)
+      let station = app.otherElements["operations-station-\(name.lowercased())"].firstMatch
+      XCTAssertTrue(station.waitForExistence(timeout: 5))
+      XCTAssertTrue(station.staticTexts["Awaiting Founder review"].waitForExistence(timeout: 6))
+      assertNoRevealedOutcome(in: station)
+      let action = index < 2 ? "Inspect \(name)" : "Open Founder Review"
+      XCTAssertTrue(station.buttons[action].waitForExistence(timeout: 5))
+      if index < 2 { XCTAssertFalse(station.buttons["Open Founder Review"].exists) }
+      capture("PORTRAIT_\(name.uppercased())_PRODUCTION_AWAITING_REVIEW", in: app)
+    }
+
+    // Real offscreen scrolls and mounted-but-unfocused Computer return, followed
+    // by a scene transition. Durable review endpoints/actions must survive all.
+    for _ in 0..<5 { app.swipeDown() }
+    returnToDesk(from: .computer, in: app)
+    focusDevice(.computer, expectedTitle: "Founder Computer", in: app)
+    XCUIDevice.shared.press(.home)
+    app.activate()
+    for name in ["Aurora", "Stacks", "Brio"] {
+      let station = app.otherElements["operations-station-\(name.lowercased())"].firstMatch
+      for _ in 0..<10 where !station.buttons["Open Founder Review"].isHittable { app.swipeUp() }
+      XCTAssertTrue(station.staticTexts["Awaiting Founder review"].exists)
+      XCTAssertTrue(station.buttons["Open Founder Review"].isEnabled)
+      XCTAssertEqual(station.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "\(name),")).count, 1)
+    }
+    capture("PORTRAIT_PRODUCTION_RETURN_ENDPOINTS", in: app)
+
+    // Relaunch the same persisted career. Presentation choreography is not
+    // persisted, so each station must derive the durable awaiting-review state
+    // without reconstructing assignment or completion transitions.
+    app.terminate()
+    app.launch()
+    let continueCareer = app.buttons["Continue Career"]
+    XCTAssertTrue(continueCareer.waitForExistence(timeout: 6))
+    continueCareer.tap()
+    focusDevice(.computer, expectedTitle: "Founder Computer", in: app)
+    for name in ["Aurora", "Stacks", "Brio"] {
+      let station = app.otherElements["operations-station-\(name.lowercased())"].firstMatch
+      for _ in 0..<10 where !station.buttons["Open Founder Review"].isHittable { app.swipeUp() }
+      XCTAssertTrue(station.staticTexts["Awaiting Founder review"].exists)
+      XCTAssertTrue(station.buttons["Open Founder Review"].isEnabled)
+      XCTAssertFalse(station.staticTexts["Assignment received"].exists)
+      XCTAssertFalse(station.staticTexts["Working"].exists)
+      XCTAssertFalse(station.staticTexts["Work complete"].exists)
+      assertNoRevealedOutcome(in: station)
+    }
+    capture("PORTRAIT_PRODUCTION_RELAUNCH_ENDPOINTS", in: app)
+    app.terminate()
+  }
+
+  func testAuroraPortraitNativeAcceptanceHold() throws {
+    try exercisePortraitNativeAcceptance(name: "Aurora", taskIndex: 0)
+  }
+
+  func testStacksPortraitNativeAcceptanceHold() throws {
+    try exercisePortraitNativeAcceptance(name: "Stacks", taskIndex: 1)
+  }
+
+  func testBrioPortraitNativeAcceptanceHold() throws {
+    try exercisePortraitNativeAcceptance(name: "Brio", taskIndex: 2)
+  }
+
+  func testPositiveOutcomePortraitNativeAcceptanceHold() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--work-session-qa-handoff"]
+    app.launch()
+
+    let review = app.buttons["Open Founder Review"].firstMatch
+    for _ in 0..<8 where !review.isHittable { app.swipeUp() }
+    XCTAssertTrue(review.waitForExistence(timeout: 5))
+    review.tap()
+    XCTAssertTrue(app.navigationBars["Evidence Triage"].waitForExistence(timeout: 5))
+    let delegate = app.buttons["DELEGATE"]
+    for _ in 0..<6 where !delegate.isHittable { app.swipeUp() }
+    XCTAssertTrue(delegate.isHittable)
+    delegate.tap()
+    let next = app.buttons["CONTINUE"]
+    for _ in 0..<6 where !next.isHittable { app.swipeUp() }
+    XCTAssertTrue(next.waitForExistence(timeout: 5))
+
+    capture("PORTRAIT_POSITIVE_REVEAL_READY", in: app)
+    sleep(5)
+    next.tap()
+    let dismissed = XCTNSPredicateExpectation(
+      predicate: NSPredicate(format: "exists == false"),
+      object: app.navigationBars["Evidence Triage"]
+    )
+    XCTAssertEqual(XCTWaiter.wait(for: [dismissed], timeout: 5), .completed)
+    let station = app.otherElements["operations-station-aurora"].firstMatch
+    XCTAssertTrue(station.waitForExistence(timeout: 5))
+    XCTAssertTrue(station.staticTexts["Reviewed"].waitForExistence(timeout: 6))
+    XCTAssertTrue(station.staticTexts["Verified"].exists)
+    sleep(4)
+    capture("PORTRAIT_POSITIVE_REVEAL_STABLE", in: app)
+    app.terminate()
+  }
+
+  func testReviewedOutcomePortraitRestoreRemainsStable() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--work-session-qa-report"]
+    app.launch()
+    assertReviewedVerifiedAurora(in: app)
+
+    XCUIDevice.shared.press(.home)
+    app.activate()
+    assertReviewedVerifiedAurora(in: app)
+    app.swipeUp()
+    app.swipeDown()
+    assertReviewedVerifiedAurora(in: app)
+
+    app.terminate()
+    app.launch()
+    assertReviewedVerifiedAurora(in: app)
+    app.terminate()
+  }
+
   func testAuroraContinuousWorkSessionReturn() throws {
     try exerciseWorkSessionReturn(argument: "--work-session-qa-handoff", title: "Evidence Triage")
   }
@@ -56,6 +213,82 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     XCTAssertFalse(app.buttons["CONTINUE"].exists)
     capture("\(title)_DISMISSED_REVIEWED_PRODUCTION", in: app)
     app.terminate()
+  }
+
+  /// Runs the real Founder Desk -> Computer -> assignment flow and pauses before
+  /// confirmation so a human can watch the native Simulator at the existing
+  /// production timing. The sheet-covered acknowledgment remains intentionally
+  /// skipped; the hold is for the visible working/completion/awaiting sequence.
+  private func exercisePortraitNativeAcceptance(name: String, taskIndex: Int) throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--founder-desk-production-proof"]
+    app.launch()
+    enterFreshProductionCareer(in: app)
+    focusDevice(.computer, expectedTitle: "Founder Computer", in: app)
+    resolveInitialFounderCommand(in: app)
+
+    let assign = app.buttons["Assign \(name)"].firstMatch
+    for _ in 0..<10 where !assign.isHittable { app.swipeUp() }
+    XCTAssertTrue(assign.isHittable, name)
+    assign.tap()
+    XCTAssertTrue(app.navigationBars["Assign \(name)"].waitForExistence(timeout: 5))
+
+    let choices = app.buttons.matching(identifier: "Review assignment")
+    let choice = choices.element(boundBy: taskIndex)
+    for _ in 0..<8 where !choice.isHittable { app.swipeUp() }
+    XCTAssertTrue(choice.isHittable)
+    choice.tap()
+
+    let confirm = app.buttons["Confirm assignment"]
+    for _ in 0..<8 where !confirm.isHittable { app.swipeUp() }
+    XCTAssertTrue(confirm.isHittable)
+    capture("PORTRAIT_\(name.uppercased())_NATIVE_ACCEPTANCE_READY", in: app)
+    sleep(5)
+    confirm.tap()
+
+    let dismissed = XCTNSPredicateExpectation(
+      predicate: NSPredicate(format: "exists == false"),
+      object: app.navigationBars["Assign \(name)"]
+    )
+    XCTAssertEqual(XCTWaiter.wait(for: [dismissed], timeout: 5), .completed)
+    let station = app.otherElements["operations-station-\(name.lowercased())"].firstMatch
+    XCTAssertTrue(station.waitForExistence(timeout: 5))
+    sleep(4)
+    XCTAssertTrue(station.staticTexts["Awaiting Founder review"].exists)
+    capture("PORTRAIT_\(name.uppercased())_NATIVE_ACCEPTANCE_ENDPOINT", in: app)
+    app.terminate()
+  }
+
+  private func resolveInitialFounderCommand(in app: XCUIApplication) {
+    app.buttons["founder-next-action"].tap()
+    let founderChoice = app.buttons.matching(NSPredicate(format: "label IN %@", [
+      "Cut the Feature", "Build It", "Time-Box a Spike", "Narrow the Claim",
+      "Use the Bold Claim", "Delay for Proof", "Protect Sleep", "Push Through", "Delegate the Demo"
+    ])).firstMatch
+    for _ in 0..<8 where !founderChoice.isHittable { app.swipeUp() }
+    XCTAssertTrue(founderChoice.isHittable)
+    founderChoice.tap()
+    let founderSheet = app.navigationBars["Founder Command"]
+    for _ in 0..<3 where founderSheet.exists {
+      founderSheet.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.96)))
+    }
+    XCTAssertFalse(founderSheet.exists)
+    XCTAssertTrue(app.buttons["founder-computer-look-out"].waitForExistence(timeout: 5))
+  }
+
+  private func assertNoRevealedOutcome(in station: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
+    for label in ["Verified", "Evidence incomplete", "Overclaim detected", "Drift detected"] {
+      XCTAssertFalse(station.staticTexts[label].exists, "Pre-review station exposed \(label)", file: file, line: line)
+    }
+  }
+
+  private func assertReviewedVerifiedAurora(in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+    let station = app.otherElements["operations-station-aurora"].firstMatch
+    XCTAssertTrue(station.waitForExistence(timeout: 6), file: file, line: line)
+    XCTAssertTrue(station.staticTexts["Reviewed"].exists, file: file, line: line)
+    XCTAssertTrue(station.staticTexts["Verified"].exists, file: file, line: line)
+    XCTAssertFalse(station.staticTexts["Founder reviewing"].exists, file: file, line: line)
   }
 
   func testBrioCampaignCalibrationProductionSequence() throws {

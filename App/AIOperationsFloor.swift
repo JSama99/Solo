@@ -15,6 +15,12 @@ struct AIOperationsFloor: View {
   var stats: FounderStats
   var availability: [String: CompanyCommandAgentAvailability]
   var reduceMotion: Bool
+  var portraitViewport: CGRect = .zero
+  var portraitPresentationEligible = false
+  var visiblePortraitIDs: Set<String> = []
+  var portraitCueTokens: [String: String] = [:]
+  var portraitOutcomeCueTokens: [String: String] = [:]
+  var onPortraitVisibility: (String, Bool) -> Void = { _, _ in }
   var onAssign: (String) -> Void
   var onReview: (String) -> Void
   var onOpenDetail: (CompanyCommandFocus) -> Void
@@ -50,7 +56,9 @@ struct AIOperationsFloor: View {
   }
 
   private var compactFloor: some View {
-    LazyVStack(alignment: .leading, spacing: 14) {
+    // Only three stations: stable eager measurements avoid the reproduced
+    // compact Computer scroll loop inside the persistent Garage viewport.
+    VStack(alignment: .leading, spacing: 14) {
       floorHeader
       console
       reviewQueue
@@ -289,7 +297,7 @@ struct AIOperationsFloor: View {
   }
 
   private func station(_ agent: LivingAgentProjection) -> some View {
-    OperationsStationCard(agent: agent, availability: availability[agent.agentID] ?? .init(), expanded: expandedStationID == agent.agentID, reduceMotion: motionReduced) {
+    OperationsStationCard(agent: agent, availability: availability[agent.agentID] ?? .init(), expanded: expandedStationID == agent.agentID, reduceMotion: motionReduced, usesWidePortraitMotion: isWide, portraitViewport: portraitViewport, portraitEligible: portraitPresentationEligible && visiblePortraitIDs.contains(agent.agentID), portraitCueToken: portraitCueTokens[agent.agentID], portraitOutcomeCueToken: portraitOutcomeCueTokens[agent.agentID], onPortraitVisibility: { onPortraitVisibility(agent.agentID, $0) }) {
       withAnimation(motionReduced ? nil : .smooth) { expandedStationID = expandedStationID == agent.agentID ? nil : agent.agentID }
     } onAssign: { onAssign(agent.agentID) } onReview: { onReview(agent.agentID) } onOpenDetail: { onOpenDetail(.agent(agent.agentID)) }
   }
@@ -319,6 +327,12 @@ private struct OperationsStationCard: View {
   var availability: CompanyCommandAgentAvailability
   var expanded: Bool
   var reduceMotion: Bool
+  var usesWidePortraitMotion: Bool
+  var portraitViewport: CGRect
+  var portraitEligible: Bool
+  var portraitCueToken: String?
+  var portraitOutcomeCueToken: String?
+  var onPortraitVisibility: (Bool) -> Void
   var onToggle: () -> Void
   var onAssign: () -> Void
   var onReview: () -> Void
@@ -472,10 +486,62 @@ private struct OperationsStationCard: View {
   private var portrait: some View {
     ZStack {
       Circle().fill(accent.opacity(0.2))
-      if let asset = AgentPortraitAsset.name(for: agent.agentID) { Image(asset).resizable().scaledToFill().accessibilityHidden(true) } else { Text(agent.initials).font(.headline.weight(.black)) }
+      portraitArtwork
+        .frame(width: AIOperationsFloorProjection.portraitFootprint, height: AIOperationsFloorProjection.portraitFootprint)
+        .phaseAnimator(workingPortrait ? [0.0, 1.0, 0.0] : [0.0]) { content, phase in
+          content.offset(y: workingPortrait ? phase * AIOperationsFloorProjection.portraitWorkingTravel(isWide: usesWidePortraitMotion, agentID: agent.agentID) : 0)
+        } animation: { _ in
+          SoloMotion.resolved(.easeInOut(duration: agent.agentID == "aurora" ? 0.72 : agent.agentID == "stacks" ? 0.86 : 0.64), reduceMotion: reduceMotion)
+        }
+        .phaseAnimator([0.0, 1.0, 0.0], trigger: portraitCueToken) { content, phase in
+          content
+            .offset(y: livePortraitCue && agent.activity == .assignmentReceived ? phase * 1.5 : 0)
+            .scaleEffect(livePortraitCue && agent.activity == .workComplete ? 1 - phase * AIOperationsFloorProjection.portraitCompletionScaleDelta(isWide: usesWidePortraitMotion, agentID: agent.agentID) : 1)
+        } animation: { _ in
+          livePortraitCue ? SoloMotion.resolved(SoloMotion.settle, reduceMotion: reduceMotion) : nil
+        }
+        .phaseAnimator([0.0, 1.0, 0.0], trigger: portraitOutcomeCueToken) { content, phase in
+          let offset = livePortraitOutcome.map { AIOperationsFloorProjection.portraitOutcomeOffset($0, phase: phase) } ?? .zero
+          content
+            .offset(x: offset.width, y: offset.height)
+            .scaleEffect(livePortraitOutcome.map { AIOperationsFloorProjection.portraitOutcomeScale($0, phase: phase) } ?? 1)
+        } animation: { _ in
+          livePortraitOutcome == nil ? nil : SoloMotion.resolved(SoloMotion.settle, reduceMotion: reduceMotion)
+        }
+        // Cancel immediately, including an in-flight phase, without inheriting
+        // the station's lifecycle animation. The 48-point shell never moves.
+        .transaction { transaction in
+          if !portraitEligible || reduceMotion { transaction.animation = nil; transaction.disablesAnimations = true }
+        }
+        .accessibilityHidden(true)
       Circle().fill(agent.needsFounderAttention ? SoloTheme.amber : accent).frame(width: 9, height: 9).overlay { Circle().stroke(.black, lineWidth: 2) }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing).accessibilityHidden(true)
     }
-    .frame(width: 48, height: 48).clipShape(.circle).overlay { Circle().stroke(accent.opacity(0.8), lineWidth: 1.5) }
+    .frame(width: AIOperationsFloorProjection.portraitFootprint, height: AIOperationsFloorProjection.portraitFootprint).clipShape(.circle).overlay {
+      Circle().stroke(accent.opacity(agent.activity == .reviewing ? 1 : 0.8), lineWidth: 1.5)
+    }
+    .onGeometryChange(for: Bool.self) { geometry in
+      let intersection = geometry.frame(in: .global).intersection(portraitViewport)
+      return !intersection.isNull && intersection.width >= 24 && intersection.height >= 24
+    } action: { onPortraitVisibility($0) }
+    .onDisappear { onPortraitVisibility(false) }
+  }
+  private var workingPortrait: Bool {
+    AIOperationsFloorProjection.portraitWorks(activity: agent.activity, eligible: portraitEligible, reduceMotion: reduceMotion)
+  }
+  private var livePortraitCue: Bool {
+    portraitEligible && !reduceMotion && portraitCueToken == AIOperationsFloorProjection.portraitIdentity(agent)
+  }
+  private var livePortraitOutcome: ReviewResultVisual? {
+    guard portraitEligible, !reduceMotion,
+          portraitOutcomeCueToken == AIOperationsFloorProjection.portraitOutcomeObservationIdentity(agent) else { return nil }
+    return AIOperationsFloorProjection.portraitOutcomeReaction(agent)
+  }
+  @ViewBuilder private var portraitArtwork: some View {
+    if let asset = AgentPortraitAsset.name(for: agent.agentID) {
+      Image(asset).resizable().scaledToFill()
+    } else {
+      Text(agent.initials).font(.headline.weight(.black))
+    }
   }
   private var accessibilityPriority: Double { agent.agentID == "aurora" ? 23 : agent.agentID == "stacks" ? 22 : agent.agentID == "brio" ? 21 : 20 }
 }
@@ -507,6 +573,113 @@ private struct StationPipeline: View {
 }
 
 struct AIOperationsFloorProjection: Equatable {
+  static let portraitFootprint: CGFloat = 48
+
+  static func portraitWorkingTravel(isWide: Bool, agentID: String) -> CGFloat {
+    guard isWide else { return 0.65 }
+    return agentID == "stacks" || agentID == "brio" ? 1.2 : 1.0
+  }
+
+  static func portraitCompletionScaleDelta(isWide: Bool, agentID: String) -> CGFloat {
+    guard isWide else { return 0.025 }
+    return agentID == "stacks" || agentID == "brio" ? 0.040 : 0.035
+  }
+
+  // Only existing lifecycle identity enters portrait choreography. Conditions,
+  // emphasis, cached results and simulation randomness are deliberately absent.
+  static func portraitIdentity(_ agent: LivingAgentProjection) -> String {
+    "\(agent.agentID):\(agent.taskID?.uuidString ?? "none"):\(agent.presentationSequenceID?.uuidString ?? "none"):\(agent.activity.rawValue)"
+  }
+
+  static func portraitWorks(activity: LivingAgentActivity, eligible: Bool, reduceMotion: Bool) -> Bool {
+    activity == .working && eligible && !reduceMotion
+  }
+
+  static func portraitOutcomeReaction(_ agent: LivingAgentProjection) -> ReviewResultVisual? {
+    guard agent.taskID != nil, agent.presentationSequenceID != nil,
+          agent.reviewRevealStep >= 5,
+          [.reviewing, .reviewed, .resolving, .resolved].contains(agent.activity) else { return nil }
+    let result = ReviewResultVisual.map(conditions: agent.conditions, revealStep: agent.reviewRevealStep)
+    return result == .pending ? nil : result
+  }
+
+  static func portraitOutcomeSequenceIdentity(_ agent: LivingAgentProjection) -> String? {
+    guard let taskID = agent.taskID, let sequenceID = agent.presentationSequenceID else { return nil }
+    return "\(agent.agentID):\(taskID.uuidString):\(sequenceID.uuidString)"
+  }
+
+  static func portraitOutcomeObservationIdentity(_ agent: LivingAgentProjection) -> String {
+    let sequence = portraitOutcomeSequenceIdentity(agent) ?? "\(agent.agentID):none:none"
+    let result = ReviewResultVisual.map(conditions: agent.conditions, revealStep: agent.reviewRevealStep)
+    return "\(sequence):\(result.rawValue)"
+  }
+
+  static func portraitOutcomeOffset(_ result: ReviewResultVisual, phase: CGFloat) -> CGSize {
+    switch result {
+    case .verified: CGSize(width: 0, height: -1.4 * phase)
+    case .evidenceIncomplete: CGSize(width: 0.9 * phase, height: 0)
+    case .overclaimed, .driftDetected: CGSize(width: 0, height: 1.2 * phase)
+    case .pending: .zero
+    }
+  }
+
+  static func portraitOutcomeScale(_ result: ReviewResultVisual, phase: CGFloat) -> CGFloat {
+    switch result {
+    case .verified: 1 + 0.025 * phase
+    case .evidenceIncomplete: 1 - 0.015 * phase
+    case .overclaimed, .driftDetected: 1 - 0.025 * phase
+    case .pending: 1
+    }
+  }
+
+  /// Outcome reactions are admitted only by a live, same-sequence transition
+  /// from the sealed `pending` projection to an already-revealed visual result.
+  static func reconcilePortraitOutcomes(
+    agents: [LivingAgentProjection], visibleIDs: Set<String>, eligible: Bool,
+    reduceMotion: Bool, allowTransitions: Bool,
+    observed: inout [String: String], cues: inout [String: String]
+  ) {
+    let currentIDs = Set(agents.map(\.agentID))
+    observed = observed.filter { currentIDs.contains($0.key) }
+    cues = cues.filter { currentIDs.contains($0.key) }
+    for agent in agents {
+      let identity = portraitOutcomeObservationIdentity(agent)
+      let previous = observed.updateValue(identity, forKey: agent.agentID)
+      let canAnimate = eligible && !reduceMotion && visibleIDs.contains(agent.agentID)
+      guard canAnimate, allowTransitions,
+            portraitOutcomeReaction(agent) != nil,
+            let sequence = portraitOutcomeSequenceIdentity(agent),
+            previous == "\(sequence):\(ReviewResultVisual.pending.rawValue)" else {
+        cues[agent.agentID] = nil
+        continue
+      }
+      cues[agent.agentID] = identity
+    }
+  }
+
+  /// Observe every phase, including hidden phases. Visibility/eligibility changes
+  /// adopt a baseline with allowTransitions=false; they never drain a cue queue.
+  static func reconcilePortraits(
+    agents: [LivingAgentProjection], visibleIDs: Set<String>, eligible: Bool,
+    reduceMotion: Bool, allowTransitions: Bool,
+    observed: inout [String: String], cues: inout [String: String]
+  ) {
+    let currentIDs = Set(agents.map(\.agentID))
+    observed = observed.filter { currentIDs.contains($0.key) }
+    cues = cues.filter { currentIDs.contains($0.key) }
+    for agent in agents {
+      let identity = portraitIdentity(agent)
+      let previous = observed.updateValue(identity, forKey: agent.agentID)
+      let canAnimate = eligible && !reduceMotion && visibleIDs.contains(agent.agentID)
+      guard canAnimate else { cues[agent.agentID] = nil; continue }
+      if previous != identity {
+        cues[agent.agentID] = allowTransitions && previous != nil && agent.taskID != nil
+          && agent.presentationSequenceID != nil
+          && (agent.activity == .assignmentReceived || agent.activity == .workComplete) ? identity : nil
+      }
+    }
+  }
+
   enum Priority: Int, Comparable, Equatable {
     case informational, important, critical
     static func < (lhs: Self, rhs: Self) -> Bool { lhs.rawValue < rhs.rawValue }
