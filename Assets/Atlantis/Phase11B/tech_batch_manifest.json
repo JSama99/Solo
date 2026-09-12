@@ -1,0 +1,446 @@
+{
+  "source": "App/RealityKit/Atlantis/tech_core.usdc",
+  "sourceSHA256": "fad66245754db11c6aacab364c03c4b5514cffe9f85e0bcf46f9f0288d4c4f8b",
+  "output": "App/RealityKit/Atlantis/tech_core_batched.usdz",
+  "outputSHA256": "cecbd64cc7523eee5831576ae40172e1b17b743a51a4f193fd7cf33b68cf6a7f",
+  "classification": {
+    "batchable": "supporting blocks, podiums, plaza, and static road geometry",
+    "preserveSeparate": "The Spire, Pallas AI HQ, and Northwind Labs HQ hierarchies; every top-level semantic/navigation anchor"
+  },
+  "preservedRoots": [
+    "/TechCore/RivalHQ_Slot_03",
+    "/TechCore/RivalHQ_Slot_04",
+    "/TechCore/TheSpire"
+  ],
+  "semanticAnchors": [
+    {
+      "path": "/TechCore/Tech_Ring_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/Tech_Ring_01",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/Tech_Ring_02",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/Tech_Ring_03",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/Tech_Ring_04",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/Tech_Ring_05",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_CrossStreet_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/Tech_Link_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/Spire_Plaza",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_000",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_007",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_007",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_008",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_008",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_009",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_009",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_010",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_010",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_011",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_011",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_012",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_012",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_013",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_013",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_014",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_014",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_015",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_015",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_016",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_016",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_017",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_017",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_018",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Block_018",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/TechCore_Podium_019",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/Landmark_TheSpire_Parcel",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/RivalHQ_Slot_03_Parcel",
+      "preservedChildren": []
+    },
+    {
+      "path": "/TechCore/RivalHQ_Slot_04_Parcel",
+      "preservedChildren": []
+    }
+  ],
+  "preservedMeshPaths": [
+    "/TechCore/RivalHQ_Slot_03/RivalHQ_NorthwindLabs/NorthwindLabsHQ/NorthwindLabs_LabDisplay/Geometry",
+    "/TechCore/RivalHQ_Slot_03/RivalHQ_NorthwindLabs/NorthwindLabsHQ/NorthwindLabs_LabGlow/Geometry",
+    "/TechCore/RivalHQ_Slot_03/RivalHQ_NorthwindLabs/NorthwindLabsHQ/NorthwindLabs_PaleStructure/Geometry",
+    "/TechCore/RivalHQ_Slot_03/RivalHQ_NorthwindLabs/NorthwindLabsHQ/NorthwindLabs_ResearchGlazing/Geometry",
+    "/TechCore/RivalHQ_Slot_03/RivalHQ_NorthwindLabs/NorthwindLabsHQ/NorthwindLabs_RoofLouvers/Geometry",
+    "/TechCore/RivalHQ_Slot_03/RivalHQ_NorthwindLabs/NorthwindLabsHQ/NorthwindLabs_Signage_Main_001/Geometry",
+    "/TechCore/RivalHQ_Slot_03/RivalHQ_NorthwindLabs/NorthwindLabsHQ/NorthwindLabs_Silver/Geometry",
+    "/TechCore/RivalHQ_Slot_04/RivalHQ_PallasAI/PallasAIHQ/PallasAI_ArchitecturalGlow/Geometry",
+    "/TechCore/RivalHQ_Slot_04/RivalHQ_PallasAI/PallasAIHQ/PallasAI_Bronze/Geometry",
+    "/TechCore/RivalHQ_Slot_04/RivalHQ_PallasAI/PallasAIHQ/PallasAI_CrownMark/Geometry",
+    "/TechCore/RivalHQ_Slot_04/RivalHQ_PallasAI/PallasAIHQ/PallasAI_LobbyDisplay/Geometry",
+    "/TechCore/RivalHQ_Slot_04/RivalHQ_PallasAI/PallasAIHQ/PallasAI_PodiumGlass/Geometry",
+    "/TechCore/RivalHQ_Slot_04/RivalHQ_PallasAI/PallasAIHQ/PallasAI_PodiumStone/Geometry",
+    "/TechCore/RivalHQ_Slot_04/RivalHQ_PallasAI/PallasAIHQ/PallasAI_Signage_Main_001/Geometry",
+    "/TechCore/RivalHQ_Slot_04/RivalHQ_PallasAI/PallasAIHQ/PallasAI_TowerRetopology/Geometry",
+    "/TechCore/TheSpire/TheSpire_Accent_1/Geometry",
+    "/TechCore/TheSpire/TheSpire_Accent_2/Geometry",
+    "/TechCore/TheSpire/TheSpire_CrownAccent_0/Geometry",
+    "/TechCore/TheSpire/TheSpire_CrownAccent_1/Geometry",
+    "/TechCore/TheSpire/TheSpire_Entrance/Geometry",
+    "/TechCore/TheSpire/TheSpire_EntranceCanopy/Geometry",
+    "/TechCore/TheSpire/TheSpire_GeneratedShaft/Geometry",
+    "/TechCore/TheSpire/TheSpire_PodiumLower/Geometry",
+    "/TechCore/TheSpire/TheSpire_PodiumUpper/Geometry",
+    "/TechCore/TheSpire/TheSpire_VerticalFin_0/Geometry",
+    "/TechCore/TheSpire/TheSpire_VerticalFin_1/Geometry",
+    "/TechCore/TheSpire/TheSpire_VerticalFin_2/Geometry",
+    "/TechCore/TheSpire/TheSpire_VerticalFin_3/Geometry"
+  ],
+  "batchedSourceMeshPaths": [
+    "/TechCore/Landmark_TheSpire_Parcel/Geometry",
+    "/TechCore/RivalHQ_Slot_03_Parcel/Geometry",
+    "/TechCore/RivalHQ_Slot_04_Parcel/Geometry",
+    "/TechCore/Spire_Plaza/Geometry",
+    "/TechCore/TechCore_Block_000/Geometry",
+    "/TechCore/TechCore_Block_001/Geometry",
+    "/TechCore/TechCore_Block_002/Geometry",
+    "/TechCore/TechCore_Block_003/Geometry",
+    "/TechCore/TechCore_Block_004/Geometry",
+    "/TechCore/TechCore_Block_005/Geometry",
+    "/TechCore/TechCore_Block_006/Geometry",
+    "/TechCore/TechCore_Block_007/Geometry",
+    "/TechCore/TechCore_Block_008/Geometry",
+    "/TechCore/TechCore_Block_009/Geometry",
+    "/TechCore/TechCore_Block_010/Geometry",
+    "/TechCore/TechCore_Block_011/Geometry",
+    "/TechCore/TechCore_Block_012/Geometry",
+    "/TechCore/TechCore_Block_013/Geometry",
+    "/TechCore/TechCore_Block_014/Geometry",
+    "/TechCore/TechCore_Block_015/Geometry",
+    "/TechCore/TechCore_Block_016/Geometry",
+    "/TechCore/TechCore_Block_017/Geometry",
+    "/TechCore/TechCore_Block_018/Geometry",
+    "/TechCore/TechCore_CrossStreet_00/Geometry",
+    "/TechCore/TechCore_Podium_001/Geometry",
+    "/TechCore/TechCore_Podium_002/Geometry",
+    "/TechCore/TechCore_Podium_003/Geometry",
+    "/TechCore/TechCore_Podium_004/Geometry",
+    "/TechCore/TechCore_Podium_005/Geometry",
+    "/TechCore/TechCore_Podium_006/Geometry",
+    "/TechCore/TechCore_Podium_007/Geometry",
+    "/TechCore/TechCore_Podium_008/Geometry",
+    "/TechCore/TechCore_Podium_009/Geometry",
+    "/TechCore/TechCore_Podium_010/Geometry",
+    "/TechCore/TechCore_Podium_011/Geometry",
+    "/TechCore/TechCore_Podium_012/Geometry",
+    "/TechCore/TechCore_Podium_013/Geometry",
+    "/TechCore/TechCore_Podium_014/Geometry",
+    "/TechCore/TechCore_Podium_015/Geometry",
+    "/TechCore/TechCore_Podium_016/Geometry",
+    "/TechCore/TechCore_Podium_017/Geometry",
+    "/TechCore/TechCore_Podium_018/Geometry",
+    "/TechCore/TechCore_Podium_019/Geometry",
+    "/TechCore/Tech_Link_00/Geometry",
+    "/TechCore/Tech_Ring_00/Geometry",
+    "/TechCore/Tech_Ring_01/Geometry",
+    "/TechCore/Tech_Ring_02/Geometry",
+    "/TechCore/Tech_Ring_03/Geometry",
+    "/TechCore/Tech_Ring_04/Geometry",
+    "/TechCore/Tech_Ring_05/Geometry"
+  ],
+  "batches": [
+    {
+      "material": "/TechCore/Materials/TEMP_____TechCore",
+      "sourceMeshes": [
+        "/TechCore/TechCore_Block_000/Geometry",
+        "/TechCore/TechCore_Block_001/Geometry",
+        "/TechCore/TechCore_Block_002/Geometry",
+        "/TechCore/TechCore_Block_003/Geometry",
+        "/TechCore/TechCore_Block_004/Geometry",
+        "/TechCore/TechCore_Block_005/Geometry",
+        "/TechCore/TechCore_Block_006/Geometry",
+        "/TechCore/TechCore_Block_007/Geometry",
+        "/TechCore/TechCore_Block_008/Geometry",
+        "/TechCore/TechCore_Block_009/Geometry",
+        "/TechCore/TechCore_Block_010/Geometry",
+        "/TechCore/TechCore_Block_011/Geometry",
+        "/TechCore/TechCore_Block_012/Geometry",
+        "/TechCore/TechCore_Block_013/Geometry",
+        "/TechCore/TechCore_Block_014/Geometry",
+        "/TechCore/TechCore_Block_015/Geometry",
+        "/TechCore/TechCore_Block_016/Geometry",
+        "/TechCore/TechCore_Block_017/Geometry",
+        "/TechCore/TechCore_Block_018/Geometry",
+        "/TechCore/TechCore_Podium_001/Geometry",
+        "/TechCore/TechCore_Podium_002/Geometry",
+        "/TechCore/TechCore_Podium_003/Geometry",
+        "/TechCore/TechCore_Podium_004/Geometry",
+        "/TechCore/TechCore_Podium_005/Geometry",
+        "/TechCore/TechCore_Podium_006/Geometry",
+        "/TechCore/TechCore_Podium_007/Geometry",
+        "/TechCore/TechCore_Podium_008/Geometry",
+        "/TechCore/TechCore_Podium_009/Geometry",
+        "/TechCore/TechCore_Podium_010/Geometry",
+        "/TechCore/TechCore_Podium_011/Geometry",
+        "/TechCore/TechCore_Podium_012/Geometry",
+        "/TechCore/TechCore_Podium_013/Geometry",
+        "/TechCore/TechCore_Podium_014/Geometry",
+        "/TechCore/TechCore_Podium_015/Geometry",
+        "/TechCore/TechCore_Podium_016/Geometry",
+        "/TechCore/TechCore_Podium_017/Geometry",
+        "/TechCore/TechCore_Podium_018/Geometry",
+        "/TechCore/TechCore_Podium_019/Geometry"
+      ]
+    },
+    {
+      "material": "/TechCore/Materials/TEMP_____asphalt",
+      "sourceMeshes": [
+        "/TechCore/TechCore_CrossStreet_00/Geometry",
+        "/TechCore/Tech_Link_00/Geometry",
+        "/TechCore/Tech_Ring_00/Geometry",
+        "/TechCore/Tech_Ring_01/Geometry",
+        "/TechCore/Tech_Ring_02/Geometry",
+        "/TechCore/Tech_Ring_03/Geometry",
+        "/TechCore/Tech_Ring_04/Geometry",
+        "/TechCore/Tech_Ring_05/Geometry"
+      ]
+    },
+    {
+      "material": "/TechCore/Materials/TEMP_____bridge___plaza",
+      "sourceMeshes": [
+        "/TechCore/Landmark_TheSpire_Parcel/Geometry",
+        "/TechCore/RivalHQ_Slot_03_Parcel/Geometry",
+        "/TechCore/RivalHQ_Slot_04_Parcel/Geometry",
+        "/TechCore/Spire_Plaza/Geometry"
+      ]
+    }
+  ],
+  "baseline": {
+    "package": "tech_core",
+    "bytes": 39572,
+    "meshes": 78,
+    "triangles": 2852,
+    "materials": 22,
+    "textures": 0,
+    "bounds": [
+      [
+        -263.0000305175781,
+        13.999996185302734,
+        -662.4998168945312
+      ],
+      [
+        372.869384765625,
+        294.0,
+        -56.20000457763672
+      ]
+    ],
+    "landmarks": {
+      "TheSpire": [
+        50.0,
+        14.0,
+        -420.0
+      ],
+      "PallasAIHQ": [
+        220.0,
+        14.0,
+        -300.0
+      ],
+      "NorthwindLabsHQ": [
+        -100.0,
+        14.0,
+        -520.0
+      ]
+    },
+    "sha256": "6b3418b382066c5822140c94dbf7af59c484d1f5b99613ac3db820d7a3365760",
+    "source_shared_mesh_variants": 0,
+    "mesh_payloads_exported": 78,
+    "instancing": "expanded per object in baseline; runtime sharing not assumed"
+  },
+  "optimized": {
+    "package": "tech_core_batched",
+    "bytes": 40336,
+    "meshes": 31,
+    "triangles": 2852,
+    "materials": 22,
+    "textures": 0,
+    "bounds": [
+      [
+        -263.0000305175781,
+        13.99997329711914,
+        -662.4998168945312
+      ],
+      [
+        372.869384765625,
+        293.999981880188,
+        -56.20000457763672
+      ]
+    ],
+    "landmarks": {
+      "TheSpire": [
+        50.0,
+        14.0,
+        -420.0
+      ],
+      "PallasAIHQ": [
+        220.0,
+        14.0,
+        -300.0
+      ],
+      "NorthwindLabsHQ": [
+        -100.0,
+        14.0,
+        -520.0
+      ]
+    },
+    "sha256": "cecbd64cc7523eee5831576ae40172e1b17b743a51a4f193fd7cf33b68cf6a7f",
+    "experiment": "Selective material batching with landmark subtrees and semantic anchors preserved"
+  }
+}

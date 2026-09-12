@@ -1,0 +1,52 @@
+{
+  "TEMP \u2022 Atlantis Bay": {
+    "viewportColor": [
+      0.054999999701976776,
+      0.28999999165534973,
+      0.3799999952316284,
+      1.0
+    ],
+    "nodes": [
+      {
+        "type": "BSDF_PRINCIPLED",
+        "name": "Principled BSDF",
+        "baseColor": [
+          0.800000011920929,
+          0.800000011920929,
+          0.800000011920929,
+          1.0
+        ]
+      },
+      {
+        "type": "OUTPUT_MATERIAL",
+        "name": "Material Output",
+        "baseColor": null
+      }
+    ]
+  },
+  "TEMP \u2022 coastal limestone": {
+    "viewportColor": [
+      0.44999998807907104,
+      0.5299999713897705,
+      0.46000000834465027,
+      1.0
+    ],
+    "nodes": [
+      {
+        "type": "BSDF_PRINCIPLED",
+        "name": "Principled BSDF",
+        "baseColor": [
+          0.800000011920929,
+          0.800000011920929,
+          0.800000011920929,
+          1.0
+        ]
+      },
+      {
+        "type": "OUTPUT_MATERIAL",
+        "name": "Material Output",
+        "baseColor": null
+      }
+    ]
+  }
+}

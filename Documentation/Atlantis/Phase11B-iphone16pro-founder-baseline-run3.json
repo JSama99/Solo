@@ -1,0 +1,109 @@
+{
+  "assetMode" : "baseline",
+  "collisionEntityCount" : 0,
+  "configuration" : "Debug; physical iOS device; SceneEvents.Update cadence is not a GPU presentation counter",
+  "device" : "iPhone",
+  "errors" : [
+
+  ],
+  "frames" : [
+
+  ],
+  "loadPhases" : [
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "resolve",
+      "seconds" : 4.3458e-05
+    },
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "read",
+      "seconds" : 5.9708e-05
+    },
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "checksum",
+      "seconds" : 6.0291e-05
+    },
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "realitykit-import",
+      "seconds" : 0.082655542
+    },
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "validation",
+      "seconds" : 1.425e-05
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district",
+      "phase" : "resolve",
+      "seconds" : 2.8e-05
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district",
+      "phase" : "read",
+      "seconds" : 0.000112583
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district",
+      "phase" : "checksum",
+      "seconds" : 0.0001825
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district",
+      "phase" : "realitykit-import",
+      "seconds" : 40.039769708
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district",
+      "phase" : "validation",
+      "seconds" : 0.000148791
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district",
+      "phase" : "scene-install",
+      "seconds" : 0.0057475
+    }
+  ],
+  "loads" : [
+    {
+      "district" : "FounderDistrict",
+      "memoryAfterMB" : 243.31356048583984,
+      "memoryBeforeMB" : 238.98538970947266,
+      "outcome" : "loaded",
+      "package" : "founder_district",
+      "seconds" : 40.04693806171417
+    }
+  ],
+  "lod" : [
+
+  ],
+  "os" : "26.7",
+  "sampledPeakMemoryMB" : 275.48541259765625,
+  "stages" : [
+
+  ],
+  "startupMilestones" : {
+    "timeToFirstSceneUpdate" : 0.156630041,
+    "timeToFounderPlayable" : 40.16343675,
+    "timeToFounderVisible" : 40.163431459
+  },
+  "unloadCycles" : [
+
+  ],
+  "walks" : [
+
+  ]
+}

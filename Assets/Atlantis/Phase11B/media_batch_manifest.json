@@ -1,0 +1,435 @@
+{
+  "source": "App/RealityKit/Atlantis/media_district.usdc",
+  "sourceSHA256": "e149ebe4c43f93fb82b28e986b844af03fd200c686c5cbd2898429906c634bcf",
+  "output": "App/RealityKit/Atlantis/media_district_batched.usdz",
+  "outputSHA256": "1f589798850e09d1042881974131bad2f3d50312fd0b668ce93ab1cc7237ccd9",
+  "classification": {
+    "batchable": "supporting blocks, landscape, and static waterfront/route geometry",
+    "preserveSeparate": "Tech.com and Signal TV hierarchies and every top-level semantic/navigation anchor"
+  },
+  "preservedRoots": [
+    "/MediaDistrict/SignalTV",
+    "/MediaDistrict/TechComTower"
+  ],
+  "semanticAnchors": [
+    {
+      "path": "/MediaDistrict/Media_Headland",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_Boulevard_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_Boulevard_01",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_Boulevard_02",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_CrossStreet_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_Link_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Bridge_Media_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Bridge_Media_Pier_0_2",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Bridge_Media_Pier_0_5",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Bridge_Media_Pier_0_8",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_Waterfront",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_000",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_004_GlazedTerrace",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_005_GlazedTerrace",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_006_GlazedTerrace",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_007",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_007_GlazedTerrace",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_008",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_008_GlazedTerrace",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_009",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/MediaDistrict_Block_009_GlazedTerrace",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/SignalTV_EntryWalk",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/SignalTV_BroadcastPlaza",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_Planter_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_GreenMass_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_Planter_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_GreenMass_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_Planter_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_GreenMass_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_Planter_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_GreenMass_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/TechCom_EntryWalk",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/TechCom_Forecourt",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_Planter",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_GreenMass",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_Planter_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_GreenMass_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_EsplanadeSouth",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Media_EsplanadeNorth",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Broadcast_WaterfrontWalk",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Landmark_TechComTower_Parcel",
+      "preservedChildren": []
+    },
+    {
+      "path": "/MediaDistrict/Landmark_SignalTV_Parcel",
+      "preservedChildren": []
+    }
+  ],
+  "preservedMeshPaths": [
+    "/MediaDistrict/SignalTV/SignalTV_Display_Main/Geometry",
+    "/MediaDistrict/SignalTV/SignalTV_Display_Secondary/Geometry",
+    "/MediaDistrict/SignalTV/SignalTV_Media_BlueGlazing/Geometry",
+    "/MediaDistrict/SignalTV/SignalTV_Media_BrushedSilver/Geometry",
+    "/MediaDistrict/SignalTV/SignalTV_Media_Graphite/Geometry",
+    "/MediaDistrict/SignalTV/SignalTV_Media_LobbyLight/Geometry",
+    "/MediaDistrict/SignalTV/SignalTV_Media_PearlConcrete/Geometry",
+    "/MediaDistrict/SignalTV/SignalTV_Ticker/Geometry",
+    "/MediaDistrict/TechComTower/TechComTower_Media_BlueGlazing/Geometry",
+    "/MediaDistrict/TechComTower/TechComTower_Media_BrushedSilver/Geometry",
+    "/MediaDistrict/TechComTower/TechComTower_Media_Graphite/Geometry",
+    "/MediaDistrict/TechComTower/TechComTower_Media_LobbyLight/Geometry",
+    "/MediaDistrict/TechComTower/TechComTower_Media_PearlConcrete/Geometry",
+    "/MediaDistrict/TechComTower/TechCom_Display_Main/Geometry",
+    "/MediaDistrict/TechComTower/TechCom_Ticker/Geometry"
+  ],
+  "batchedSourceMeshPaths": [
+    "/MediaDistrict/Bridge_Media_00/Geometry",
+    "/MediaDistrict/Bridge_Media_Pier_0_2/Geometry",
+    "/MediaDistrict/Bridge_Media_Pier_0_5/Geometry",
+    "/MediaDistrict/Bridge_Media_Pier_0_8/Geometry",
+    "/MediaDistrict/Broadcast_WaterfrontWalk/Geometry",
+    "/MediaDistrict/Landmark_SignalTV_Parcel/Geometry",
+    "/MediaDistrict/Landmark_TechComTower_Parcel/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_000/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_001/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_002/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_003/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_004/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_004_GlazedTerrace/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_005/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_005_GlazedTerrace/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_006/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_006_GlazedTerrace/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_007/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_007_GlazedTerrace/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_008/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_008_GlazedTerrace/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_009/Geometry",
+    "/MediaDistrict/MediaDistrict_Block_009_GlazedTerrace/Geometry",
+    "/MediaDistrict/MediaDistrict_CrossStreet_00/Geometry",
+    "/MediaDistrict/Media_Boulevard_00/Geometry",
+    "/MediaDistrict/Media_Boulevard_01/Geometry",
+    "/MediaDistrict/Media_Boulevard_02/Geometry",
+    "/MediaDistrict/Media_EsplanadeNorth/Geometry",
+    "/MediaDistrict/Media_EsplanadeSouth/Geometry",
+    "/MediaDistrict/Media_GreenMass/Geometry",
+    "/MediaDistrict/Media_GreenMass_001/Geometry",
+    "/MediaDistrict/Media_GreenMass_002/Geometry",
+    "/MediaDistrict/Media_GreenMass_003/Geometry",
+    "/MediaDistrict/Media_GreenMass_004/Geometry",
+    "/MediaDistrict/Media_GreenMass_005/Geometry",
+    "/MediaDistrict/Media_Headland/Geometry",
+    "/MediaDistrict/Media_Link_00/Geometry",
+    "/MediaDistrict/Media_Planter/Geometry",
+    "/MediaDistrict/Media_Planter_001/Geometry",
+    "/MediaDistrict/Media_Planter_002/Geometry",
+    "/MediaDistrict/Media_Planter_003/Geometry",
+    "/MediaDistrict/Media_Planter_004/Geometry",
+    "/MediaDistrict/Media_Planter_005/Geometry",
+    "/MediaDistrict/Media_Waterfront/Geometry",
+    "/MediaDistrict/SignalTV_BroadcastPlaza/Geometry",
+    "/MediaDistrict/SignalTV_EntryWalk/Geometry",
+    "/MediaDistrict/TechCom_EntryWalk/Geometry",
+    "/MediaDistrict/TechCom_Forecourt/Geometry"
+  ],
+  "batches": [
+    {
+      "material": "/MediaDistrict/Materials/Media_BlueGlazing",
+      "sourceMeshes": [
+        "/MediaDistrict/MediaDistrict_Block_004_GlazedTerrace/Geometry",
+        "/MediaDistrict/MediaDistrict_Block_005_GlazedTerrace/Geometry",
+        "/MediaDistrict/MediaDistrict_Block_006_GlazedTerrace/Geometry",
+        "/MediaDistrict/MediaDistrict_Block_007_GlazedTerrace/Geometry",
+        "/MediaDistrict/MediaDistrict_Block_008_GlazedTerrace/Geometry",
+        "/MediaDistrict/MediaDistrict_Block_009_GlazedTerrace/Geometry"
+      ]
+    },
+    {
+      "material": "/MediaDistrict/Materials/Media_BrushedSilver",
+      "sourceMeshes": [
+        "/MediaDistrict/Media_Planter/Geometry",
+        "/MediaDistrict/Media_Planter_001/Geometry",
+        "/MediaDistrict/Media_Planter_002/Geometry",
+        "/MediaDistrict/Media_Planter_003/Geometry",
+        "/MediaDistrict/Media_Planter_004/Geometry",
+        "/MediaDistrict/Media_Planter_005/Geometry"
+      ]
+    },
+    {
+      "material": "/MediaDistrict/Materials/Media_PearlConcrete",
+      "sourceMeshes": [
+        "/MediaDistrict/Broadcast_WaterfrontWalk/Geometry",
+        "/MediaDistrict/MediaDistrict_Block_004/Geometry",
+        "/MediaDistrict/MediaDistrict_Block_005/Geometry",
+        "/MediaDistrict/MediaDistrict_Block_006/Geometry",
+        "/MediaDistrict/MediaDistrict_Block_007/Geometry",
+        "/MediaDistrict/MediaDistrict_Block_008/Geometry",
+        "/MediaDistrict/MediaDistrict_Block_009/Geometry",
+        "/MediaDistrict/Media_EsplanadeNorth/Geometry",
+        "/MediaDistrict/Media_EsplanadeSouth/Geometry",
+        "/MediaDistrict/SignalTV_BroadcastPlaza/Geometry",
+        "/MediaDistrict/SignalTV_EntryWalk/Geometry",
+        "/MediaDistrict/TechCom_EntryWalk/Geometry",
+        "/MediaDistrict/TechCom_Forecourt/Geometry"
+      ]
+    },
+    {
+      "material": "/MediaDistrict/Materials/Media_Planting",
+      "sourceMeshes": [
+        "/MediaDistrict/Media_GreenMass/Geometry",
+        "/MediaDistrict/Media_GreenMass_001/Geometry",
+        "/MediaDistrict/Media_GreenMass_002/Geometry",
+        "/MediaDistrict/Media_GreenMass_003/Geometry",
+        "/MediaDistrict/Media_GreenMass_004/Geometry",
+        "/MediaDistrict/Media_GreenMass_005/Geometry"
+      ]
+    },
+    {
+      "material": "/MediaDistrict/Materials/TEMP_____MediaDistrict",
+      "sourceMeshes": [
+        "/MediaDistrict/MediaDistrict_Block_000/Geometry",
+        "/MediaDistrict/MediaDistrict_Block_001/Geometry",
+        "/MediaDistrict/MediaDistrict_Block_002/Geometry",
+        "/MediaDistrict/MediaDistrict_Block_003/Geometry"
+      ]
+    },
+    {
+      "material": "/MediaDistrict/Materials/TEMP_____asphalt",
+      "sourceMeshes": [
+        "/MediaDistrict/MediaDistrict_CrossStreet_00/Geometry",
+        "/MediaDistrict/Media_Boulevard_00/Geometry",
+        "/MediaDistrict/Media_Boulevard_01/Geometry",
+        "/MediaDistrict/Media_Boulevard_02/Geometry",
+        "/MediaDistrict/Media_Link_00/Geometry"
+      ]
+    },
+    {
+      "material": "/MediaDistrict/Materials/TEMP_____bridge___plaza",
+      "sourceMeshes": [
+        "/MediaDistrict/Bridge_Media_00/Geometry",
+        "/MediaDistrict/Bridge_Media_Pier_0_2/Geometry",
+        "/MediaDistrict/Bridge_Media_Pier_0_5/Geometry",
+        "/MediaDistrict/Bridge_Media_Pier_0_8/Geometry",
+        "/MediaDistrict/Landmark_SignalTV_Parcel/Geometry",
+        "/MediaDistrict/Landmark_TechComTower_Parcel/Geometry",
+        "/MediaDistrict/Media_Waterfront/Geometry"
+      ]
+    },
+    {
+      "material": "/MediaDistrict/Materials/TEMP_____coastal_limestone",
+      "sourceMeshes": [
+        "/MediaDistrict/Media_Headland/Geometry"
+      ]
+    }
+  ],
+  "baseline": {
+    "package": "media_district",
+    "bytes": 28551,
+    "meshes": 63,
+    "triangles": 1620,
+    "materials": 15,
+    "textures": 0,
+    "bounds": [
+      [
+        416.3615417480469,
+        -12.0,
+        -620.0
+      ],
+      [
+        1060.0,
+        159.0,
+        -20.0
+      ]
+    ],
+    "landmarks": {
+      "TechComTower": [
+        835.0,
+        14.0,
+        -220.0
+      ],
+      "SignalTV": [
+        860.0,
+        14.0,
+        -460.0
+      ]
+    },
+    "sha256": "887aec0ba517758985a89ba8d7e444caff51eb83b518cbac78cbb92dbe26cb32",
+    "source_shared_mesh_variants": 0,
+    "mesh_payloads_exported": 63,
+    "instancing": "expanded per object in baseline; runtime sharing not assumed"
+  },
+  "optimized": {
+    "package": "media_district_batched",
+    "bytes": 28921,
+    "meshes": 23,
+    "triangles": 1620,
+    "materials": 15,
+    "textures": 0,
+    "bounds": [
+      [
+        416.3615417480469,
+        -12.0,
+        -620.0
+      ],
+      [
+        1060.0,
+        158.99999046325684,
+        -20.0
+      ]
+    ],
+    "landmarks": {
+      "TechComTower": [
+        835.0,
+        14.0,
+        -220.0
+      ],
+      "SignalTV": [
+        860.0,
+        14.0,
+        -460.0
+      ]
+    },
+    "sha256": "1f589798850e09d1042881974131bad2f3d50312fd0b668ce93ab1cc7237ccd9",
+    "experiment": "Selective material batching with landmark subtrees and semantic anchors preserved"
+  }
+}

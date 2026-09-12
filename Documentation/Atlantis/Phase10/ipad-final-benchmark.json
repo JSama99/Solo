@@ -1,0 +1,887 @@
+{
+  "collisionEntityCount" : 92,
+  "configuration" : "Debug; iOS Simulator; SceneEvents.Update cadence is not a GPU presentation counter",
+  "device" : "iPad",
+  "errors" : [
+
+  ],
+  "frames" : [
+    {
+      "approximateFPS" : 59.479297214022736,
+      "callbacks" : 124,
+      "loadedDistricts" : [
+        "FounderDistrict"
+      ],
+      "longestFrameMS" : 32.46908262372017,
+      "meanFrameMS" : 16.800878742229074,
+      "memoryMB" : 92.37747192382812,
+      "name" : "load-stage: Founder only",
+      "p95FrameMS" : 17.913000658154488,
+      "seconds" : 2.084758996963501
+    },
+    {
+      "approximateFPS" : 60.00457254685386,
+      "callbacks" : 121,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow"
+      ],
+      "longestFrameMS" : 24.269625544548035,
+      "meanFrameMS" : 16.666551328395023,
+      "memoryMB" : 100.76809692382812,
+      "name" : "load-stage: Founder + Startup",
+      "p95FrameMS" : 17.5587497651577,
+      "seconds" : 2.0165129899978638
+    },
+    {
+      "approximateFPS" : 60.15439944330378,
+      "callbacks" : 125,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict"
+      ],
+      "longestFrameMS" : 23.961791768670082,
+      "meanFrameMS" : 16.6713583804667,
+      "memoryMB" : 109.95559692382812,
+      "name" : "load-stage: + Commerce",
+      "p95FrameMS" : 18.803417682647705,
+      "seconds" : 2.077986001968384
+    },
+    {
+      "approximateFPS" : 59.90144141246109,
+      "callbacks" : 124,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "TechCore"
+      ],
+      "longestFrameMS" : 27.115916833281517,
+      "meanFrameMS" : 16.66678565238873,
+      "memoryMB" : 114.87747192382812,
+      "name" : "load-stage: + Tech Core",
+      "p95FrameMS" : 17.68704131245613,
+      "seconds" : 2.070067048072815
+    },
+    {
+      "approximateFPS" : 60.11975368618383,
+      "callbacks" : 126,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 25.536667555570602,
+      "meanFrameMS" : 16.666498009322417,
+      "memoryMB" : 129.59624481201172,
+      "name" : "load-stage: Full Atlantis",
+      "p95FrameMS" : 18.038416281342506,
+      "seconds" : 2.095816969871521
+    },
+    {
+      "approximateFPS" : 59.61332986627484,
+      "callbacks" : 127,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 38.832832127809525,
+      "meanFrameMS" : 16.798128278588685,
+      "memoryMB" : 129.26811981201172,
+      "name" : "founderStreet",
+      "p95FrameMS" : 16.712374985218048,
+      "seconds" : 2.130396008491516
+    },
+    {
+      "approximateFPS" : 59.52150674712667,
+      "callbacks" : 120,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 42.640332132577896,
+      "meanFrameMS" : 16.805500347012032,
+      "memoryMB" : 129.25249481201172,
+      "name" : "startupBoulevard",
+      "p95FrameMS" : 17.24366657435894,
+      "seconds" : 2.016077995300293
+    },
+    {
+      "approximateFPS" : 59.79785470191128,
+      "callbacks" : 120,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 25.440417230129242,
+      "meanFrameMS" : 16.66688636566202,
+      "memoryMB" : 129.25249481201172,
+      "name" : "commerceFlashpoint",
+      "p95FrameMS" : 18.556416034698486,
+      "seconds" : 2.0067609548568726
+    },
+    {
+      "approximateFPS" : 59.395618332925906,
+      "callbacks" : 120,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 33.33629295229912,
+      "meanFrameMS" : 16.80572220357135,
+      "memoryMB" : 129.25249481201172,
+      "name" : "techCoreSkyline",
+      "p95FrameMS" : 19.63675022125244,
+      "seconds" : 2.0203510522842407
+    },
+    {
+      "approximateFPS" : 59.694983899465065,
+      "callbacks" : 127,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 33.40424969792366,
+      "meanFrameMS" : 16.797752596261933,
+      "memoryMB" : 129.28374481201172,
+      "name" : "unicornOverlook",
+      "p95FrameMS" : 18.800750374794006,
+      "seconds" : 2.1274819374084473
+    },
+    {
+      "approximateFPS" : 59.91504310428218,
+      "callbacks" : 127,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 25.510041043162346,
+      "meanFrameMS" : 16.666584237530007,
+      "memoryMB" : 132.37749481201172,
+      "name" : "atlantisAerial",
+      "p95FrameMS" : 16.86345785856247,
+      "seconds" : 2.1196680068969727
+    },
+    {
+      "approximateFPS" : 58.60002922621688,
+      "callbacks" : 123,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 43.75820979475975,
+      "meanFrameMS" : 17.073546776669176,
+      "memoryMB" : 132.53374481201172,
+      "name" : "shadows-0",
+      "p95FrameMS" : 16.72370918095112,
+      "seconds" : 2.0989750623703003
+    },
+    {
+      "approximateFPS" : 58.66985423134182,
+      "callbacks" : 121,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 39.80966657400131,
+      "meanFrameMS" : 16.942041714421727,
+      "memoryMB" : 132.56499481201172,
+      "name" : "shadows-1",
+      "p95FrameMS" : 19.09000054001808,
+      "seconds" : 2.0623879432678223
+    },
+    {
+      "approximateFPS" : 59.50273143118136,
+      "callbacks" : 123,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 33.32812339067459,
+      "meanFrameMS" : 16.801970511129717,
+      "memoryMB" : 132.56499481201172,
+      "name" : "shadows-2",
+      "p95FrameMS" : 19.4847509264946,
+      "seconds" : 2.067131996154785
+    },
+    {
+      "approximateFPS" : 59.82602642909154,
+      "callbacks" : 60,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 25.080958381295204,
+      "meanFrameMS" : 16.667831999560196,
+      "memoryMB" : 132.58061981201172,
+      "name" : "lighting-morning",
+      "p95FrameMS" : 16.73354208469391,
+      "seconds" : 1.0029079914093018
+    },
+    {
+      "approximateFPS" : 60.40494315287329,
+      "callbacks" : 63,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 21.043958142399788,
+      "meanFrameMS" : 16.666658666162263,
+      "memoryMB" : 132.58061981201172,
+      "name" : "lighting-day",
+      "p95FrameMS" : 16.699083149433136,
+      "seconds" : 1.0429610013961792
+    },
+    {
+      "approximateFPS" : 58.7934410955851,
+      "callbacks" : 60,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 33.320583403110504,
+      "meanFrameMS" : 17.222409043461084,
+      "memoryMB" : 132.58061981201172,
+      "name" : "lighting-evening",
+      "p95FrameMS" : 16.84720814228058,
+      "seconds" : 1.0205219984054565
+    },
+    {
+      "approximateFPS" : 59.06049036041293,
+      "callbacks" : 63,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 32.71383419632912,
+      "meanFrameMS" : 16.931606427071586,
+      "memoryMB" : 132.58061981201172,
+      "name" : "lighting-night",
+      "p95FrameMS" : 16.742415726184845,
+      "seconds" : 1.066702961921692
+    },
+    {
+      "approximateFPS" : 59.85717520488489,
+      "callbacks" : 60,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 24.749625474214554,
+      "meanFrameMS" : 16.665735429463286,
+      "memoryMB" : 130.47124481201172,
+      "name" : "collision-off",
+      "p95FrameMS" : 20.170416682958603,
+      "seconds" : 1.0023860931396484
+    },
+    {
+      "approximateFPS" : 58.57556046636255,
+      "callbacks" : 59,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 32.73899853229523,
+      "meanFrameMS" : 17.226514785345326,
+      "memoryMB" : 130.54936981201172,
+      "name" : "collision-on",
+      "p95FrameMS" : 30.52162565290928,
+      "seconds" : 1.0072460174560547
+    },
+    {
+      "approximateFPS" : 60.09603451822574,
+      "callbacks" : 63,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 22.79062569141388,
+      "meanFrameMS" : 16.666632899571034,
+      "memoryMB" : 169.78374481201172,
+      "name" : "LOD-original: Founder_Building_00",
+      "p95FrameMS" : 16.73770882189274,
+      "seconds" : 1.048322081565857
+    },
+    {
+      "approximateFPS" : 59.384604770142424,
+      "callbacks" : 63,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 23.343125358223915,
+      "meanFrameMS" : 16.675728151486034,
+      "memoryMB" : 169.86186981201172,
+      "name" : "LOD-box: Founder_Building_00",
+      "p95FrameMS" : 20.577000454068184,
+      "seconds" : 1.0608810186386108
+    },
+    {
+      "approximateFPS" : 59.56132239419492,
+      "callbacks" : 62,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 33.715542405843735,
+      "meanFrameMS" : 16.975227743387222,
+      "memoryMB" : 169.81499481201172,
+      "name" : "LOD-original: Startup_LoftContext",
+      "p95FrameMS" : 16.731582581996918,
+      "seconds" : 1.04094398021698
+    },
+    {
+      "approximateFPS" : 60.12826075359221,
+      "callbacks" : 61,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 21.29141613841057,
+      "meanFrameMS" : 16.666937802658705,
+      "memoryMB" : 169.86186981201172,
+      "name" : "LOD-box: Startup_LoftContext",
+      "p95FrameMS" : 16.732417047023773,
+      "seconds" : 1.014497995376587
+    },
+    {
+      "approximateFPS" : 57.582152562354565,
+      "callbacks" : 59,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 45.23591697216034,
+      "meanFrameMS" : 17.231788075828955,
+      "memoryMB" : 180.18999481201172,
+      "name" : "LOD-original: Commerce_Building_01",
+      "p95FrameMS" : 30.47141619026661,
+      "seconds" : 1.0246230363845825
+    },
+    {
+      "approximateFPS" : 59.42624651804935,
+      "callbacks" : 62,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 26.849208399653435,
+      "meanFrameMS" : 16.667411166934237,
+      "memoryMB" : 180.26811981201172,
+      "name" : "LOD-box: Commerce_Building_01",
+      "p95FrameMS" : 16.721125692129135,
+      "seconds" : 1.0433100461959839
+    },
+    {
+      "approximateFPS" : 58.06709070994795,
+      "callbacks" : 61,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 42.990792542696,
+      "meanFrameMS" : 17.213310229546224,
+      "memoryMB" : 180.22124481201172,
+      "name" : "LOD-original: PallasAIHQ",
+      "p95FrameMS" : 17.399083822965622,
+      "seconds" : 1.050508975982666
+    },
+    {
+      "approximateFPS" : 57.036389679618516,
+      "callbacks" : 60,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 33.40395912528038,
+      "meanFrameMS" : 17.222253551396232,
+      "memoryMB" : 179.81499481201172,
+      "name" : "LOD-box: PallasAIHQ",
+      "p95FrameMS" : 24.556167423725128,
+      "seconds" : 1.0519599914550781
+    },
+    {
+      "approximateFPS" : 58.747797764172155,
+      "callbacks" : 59,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 41.53062403202057,
+      "meanFrameMS" : 16.949541677357786,
+      "memoryMB" : 179.76811981201172,
+      "name" : "LOD-original: TheSpire",
+      "p95FrameMS" : 17.246415838599205,
+      "seconds" : 1.0042929649353027
+    },
+    {
+      "approximateFPS" : 59.10263924040154,
+      "callbacks" : 60,
+      "loadedDistricts" : [
+        "FounderDistrict",
+        "StartupRow",
+        "CommerceDistrict",
+        "VentureDistrict",
+        "MediaDistrict",
+        "TechCore",
+        "UnicornHeights"
+      ],
+      "longestFrameMS" : 42.66808182001114,
+      "meanFrameMS" : 16.94448332612713,
+      "memoryMB" : 179.79936981201172,
+      "name" : "LOD-box: TheSpire",
+      "p95FrameMS" : 17.24337413907051,
+      "seconds" : 1.0151830911636353
+    }
+  ],
+  "loads" : [
+    {
+      "district" : "FounderDistrict",
+      "memoryAfterMB" : 92.50247192382812,
+      "memoryBeforeMB" : 57.29914093017578,
+      "outcome" : "loaded",
+      "seconds" : 1.1066040992736816
+    },
+    {
+      "district" : "FounderDistrict",
+      "memoryAfterMB" : 90.14309692382812,
+      "memoryBeforeMB" : 83.03372192382812,
+      "outcome" : "loaded",
+      "seconds" : 0.9845790863037109
+    },
+    {
+      "district" : "StartupRow",
+      "memoryAfterMB" : 99.14309692382812,
+      "memoryBeforeMB" : 92.37747192382812,
+      "outcome" : "loaded",
+      "seconds" : 0.32459092140197754
+    },
+    {
+      "district" : "CommerceDistrict",
+      "memoryAfterMB" : 111.28372192382812,
+      "memoryBeforeMB" : 100.76809692382812,
+      "outcome" : "loaded",
+      "seconds" : 0.4120619297027588
+    },
+    {
+      "district" : "TechCore",
+      "memoryAfterMB" : 115.08059692382812,
+      "memoryBeforeMB" : 109.95559692382812,
+      "outcome" : "loaded",
+      "seconds" : 0.16596508026123047
+    },
+    {
+      "district" : "VentureDistrict",
+      "memoryAfterMB" : 117.34624481201172,
+      "memoryBeforeMB" : 114.87747192382812,
+      "outcome" : "loaded",
+      "seconds" : 0.10701298713684082
+    },
+    {
+      "district" : "MediaDistrict",
+      "memoryAfterMB" : 121.26811981201172,
+      "memoryBeforeMB" : 117.37749481201172,
+      "outcome" : "loaded",
+      "seconds" : 0.13114607334136963
+    },
+    {
+      "district" : "UnicornHeights",
+      "memoryAfterMB" : 133.70561981201172,
+      "memoryBeforeMB" : 121.37749481201172,
+      "outcome" : "loaded",
+      "seconds" : 0.5182729959487915
+    },
+    {
+      "district" : "UnicornHeights",
+      "memoryAfterMB" : 130.53374481201172,
+      "memoryBeforeMB" : 128.17436981201172,
+      "outcome" : "loaded",
+      "seconds" : 0.5164330005645752
+    },
+    {
+      "district" : "UnicornHeights",
+      "memoryAfterMB" : 136.95561981201172,
+      "memoryBeforeMB" : 128.34624481201172,
+      "outcome" : "loaded",
+      "seconds" : 0.4956209659576416
+    },
+    {
+      "district" : "UnicornHeights",
+      "memoryAfterMB" : 136.95561981201172,
+      "memoryBeforeMB" : 128.39311981201172,
+      "outcome" : "loaded",
+      "seconds" : 0.4992339611053467
+    }
+  ],
+  "lod" : [
+    {
+      "asset" : "Founder_Building_00",
+      "proxyTriangles" : "12",
+      "visualLoss" : "All facade, crown and silhouette detail replaced by bounds; experiment only"
+    },
+    {
+      "asset" : "Startup_LoftContext",
+      "proxyTriangles" : "12",
+      "visualLoss" : "All facade, crown and silhouette detail replaced by bounds; experiment only"
+    },
+    {
+      "asset" : "Commerce_Building_01",
+      "proxyTriangles" : "12",
+      "visualLoss" : "All facade, crown and silhouette detail replaced by bounds; experiment only"
+    },
+    {
+      "asset" : "PallasAIHQ",
+      "proxyTriangles" : "12",
+      "visualLoss" : "All facade, crown and silhouette detail replaced by bounds; experiment only"
+    },
+    {
+      "asset" : "TheSpire",
+      "proxyTriangles" : "12",
+      "visualLoss" : "All facade, crown and silhouette detail replaced by bounds; experiment only"
+    }
+  ],
+  "os" : "26.5",
+  "sampledPeakMemoryMB" : 180.26811981201172,
+  "stages" : [
+    {
+      "loadCallbacks" : 54,
+      "loadSeconds" : 0.9869530200958252,
+      "longestLoadFrameMS" : 63.81237506866455,
+      "memoryAfterMB" : 90.18997192382812,
+      "memoryBeforeMB" : 83.03372192382812,
+      "name" : "Founder only"
+    },
+    {
+      "loadCallbacks" : 19,
+      "loadSeconds" : 0.326058030128479,
+      "longestLoadFrameMS" : 31.76579251885414,
+      "memoryAfterMB" : 99.15872192382812,
+      "memoryBeforeMB" : 92.37747192382812,
+      "name" : "Founder + Startup"
+    },
+    {
+      "loadCallbacks" : 24,
+      "loadSeconds" : 0.4135620594024658,
+      "longestLoadFrameMS" : 33.341292291879654,
+      "memoryAfterMB" : 111.29934692382812,
+      "memoryBeforeMB" : 100.76809692382812,
+      "name" : "+ Commerce"
+    },
+    {
+      "loadCallbacks" : 9,
+      "loadSeconds" : 0.16749393939971924,
+      "longestLoadFrameMS" : 32.75012597441673,
+      "memoryAfterMB" : 115.11184692382812,
+      "memoryBeforeMB" : 109.95559692382812,
+      "name" : "+ Tech Core"
+    },
+    {
+      "loadCallbacks" : 44,
+      "loadSeconds" : 0.7622730731964111,
+      "longestLoadFrameMS" : 43.04929077625275,
+      "memoryAfterMB" : 133.73686981201172,
+      "memoryBeforeMB" : 114.87747192382812,
+      "name" : "Full Atlantis"
+    }
+  ],
+  "unloadCycles" : [
+    {
+      "afterReloadMB" : 130.53374481201172,
+      "afterUnloadMB" : 128.17436981201172,
+      "beforeMB" : 132.58061981201172,
+      "cycle" : 1,
+      "rootCount" : 1
+    },
+    {
+      "afterReloadMB" : 136.95561981201172,
+      "afterUnloadMB" : 128.34624481201172,
+      "beforeMB" : 130.53374481201172,
+      "cycle" : 2,
+      "rootCount" : 1
+    },
+    {
+      "afterReloadMB" : 136.95561981201172,
+      "afterUnloadMB" : 128.39311981201172,
+      "beforeMB" : 136.95561981201172,
+      "cycle" : 3,
+      "rootCount" : 1
+    }
+  ],
+  "walks" : [
+    {
+      "maximumGrade" : 0,
+      "maximumHeightError" : 9.536743e-07,
+      "method" : "Ground triangle sweep at 0.2 m spacing; not a real-time end-to-end walk",
+      "missingGround" : 0,
+      "obstructionCount" : 0,
+      "rejectedSteps" : 0,
+      "route" : "Founder_GarageDriveway",
+      "samples" : 42,
+      "worstLocation" : [
+        -875,
+        8.030001,
+        1037.322
+      ]
+    },
+    {
+      "maximumGrade" : 0,
+      "maximumHeightError" : 0,
+      "method" : "Same move() as UI; accelerated fixed 0.1 s steps at 1.4 m\/s; stops at first rejection. Final position is worstLocation; height error compares intended endpoint.",
+      "missingGround" : 0,
+      "obstructionCount" : 0,
+      "rejectedSteps" : 0,
+      "route" : "Founder_GarageDriveway controller",
+      "samples" : 59,
+      "worstLocation" : [
+        -875,
+        8.03,
+        1040.9
+      ]
+    },
+    {
+      "maximumGrade" : 0.04814906,
+      "maximumHeightError" : 2.861023e-06,
+      "method" : "Ground triangle sweep at 0.2 m spacing; not a real-time end-to-end walk",
+      "missingGround" : 0,
+      "obstructionCount" : 0,
+      "rejectedSteps" : 0,
+      "route" : "Founder_GarageApron",
+      "samples" : 15,
+      "worstLocation" : [
+        -875,
+        8.057859,
+        1041.4786
+      ]
+    },
+    {
+      "maximumGrade" : 0,
+      "maximumHeightError" : 0,
+      "method" : "Same move() as UI; accelerated fixed 0.1 s steps at 1.4 m\/s; stops at first rejection. Final position is worstLocation; height error compares intended endpoint.",
+      "missingGround" : 0,
+      "obstructionCount" : 0,
+      "rejectedSteps" : 0,
+      "route" : "Founder_GarageApron controller",
+      "samples" : 20,
+      "worstLocation" : [
+        -875,
+        8.16,
+        1043.6
+      ]
+    },
+    {
+      "maximumGrade" : 0.045171563,
+      "maximumHeightError" : 0.045728683,
+      "method" : "Ground triangle sweep at 0.2 m spacing; not a real-time end-to-end walk",
+      "missingGround" : 0,
+      "obstructionCount" : 0,
+      "rejectedSteps" : 0,
+      "route" : "Founder_ToStartup_Walk",
+      "samples" : 3822,
+      "worstLocation" : [
+        -851.5646,
+        9.2675,
+        742.2435
+      ]
+    },
+    {
+      "maximumGrade" : 0,
+      "maximumHeightError" : 0,
+      "method" : "Same move() as UI; accelerated fixed 0.1 s steps at 1.4 m\/s; stops at first rejection. Final position is worstLocation; height error compares intended endpoint.",
+      "missingGround" : 0,
+      "obstructionCount" : 0,
+      "rejectedSteps" : 0,
+      "route" : "Founder_ToStartup_Walk controller",
+      "samples" : 5436,
+      "worstLocation" : [
+        -625.44336,
+        16.44,
+        488.67627
+      ]
+    },
+    {
+      "maximumGrade" : 0.0057166195,
+      "maximumHeightError" : 0.350008,
+      "method" : "Ground triangle sweep at 0.2 m spacing; not a real-time end-to-end walk",
+      "missingGround" : 0,
+      "obstructionCount" : 0,
+      "rejectedSteps" : 0,
+      "route" : "Startup_Row_Core_SourceRoute",
+      "samples" : 3333,
+      "worstLocation" : [
+        -603.82855,
+        15.60885,
+        486.29715
+      ]
+    },
+    {
+      "maximumGrade" : 0,
+      "maximumHeightError" : 0.35000038,
+      "method" : "Same move() as UI; accelerated fixed 0.1 s steps at 1.4 m\/s; stops at first rejection. Final position is worstLocation; height error compares intended endpoint.",
+      "missingGround" : 0,
+      "obstructionCount" : 0,
+      "rejectedSteps" : 0,
+      "route" : "Startup_Row_Core_SourceRoute controller",
+      "samples" : 4756,
+      "worstLocation" : [
+        -170,
+        14.65,
+        80
+      ]
+    },
+    {
+      "maximumGrade" : 0.18861379,
+      "maximumHeightError" : 12.687195,
+      "method" : "Ground triangle sweep at 0.2 m spacing; not a real-time end-to-end walk",
+      "missingGround" : 0,
+      "obstructionCount" : 0,
+      "rejectedSteps" : 3,
+      "route" : "Bridge_TechCore runtime incline",
+      "samples" : 1884,
+      "worstLocation" : [
+        553.7334,
+        85,
+        -704.09454
+      ]
+    },
+    {
+      "maximumGrade" : 0,
+      "maximumHeightError" : 72,
+      "method" : "Same move() as UI; accelerated fixed 0.1 s steps at 1.4 m\/s; stops at first rejection. Final position is worstLocation; height error compares intended endpoint.",
+      "missingGround" : 0,
+      "obstructionCount" : 0,
+      "rejectedSteps" : 1,
+      "route" : "Bridge_TechCore runtime incline controller",
+      "samples" : 1,
+      "worstLocation" : [
+        360,
+        14,
+        -470
+      ]
+    }
+  ]
+}

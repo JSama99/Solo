@@ -1,0 +1,17 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "A31EC05C-9FF6-4D98-BECE-BF95CC2E37AC",
+        "deviceName" : "iPad Air 11-inch (M4)",
+        "exportedFileName" : "A8A6D1D3-0CE2-40C7-92D0-6015EDD90AF5.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Atlantis_Phase12_TechStreaming_0_CBD0A1C1-A291-4411-9453-DFD52D0E6AA6.png",
+        "timestamp" : 1789187290.27
+      }
+    ],
+    "testIdentifier" : "AtlantisRuntimeUITests/testStreamingHUDTransitionsSpireSwapAndLateEveningPhase()",
+    "testIdentifierURL" : "test://com.apple.xcode/SoloUnicornRun/Solo%20Unicorn%20Run%20UI%20Tests/AtlantisRuntimeUITests/testStreamingHUDTransitionsSpireSwapAndLateEveningPhase"
+  }
+]

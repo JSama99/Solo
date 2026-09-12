@@ -7,63 +7,62 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F32700000000000000000001 /* WorkSessionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000011 /* WorkSessionEngine.swift */; };
-		F32700000000000000000002 /* EvidenceTriageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000012 /* EvidenceTriageView.swift */; };
-		F32700000000000000000003 /* WorkSessionEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000013 /* WorkSessionEngineTests.swift */; };
-		F32700000000000000000004 /* SystemsReviewChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000014 /* SystemsReviewChallenge.swift */; };
-		F32700000000000000000005 /* SystemsReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000015 /* SystemsReviewView.swift */; };
-		F32700000000000000000006 /* SystemsReviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000016 /* SystemsReviewTests.swift */; };
-		F32800000000000000000001 /* CampaignCalibrationChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32800000000000000000011 /* CampaignCalibrationChallenge.swift */; };
-		F32800000000000000000002 /* CampaignCalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32800000000000000000012 /* CampaignCalibrationView.swift */; };
-		F32800000000000000000003 /* CampaignCalibrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32800000000000000000013 /* CampaignCalibrationTests.swift */; };
-		B33000000000000000000001 /* CompanyFinance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000011 /* CompanyFinance.swift */; };
-		B33000000000000000000002 /* AIOperationsFloor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000012 /* AIOperationsFloor.swift */; };
-		B33000000000000000000003 /* CompanyFinanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000013 /* CompanyFinanceTests.swift */; };
-		B33000000000000000000004 /* AIOperationsFloorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000014 /* AIOperationsFloorTests.swift */; };
+		28C211C9462EF7C2C17DC4C2 /* SimulationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CB9F64447826C8051328902 /* SimulationModels.swift */; };
+		326100000000000000000001 /* Build32_6_1ProductionContinuityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 326100000000000000000002 /* Build32_6_1ProductionContinuityUITests.swift */; };
+		73B35D04E243BD45B291E271 /* GameModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E7E924208E29B28AFAA264 /* GameModels.swift */; };
+		A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2513145C1504A166E8177382 /* GameStoreTests.swift */; };
+		A30000000000000000000001 /* SprintOutcomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31000000000000000000001 /* SprintOutcomeScreen.swift */; };
+		A30000000000000000000002 /* HindsightArchiveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31000000000000000000002 /* HindsightArchiveCard.swift */; };
 		A5A100000000000000000001 /* SignalTVModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A100000000000000000011 /* SignalTVModels.swift */; };
 		A5A100000000000000000002 /* SignalTVView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A100000000000000000012 /* SignalTVView.swift */; };
 		A5A100000000000000000003 /* SignalTVTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A100000000000000000013 /* SignalTVTests.swift */; };
-		FD3270000000000000000001 /* FounderDeskWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000011 /* FounderDeskWorkspace.swift */; };
-		FD3270000000000000000002 /* FounderDeskWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */; };
-		FD3270000000000000000003 /* FounderDeskWorkspaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000013 /* FounderDeskWorkspaceTests.swift */; };
-		FD3275000000000000000001 /* FounderDevicePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3275000000000000000011 /* FounderDevicePresentation.swift */; };
-		326100000000000000000001 /* Build32_6_1ProductionContinuityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 326100000000000000000002 /* Build32_6_1ProductionContinuityUITests.swift */; };
-		B32800000000000000000001 /* CompanyCommandScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32900000000000000000001 /* CompanyCommandScene.swift */; };
-		B32A00000000000000000001 /* Build32_4SpatialCausalityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32B00000000000000000001 /* Build32_4SpatialCausalityTests.swift */; };
+		AA0000000000000000000001 /* Divergence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000001 /* Divergence.swift */; };
+		AA0000000000000000000002 /* ForkPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000002 /* ForkPromptView.swift */; };
+		AA0000000000000000000003 /* DivergenceIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000003 /* DivergenceIdentityTests.swift */; };
+		AA0000000000000000000004 /* DivergenceChaosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000004 /* DivergenceChaosTests.swift */; };
+		AA0000000000000000000005 /* DivergenceSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000005 /* DivergenceSystemTests.swift */; };
+		ABDFC492407A05E2BC397A8D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 17558F294800127BE04C0EBD /* Assets.xcassets */; };
+		AD24D57DE55399F057B4B47A /* GameStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AA2809B6198CB8955EEFAC /* GameStore.swift */; };
+		B14000000000000000000001 /* ProductTypeContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14000000000000000000002 /* ProductTypeContentTests.swift */; };
+		B16000000000000000000001 /* TalentBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16000000000000000000002 /* TalentBoard.swift */; };
+		B16000000000000000000003 /* TalentBoardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16000000000000000000004 /* TalentBoardTests.swift */; };
+		B16000000000000000000005 /* HowToPlayScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16000000000000000000006 /* HowToPlayScreen.swift */; };
+		B17000000000000000000001 /* RivalEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17000000000000000000002 /* RivalEngine.swift */; };
+		B17000000000000000000003 /* RivalEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17000000000000000000004 /* RivalEngineTests.swift */; };
+		B18000000000000000000001 /* TechComFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18000000000000000000002 /* TechComFeed.swift */; };
+		B18000000000000000000003 /* TechComFeedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18000000000000000000004 /* TechComFeedTests.swift */; };
+		B20000000000000000000001 /* RevenueCatConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* RevenueCatConfiguration.swift */; };
+		B20000000000000000000002 /* SubscriptionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* SubscriptionStore.swift */; };
+		B20000000000000000000003 /* SubscriptionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000003 /* SubscriptionScreen.swift */; };
+		B20000000000000000000004 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = B40000000000000000000001 /* RevenueCat */; };
+		B20000000000000000000005 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = B40000000000000000000002 /* RevenueCatUI */; };
+		B20000000000000000000010 /* EntitlementProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000010 /* EntitlementProviding.swift */; };
+		B20000000000000000000011 /* Hindsight.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* Hindsight.swift */; };
+		B20000000000000000000012 /* VentureUnlockScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000012 /* VentureUnlockScreen.swift */; };
+		B20000000000000000000020 /* FounderPassGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* FounderPassGateTests.swift */; };
+		B20000000000000000000021 /* HindsightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* HindsightTests.swift */; };
+		B20100000000000000000001 /* ConsumerAppContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20100000000000000000002 /* ConsumerAppContent.swift */; };
+		B28000000000000000000001 /* OutcomeBackdropMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */; };
+		B2BFB1EE90AB231E41812DEF /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1999948F297FBA3D5958727 /* App.swift */; };
 		B32000000000000000000001 /* CompanyCommandViewport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32100000000000000000001 /* CompanyCommandViewport.swift */; };
 		B32000000000000000000002 /* LivingCompanyPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32100000000000000000002 /* LivingCompanyPresentation.swift */; };
 		B32000000000000000000003 /* Build32LivingCompanyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32100000000000000000003 /* Build32LivingCompanyTests.swift */; };
 		B32200000000000000000001 /* Build32_1ViewportInteractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */; };
 		B32400000000000000000001 /* Build32_2VisualBehaviorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32500000000000000000001 /* Build32_2VisualBehaviorTests.swift */; };
 		B32600000000000000000001 /* Build32_3SpatialViewportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32700000000000000000001 /* Build32_3SpatialViewportTests.swift */; };
-		AA0000000000000000000001 /* Divergence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000001 /* Divergence.swift */; };
-		AA0000000000000000000002 /* ForkPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000002 /* ForkPromptView.swift */; };
-		AA0000000000000000000003 /* DivergenceIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000003 /* DivergenceIdentityTests.swift */; };
-		AA0000000000000000000004 /* DivergenceChaosTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000004 /* DivergenceChaosTests.swift */; };
-		AA0000000000000000000005 /* DivergenceSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000005 /* DivergenceSystemTests.swift */; };
-		B20000000000000000000010 /* EntitlementProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000010 /* EntitlementProviding.swift */; };
-		B20000000000000000000011 /* Hindsight.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* Hindsight.swift */; };
-		B20000000000000000000012 /* VentureUnlockScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000012 /* VentureUnlockScreen.swift */; };
-		D20000000000000000000001 /* DoctrineProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000001 /* DoctrineProfile.swift */; };
-		D20000000000000000000002 /* ContentLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000002 /* ContentLibrary.swift */; };
-		D20000000000000000000003 /* SimulationEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000003 /* SimulationEngine.swift */; };
-		D20000000000000000000004 /* VentureCheckpointScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000004 /* VentureCheckpointScreen.swift */; };
-		F20000000000000000000001 /* DailyChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000001 /* DailyChallenge.swift */; };
-		F20000000000000000000002 /* VentureEra.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000002 /* VentureEra.swift */; };
-		F20000000000000000000003 /* Build9ModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000003 /* Build9ModeTests.swift */; };
-		E20000000000000000000001 /* ContinuousModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000001 /* ContinuousModeTests.swift */; };
-		E20000000000000000000002 /* SimulationEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000002 /* SimulationEngineTests.swift */; };
-		B20000000000000000000020 /* FounderPassGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* FounderPassGateTests.swift */; };
-		B20000000000000000000021 /* HindsightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* HindsightTests.swift */; };
+		B32800000000000000000001 /* CompanyCommandScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32900000000000000000001 /* CompanyCommandScene.swift */; };
+		B32A00000000000000000001 /* Build32_4SpatialCausalityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32B00000000000000000001 /* Build32_4SpatialCausalityTests.swift */; };
+		B33000000000000000000001 /* CompanyFinance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000011 /* CompanyFinance.swift */; };
+		B33000000000000000000002 /* AIOperationsFloor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000012 /* AIOperationsFloor.swift */; };
+		B33000000000000000000003 /* CompanyFinanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000013 /* CompanyFinanceTests.swift */; };
+		B33000000000000000000004 /* AIOperationsFloorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000014 /* AIOperationsFloorTests.swift */; };
+		B7879B5278335CFBFDA7FCD0 /* SeededRandomNumberGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE09C90DB6AC97A8F2FAA9FC /* SeededRandomNumberGenerator.swift */; };
 		C20000000000000000000001 /* AgentVisualState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000001 /* AgentVisualState.swift */; };
 		C20000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift */; };
 		C20000000000000000000003 /* EnvironmentPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000003 /* EnvironmentPresentation.swift */; };
 		C20000000000000000000004 /* FacilityProgressionConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000004 /* FacilityProgressionConfiguration.swift */; };
 		C20000000000000000000005 /* FacilityTier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000005 /* FacilityTier.swift */; };
 		C20000000000000000000006 /* FounderEnvironmentScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000006 /* FounderEnvironmentScreen.swift */; };
-		F32000000000000000000001 /* FounderGarageMotionPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32000000000000000000011 /* FounderGarageMotionPresentation.swift */; };
-		F32500000000000000000001 /* FounderGaragePhysicalComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32500000000000000000011 /* FounderGaragePhysicalComponents.swift */; };
-		E70000000000000000000001 /* EnvironmentalInteraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70000000000000000000011 /* EnvironmentalInteraction.swift */; };
 		C20000000000000000000007 /* FounderComputerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000007 /* FounderComputerScreen.swift */; };
 		C20000000000000000000008 /* FounderProgressionSave.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000008 /* FounderProgressionSave.swift */; };
 		C20000000000000000000009 /* FounderProgressionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000009 /* FounderProgressionStore.swift */; };
@@ -78,6 +77,10 @@
 		C20000000000000000000014 /* AchievementStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000014 /* AchievementStore.swift */; };
 		C20000000000000000000015 /* EmpireTaskExpansion.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000015 /* EmpireTaskExpansion.swift */; };
 		C20000000000000000000016 /* ContentLibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000016 /* ContentLibraryTests.swift */; };
+		D20000000000000000000001 /* DoctrineProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000001 /* DoctrineProfile.swift */; };
+		D20000000000000000000002 /* ContentLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000002 /* ContentLibrary.swift */; };
+		D20000000000000000000003 /* SimulationEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000003 /* SimulationEngine.swift */; };
+		D20000000000000000000004 /* VentureCheckpointScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000004 /* VentureCheckpointScreen.swift */; };
 		D20000000000000000000022 /* AgentStationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000022 /* AgentStationState.swift */; };
 		D20000000000000000000023 /* AgentDetailPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000023 /* AgentDetailPresentation.swift */; };
 		D20000000000000000000024 /* AgentDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000024 /* AgentDetailViewModel.swift */; };
@@ -85,60 +88,91 @@
 		D20000000000000000000026 /* AchievementsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000026 /* AchievementsScreen.swift */; };
 		D20000000000000000000027 /* HindsightRecordsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000027 /* HindsightRecordsScreen.swift */; };
 		D20000000000000000000028 /* PrecedentRecordsSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000028 /* PrecedentRecordsSupport.swift */; };
-		A30000000000000000000001 /* SprintOutcomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31000000000000000000001 /* SprintOutcomeScreen.swift */; };
-		A30000000000000000000002 /* HindsightArchiveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31000000000000000000002 /* HindsightArchiveCard.swift */; };
 		D2000000000000000000002A /* AchievementScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000000000000000000002A /* AchievementScreenTests.swift */; };
 		D2000000000000000000002B /* AgentDetailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000000000000000000002B /* AgentDetailTests.swift */; };
 		D2000000000000000000002C /* ModeSelectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000000000000000000002C /* ModeSelectTests.swift */; };
 		D2000000000000000000002D /* PrecedentRecordsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1000000000000000000002D /* PrecedentRecordsTests.swift */; };
-		28C211C9462EF7C2C17DC4C2 /* SimulationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CB9F64447826C8051328902 /* SimulationModels.swift */; };
-		73B35D04E243BD45B291E271 /* GameModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E7E924208E29B28AFAA264 /* GameModels.swift */; };
-		F24000000000000000000001 /* VentureIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F24000000000000000000002 /* VentureIdentity.swift */; };
-		F25000000000000000000001 /* VentureThesisScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F25000000000000000000002 /* VentureThesisScreen.swift */; };
-		F26000000000000000000001 /* RevenueCatImportBoundaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26000000000000000000002 /* RevenueCatImportBoundaryTests.swift */; };
-		A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2513145C1504A166E8177382 /* GameStoreTests.swift */; };
-		E70000000000000000000002 /* EnvironmentalInteractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70000000000000000000012 /* EnvironmentalInteractionTests.swift */; };
-		ABDFC492407A05E2BC397A8D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 17558F294800127BE04C0EBD /* Assets.xcassets */; };
-		AD24D57DE55399F057B4B47A /* GameStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AA2809B6198CB8955EEFAC /* GameStore.swift */; };
-		B20000000000000000000001 /* RevenueCatConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* RevenueCatConfiguration.swift */; };
-		B20000000000000000000002 /* SubscriptionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* SubscriptionStore.swift */; };
-		B20000000000000000000003 /* SubscriptionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000003 /* SubscriptionScreen.swift */; };
-		B20000000000000000000004 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = B40000000000000000000001 /* RevenueCat */; };
-		B20000000000000000000005 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = B40000000000000000000002 /* RevenueCatUI */; };
-		B2BFB1EE90AB231E41812DEF /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1999948F297FBA3D5958727 /* App.swift */; };
-		B7879B5278335CFBFDA7FCD0 /* SeededRandomNumberGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE09C90DB6AC97A8F2FAA9FC /* SeededRandomNumberGenerator.swift */; };
-		FB6CDD52B76B96B369913C6B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */; };
+		E20000000000000000000001 /* ContinuousModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000001 /* ContinuousModeTests.swift */; };
+		E20000000000000000000002 /* SimulationEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000002 /* SimulationEngineTests.swift */; };
 		E30000000000000000000001 /* TechComEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000011 /* TechComEngine.swift */; };
 		E30000000000000000000002 /* TechComScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000012 /* TechComScreen.swift */; };
-		E32000000000000000000001 /* TechComComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E31000000000000000000001 /* TechComComponents.swift */; };
-		E32000000000000000000002 /* TechComPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E31000000000000000000002 /* TechComPresentation.swift */; };
 		E30000000000000000000003 /* TechComEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000013 /* TechComEngineTests.swift */; };
 		E30000000000000000000004 /* TechComPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000014 /* TechComPresentationTests.swift */; };
 		E30000000000000000000005 /* RevenueCelebrationFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000015 /* RevenueCelebrationFeedback.swift */; };
 		E30000000000000000000006 /* AppSettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000016 /* AppSettingsStore.swift */; };
 		E30000000000000000000007 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000017 /* SettingsScreen.swift */; };
-		B14000000000000000000001 /* ProductTypeContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14000000000000000000002 /* ProductTypeContentTests.swift */; };
-		B16000000000000000000001 /* TalentBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16000000000000000000002 /* TalentBoard.swift */; };
-		B16000000000000000000003 /* TalentBoardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16000000000000000000004 /* TalentBoardTests.swift */; };
-		B16000000000000000000005 /* HowToPlayScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16000000000000000000006 /* HowToPlayScreen.swift */; };
-		B17000000000000000000001 /* RivalEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17000000000000000000002 /* RivalEngine.swift */; };
-		B17000000000000000000003 /* RivalEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17000000000000000000004 /* RivalEngineTests.swift */; };
-		B18000000000000000000001 /* TechComFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18000000000000000000002 /* TechComFeed.swift */; };
-		B18000000000000000000003 /* TechComFeedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B18000000000000000000004 /* TechComFeedTests.swift */; };
-		B20100000000000000000001 /* ConsumerAppContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20100000000000000000002 /* ConsumerAppContent.swift */; };
 		E30000000000000000000009 /* HowToPlayContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000019 /* HowToPlayContentTests.swift */; };
-		E30000000000000000000012 /* GameplayMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000022 /* GameplayMotionTests.swift */; };
 		E30000000000000000000010 /* GameStoreTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000020 /* GameStoreTestSupport.swift */; };
 		E30000000000000000000011 /* GameplayMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000021 /* GameplayMotion.swift */; };
+		E30000000000000000000012 /* GameplayMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000022 /* GameplayMotionTests.swift */; };
+		E32000000000000000000001 /* TechComComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E31000000000000000000001 /* TechComComponents.swift */; };
+		E32000000000000000000002 /* TechComPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E31000000000000000000002 /* TechComPresentation.swift */; };
+		E70000000000000000000001 /* EnvironmentalInteraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70000000000000000000011 /* EnvironmentalInteraction.swift */; };
+		E70000000000000000000002 /* EnvironmentalInteractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E70000000000000000000012 /* EnvironmentalInteractionTests.swift */; };
+		F20000000000000000000001 /* DailyChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000001 /* DailyChallenge.swift */; };
+		F20000000000000000000002 /* VentureEra.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000002 /* VentureEra.swift */; };
+		F20000000000000000000003 /* Build9ModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000003 /* Build9ModeTests.swift */; };
+		F24000000000000000000001 /* VentureIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F24000000000000000000002 /* VentureIdentity.swift */; };
+		F25000000000000000000001 /* VentureThesisScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F25000000000000000000002 /* VentureThesisScreen.swift */; };
+		F26000000000000000000001 /* RevenueCatImportBoundaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26000000000000000000002 /* RevenueCatImportBoundaryTests.swift */; };
 		F27000000000000000000001 /* FounderMotionComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27000000000000000000011 /* FounderMotionComponents.swift */; };
 		F27000000000000000000002 /* LiveWorkspaceSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27000000000000000000012 /* LiveWorkspaceSurface.swift */; };
 		F27000000000000000000003 /* MotionVerificationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F27000000000000000000013 /* MotionVerificationScreen.swift */; };
 		F28000000000000000000001 /* AgentPortraitAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = F28000000000000000000011 /* AgentPortraitAsset.swift */; };
 		F28000000000000000000002 /* AgentWorkstationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F28000000000000000000012 /* AgentWorkstationTests.swift */; };
-		B28000000000000000000001 /* OutcomeBackdropMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */; };
 		F31000000000000000000001 /* VentureScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F31000000000000000000011 /* VentureScreen.swift */; };
 		F31000000000000000000002 /* VentureScreenPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F31000000000000000000012 /* VentureScreenPresentation.swift */; };
 		F31000000000000000000003 /* VentureScreenPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F31000000000000000000013 /* VentureScreenPresentationTests.swift */; };
+		F32000000000000000000001 /* FounderGarageMotionPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32000000000000000000011 /* FounderGarageMotionPresentation.swift */; };
+		F32500000000000000000001 /* FounderGaragePhysicalComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32500000000000000000011 /* FounderGaragePhysicalComponents.swift */; };
+		F40000000000000000000001 /* FounderGarageRendererConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000011 /* FounderGarageRendererConfiguration.swift */; };
+		F40000000000000000000002 /* FounderWorldPresentationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000012 /* FounderWorldPresentationModel.swift */; };
+		F40000000000000000000003 /* FounderGarageRealityScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000013 /* FounderGarageRealityScene.swift */; };
+		F40000000000000000000004 /* FounderGarageRealityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000014 /* FounderGarageRealityView.swift */; };
+		F40000000000000000000005 /* FounderGarageRealityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000015 /* FounderGarageRealityTests.swift */; };
+		F40000000000000000000006 /* founder_garage.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000016 /* founder_garage.usdz */; };
+		F40000000000000000000007 /* founder_garage_v3.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000017 /* founder_garage_v3.usdz */; };
+		F40000000000000000000008 /* founder_garage_v4.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000018 /* founder_garage_v4.usdz */; };
+		F40000000000000000000009 /* founder_garage_v6.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000019 /* founder_garage_v6.usdz */; };
+		F4000000000000000000000A /* founder_garage_v7.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F4100000000000000000001A /* founder_garage_v7.usdz */; };
+		F32700000000000000000001 /* WorkSessionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000011 /* WorkSessionEngine.swift */; };
+		F32700000000000000000002 /* EvidenceTriageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000012 /* EvidenceTriageView.swift */; };
+		F32700000000000000000003 /* WorkSessionEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000013 /* WorkSessionEngineTests.swift */; };
+		F32700000000000000000004 /* SystemsReviewChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000014 /* SystemsReviewChallenge.swift */; };
+		F32700000000000000000005 /* SystemsReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000015 /* SystemsReviewView.swift */; };
+		F32700000000000000000006 /* SystemsReviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000016 /* SystemsReviewTests.swift */; };
+		F32800000000000000000001 /* CampaignCalibrationChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32800000000000000000011 /* CampaignCalibrationChallenge.swift */; };
+		F32800000000000000000002 /* CampaignCalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32800000000000000000012 /* CampaignCalibrationView.swift */; };
+		F32800000000000000000003 /* CampaignCalibrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32800000000000000000013 /* CampaignCalibrationTests.swift */; };
+		FB6CDD52B76B96B369913C6B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */; };
+		FD3270000000000000000001 /* FounderDeskWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000011 /* FounderDeskWorkspace.swift */; };
+		FD3270000000000000000002 /* FounderDeskWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */; };
+		FD3270000000000000000003 /* FounderDeskWorkspaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000013 /* FounderDeskWorkspaceTests.swift */; };
+		FD3275000000000000000001 /* FounderDevicePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3275000000000000000011 /* FounderDevicePresentation.swift */; };
+		06501CF6503A40F532F9732C /* AtlantisWorldPresentationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24B6048AF96C255824BFD84D /* AtlantisWorldPresentationModel.swift */; };
+		A2C2E52CAB4B3D4FB22505FE /* AtlantisDistrictLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA44EBA9C58588064E85F9D /* AtlantisDistrictLoader.swift */; };
+		8B4BC4FB4B2E11ABF5F0BC68 /* AtlantisRealityScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33F63C7037788FB68E97F470 /* AtlantisRealityScene.swift */; };
+		3FFDB1A752077DF06EB9A10C /* AtlantisRealityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52DC80EBBC1FDC96FB99C09 /* AtlantisRealityView.swift */; };
+		F878FAA6A216A9E396C26CFC /* AtlantisRuntimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 207E2115321660B4EE667E49 /* AtlantisRuntimeTests.swift */; };
+		2CD20EBFEFA39219C29D6D89 /* AtlantisRuntimeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5203A824B352EB66DD5B6C4A /* AtlantisRuntimeUITests.swift */; };
+		F9B22E3E18C9ABBB564D5F61 /* founder_district.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 4A82CDCF9534DE7B7D7747DD /* founder_district.usdz */; };
+		3CB10B38F18C24716CF842AB /* startup_row.usdz in Resources */ = {isa = PBXBuildFile; fileRef = B745020E2276418CFF2C353D /* startup_row.usdz */; };
+		466402B70C12D8D329D619EA /* commerce_district.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A04CCE6D5AE47A888C2FA2B8 /* commerce_district.usdz */; };
+		0CA80CD2498001065D32D217 /* venture_district.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 0A8A478F9D2797B6041D0489 /* venture_district.usdz */; };
+		0193AF627ED8FC68EA552A5E /* media_district.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 6DC69315C74D4212576685B0 /* media_district.usdz */; };
+		C18ED78F7C3C14DC5FC8701F /* tech_core.usdz in Resources */ = {isa = PBXBuildFile; fileRef = DA9511FDBB4B0DB7C6B09106 /* tech_core.usdz */; };
+		3977CAE71F1ACD186BC7F742 /* unicorn_heights.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 93E38D6F680617E0A241D203 /* unicorn_heights.usdz */; };
+		C2E0680A0168829B1D9C4877 /* world_context.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 1B0B8BA0257A2FDE8488F12C /* world_context.usdz */; };
+		C0ABE533359C7059C8CF83CD /* atlantis_manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 2BCCB6F92A46ACB05330AE9B /* atlantis_manifest.json */; };
+		A11000000000000000000002 /* founder_district_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11000000000000000000001 /* founder_district_batched.usdz */; };
+		A11100000000000000000002 /* startup_row_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11100000000000000000001 /* startup_row_batched.usdz */; };
+		A11200000000000000000002 /* commerce_district_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11200000000000000000001 /* commerce_district_batched.usdz */; };
+		A11300000000000000000002 /* tech_core_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11300000000000000000001 /* tech_core_batched.usdz */; };
+		A11400000000000000000002 /* unicorn_heights_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11400000000000000000001 /* unicorn_heights_batched.usdz */; };
+		A11500000000000000000002 /* venture_district_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11500000000000000000001 /* venture_district_batched.usdz */; };
+		A11600000000000000000002 /* media_district_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11600000000000000000001 /* media_district_batched.usdz */; };
+		A12000000000000000000002 /* tech_unicorn_bridge_repaired.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A12000000000000000000001 /* tech_unicorn_bridge_repaired.usdz */; };
+		A12100000000000000000002 /* spire_far_proxy.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A12100000000000000000001 /* spire_far_proxy.usdz */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -159,67 +193,60 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		F32700000000000000000011 /* WorkSessionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionEngine.swift; sourceTree = "<group>"; };
-		F32700000000000000000012 /* EvidenceTriageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvidenceTriageView.swift; sourceTree = "<group>"; };
-		F32700000000000000000013 /* WorkSessionEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionEngineTests.swift; sourceTree = "<group>"; };
-		F32700000000000000000014 /* SystemsReviewChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemsReviewChallenge.swift; sourceTree = "<group>"; };
-		F32700000000000000000015 /* SystemsReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemsReviewView.swift; sourceTree = "<group>"; };
-		F32700000000000000000016 /* SystemsReviewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemsReviewTests.swift; sourceTree = "<group>"; };
-		F32800000000000000000011 /* CampaignCalibrationChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignCalibrationChallenge.swift; sourceTree = "<group>"; };
-		F32800000000000000000012 /* CampaignCalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignCalibrationView.swift; sourceTree = "<group>"; };
-		F32800000000000000000013 /* CampaignCalibrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignCalibrationTests.swift; sourceTree = "<group>"; };
-		B33000000000000000000011 /* CompanyFinance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyFinance.swift; sourceTree = "<group>"; };
-		B33000000000000000000012 /* AIOperationsFloor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIOperationsFloor.swift; sourceTree = "<group>"; };
-		B33000000000000000000013 /* CompanyFinanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyFinanceTests.swift; sourceTree = "<group>"; };
-		B33000000000000000000014 /* AIOperationsFloorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIOperationsFloorTests.swift; sourceTree = "<group>"; };
+		17558F294800127BE04C0EBD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2513145C1504A166E8177382 /* GameStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStoreTests.swift; sourceTree = "<group>"; };
+		326100000000000000000002 /* Build32_6_1ProductionContinuityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_6_1ProductionContinuityUITests.swift; sourceTree = "<group>"; };
+		326100000000000000000003 /* Solo Unicorn Run UI Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Solo Unicorn Run UI Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4FB3F3A34C09C15574734B61 /* Solo Unicorn Run Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Solo Unicorn Run Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7CB9F64447826C8051328902 /* SimulationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationModels.swift; sourceTree = "<group>"; };
+		94AA2809B6198CB8955EEFAC /* GameStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStore.swift; sourceTree = "<group>"; };
+		A31000000000000000000001 /* SprintOutcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SprintOutcomeScreen.swift; sourceTree = "<group>"; };
+		A31000000000000000000002 /* HindsightArchiveCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HindsightArchiveCard.swift; sourceTree = "<group>"; };
 		A5A100000000000000000011 /* SignalTVModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalTVModels.swift; sourceTree = "<group>"; };
 		A5A100000000000000000012 /* SignalTVView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalTVView.swift; sourceTree = "<group>"; };
 		A5A100000000000000000013 /* SignalTVTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalTVTests.swift; sourceTree = "<group>"; };
-		FD3270000000000000000011 /* FounderDeskWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspace.swift; sourceTree = "<group>"; };
-		FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspaceModel.swift; sourceTree = "<group>"; };
-		FD3270000000000000000013 /* FounderDeskWorkspaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspaceTests.swift; sourceTree = "<group>"; };
-		FD3275000000000000000011 /* FounderDevicePresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDevicePresentation.swift; sourceTree = "<group>"; };
-		326100000000000000000002 /* Build32_6_1ProductionContinuityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_6_1ProductionContinuityUITests.swift; sourceTree = "<group>"; };
-		326100000000000000000003 /* Solo Unicorn Run UI Tests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = "Solo Unicorn Run UI Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		B32900000000000000000001 /* CompanyCommandScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyCommandScene.swift; sourceTree = "<group>"; };
-		B32B00000000000000000001 /* Build32_4SpatialCausalityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_4SpatialCausalityTests.swift; sourceTree = "<group>"; };
+		AA1000000000000000000001 /* Divergence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Divergence.swift; sourceTree = "<group>"; };
+		AA1000000000000000000002 /* ForkPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForkPromptView.swift; sourceTree = "<group>"; };
+		AA1000000000000000000003 /* DivergenceIdentityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DivergenceIdentityTests.swift; sourceTree = "<group>"; };
+		AA1000000000000000000004 /* DivergenceChaosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DivergenceChaosTests.swift; sourceTree = "<group>"; };
+		AA1000000000000000000005 /* DivergenceSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DivergenceSystemTests.swift; sourceTree = "<group>"; };
+		AC4FEEA41FEA4B7CD5D02B29 /* Solo Unicorn Run.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Solo Unicorn Run.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000000000000000000001 /* RevenueCatConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCatConfiguration.swift; sourceTree = "<group>"; };
+		B10000000000000000000002 /* SubscriptionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStore.swift; sourceTree = "<group>"; };
+		B10000000000000000000003 /* SubscriptionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionScreen.swift; sourceTree = "<group>"; };
+		B10000000000000000000010 /* EntitlementProviding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementProviding.swift; sourceTree = "<group>"; };
+		B10000000000000000000011 /* Hindsight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hindsight.swift; sourceTree = "<group>"; };
+		B10000000000000000000012 /* VentureUnlockScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureUnlockScreen.swift; sourceTree = "<group>"; };
+		B10000000000000000000020 /* FounderPassGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderPassGateTests.swift; sourceTree = "<group>"; };
+		B10000000000000000000021 /* HindsightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HindsightTests.swift; sourceTree = "<group>"; };
+		B14000000000000000000002 /* ProductTypeContentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductTypeContentTests.swift; sourceTree = "<group>"; };
+		B16000000000000000000002 /* TalentBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TalentBoard.swift; sourceTree = "<group>"; };
+		B16000000000000000000004 /* TalentBoardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TalentBoardTests.swift; sourceTree = "<group>"; };
+		B16000000000000000000006 /* HowToPlayScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HowToPlayScreen.swift; sourceTree = "<group>"; };
+		B17000000000000000000002 /* RivalEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RivalEngine.swift; sourceTree = "<group>"; };
+		B17000000000000000000004 /* RivalEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RivalEngineTests.swift; sourceTree = "<group>"; };
+		B18000000000000000000002 /* TechComFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComFeed.swift; sourceTree = "<group>"; };
+		B18000000000000000000004 /* TechComFeedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComFeedTests.swift; sourceTree = "<group>"; };
+		B20100000000000000000002 /* ConsumerAppContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsumerAppContent.swift; sourceTree = "<group>"; };
+		B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutcomeBackdropMotionTests.swift; sourceTree = "<group>"; };
 		B32100000000000000000001 /* CompanyCommandViewport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyCommandViewport.swift; sourceTree = "<group>"; };
 		B32100000000000000000002 /* LivingCompanyPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivingCompanyPresentation.swift; sourceTree = "<group>"; };
 		B32100000000000000000003 /* Build32LivingCompanyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32LivingCompanyTests.swift; sourceTree = "<group>"; };
 		B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_1ViewportInteractionTests.swift; sourceTree = "<group>"; };
 		B32500000000000000000001 /* Build32_2VisualBehaviorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_2VisualBehaviorTests.swift; sourceTree = "<group>"; };
 		B32700000000000000000001 /* Build32_3SpatialViewportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_3SpatialViewportTests.swift; sourceTree = "<group>"; };
-		AA1000000000000000000001 /* Divergence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Divergence.swift; sourceTree = "<group>"; };
-		AA1000000000000000000002 /* ForkPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForkPromptView.swift; sourceTree = "<group>"; };
-		AA1000000000000000000003 /* DivergenceIdentityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DivergenceIdentityTests.swift; sourceTree = "<group>"; };
-		AA1000000000000000000004 /* DivergenceChaosTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DivergenceChaosTests.swift; sourceTree = "<group>"; };
-		AA1000000000000000000005 /* DivergenceSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DivergenceSystemTests.swift; sourceTree = "<group>"; };
-		B10000000000000000000010 /* EntitlementProviding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementProviding.swift; sourceTree = "<group>"; };
-		B10000000000000000000011 /* Hindsight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hindsight.swift; sourceTree = "<group>"; };
-		B10000000000000000000012 /* VentureUnlockScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureUnlockScreen.swift; sourceTree = "<group>"; };
-		D10000000000000000000001 /* DoctrineProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoctrineProfile.swift; sourceTree = "<group>"; };
-		D10000000000000000000002 /* ContentLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentLibrary.swift; sourceTree = "<group>"; };
-		D10000000000000000000003 /* SimulationEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationEngine.swift; sourceTree = "<group>"; };
-		D10000000000000000000004 /* VentureCheckpointScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureCheckpointScreen.swift; sourceTree = "<group>"; };
-		F10000000000000000000001 /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallenge.swift; sourceTree = "<group>"; };
-		F10000000000000000000002 /* VentureEra.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureEra.swift; sourceTree = "<group>"; };
-		F10000000000000000000003 /* Build9ModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build9ModeTests.swift; sourceTree = "<group>"; };
-		F24000000000000000000002 /* VentureIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureIdentity.swift; sourceTree = "<group>"; };
-		F25000000000000000000002 /* VentureThesisScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureThesisScreen.swift; sourceTree = "<group>"; };
-		F26000000000000000000002 /* RevenueCatImportBoundaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCatImportBoundaryTests.swift; sourceTree = "<group>"; };
-		E10000000000000000000001 /* ContinuousModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinuousModeTests.swift; sourceTree = "<group>"; };
-		E10000000000000000000002 /* SimulationEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationEngineTests.swift; sourceTree = "<group>"; };
-		B10000000000000000000020 /* FounderPassGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderPassGateTests.swift; sourceTree = "<group>"; };
-		B10000000000000000000021 /* HindsightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HindsightTests.swift; sourceTree = "<group>"; };
+		B32900000000000000000001 /* CompanyCommandScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyCommandScene.swift; sourceTree = "<group>"; };
+		B32B00000000000000000001 /* Build32_4SpatialCausalityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_4SpatialCausalityTests.swift; sourceTree = "<group>"; };
+		B33000000000000000000011 /* CompanyFinance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyFinance.swift; sourceTree = "<group>"; };
+		B33000000000000000000012 /* AIOperationsFloor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIOperationsFloor.swift; sourceTree = "<group>"; };
+		B33000000000000000000013 /* CompanyFinanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyFinanceTests.swift; sourceTree = "<group>"; };
+		B33000000000000000000014 /* AIOperationsFloorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIOperationsFloorTests.swift; sourceTree = "<group>"; };
 		C10000000000000000000001 /* AgentVisualState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentVisualState.swift; sourceTree = "<group>"; };
 		C10000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CareerOutcomeEnvironmentBackdrop.swift; sourceTree = "<group>"; };
 		C10000000000000000000003 /* EnvironmentPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentPresentation.swift; sourceTree = "<group>"; };
 		C10000000000000000000004 /* FacilityProgressionConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacilityProgressionConfiguration.swift; sourceTree = "<group>"; };
 		C10000000000000000000005 /* FacilityTier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacilityTier.swift; sourceTree = "<group>"; };
 		C10000000000000000000006 /* FounderEnvironmentScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderEnvironmentScreen.swift; sourceTree = "<group>"; };
-		E70000000000000000000011 /* EnvironmentalInteraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentalInteraction.swift; sourceTree = "<group>"; };
-		F32000000000000000000011 /* FounderGarageMotionPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageMotionPresentation.swift; sourceTree = "<group>"; };
-		F32500000000000000000011 /* FounderGaragePhysicalComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGaragePhysicalComponents.swift; sourceTree = "<group>"; };
 		C10000000000000000000007 /* FounderComputerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderComputerScreen.swift; sourceTree = "<group>"; };
 		C10000000000000000000008 /* FounderProgressionSave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderProgressionSave.swift; sourceTree = "<group>"; };
 		C10000000000000000000009 /* FounderProgressionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderProgressionStore.swift; sourceTree = "<group>"; };
@@ -233,16 +260,12 @@
 		C10000000000000000000013 /* Build10HeadquartersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build10HeadquartersTests.swift; sourceTree = "<group>"; };
 		C10000000000000000000014 /* AchievementStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementStore.swift; sourceTree = "<group>"; };
 		C10000000000000000000015 /* EmpireTaskExpansion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmpireTaskExpansion.swift; sourceTree = "<group>"; };
-		B14000000000000000000002 /* ProductTypeContentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductTypeContentTests.swift; sourceTree = "<group>"; };
-		B16000000000000000000002 /* TalentBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TalentBoard.swift; sourceTree = "<group>"; };
-		B16000000000000000000004 /* TalentBoardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TalentBoardTests.swift; sourceTree = "<group>"; };
-		B16000000000000000000006 /* HowToPlayScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HowToPlayScreen.swift; sourceTree = "<group>"; };
-		B17000000000000000000002 /* RivalEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RivalEngine.swift; sourceTree = "<group>"; };
-		B17000000000000000000004 /* RivalEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RivalEngineTests.swift; sourceTree = "<group>"; };
-		B18000000000000000000002 /* TechComFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComFeed.swift; sourceTree = "<group>"; };
-		B18000000000000000000004 /* TechComFeedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComFeedTests.swift; sourceTree = "<group>"; };
-		B20100000000000000000002 /* ConsumerAppContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsumerAppContent.swift; sourceTree = "<group>"; };
 		C10000000000000000000016 /* ContentLibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentLibraryTests.swift; sourceTree = "<group>"; };
+		CE09C90DB6AC97A8F2FAA9FC /* SeededRandomNumberGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeededRandomNumberGenerator.swift; sourceTree = "<group>"; };
+		D10000000000000000000001 /* DoctrineProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoctrineProfile.swift; sourceTree = "<group>"; };
+		D10000000000000000000002 /* ContentLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentLibrary.swift; sourceTree = "<group>"; };
+		D10000000000000000000003 /* SimulationEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationEngine.swift; sourceTree = "<group>"; };
+		D10000000000000000000004 /* VentureCheckpointScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureCheckpointScreen.swift; sourceTree = "<group>"; };
 		D10000000000000000000022 /* AgentStationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentStationState.swift; sourceTree = "<group>"; };
 		D10000000000000000000023 /* AgentDetailPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentDetailPresentation.swift; sourceTree = "<group>"; };
 		D10000000000000000000024 /* AgentDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentDetailViewModel.swift; sourceTree = "<group>"; };
@@ -250,49 +273,94 @@
 		D10000000000000000000026 /* AchievementsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementsScreen.swift; sourceTree = "<group>"; };
 		D10000000000000000000027 /* HindsightRecordsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HindsightRecordsScreen.swift; sourceTree = "<group>"; };
 		D10000000000000000000028 /* PrecedentRecordsSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecedentRecordsSupport.swift; sourceTree = "<group>"; };
-		A31000000000000000000001 /* SprintOutcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SprintOutcomeScreen.swift; sourceTree = "<group>"; };
-		A31000000000000000000002 /* HindsightArchiveCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HindsightArchiveCard.swift; sourceTree = "<group>"; };
 		D1000000000000000000002A /* AchievementScreenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementScreenTests.swift; sourceTree = "<group>"; };
 		D1000000000000000000002B /* AgentDetailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentDetailTests.swift; sourceTree = "<group>"; };
 		D1000000000000000000002C /* ModeSelectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModeSelectTests.swift; sourceTree = "<group>"; };
 		D1000000000000000000002D /* PrecedentRecordsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecedentRecordsTests.swift; sourceTree = "<group>"; };
-		17558F294800127BE04C0EBD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		2513145C1504A166E8177382 /* GameStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStoreTests.swift; sourceTree = "<group>"; };
-		E70000000000000000000012 /* EnvironmentalInteractionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentalInteractionTests.swift; sourceTree = "<group>"; };
-		4FB3F3A34C09C15574734B61 /* Solo Unicorn Run Tests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = "Solo Unicorn Run Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7CB9F64447826C8051328902 /* SimulationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationModels.swift; sourceTree = "<group>"; };
-		94AA2809B6198CB8955EEFAC /* GameStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStore.swift; sourceTree = "<group>"; };
-		AC4FEEA41FEA4B7CD5D02B29 /* Solo Unicorn Run.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "Solo Unicorn Run.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		CE09C90DB6AC97A8F2FAA9FC /* SeededRandomNumberGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeededRandomNumberGenerator.swift; sourceTree = "<group>"; };
 		D3E7E924208E29B28AFAA264 /* GameModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameModels.swift; sourceTree = "<group>"; };
 		D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		F1999948F297FBA3D5958727 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
-		FB05034A23E5A13D7BBCBDF0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		B10000000000000000000001 /* RevenueCatConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCatConfiguration.swift; sourceTree = "<group>"; };
-		B10000000000000000000002 /* SubscriptionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionStore.swift; sourceTree = "<group>"; };
-		B10000000000000000000003 /* SubscriptionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionScreen.swift; sourceTree = "<group>"; };
+		E10000000000000000000001 /* ContinuousModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinuousModeTests.swift; sourceTree = "<group>"; };
+		E10000000000000000000002 /* SimulationEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationEngineTests.swift; sourceTree = "<group>"; };
 		E10000000000000000000011 /* TechComEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComEngine.swift; sourceTree = "<group>"; };
 		E10000000000000000000012 /* TechComScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComScreen.swift; sourceTree = "<group>"; };
-		E31000000000000000000001 /* TechComComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComComponents.swift; sourceTree = "<group>"; };
-		E31000000000000000000002 /* TechComPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComPresentation.swift; sourceTree = "<group>"; };
 		E10000000000000000000013 /* TechComEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComEngineTests.swift; sourceTree = "<group>"; };
 		E10000000000000000000014 /* TechComPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComPresentationTests.swift; sourceTree = "<group>"; };
 		E10000000000000000000015 /* RevenueCelebrationFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCelebrationFeedback.swift; sourceTree = "<group>"; };
 		E10000000000000000000016 /* AppSettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsStore.swift; sourceTree = "<group>"; };
 		E10000000000000000000017 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
 		E10000000000000000000019 /* HowToPlayContentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HowToPlayContentTests.swift; sourceTree = "<group>"; };
-		E10000000000000000000022 /* GameplayMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameplayMotionTests.swift; sourceTree = "<group>"; };
 		E10000000000000000000020 /* GameStoreTestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStoreTestSupport.swift; sourceTree = "<group>"; };
 		E10000000000000000000021 /* GameplayMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameplayMotion.swift; sourceTree = "<group>"; };
+		E10000000000000000000022 /* GameplayMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameplayMotionTests.swift; sourceTree = "<group>"; };
+		E31000000000000000000001 /* TechComComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComComponents.swift; sourceTree = "<group>"; };
+		E31000000000000000000002 /* TechComPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComPresentation.swift; sourceTree = "<group>"; };
+		E70000000000000000000011 /* EnvironmentalInteraction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentalInteraction.swift; sourceTree = "<group>"; };
+		E70000000000000000000012 /* EnvironmentalInteractionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentalInteractionTests.swift; sourceTree = "<group>"; };
+		F10000000000000000000001 /* DailyChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChallenge.swift; sourceTree = "<group>"; };
+		F10000000000000000000002 /* VentureEra.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureEra.swift; sourceTree = "<group>"; };
+		F10000000000000000000003 /* Build9ModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build9ModeTests.swift; sourceTree = "<group>"; };
+		F1999948F297FBA3D5958727 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
+		F24000000000000000000002 /* VentureIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureIdentity.swift; sourceTree = "<group>"; };
+		F25000000000000000000002 /* VentureThesisScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureThesisScreen.swift; sourceTree = "<group>"; };
+		F26000000000000000000002 /* RevenueCatImportBoundaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevenueCatImportBoundaryTests.swift; sourceTree = "<group>"; };
 		F27000000000000000000011 /* FounderMotionComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderMotionComponents.swift; sourceTree = "<group>"; };
 		F27000000000000000000012 /* LiveWorkspaceSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWorkspaceSurface.swift; sourceTree = "<group>"; };
 		F27000000000000000000013 /* MotionVerificationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MotionVerificationScreen.swift; sourceTree = "<group>"; };
 		F28000000000000000000011 /* AgentPortraitAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentPortraitAsset.swift; sourceTree = "<group>"; };
 		F28000000000000000000012 /* AgentWorkstationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentWorkstationTests.swift; sourceTree = "<group>"; };
-		B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutcomeBackdropMotionTests.swift; sourceTree = "<group>"; };
 		F31000000000000000000011 /* VentureScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureScreen.swift; sourceTree = "<group>"; };
 		F31000000000000000000012 /* VentureScreenPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureScreenPresentation.swift; sourceTree = "<group>"; };
 		F31000000000000000000013 /* VentureScreenPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureScreenPresentationTests.swift; sourceTree = "<group>"; };
+		F32000000000000000000011 /* FounderGarageMotionPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageMotionPresentation.swift; sourceTree = "<group>"; };
+		F32500000000000000000011 /* FounderGaragePhysicalComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGaragePhysicalComponents.swift; sourceTree = "<group>"; };
+		F41000000000000000000011 /* FounderGarageRendererConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageRendererConfiguration.swift; sourceTree = "<group>"; };
+		F41000000000000000000012 /* FounderWorldPresentationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderWorldPresentationModel.swift; sourceTree = "<group>"; };
+		F41000000000000000000013 /* FounderGarageRealityScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageRealityScene.swift; sourceTree = "<group>"; };
+		F41000000000000000000014 /* FounderGarageRealityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageRealityView.swift; sourceTree = "<group>"; };
+		F41000000000000000000015 /* FounderGarageRealityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageRealityTests.swift; sourceTree = "<group>"; };
+		F41000000000000000000016 /* founder_garage.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage.usdz; sourceTree = "<group>"; };
+		F41000000000000000000017 /* founder_garage_v3.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage_v3.usdz; sourceTree = "<group>"; };
+		F41000000000000000000018 /* founder_garage_v4.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage_v4.usdz; sourceTree = "<group>"; };
+		F41000000000000000000019 /* founder_garage_v6.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage_v6.usdz; sourceTree = "<group>"; };
+		F4100000000000000000001A /* founder_garage_v7.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage_v7.usdz; sourceTree = "<group>"; };
+		F32700000000000000000011 /* WorkSessionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionEngine.swift; sourceTree = "<group>"; };
+		F32700000000000000000012 /* EvidenceTriageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvidenceTriageView.swift; sourceTree = "<group>"; };
+		F32700000000000000000013 /* WorkSessionEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionEngineTests.swift; sourceTree = "<group>"; };
+		F32700000000000000000014 /* SystemsReviewChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemsReviewChallenge.swift; sourceTree = "<group>"; };
+		F32700000000000000000015 /* SystemsReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemsReviewView.swift; sourceTree = "<group>"; };
+		F32700000000000000000016 /* SystemsReviewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemsReviewTests.swift; sourceTree = "<group>"; };
+		F32800000000000000000011 /* CampaignCalibrationChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignCalibrationChallenge.swift; sourceTree = "<group>"; };
+		F32800000000000000000012 /* CampaignCalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignCalibrationView.swift; sourceTree = "<group>"; };
+		F32800000000000000000013 /* CampaignCalibrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignCalibrationTests.swift; sourceTree = "<group>"; };
+		FB05034A23E5A13D7BBCBDF0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		FD3270000000000000000011 /* FounderDeskWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspace.swift; sourceTree = "<group>"; };
+		FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspaceModel.swift; sourceTree = "<group>"; };
+		FD3270000000000000000013 /* FounderDeskWorkspaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspaceTests.swift; sourceTree = "<group>"; };
+		FD3275000000000000000011 /* FounderDevicePresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDevicePresentation.swift; sourceTree = "<group>"; };
+		24B6048AF96C255824BFD84D /* AtlantisWorldPresentationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisWorldPresentationModel.swift; sourceTree = "<group>"; };
+		CFA44EBA9C58588064E85F9D /* AtlantisDistrictLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisDistrictLoader.swift; sourceTree = "<group>"; };
+		33F63C7037788FB68E97F470 /* AtlantisRealityScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisRealityScene.swift; sourceTree = "<group>"; };
+		B52DC80EBBC1FDC96FB99C09 /* AtlantisRealityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisRealityView.swift; sourceTree = "<group>"; };
+		207E2115321660B4EE667E49 /* AtlantisRuntimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisRuntimeTests.swift; sourceTree = "<group>"; };
+		5203A824B352EB66DD5B6C4A /* AtlantisRuntimeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisRuntimeUITests.swift; sourceTree = "<group>"; };
+		4A82CDCF9534DE7B7D7747DD /* founder_district.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/founder_district.usdz; sourceTree = "<group>"; };
+		B745020E2276418CFF2C353D /* startup_row.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/startup_row.usdz; sourceTree = "<group>"; };
+		A04CCE6D5AE47A888C2FA2B8 /* commerce_district.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/commerce_district.usdz; sourceTree = "<group>"; };
+		0A8A478F9D2797B6041D0489 /* venture_district.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/venture_district.usdz; sourceTree = "<group>"; };
+		6DC69315C74D4212576685B0 /* media_district.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/media_district.usdz; sourceTree = "<group>"; };
+		DA9511FDBB4B0DB7C6B09106 /* tech_core.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/tech_core.usdz; sourceTree = "<group>"; };
+		93E38D6F680617E0A241D203 /* unicorn_heights.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/unicorn_heights.usdz; sourceTree = "<group>"; };
+		1B0B8BA0257A2FDE8488F12C /* world_context.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/world_context.usdz; sourceTree = "<group>"; };
+		2BCCB6F92A46ACB05330AE9B /* atlantis_manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = RealityKit/Atlantis/atlantis_manifest.json; sourceTree = "<group>"; };
+		A11000000000000000000001 /* founder_district_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/founder_district_batched.usdz; sourceTree = "<group>"; };
+		A11100000000000000000001 /* startup_row_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/startup_row_batched.usdz; sourceTree = "<group>"; };
+		A11200000000000000000001 /* commerce_district_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/commerce_district_batched.usdz; sourceTree = "<group>"; };
+		A11300000000000000000001 /* tech_core_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/tech_core_batched.usdz; sourceTree = "<group>"; };
+		A11400000000000000000001 /* unicorn_heights_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/unicorn_heights_batched.usdz; sourceTree = "<group>"; };
+		A11500000000000000000001 /* venture_district_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/venture_district_batched.usdz; sourceTree = "<group>"; };
+		A11600000000000000000001 /* media_district_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/media_district_batched.usdz; sourceTree = "<group>"; };
+		A12000000000000000000001 /* tech_unicorn_bridge_repaired.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/tech_unicorn_bridge_repaired.usdz; sourceTree = "<group>"; };
+		A12100000000000000000001 /* spire_far_proxy.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/spire_far_proxy.usdz; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -315,6 +383,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		326100000000000000000004 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				326100000000000000000002 /* Build32_6_1ProductionContinuityUITests.swift */,
+				5203A824B352EB66DD5B6C4A /* AtlantisRuntimeUITests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
 		3CEB5942FF350B9F97498E73 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -335,6 +412,8 @@
 				B33000000000000000000014 /* AIOperationsFloorTests.swift */,
 				A5A100000000000000000013 /* SignalTVTests.swift */,
 				FD3270000000000000000013 /* FounderDeskWorkspaceTests.swift */,
+				F41000000000000000000015 /* FounderGarageRealityTests.swift */,
+				207E2115321660B4EE667E49 /* AtlantisRuntimeTests.swift */,
 				B32100000000000000000003 /* Build32LivingCompanyTests.swift */,
 				B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */,
 				B32500000000000000000001 /* Build32_2VisualBehaviorTests.swift */,
@@ -358,7 +437,10 @@
 				B16000000000000000000004 /* TalentBoardTests.swift */,
 				B17000000000000000000004 /* RivalEngineTests.swift */,
 				B18000000000000000000004 /* TechComFeedTests.swift */,
-				D1000000000000000000002A /* AchievementScreenTests.swift */, D1000000000000000000002B /* AgentDetailTests.swift */, D1000000000000000000002C /* ModeSelectTests.swift */, D1000000000000000000002D /* PrecedentRecordsTests.swift */,
+				D1000000000000000000002A /* AchievementScreenTests.swift */,
+				D1000000000000000000002B /* AgentDetailTests.swift */,
+				D1000000000000000000002C /* ModeSelectTests.swift */,
+				D1000000000000000000002D /* PrecedentRecordsTests.swift */,
 				E10000000000000000000013 /* TechComEngineTests.swift */,
 				E10000000000000000000014 /* TechComPresentationTests.swift */,
 				E10000000000000000000019 /* HowToPlayContentTests.swift */,
@@ -370,14 +452,6 @@
 				F28000000000000000000012 /* AgentWorkstationTests.swift */,
 			);
 			path = Tests;
-			sourceTree = "<group>";
-		};
-		326100000000000000000004 /* UITests */ = {
-			isa = PBXGroup;
-			children = (
-				326100000000000000000002 /* Build32_6_1ProductionContinuityUITests.swift */,
-			);
-			path = UITests;
 			sourceTree = "<group>";
 		};
 		7775A9C13FE1CF8E12C7214B /* App */ = {
@@ -396,6 +470,37 @@
 				FD3270000000000000000011 /* FounderDeskWorkspace.swift */,
 				FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */,
 				FD3275000000000000000011 /* FounderDevicePresentation.swift */,
+				F41000000000000000000011 /* FounderGarageRendererConfiguration.swift */,
+				F41000000000000000000012 /* FounderWorldPresentationModel.swift */,
+				F41000000000000000000013 /* FounderGarageRealityScene.swift */,
+				2BCCB6F92A46ACB05330AE9B /* atlantis_manifest.json */,
+				1B0B8BA0257A2FDE8488F12C /* world_context.usdz */,
+				93E38D6F680617E0A241D203 /* unicorn_heights.usdz */,
+				DA9511FDBB4B0DB7C6B09106 /* tech_core.usdz */,
+				6DC69315C74D4212576685B0 /* media_district.usdz */,
+				0A8A478F9D2797B6041D0489 /* venture_district.usdz */,
+				A04CCE6D5AE47A888C2FA2B8 /* commerce_district.usdz */,
+				B745020E2276418CFF2C353D /* startup_row.usdz */,
+				4A82CDCF9534DE7B7D7747DD /* founder_district.usdz */,
+				A11000000000000000000001 /* founder_district_batched.usdz */,
+				A11100000000000000000001 /* startup_row_batched.usdz */,
+				A11200000000000000000001 /* commerce_district_batched.usdz */,
+				A11300000000000000000001 /* tech_core_batched.usdz */,
+				A11400000000000000000001 /* unicorn_heights_batched.usdz */,
+				A11500000000000000000001 /* venture_district_batched.usdz */,
+				A11600000000000000000001 /* media_district_batched.usdz */,
+				A12000000000000000000001 /* tech_unicorn_bridge_repaired.usdz */,
+				A12100000000000000000001 /* spire_far_proxy.usdz */,
+				B52DC80EBBC1FDC96FB99C09 /* AtlantisRealityView.swift */,
+				33F63C7037788FB68E97F470 /* AtlantisRealityScene.swift */,
+				CFA44EBA9C58588064E85F9D /* AtlantisDistrictLoader.swift */,
+				24B6048AF96C255824BFD84D /* AtlantisWorldPresentationModel.swift */,
+				F41000000000000000000014 /* FounderGarageRealityView.swift */,
+				F41000000000000000000016 /* founder_garage.usdz */,
+				F41000000000000000000017 /* founder_garage_v3.usdz */,
+				F41000000000000000000018 /* founder_garage_v4.usdz */,
+				F41000000000000000000019 /* founder_garage_v6.usdz */,
+				F4100000000000000000001A /* founder_garage_v7.usdz */,
 				B32900000000000000000001 /* CompanyCommandScene.swift */,
 				B32100000000000000000001 /* CompanyCommandViewport.swift */,
 				B32100000000000000000002 /* LivingCompanyPresentation.swift */,
@@ -404,9 +509,15 @@
 				C10000000000000000000014 /* AchievementStore.swift */,
 				C10000000000000000000001 /* AgentVisualState.swift */,
 				F28000000000000000000011 /* AgentPortraitAsset.swift */,
-				C10000000000000000000010 /* AgentStationState.swift */,
+				C10000000000000000000010 /* FacilityUpgrade.swift */,
 				F1999948F297FBA3D5958727 /* App.swift */,
-				D10000000000000000000022 /* AgentStationState.swift */, D10000000000000000000023 /* AgentDetailPresentation.swift */, D10000000000000000000024 /* AgentDetailViewModel.swift */, D10000000000000000000025 /* AgentRosterCard.swift */, D10000000000000000000026 /* AchievementsScreen.swift */, D10000000000000000000027 /* HindsightRecordsScreen.swift */, D10000000000000000000028 /* PrecedentRecordsSupport.swift */,
+				D10000000000000000000022 /* AgentStationState.swift */,
+				D10000000000000000000023 /* AgentDetailPresentation.swift */,
+				D10000000000000000000024 /* AgentDetailViewModel.swift */,
+				D10000000000000000000025 /* AgentRosterCard.swift */,
+				D10000000000000000000026 /* AchievementsScreen.swift */,
+				D10000000000000000000027 /* HindsightRecordsScreen.swift */,
+				D10000000000000000000028 /* PrecedentRecordsSupport.swift */,
 				A31000000000000000000002 /* HindsightArchiveCard.swift */,
 				A31000000000000000000001 /* SprintOutcomeScreen.swift */,
 				17558F294800127BE04C0EBD /* Assets.xcassets */,
@@ -420,7 +531,7 @@
 				C10000000000000000000005 /* FacilityTier.swift */,
 				C10000000000000000000006 /* FounderEnvironmentScreen.swift */,
 				F32000000000000000000011 /* FounderGarageMotionPresentation.swift */,
-		F32500000000000000000011 /* FounderGaragePhysicalComponents.swift */,
+				F32500000000000000000011 /* FounderGaragePhysicalComponents.swift */,
 				E70000000000000000000011 /* EnvironmentalInteraction.swift */,
 				C10000000000000000000007 /* FounderComputerScreen.swift */,
 				F27000000000000000000011 /* FounderMotionComponents.swift */,
@@ -481,6 +592,25 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		326100000000000000000007 /* Solo Unicorn Run UI Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 32610000000000000000000C /* Build configuration list for PBXNativeTarget "Solo Unicorn Run UI Tests" */;
+			buildPhases = (
+				326100000000000000000006 /* Sources */,
+				326100000000000000000005 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				326100000000000000000009 /* PBXTargetDependency */,
+			);
+			name = "Solo Unicorn Run UI Tests";
+			packageProductDependencies = (
+			);
+			productName = "Solo Unicorn Run UI Tests";
+			productReference = 326100000000000000000003 /* Solo Unicorn Run UI Tests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		574DB10F4C1A7535A2094038 /* Solo Unicorn Run */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A363C56A42D1900B8C2095E1 /* Build configuration list for PBXNativeTarget "Solo Unicorn Run" */;
@@ -520,25 +650,6 @@
 			productReference = 4FB3F3A34C09C15574734B61 /* Solo Unicorn Run Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		326100000000000000000007 /* Solo Unicorn Run UI Tests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 32610000000000000000000C /* Build configuration list for PBXNativeTarget "Solo Unicorn Run UI Tests" */;
-			buildPhases = (
-				326100000000000000000006 /* Sources */,
-				326100000000000000000005 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				326100000000000000000009 /* PBXTargetDependency */,
-			);
-			name = "Solo Unicorn Run UI Tests";
-			packageProductDependencies = (
-			);
-			productName = "Solo Unicorn Run UI Tests";
-			productReference = 326100000000000000000003 /* Solo Unicorn Run UI Tests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -546,7 +657,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					574DB10F4C1A7535A2094038 = {
 						SystemCapabilities = {
@@ -567,7 +678,7 @@
 			mainGroup = CA642887A779ABB6F08FCDA4;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				B30000000000000000000001 /* XCLocalSwiftPackageReference "purchases-ios-spm" */,
+				B30000000000000000000001 /* XCLocalSwiftPackageReference "Packages/purchases-ios-spm" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3CEB5942FF350B9F97498E73 /* Products */;
@@ -587,6 +698,29 @@
 			buildActionMask = 2147483647;
 			files = (
 				ABDFC492407A05E2BC397A8D /* Assets.xcassets in Resources */,
+				F40000000000000000000006 /* founder_garage.usdz in Resources */,
+				F40000000000000000000007 /* founder_garage_v3.usdz in Resources */,
+				F40000000000000000000008 /* founder_garage_v4.usdz in Resources */,
+				F40000000000000000000009 /* founder_garage_v6.usdz in Resources */,
+				F4000000000000000000000A /* founder_garage_v7.usdz in Resources */,
+				C0ABE533359C7059C8CF83CD /* atlantis_manifest.json in Resources */,
+				C2E0680A0168829B1D9C4877 /* world_context.usdz in Resources */,
+				3977CAE71F1ACD186BC7F742 /* unicorn_heights.usdz in Resources */,
+				C18ED78F7C3C14DC5FC8701F /* tech_core.usdz in Resources */,
+				0193AF627ED8FC68EA552A5E /* media_district.usdz in Resources */,
+				0CA80CD2498001065D32D217 /* venture_district.usdz in Resources */,
+				466402B70C12D8D329D619EA /* commerce_district.usdz in Resources */,
+				3CB10B38F18C24716CF842AB /* startup_row.usdz in Resources */,
+				F9B22E3E18C9ABBB564D5F61 /* founder_district.usdz in Resources */,
+				A11000000000000000000002 /* founder_district_batched.usdz in Resources */,
+				A11100000000000000000002 /* startup_row_batched.usdz in Resources */,
+				A11200000000000000000002 /* commerce_district_batched.usdz in Resources */,
+				A11300000000000000000002 /* tech_core_batched.usdz in Resources */,
+				A11400000000000000000002 /* unicorn_heights_batched.usdz in Resources */,
+				A11500000000000000000002 /* venture_district_batched.usdz in Resources */,
+				A11600000000000000000002 /* media_district_batched.usdz in Resources */,
+				A12000000000000000000002 /* tech_unicorn_bridge_repaired.usdz in Resources */,
+				A12100000000000000000002 /* spire_far_proxy.usdz in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -598,6 +732,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				326100000000000000000001 /* Build32_6_1ProductionContinuityUITests.swift in Sources */,
+				2CD20EBFEFA39219C29D6D89 /* AtlantisRuntimeUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -612,6 +747,8 @@
 				B33000000000000000000004 /* AIOperationsFloorTests.swift in Sources */,
 				A5A100000000000000000003 /* SignalTVTests.swift in Sources */,
 				FD3270000000000000000003 /* FounderDeskWorkspaceTests.swift in Sources */,
+				F40000000000000000000005 /* FounderGarageRealityTests.swift in Sources */,
+				F878FAA6A216A9E396C26CFC /* AtlantisRuntimeTests.swift in Sources */,
 				B32000000000000000000003 /* Build32LivingCompanyTests.swift in Sources */,
 				B32200000000000000000001 /* Build32_1ViewportInteractionTests.swift in Sources */,
 				B32400000000000000000001 /* Build32_2VisualBehaviorTests.swift in Sources */,
@@ -635,7 +772,10 @@
 				B16000000000000000000003 /* TalentBoardTests.swift in Sources */,
 				B17000000000000000000003 /* RivalEngineTests.swift in Sources */,
 				B18000000000000000000003 /* TechComFeedTests.swift in Sources */,
-				D2000000000000000000002A /* AchievementScreenTests.swift in Sources */, D2000000000000000000002B /* AgentDetailTests.swift in Sources */, D2000000000000000000002C /* ModeSelectTests.swift in Sources */, D2000000000000000000002D /* PrecedentRecordsTests.swift in Sources */,
+				D2000000000000000000002A /* AchievementScreenTests.swift in Sources */,
+				D2000000000000000000002B /* AgentDetailTests.swift in Sources */,
+				D2000000000000000000002C /* ModeSelectTests.swift in Sources */,
+				D2000000000000000000002D /* PrecedentRecordsTests.swift in Sources */,
 				E30000000000000000000003 /* TechComEngineTests.swift in Sources */,
 				E30000000000000000000004 /* TechComPresentationTests.swift in Sources */,
 				E30000000000000000000009 /* HowToPlayContentTests.swift in Sources */,
@@ -665,6 +805,14 @@
 				FD3270000000000000000001 /* FounderDeskWorkspace.swift in Sources */,
 				FD3270000000000000000002 /* FounderDeskWorkspaceModel.swift in Sources */,
 				FD3275000000000000000001 /* FounderDevicePresentation.swift in Sources */,
+				F40000000000000000000001 /* FounderGarageRendererConfiguration.swift in Sources */,
+				F40000000000000000000002 /* FounderWorldPresentationModel.swift in Sources */,
+				F40000000000000000000003 /* FounderGarageRealityScene.swift in Sources */,
+				3FFDB1A752077DF06EB9A10C /* AtlantisRealityView.swift in Sources */,
+				8B4BC4FB4B2E11ABF5F0BC68 /* AtlantisRealityScene.swift in Sources */,
+				A2C2E52CAB4B3D4FB22505FE /* AtlantisDistrictLoader.swift in Sources */,
+				06501CF6503A40F532F9732C /* AtlantisWorldPresentationModel.swift in Sources */,
+				F40000000000000000000004 /* FounderGarageRealityView.swift in Sources */,
 				B32800000000000000000001 /* CompanyCommandScene.swift in Sources */,
 				B32000000000000000000001 /* CompanyCommandViewport.swift in Sources */,
 				B32000000000000000000002 /* LivingCompanyPresentation.swift in Sources */,
@@ -673,7 +821,13 @@
 				C20000000000000000000001 /* AgentVisualState.swift in Sources */,
 				F28000000000000000000001 /* AgentPortraitAsset.swift in Sources */,
 				C20000000000000000000014 /* AchievementStore.swift in Sources */,
-				D20000000000000000000022 /* AgentStationState.swift in Sources */, D20000000000000000000023 /* AgentDetailPresentation.swift in Sources */, D20000000000000000000024 /* AgentDetailViewModel.swift in Sources */, D20000000000000000000025 /* AgentRosterCard.swift in Sources */, D20000000000000000000026 /* AchievementsScreen.swift in Sources */, D20000000000000000000027 /* HindsightRecordsScreen.swift in Sources */, D20000000000000000000028 /* PrecedentRecordsSupport.swift in Sources */,
+				D20000000000000000000022 /* AgentStationState.swift in Sources */,
+				D20000000000000000000023 /* AgentDetailPresentation.swift in Sources */,
+				D20000000000000000000024 /* AgentDetailViewModel.swift in Sources */,
+				D20000000000000000000025 /* AgentRosterCard.swift in Sources */,
+				D20000000000000000000026 /* AchievementsScreen.swift in Sources */,
+				D20000000000000000000027 /* HindsightRecordsScreen.swift in Sources */,
+				D20000000000000000000028 /* PrecedentRecordsSupport.swift in Sources */,
 				A30000000000000000000002 /* HindsightArchiveCard.swift in Sources */,
 				A30000000000000000000001 /* SprintOutcomeScreen.swift in Sources */,
 				B2BFB1EE90AB231E41812DEF /* App.swift in Sources */,
@@ -737,19 +891,69 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		326100000000000000000009 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 574DB10F4C1A7535A2094038 /* Solo Unicorn Run */;
-			targetProxy = 326100000000000000000008 /* PBXContainerItemProxy */;
-		};
 		0CC3224B82E8319FF9ACB411 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 574DB10F4C1A7535A2094038 /* Solo Unicorn Run */;
 			targetProxy = 86A2B4AF5D561E1578E4ECD9 /* PBXContainerItemProxy */;
 		};
+		326100000000000000000009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 574DB10F4C1A7535A2094038 /* Solo Unicorn Run */;
+			targetProxy = 326100000000000000000008 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		1F99DCF1F344076360DE634D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 32707;
+				DEVELOPMENT_TEAM = 45J3S2R2DK;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 32.7.7;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun;
+				PRODUCT_MODULE_NAME = Solo_Unicorn_Run;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REVENUECAT_API_KEY = appl_RstJigxejEkEbYZmARYTVpcBoxY;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		21E5E16F2816C70C377777CC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 32707;
+				DEVELOPMENT_TEAM = 45J3S2R2DK;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 32.7.7;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun;
+				PRODUCT_MODULE_NAME = Solo_Unicorn_Run;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REVENUECAT_API_KEY = appl_RstJigxejEkEbYZmARYTVpcBoxY;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		32610000000000000000000A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -787,54 +991,6 @@
 				TEST_TARGET_NAME = "Solo Unicorn Run";
 			};
 			name = Release;
-		};
-		1F99DCF1F344076360DE634D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 32707;
-				INFOPLIST_FILE = App/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 32.7.7;
-				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun;
-				PRODUCT_MODULE_NAME = Solo_Unicorn_Run;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				REVENUECAT_API_KEY = appl_RstJigxejEkEbYZmARYTVpcBoxY;
-				SDKROOT = iphoneos;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		21E5E16F2816C70C377777CC /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 32707;
-				INFOPLIST_FILE = App/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 32.7.7;
-				PRODUCT_BUNDLE_IDENTIFIER = com.talonsight.solounicornrun;
-				PRODUCT_MODULE_NAME = Solo_Unicorn_Run;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				REVENUECAT_API_KEY = appl_RstJigxejEkEbYZmARYTVpcBoxY;
-				SDKROOT = iphoneos;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
 		};
 		7730F666A74FD79B3483EF30 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -893,6 +1049,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -913,6 +1070,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -956,6 +1114,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -969,6 +1128,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -1037,24 +1197,24 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		B30000000000000000000001 /* XCLocalSwiftPackageReference "purchases-ios-spm" */ = {
+		B30000000000000000000001 /* XCLocalSwiftPackageReference "Packages/purchases-ios-spm" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/purchases-ios-spm;
+			relativePath = "Packages/purchases-ios-spm";
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		B40000000000000000000001 /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B30000000000000000000001 /* XCLocalSwiftPackageReference "purchases-ios-spm" */;
+			package = B30000000000000000000001 /* XCLocalSwiftPackageReference "Packages/purchases-ios-spm" */;
 			productName = RevenueCat;
 		};
 		B40000000000000000000002 /* RevenueCatUI */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B30000000000000000000001 /* XCLocalSwiftPackageReference "purchases-ios-spm" */;
+			package = B30000000000000000000001 /* XCLocalSwiftPackageReference "Packages/purchases-ios-spm" */;
 			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
-};
+	};
 	rootObject = 8E6817BAF5AD4288F91B1938 /* Project object */;
 }

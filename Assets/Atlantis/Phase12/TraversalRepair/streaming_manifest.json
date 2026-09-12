@@ -1,0 +1,106 @@
+{
+  "sourceOfTruth": "Assets/Atlantis/Phase0/masterplan_manifest.json",
+  "adjacency": {
+    "FounderDistrict": [
+      "StartupRow"
+    ],
+    "StartupRow": [
+      "FounderDistrict",
+      "CommerceDistrict",
+      "VentureDistrict",
+      "TechCore"
+    ],
+    "CommerceDistrict": [
+      "StartupRow",
+      "VentureDistrict",
+      "TechCore",
+      "MediaDistrict"
+    ],
+    "VentureDistrict": [
+      "StartupRow",
+      "CommerceDistrict",
+      "TechCore"
+    ],
+    "MediaDistrict": [
+      "CommerceDistrict"
+    ],
+    "TechCore": [
+      "StartupRow",
+      "CommerceDistrict",
+      "VentureDistrict",
+      "UnicornHeights"
+    ],
+    "UnicornHeights": [
+      "TechCore"
+    ]
+  },
+  "residencyPolicy": "previous + current + next",
+  "surfaceCounts": {
+    "walkable": 87,
+    "collisionOnly": 28,
+    "visualOnly": 19
+  },
+  "bridge": {
+    "points": [
+      [
+        360.0,
+        15.0,
+        -470.0
+      ],
+      [
+        600.0,
+        29.2,
+        -530.0
+      ],
+      [
+        360.0,
+        43.4,
+        -590.0
+      ],
+      [
+        600.0,
+        57.6,
+        -650.0
+      ],
+      [
+        360.0,
+        71.8,
+        -710.0
+      ],
+      [
+        600.0,
+        86.0,
+        -760.0
+      ]
+    ],
+    "riseMeters": 71.0,
+    "routeLengthMeters": 1236.738094815056,
+    "maximumGradePercent": 5.7923008167808305,
+    "classification": "comfortable",
+    "widthMeters": 13.0,
+    "package": {
+      "package": "tech_unicorn_bridge_repaired",
+      "bytes": 1858,
+      "sha256": "877efda6b7a04b8b70ed9c9df58084f3534f54f9a859197f5a98ea903e1e40ae"
+    }
+  },
+  "spire": {
+    "worldPosition": [
+      50,
+      14,
+      -420
+    ],
+    "heightMeters": 280,
+    "sides": 8,
+    "package": {
+      "package": "spire_far_proxy",
+      "bytes": 2038,
+      "sha256": "86775fd4857371d03593b9e29d8e4764195fe67405f76906974eaf1f555c17ab"
+    }
+  },
+  "continuousRoute": {
+    "name": "FounderGarage_To_PlayerUnicornHQ",
+    "pointCount": 29,
+    "lengthMeters": 3946.9365062524007
+  }
+}

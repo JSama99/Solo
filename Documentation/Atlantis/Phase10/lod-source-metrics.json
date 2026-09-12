@@ -1,0 +1,27 @@
+{
+  "Startup_LoftContext": {
+    "originalTriangles": 432,
+    "proxyTriangles": 12,
+    "package": "startup_row.usdc"
+  },
+  "Commerce_Building_01": {
+    "originalTriangles": 9916,
+    "proxyTriangles": 12,
+    "package": "commerce_district.usdc"
+  },
+  "Founder_Building_00": {
+    "originalTriangles": 440,
+    "proxyTriangles": 12,
+    "package": "founder_district.usdc"
+  },
+  "PallasAIHQ": {
+    "originalTriangles": 572,
+    "proxyTriangles": 12,
+    "package": "tech_core.usdc"
+  },
+  "TheSpire": {
+    "originalTriangles": 972,
+    "proxyTriangles": 12,
+    "package": "tech_core.usdc"
+  }
+}

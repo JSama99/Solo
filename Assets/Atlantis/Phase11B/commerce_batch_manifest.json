@@ -1,0 +1,1369 @@
+{
+  "source": "App/RealityKit/Atlantis/commerce_district.usdc",
+  "sourceSHA256": "3f7db2600dddb9a0751cf6097c6c0b56bba977b339209827e586dc18e326b253",
+  "output": "App/RealityKit/Atlantis/commerce_district_batched.usdz",
+  "outputSHA256": "30a1c8e572fd5e370b20557d4631afd071fb3c26cc8ab20a1f9cedb469a0666a",
+  "classification": {
+    "batchable": "supporting architecture, props, and static route surfaces",
+    "preserveSeparate": "Flashpoint hierarchy; every top-level semantic/navigation anchor; building signs, labels, and occupied surfaces"
+  },
+  "preservedRoots": [
+    "/CommerceDistrict/RivalHQ_Slot_05"
+  ],
+  "semanticAnchors": [
+    {
+      "path": "/CommerceDistrict/Commerce_Boulevard_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Boulevard_01",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Boulevard_02",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Boulevard_03",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/CommerceDistrict_CrossStreet_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Link_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_00",
+      "preservedChildren": [
+        "Commerce_Building_00_OccupiedSurfaces",
+        "Commerce_Building_00_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_01",
+      "preservedChildren": [
+        "Commerce_Building_01_Label",
+        "Commerce_Building_01_OccupiedSurfaces",
+        "Commerce_Building_01_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_02",
+      "preservedChildren": [
+        "Commerce_Building_02_Label",
+        "Commerce_Building_02_OccupiedSurfaces",
+        "Commerce_Building_02_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_03",
+      "preservedChildren": [
+        "Commerce_Building_03_Label",
+        "Commerce_Building_03_OccupiedSurfaces",
+        "Commerce_Building_03_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_04",
+      "preservedChildren": [
+        "Commerce_Building_04_OccupiedSurfaces",
+        "Commerce_Building_04_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_05",
+      "preservedChildren": [
+        "Commerce_Building_05_Label",
+        "Commerce_Building_05_OccupiedSurfaces",
+        "Commerce_Building_05_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_06",
+      "preservedChildren": [
+        "Commerce_Building_06_OccupiedSurfaces",
+        "Commerce_Building_06_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_07",
+      "preservedChildren": [
+        "Commerce_Building_07_OccupiedSurfaces",
+        "Commerce_Building_07_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_08",
+      "preservedChildren": [
+        "Commerce_Building_08_OccupiedSurfaces",
+        "Commerce_Building_08_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_09",
+      "preservedChildren": [
+        "Commerce_Building_09_OccupiedSurfaces",
+        "Commerce_Building_09_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_10",
+      "preservedChildren": [
+        "Commerce_Building_10_OccupiedSurfaces",
+        "Commerce_Building_10_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_11",
+      "preservedChildren": [
+        "Commerce_Building_11_OccupiedSurfaces",
+        "Commerce_Building_11_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_12",
+      "preservedChildren": [
+        "Commerce_Building_12_OccupiedSurfaces",
+        "Commerce_Building_12_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_13",
+      "preservedChildren": [
+        "Commerce_Building_13_OccupiedSurfaces",
+        "Commerce_Building_13_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Building_14",
+      "preservedChildren": [
+        "Commerce_Building_14_OccupiedSurfaces",
+        "Commerce_Building_14_SemanticSign"
+      ]
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_0__1_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_0_1_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_1_1_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_2__1_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_2_1_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Sidewalk_CommerceDistrict_CrossStreet_0__1_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Sidewalk_CommerceDistrict_CrossStreet_0_1_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Sidewalk_Commerce_Link_0__1_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Sidewalk_Commerce_Link_0_1_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CustomerPlaza_Surface",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_EventForecourt_Surface",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_FlashpointCorridor_Surface",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaToCrossStreet_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_EventApproach_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_MarketWalk_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_MarketWalk_01",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_MarketWalk_02",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_FlashpointArrival_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_FlashpointArrival_01",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_FlashpointArrival_02",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_FlashpointArrival_03",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_FlashpointToCrossStreet_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_FlashpointToCrossStreet_01",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_FlashpointToCrossStreet_02",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_00_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_01_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_02_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_03_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_04_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_05_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_06_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_07_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_08_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_09_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_10_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_11_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_12_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_13_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Frontage_Commerce_Building_14_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Planter",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Shrub",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Planter_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Shrub_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Planter_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Shrub_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Planter_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Shrub_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Planter_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Shrub_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Planter_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Shrub_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Planter_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Shrub_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Planter_007",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Shrub_007",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Seat",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_SeatSupport",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_SeatSupport_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Seat_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_SeatSupport_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_SeatSupport_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Seat_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_SeatSupport_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_SeatSupport_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Seat_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_SeatSupport_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_SeatSupport_007",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaLightPole",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaLightFixture",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaLightPole_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaLightFixture_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaLightPole_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaLightFixture_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaLightPole_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaLightFixture_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaLightPole_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaLightFixture_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaLightPole_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaLightFixture_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaLightPole_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_PlazaLightFixture_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Crossing_CustomerPlaza",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_VehicleRamp_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_VehicleRamp_00_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Crossing_Conference",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_007",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_008",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_009",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_010",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_011",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_012",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_013",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_VehicleRamp_00_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_VehicleRamp_00_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Crossing_Market",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_014",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_015",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_016",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_017",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_018",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_019",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_020",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_VehicleRamp_00_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_VehicleRamp_00_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Crossing_Flashpoint",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_021",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_022",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_023",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_024",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_025",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_026",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_027",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_VehicleRamp_00_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_VehicleRamp_00_007",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_BoulevardCrossing_Arrival_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Crossing_Arrival",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_028",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_029",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_030",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_031",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_032",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_033",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_034",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_035",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_036",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_037",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_038",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_039",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_VehicleRamp_00_008",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_VehicleRamp_00_009",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_BoulevardCrossing_Hotel_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_Crossing_Hotel",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_040",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_041",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_042",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_043",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_044",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_045",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_046",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_047",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_048",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_049",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_050",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_CrossingPaint_051",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_VehicleRamp_00_010",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_VehicleRamp_00_011",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/Commerce_ContinuousPaving",
+      "preservedChildren": []
+    },
+    {
+      "path": "/CommerceDistrict/RivalHQ_Slot_05_Parcel",
+      "preservedChildren": []
+    }
+  ],
+  "preservedMeshPaths": [
+    "/CommerceDistrict/Commerce_Building_00/Commerce_Building_00_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_00/Commerce_Building_00_SemanticSign/Geometry",
+    "/CommerceDistrict/Commerce_Building_01/Commerce_Building_01_Label/Geometry",
+    "/CommerceDistrict/Commerce_Building_01/Commerce_Building_01_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_01/Commerce_Building_01_SemanticSign/Geometry",
+    "/CommerceDistrict/Commerce_Building_02/Commerce_Building_02_Label/Geometry",
+    "/CommerceDistrict/Commerce_Building_02/Commerce_Building_02_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_02/Commerce_Building_02_SemanticSign/Geometry",
+    "/CommerceDistrict/Commerce_Building_03/Commerce_Building_03_Label/Geometry",
+    "/CommerceDistrict/Commerce_Building_03/Commerce_Building_03_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_03/Commerce_Building_03_SemanticSign/Geometry",
+    "/CommerceDistrict/Commerce_Building_04/Commerce_Building_04_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_04/Commerce_Building_04_SemanticSign/Geometry",
+    "/CommerceDistrict/Commerce_Building_05/Commerce_Building_05_Label/Geometry",
+    "/CommerceDistrict/Commerce_Building_05/Commerce_Building_05_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_05/Commerce_Building_05_SemanticSign/Geometry",
+    "/CommerceDistrict/Commerce_Building_06/Commerce_Building_06_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_06/Commerce_Building_06_SemanticSign/Geometry",
+    "/CommerceDistrict/Commerce_Building_07/Commerce_Building_07_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_07/Commerce_Building_07_SemanticSign/Geometry",
+    "/CommerceDistrict/Commerce_Building_08/Commerce_Building_08_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_08/Commerce_Building_08_SemanticSign/Geometry",
+    "/CommerceDistrict/Commerce_Building_09/Commerce_Building_09_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_09/Commerce_Building_09_SemanticSign/Geometry",
+    "/CommerceDistrict/Commerce_Building_10/Commerce_Building_10_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_10/Commerce_Building_10_SemanticSign/Geometry",
+    "/CommerceDistrict/Commerce_Building_11/Commerce_Building_11_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_11/Commerce_Building_11_SemanticSign/Geometry",
+    "/CommerceDistrict/Commerce_Building_12/Commerce_Building_12_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_12/Commerce_Building_12_SemanticSign/Geometry",
+    "/CommerceDistrict/Commerce_Building_13/Commerce_Building_13_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_13/Commerce_Building_13_SemanticSign/Geometry",
+    "/CommerceDistrict/Commerce_Building_14/Commerce_Building_14_OccupiedSurfaces/Geometry",
+    "/CommerceDistrict/Commerce_Building_14/Commerce_Building_14_SemanticSign/Geometry",
+    "/CommerceDistrict/RivalHQ_Slot_05/RivalHQ_Flashpoint/FlashpointHQ/Flashpoint_DarkGlazing/Geometry",
+    "/CommerceDistrict/RivalHQ_Slot_05/RivalHQ_Flashpoint/FlashpointHQ/Flashpoint_LaunchDisplay/Geometry",
+    "/CommerceDistrict/RivalHQ_Slot_05/RivalHQ_Flashpoint/FlashpointHQ/Flashpoint_MomentumAccent/Geometry",
+    "/CommerceDistrict/RivalHQ_Slot_05/RivalHQ_Flashpoint/FlashpointHQ/Flashpoint_PodiumConcrete/Geometry",
+    "/CommerceDistrict/RivalHQ_Slot_05/RivalHQ_Flashpoint/FlashpointHQ/Flashpoint_Signage_Main_001/Geometry",
+    "/CommerceDistrict/RivalHQ_Slot_05/RivalHQ_Flashpoint/FlashpointHQ/Flashpoint_StructuralSilver/Geometry",
+    "/CommerceDistrict/RivalHQ_Slot_05/RivalHQ_Flashpoint/FlashpointHQ/Flashpoint_Ticker/Geometry"
+  ],
+  "batchedSourceMeshPaths": [
+    "/CommerceDistrict/CommerceDistrict_CrossStreet_00/Geometry",
+    "/CommerceDistrict/Commerce_BoulevardCrossing_Arrival_00/Geometry",
+    "/CommerceDistrict/Commerce_BoulevardCrossing_Hotel_00/Geometry",
+    "/CommerceDistrict/Commerce_Boulevard_00/Geometry",
+    "/CommerceDistrict/Commerce_Boulevard_01/Geometry",
+    "/CommerceDistrict/Commerce_Boulevard_02/Geometry",
+    "/CommerceDistrict/Commerce_Boulevard_03/Geometry",
+    "/CommerceDistrict/Commerce_Building_00/Commerce_Building_00_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_Building_01/Commerce_Building_01_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_Building_02/Commerce_Building_02_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_Building_03/Commerce_Building_03_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_Building_04/Commerce_Building_04_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_Building_05/Commerce_Building_05_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_Building_06/Commerce_Building_06_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_Building_07/Commerce_Building_07_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_Building_08/Commerce_Building_08_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_Building_09/Commerce_Building_09_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_Building_10/Commerce_Building_10_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_Building_11/Commerce_Building_11_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_Building_12/Commerce_Building_12_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_Building_13/Commerce_Building_13_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_Building_14/Commerce_Building_14_Architecture/Geometry",
+    "/CommerceDistrict/Commerce_ContinuousPaving/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_001/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_002/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_003/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_004/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_005/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_006/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_007/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_008/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_009/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_010/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_011/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_012/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_013/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_014/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_015/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_016/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_017/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_018/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_019/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_020/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_021/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_022/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_023/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_024/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_025/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_026/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_027/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_028/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_029/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_030/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_031/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_032/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_033/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_034/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_035/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_036/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_037/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_038/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_039/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_040/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_041/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_042/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_043/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_044/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_045/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_046/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_047/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_048/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_049/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_050/Geometry",
+    "/CommerceDistrict/Commerce_CrossingPaint_051/Geometry",
+    "/CommerceDistrict/Commerce_Crossing_Arrival/Geometry",
+    "/CommerceDistrict/Commerce_Crossing_Conference/Geometry",
+    "/CommerceDistrict/Commerce_Crossing_CustomerPlaza/Geometry",
+    "/CommerceDistrict/Commerce_Crossing_Flashpoint/Geometry",
+    "/CommerceDistrict/Commerce_Crossing_Hotel/Geometry",
+    "/CommerceDistrict/Commerce_Crossing_Market/Geometry",
+    "/CommerceDistrict/Commerce_CustomerPlaza_Surface/Geometry",
+    "/CommerceDistrict/Commerce_EventApproach_00/Geometry",
+    "/CommerceDistrict/Commerce_EventForecourt_Surface/Geometry",
+    "/CommerceDistrict/Commerce_FlashpointArrival_00/Geometry",
+    "/CommerceDistrict/Commerce_FlashpointArrival_01/Geometry",
+    "/CommerceDistrict/Commerce_FlashpointArrival_02/Geometry",
+    "/CommerceDistrict/Commerce_FlashpointArrival_03/Geometry",
+    "/CommerceDistrict/Commerce_FlashpointCorridor_Surface/Geometry",
+    "/CommerceDistrict/Commerce_FlashpointToCrossStreet_00/Geometry",
+    "/CommerceDistrict/Commerce_FlashpointToCrossStreet_01/Geometry",
+    "/CommerceDistrict/Commerce_FlashpointToCrossStreet_02/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_00_00/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_01_00/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_02_00/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_03_00/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_04_00/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_05_00/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_06_00/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_07_00/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_08_00/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_09_00/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_10_00/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_11_00/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_12_00/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_13_00/Geometry",
+    "/CommerceDistrict/Commerce_Frontage_Commerce_Building_14_00/Geometry",
+    "/CommerceDistrict/Commerce_Link_00/Geometry",
+    "/CommerceDistrict/Commerce_MarketWalk_00/Geometry",
+    "/CommerceDistrict/Commerce_MarketWalk_01/Geometry",
+    "/CommerceDistrict/Commerce_MarketWalk_02/Geometry",
+    "/CommerceDistrict/Commerce_Planter/Geometry",
+    "/CommerceDistrict/Commerce_Planter_001/Geometry",
+    "/CommerceDistrict/Commerce_Planter_002/Geometry",
+    "/CommerceDistrict/Commerce_Planter_003/Geometry",
+    "/CommerceDistrict/Commerce_Planter_004/Geometry",
+    "/CommerceDistrict/Commerce_Planter_005/Geometry",
+    "/CommerceDistrict/Commerce_Planter_006/Geometry",
+    "/CommerceDistrict/Commerce_Planter_007/Geometry",
+    "/CommerceDistrict/Commerce_PlazaLightFixture/Geometry",
+    "/CommerceDistrict/Commerce_PlazaLightFixture_001/Geometry",
+    "/CommerceDistrict/Commerce_PlazaLightFixture_002/Geometry",
+    "/CommerceDistrict/Commerce_PlazaLightFixture_003/Geometry",
+    "/CommerceDistrict/Commerce_PlazaLightFixture_004/Geometry",
+    "/CommerceDistrict/Commerce_PlazaLightFixture_005/Geometry",
+    "/CommerceDistrict/Commerce_PlazaLightFixture_006/Geometry",
+    "/CommerceDistrict/Commerce_PlazaLightPole/Geometry",
+    "/CommerceDistrict/Commerce_PlazaLightPole_001/Geometry",
+    "/CommerceDistrict/Commerce_PlazaLightPole_002/Geometry",
+    "/CommerceDistrict/Commerce_PlazaLightPole_003/Geometry",
+    "/CommerceDistrict/Commerce_PlazaLightPole_004/Geometry",
+    "/CommerceDistrict/Commerce_PlazaLightPole_005/Geometry",
+    "/CommerceDistrict/Commerce_PlazaLightPole_006/Geometry",
+    "/CommerceDistrict/Commerce_PlazaToCrossStreet_00/Geometry",
+    "/CommerceDistrict/Commerce_Seat/Geometry",
+    "/CommerceDistrict/Commerce_SeatSupport/Geometry",
+    "/CommerceDistrict/Commerce_SeatSupport_001/Geometry",
+    "/CommerceDistrict/Commerce_SeatSupport_002/Geometry",
+    "/CommerceDistrict/Commerce_SeatSupport_003/Geometry",
+    "/CommerceDistrict/Commerce_SeatSupport_004/Geometry",
+    "/CommerceDistrict/Commerce_SeatSupport_005/Geometry",
+    "/CommerceDistrict/Commerce_SeatSupport_006/Geometry",
+    "/CommerceDistrict/Commerce_SeatSupport_007/Geometry",
+    "/CommerceDistrict/Commerce_Seat_001/Geometry",
+    "/CommerceDistrict/Commerce_Seat_002/Geometry",
+    "/CommerceDistrict/Commerce_Seat_003/Geometry",
+    "/CommerceDistrict/Commerce_Shrub/Geometry",
+    "/CommerceDistrict/Commerce_Shrub_001/Geometry",
+    "/CommerceDistrict/Commerce_Shrub_002/Geometry",
+    "/CommerceDistrict/Commerce_Shrub_003/Geometry",
+    "/CommerceDistrict/Commerce_Shrub_004/Geometry",
+    "/CommerceDistrict/Commerce_Shrub_005/Geometry",
+    "/CommerceDistrict/Commerce_Shrub_006/Geometry",
+    "/CommerceDistrict/Commerce_Shrub_007/Geometry",
+    "/CommerceDistrict/Commerce_Sidewalk_CommerceDistrict_CrossStreet_0_1_00/Geometry",
+    "/CommerceDistrict/Commerce_Sidewalk_CommerceDistrict_CrossStreet_0__1_00/Geometry",
+    "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_0_1_00/Geometry",
+    "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_0__1_00/Geometry",
+    "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_1_1_00/Geometry",
+    "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_2_1_00/Geometry",
+    "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_2__1_00/Geometry",
+    "/CommerceDistrict/Commerce_Sidewalk_Commerce_Link_0_1_00/Geometry",
+    "/CommerceDistrict/Commerce_Sidewalk_Commerce_Link_0__1_00/Geometry",
+    "/CommerceDistrict/Commerce_VehicleRamp_00/Geometry",
+    "/CommerceDistrict/Commerce_VehicleRamp_00_001/Geometry",
+    "/CommerceDistrict/Commerce_VehicleRamp_00_002/Geometry",
+    "/CommerceDistrict/Commerce_VehicleRamp_00_003/Geometry",
+    "/CommerceDistrict/Commerce_VehicleRamp_00_004/Geometry",
+    "/CommerceDistrict/Commerce_VehicleRamp_00_005/Geometry",
+    "/CommerceDistrict/Commerce_VehicleRamp_00_006/Geometry",
+    "/CommerceDistrict/Commerce_VehicleRamp_00_007/Geometry",
+    "/CommerceDistrict/Commerce_VehicleRamp_00_008/Geometry",
+    "/CommerceDistrict/Commerce_VehicleRamp_00_009/Geometry",
+    "/CommerceDistrict/Commerce_VehicleRamp_00_010/Geometry",
+    "/CommerceDistrict/Commerce_VehicleRamp_00_011/Geometry",
+    "/CommerceDistrict/RivalHQ_Slot_05_Parcel/Geometry"
+  ],
+  "batches": [
+    {
+      "material": "/CommerceDistrict/Materials/Commerce_LobbyHotelGlow",
+      "sourceMeshes": [
+        "/CommerceDistrict/Commerce_PlazaLightFixture/Geometry",
+        "/CommerceDistrict/Commerce_PlazaLightFixture_001/Geometry",
+        "/CommerceDistrict/Commerce_PlazaLightFixture_002/Geometry",
+        "/CommerceDistrict/Commerce_PlazaLightFixture_003/Geometry",
+        "/CommerceDistrict/Commerce_PlazaLightFixture_004/Geometry",
+        "/CommerceDistrict/Commerce_PlazaLightFixture_005/Geometry",
+        "/CommerceDistrict/Commerce_PlazaLightFixture_006/Geometry"
+      ]
+    },
+    {
+      "material": "/CommerceDistrict/Materials/Commerce_glass",
+      "sourceMeshes": [
+        "/CommerceDistrict/Commerce_Building_00/Commerce_Building_00_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_01/Commerce_Building_01_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_02/Commerce_Building_02_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_03/Commerce_Building_03_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_04/Commerce_Building_04_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_05/Commerce_Building_05_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_06/Commerce_Building_06_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_07/Commerce_Building_07_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_08/Commerce_Building_08_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_09/Commerce_Building_09_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_10/Commerce_Building_10_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_11/Commerce_Building_11_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_12/Commerce_Building_12_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_13/Commerce_Building_13_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_14/Commerce_Building_14_Architecture/Geometry"
+      ]
+    },
+    {
+      "material": "/CommerceDistrict/Materials/Commerce_lightstone",
+      "sourceMeshes": [
+        "/CommerceDistrict/Commerce_Building_00/Commerce_Building_00_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_01/Commerce_Building_01_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_02/Commerce_Building_02_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_03/Commerce_Building_03_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_04/Commerce_Building_04_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_05/Commerce_Building_05_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_06/Commerce_Building_06_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_07/Commerce_Building_07_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_08/Commerce_Building_08_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_09/Commerce_Building_09_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_10/Commerce_Building_10_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_11/Commerce_Building_11_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_12/Commerce_Building_12_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_13/Commerce_Building_13_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_14/Commerce_Building_14_Architecture/Geometry"
+      ]
+    },
+    {
+      "material": "/CommerceDistrict/Materials/Commerce_metal",
+      "sourceMeshes": [
+        "/CommerceDistrict/Commerce_Building_00/Commerce_Building_00_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_01/Commerce_Building_01_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_02/Commerce_Building_02_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_03/Commerce_Building_03_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_04/Commerce_Building_04_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_05/Commerce_Building_05_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_06/Commerce_Building_06_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_07/Commerce_Building_07_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_08/Commerce_Building_08_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_09/Commerce_Building_09_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_10/Commerce_Building_10_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_11/Commerce_Building_11_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_12/Commerce_Building_12_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_13/Commerce_Building_13_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_14/Commerce_Building_14_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_PlazaLightPole/Geometry",
+        "/CommerceDistrict/Commerce_PlazaLightPole_001/Geometry",
+        "/CommerceDistrict/Commerce_PlazaLightPole_002/Geometry",
+        "/CommerceDistrict/Commerce_PlazaLightPole_003/Geometry",
+        "/CommerceDistrict/Commerce_PlazaLightPole_004/Geometry",
+        "/CommerceDistrict/Commerce_PlazaLightPole_005/Geometry",
+        "/CommerceDistrict/Commerce_PlazaLightPole_006/Geometry",
+        "/CommerceDistrict/Commerce_SeatSupport/Geometry",
+        "/CommerceDistrict/Commerce_SeatSupport_001/Geometry",
+        "/CommerceDistrict/Commerce_SeatSupport_002/Geometry",
+        "/CommerceDistrict/Commerce_SeatSupport_003/Geometry",
+        "/CommerceDistrict/Commerce_SeatSupport_004/Geometry",
+        "/CommerceDistrict/Commerce_SeatSupport_005/Geometry",
+        "/CommerceDistrict/Commerce_SeatSupport_006/Geometry",
+        "/CommerceDistrict/Commerce_SeatSupport_007/Geometry"
+      ]
+    },
+    {
+      "material": "/CommerceDistrict/Materials/Commerce_paint",
+      "sourceMeshes": [
+        "/CommerceDistrict/Commerce_CrossingPaint/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_001/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_002/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_003/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_004/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_005/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_006/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_007/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_008/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_009/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_010/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_011/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_012/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_013/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_014/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_015/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_016/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_017/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_018/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_019/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_020/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_021/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_022/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_023/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_024/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_025/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_026/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_027/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_028/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_029/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_030/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_031/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_032/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_033/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_034/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_035/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_036/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_037/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_038/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_039/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_040/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_041/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_042/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_043/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_044/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_045/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_046/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_047/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_048/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_049/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_050/Geometry",
+        "/CommerceDistrict/Commerce_CrossingPaint_051/Geometry"
+      ]
+    },
+    {
+      "material": "/CommerceDistrict/Materials/Commerce_paving",
+      "sourceMeshes": [
+        "/CommerceDistrict/Commerce_BoulevardCrossing_Arrival_00/Geometry",
+        "/CommerceDistrict/Commerce_BoulevardCrossing_Hotel_00/Geometry",
+        "/CommerceDistrict/Commerce_Building_00/Commerce_Building_00_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_01/Commerce_Building_01_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_02/Commerce_Building_02_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_03/Commerce_Building_03_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_04/Commerce_Building_04_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_05/Commerce_Building_05_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_06/Commerce_Building_06_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_07/Commerce_Building_07_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_08/Commerce_Building_08_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_09/Commerce_Building_09_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_10/Commerce_Building_10_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_11/Commerce_Building_11_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_12/Commerce_Building_12_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_13/Commerce_Building_13_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_14/Commerce_Building_14_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_ContinuousPaving/Geometry",
+        "/CommerceDistrict/Commerce_Crossing_Arrival/Geometry",
+        "/CommerceDistrict/Commerce_Crossing_Conference/Geometry",
+        "/CommerceDistrict/Commerce_Crossing_CustomerPlaza/Geometry",
+        "/CommerceDistrict/Commerce_Crossing_Flashpoint/Geometry",
+        "/CommerceDistrict/Commerce_Crossing_Hotel/Geometry",
+        "/CommerceDistrict/Commerce_Crossing_Market/Geometry",
+        "/CommerceDistrict/Commerce_CustomerPlaza_Surface/Geometry",
+        "/CommerceDistrict/Commerce_EventApproach_00/Geometry",
+        "/CommerceDistrict/Commerce_EventForecourt_Surface/Geometry",
+        "/CommerceDistrict/Commerce_FlashpointArrival_00/Geometry",
+        "/CommerceDistrict/Commerce_FlashpointArrival_01/Geometry",
+        "/CommerceDistrict/Commerce_FlashpointArrival_02/Geometry",
+        "/CommerceDistrict/Commerce_FlashpointArrival_03/Geometry",
+        "/CommerceDistrict/Commerce_FlashpointCorridor_Surface/Geometry",
+        "/CommerceDistrict/Commerce_FlashpointToCrossStreet_00/Geometry",
+        "/CommerceDistrict/Commerce_FlashpointToCrossStreet_01/Geometry",
+        "/CommerceDistrict/Commerce_FlashpointToCrossStreet_02/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_00_00/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_01_00/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_02_00/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_03_00/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_04_00/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_05_00/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_06_00/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_07_00/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_08_00/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_09_00/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_10_00/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_11_00/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_12_00/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_13_00/Geometry",
+        "/CommerceDistrict/Commerce_Frontage_Commerce_Building_14_00/Geometry",
+        "/CommerceDistrict/Commerce_MarketWalk_00/Geometry",
+        "/CommerceDistrict/Commerce_MarketWalk_01/Geometry",
+        "/CommerceDistrict/Commerce_MarketWalk_02/Geometry",
+        "/CommerceDistrict/Commerce_PlazaToCrossStreet_00/Geometry",
+        "/CommerceDistrict/Commerce_Sidewalk_CommerceDistrict_CrossStreet_0_1_00/Geometry",
+        "/CommerceDistrict/Commerce_Sidewalk_CommerceDistrict_CrossStreet_0__1_00/Geometry",
+        "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_0_1_00/Geometry",
+        "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_0__1_00/Geometry",
+        "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_1_1_00/Geometry",
+        "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_2_1_00/Geometry",
+        "/CommerceDistrict/Commerce_Sidewalk_Commerce_Boulevard_2__1_00/Geometry",
+        "/CommerceDistrict/Commerce_Sidewalk_Commerce_Link_0_1_00/Geometry",
+        "/CommerceDistrict/Commerce_Sidewalk_Commerce_Link_0__1_00/Geometry",
+        "/CommerceDistrict/Commerce_VehicleRamp_00/Geometry",
+        "/CommerceDistrict/Commerce_VehicleRamp_00_001/Geometry",
+        "/CommerceDistrict/Commerce_VehicleRamp_00_002/Geometry",
+        "/CommerceDistrict/Commerce_VehicleRamp_00_003/Geometry",
+        "/CommerceDistrict/Commerce_VehicleRamp_00_004/Geometry",
+        "/CommerceDistrict/Commerce_VehicleRamp_00_005/Geometry",
+        "/CommerceDistrict/Commerce_VehicleRamp_00_006/Geometry",
+        "/CommerceDistrict/Commerce_VehicleRamp_00_007/Geometry",
+        "/CommerceDistrict/Commerce_VehicleRamp_00_008/Geometry",
+        "/CommerceDistrict/Commerce_VehicleRamp_00_009/Geometry",
+        "/CommerceDistrict/Commerce_VehicleRamp_00_010/Geometry",
+        "/CommerceDistrict/Commerce_VehicleRamp_00_011/Geometry"
+      ]
+    },
+    {
+      "material": "/CommerceDistrict/Materials/Commerce_planting",
+      "sourceMeshes": [
+        "/CommerceDistrict/Commerce_Shrub/Geometry",
+        "/CommerceDistrict/Commerce_Shrub_001/Geometry",
+        "/CommerceDistrict/Commerce_Shrub_002/Geometry",
+        "/CommerceDistrict/Commerce_Shrub_003/Geometry",
+        "/CommerceDistrict/Commerce_Shrub_004/Geometry",
+        "/CommerceDistrict/Commerce_Shrub_005/Geometry",
+        "/CommerceDistrict/Commerce_Shrub_006/Geometry",
+        "/CommerceDistrict/Commerce_Shrub_007/Geometry"
+      ]
+    },
+    {
+      "material": "/CommerceDistrict/Materials/Commerce_silver",
+      "sourceMeshes": [
+        "/CommerceDistrict/Commerce_Building_00/Commerce_Building_00_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_03/Commerce_Building_03_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_04/Commerce_Building_04_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_06/Commerce_Building_06_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_08/Commerce_Building_08_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_09/Commerce_Building_09_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_10/Commerce_Building_10_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_11/Commerce_Building_11_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_12/Commerce_Building_12_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_13/Commerce_Building_13_Architecture/Geometry"
+      ]
+    },
+    {
+      "material": "/CommerceDistrict/Materials/Commerce_stone",
+      "sourceMeshes": [
+        "/CommerceDistrict/Commerce_Building_00/Commerce_Building_00_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_01/Commerce_Building_01_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_02/Commerce_Building_02_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_03/Commerce_Building_03_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_04/Commerce_Building_04_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_05/Commerce_Building_05_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_06/Commerce_Building_06_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_07/Commerce_Building_07_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_08/Commerce_Building_08_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_09/Commerce_Building_09_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_10/Commerce_Building_10_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_11/Commerce_Building_11_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_12/Commerce_Building_12_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_13/Commerce_Building_13_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_14/Commerce_Building_14_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Planter/Geometry",
+        "/CommerceDistrict/Commerce_Planter_001/Geometry",
+        "/CommerceDistrict/Commerce_Planter_002/Geometry",
+        "/CommerceDistrict/Commerce_Planter_003/Geometry",
+        "/CommerceDistrict/Commerce_Planter_004/Geometry",
+        "/CommerceDistrict/Commerce_Planter_005/Geometry",
+        "/CommerceDistrict/Commerce_Planter_006/Geometry",
+        "/CommerceDistrict/Commerce_Planter_007/Geometry"
+      ]
+    },
+    {
+      "material": "/CommerceDistrict/Materials/Commerce_warm",
+      "sourceMeshes": [
+        "/CommerceDistrict/Commerce_Building_01/Commerce_Building_01_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_02/Commerce_Building_02_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_05/Commerce_Building_05_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_07/Commerce_Building_07_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_12/Commerce_Building_12_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_13/Commerce_Building_13_Architecture/Geometry",
+        "/CommerceDistrict/Commerce_Building_14/Commerce_Building_14_Architecture/Geometry"
+      ]
+    },
+    {
+      "material": "/CommerceDistrict/Materials/Commerce_wood",
+      "sourceMeshes": [
+        "/CommerceDistrict/Commerce_Seat/Geometry",
+        "/CommerceDistrict/Commerce_Seat_001/Geometry",
+        "/CommerceDistrict/Commerce_Seat_002/Geometry",
+        "/CommerceDistrict/Commerce_Seat_003/Geometry"
+      ]
+    },
+    {
+      "material": "/CommerceDistrict/Materials/TEMP_____asphalt",
+      "sourceMeshes": [
+        "/CommerceDistrict/CommerceDistrict_CrossStreet_00/Geometry",
+        "/CommerceDistrict/Commerce_Boulevard_00/Geometry",
+        "/CommerceDistrict/Commerce_Boulevard_01/Geometry",
+        "/CommerceDistrict/Commerce_Boulevard_02/Geometry",
+        "/CommerceDistrict/Commerce_Boulevard_03/Geometry",
+        "/CommerceDistrict/Commerce_Link_00/Geometry"
+      ]
+    },
+    {
+      "material": "/CommerceDistrict/Materials/TEMP_____bridge___plaza",
+      "sourceMeshes": [
+        "/CommerceDistrict/RivalHQ_Slot_05_Parcel/Geometry"
+      ]
+    }
+  ],
+  "baseline": {
+    "package": "commerce_district",
+    "bytes": 266685,
+    "meshes": 217,
+    "triangles": 35659,
+    "materials": 21,
+    "textures": 0,
+    "bounds": [
+      [
+        -193.0032958984375,
+        14.0,
+        -111.87939453125
+      ],
+      [
+        533.5,
+        123.79999542236328,
+        356.73260498046875
+      ]
+    ],
+    "landmarks": {
+      "FlashpointHQ": [
+        430.0,
+        14.0,
+        240.0
+      ]
+    },
+    "sha256": "d872cb7eb4b2a4172addbeb65305c5885faef62092d3ea5cba9c9d0eaa07858e",
+    "source_shared_mesh_variants": 8,
+    "mesh_payloads_exported": 217,
+    "instancing": "expanded per object in baseline; runtime sharing not assumed"
+  },
+  "optimized": {
+    "package": "commerce_district_batched",
+    "bytes": 324135,
+    "meshes": 54,
+    "triangles": 35659,
+    "materials": 21,
+    "textures": 0,
+    "bounds": [
+      [
+        -193.0032958984375,
+        14.0,
+        -111.87939453125
+      ],
+      [
+        533.5,
+        123.79999542236328,
+        356.73260498046875
+      ]
+    ],
+    "landmarks": {
+      "FlashpointHQ": [
+        430.0,
+        14.0,
+        240.0
+      ]
+    },
+    "sha256": "30a1c8e572fd5e370b20557d4631afd071fb3c26cc8ab20a1f9cedb469a0666a",
+    "experiment": "Selective material batching with landmark subtrees and semantic anchors preserved"
+  }
+}

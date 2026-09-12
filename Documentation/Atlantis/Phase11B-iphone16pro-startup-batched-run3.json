@@ -1,0 +1,161 @@
+{
+  "assetMode" : "batched",
+  "collisionEntityCount" : 0,
+  "configuration" : "Debug; physical iOS device; SceneEvents.Update cadence is not a GPU presentation counter",
+  "device" : "iPhone",
+  "errors" : [
+
+  ],
+  "frames" : [
+
+  ],
+  "loadPhases" : [
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "resolve",
+      "seconds" : 4.0208e-05
+    },
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "read",
+      "seconds" : 7.35e-05
+    },
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "checksum",
+      "seconds" : 6.475e-05
+    },
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "realitykit-import",
+      "seconds" : 0.081363333
+    },
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "validation",
+      "seconds" : 1.7291e-05
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "resolve",
+      "seconds" : 1.6208e-05
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "read",
+      "seconds" : 8.4667e-05
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "checksum",
+      "seconds" : 0.000644083
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "realitykit-import",
+      "seconds" : 1.100428667
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "validation",
+      "seconds" : 0.000105208
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "scene-install",
+      "seconds" : 0.001543333
+    },
+    {
+      "district" : "StartupRow",
+      "package" : "startup_row_batched",
+      "phase" : "resolve",
+      "seconds" : 6.6792e-05
+    },
+    {
+      "district" : "StartupRow",
+      "package" : "startup_row_batched",
+      "phase" : "read",
+      "seconds" : 0.000353084
+    },
+    {
+      "district" : "StartupRow",
+      "package" : "startup_row_batched",
+      "phase" : "checksum",
+      "seconds" : 0.000354833
+    },
+    {
+      "district" : "StartupRow",
+      "package" : "startup_row_batched",
+      "phase" : "realitykit-import",
+      "seconds" : 5.029669542
+    },
+    {
+      "district" : "StartupRow",
+      "package" : "startup_row_batched",
+      "phase" : "validation",
+      "seconds" : 7.5291e-05
+    },
+    {
+      "district" : "StartupRow",
+      "package" : "startup_row_batched",
+      "phase" : "scene-install",
+      "seconds" : 0.002602542
+    }
+  ],
+  "loads" : [
+    {
+      "district" : "FounderDistrict",
+      "memoryAfterMB" : 228.03228759765625,
+      "memoryBeforeMB" : 237.87601470947266,
+      "outcome" : "loaded",
+      "package" : "founder_district_batched",
+      "seconds" : 1.103261947631836
+    },
+    {
+      "district" : "StartupRow",
+      "memoryAfterMB" : 227.70416259765625,
+      "memoryBeforeMB" : 228.56353759765625,
+      "outcome" : "loaded",
+      "package" : "startup_row_batched",
+      "seconds" : 5.03325891494751
+    }
+  ],
+  "lod" : [
+
+  ],
+  "os" : "26.7",
+  "sampledPeakMemoryMB" : 254.01666259765625,
+  "stages" : [
+    {
+      "loadCallbacks" : 303,
+      "loadSeconds" : 5.064903020858765,
+      "longestLoadFrameMS" : 30.324917286634445,
+      "memoryAfterMB" : 227.90728759765625,
+      "memoryBeforeMB" : 228.28228759765625,
+      "name" : "Startup prefetch"
+    }
+  ],
+  "startupMilestones" : {
+    "timeToFirstSceneUpdate" : 0.147994667,
+    "timeToFounderPlayable" : 1.227677833,
+    "timeToFounderVisible" : 1.227664375,
+    "timeToStartupReady" : 6.292708125
+  },
+  "unloadCycles" : [
+
+  ],
+  "walks" : [
+
+  ]
+}

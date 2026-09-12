@@ -53,7 +53,9 @@ struct SoloUnicornRunApp: App {
     WindowGroup {
       Group {
         #if DEBUG
-        if let campaignCalibrationQAPhase {
+        if AtlantisRendererConfiguration.active {
+          AtlantisRealityView()
+        } else if let campaignCalibrationQAPhase {
           CampaignCalibrationQAHost(phase: campaignCalibrationQAPhase)
         } else if let systemsReviewQAPhase {
           SystemsReviewQAHost(phase: systemsReviewQAPhase)

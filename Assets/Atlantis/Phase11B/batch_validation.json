@@ -1,0 +1,1115 @@
+{
+  "schemaVersion": 1,
+  "phase": "Atlantis Phase 11B \u2014 District Batching + Hardware Validation",
+  "capturedAt": "2026-09-11",
+  "decision": "GO WITH OPTIMIZATION",
+  "hardware": {
+    "model": "iPhone 16 Pro",
+    "hardwareIdentifier": "iPhone17,1",
+    "os": "iOS 26.7",
+    "coreDeviceIdentifier": "1A743F7C-023B-5502-9352-E77140D2A8AF",
+    "udid": "00008140-001905AC3CC2801C",
+    "configuration": "Debug",
+    "benchmarkBundleIdentifier": "com.talonsight.solounicornrun.atlantisspike"
+  },
+  "measurementDefinitions": {
+    "firstSceneUpdate": "Elapsed time to first SceneEvents.Update callback; this is not a GPU-presented frame metric.",
+    "sampledPeakMemoryMiB": "Peak process resident-memory sample recorded by the in-app harness; not a full allocation lifetime profile.",
+    "fullCityBackgroundSeconds": "Sum of sequential stage loadSeconds from Founder through all remaining districts.",
+    "semanticSHA256": "Hash of complete prim paths/types, xform ops, mesh points/topology, and material bindings. Binary USD/USDZ hashes may change because crate/archive metadata is not stable."
+  },
+  "assets": {
+    "FounderDistrict": {
+      "baseline": {
+        "package": "founder_district",
+        "bytes": 362055,
+        "meshes": 464,
+        "triangles": 46032,
+        "materials": 15,
+        "bounds": [
+          [
+            -1220.0,
+            -12.0,
+            480.8076171875
+          ],
+          [
+            -440.0,
+            21.34000015258789,
+            1140.0
+          ]
+        ],
+        "landmarks": {
+          "FounderGarageSlot": [
+            -875.0,
+            8.0,
+            1030.0
+          ]
+        }
+      },
+      "optimized": {
+        "package": "founder_district_batched",
+        "bytes": 1566454,
+        "meshes": 15,
+        "triangles": 46032,
+        "materials": 15,
+        "bounds": [
+          [
+            -1220.0,
+            -12.0,
+            480.8076171875
+          ],
+          [
+            -440.0,
+            21.340030670166016,
+            1140.0
+          ]
+        ],
+        "landmarks": {
+          "FounderGarageSlot": [
+            -875,
+            8,
+            1030
+          ]
+        }
+      },
+      "meshReductionPercent": 96.76724137931035,
+      "packageByteDelta": 1204399,
+      "packageSizeDeltaPercent": 332.65636436453025,
+      "maximumBoundsDriftMeters": 3.0517578125e-05,
+      "trianglesPreserved": true,
+      "materialsPreserved": true,
+      "currentBinarySHA256": {
+        "baselineUSDZ": "4f43a8635fc3330f1f487d182f7a4400208517f03f2fbe1c6c4a88f1f8863573",
+        "optimizedUSDZ": "b27c60fda2a8ab7b01335d2826d01456a8b2879d58f289c73067b46daf71d46f"
+      },
+      "optimizedSemanticSHA256": "5655c5a791ca2e796dc7ec7bfde2d9c82dba35d6356f31af0f1d0b746aa54188",
+      "classification": {
+        "batchable": "all static render geometry grouped by material",
+        "preserveSeparate": "FounderGarageSlot semantic anchor"
+      },
+      "batchCount": 15,
+      "physicalImportSeconds": {
+        "baseline": 40.039769708,
+        "optimized": 0.783333333,
+        "speedup": 51.11459964898494,
+        "absoluteSaved": 39.256436375
+      }
+    },
+    "StartupRow": {
+      "baseline": {
+        "package": "startup_row",
+        "bytes": 252021,
+        "meshes": 150,
+        "triangles": 32056,
+        "materials": 14,
+        "bounds": [
+          [
+            -710.5,
+            13.999996185302734,
+            -303.1529541015625
+          ],
+          [
+            62.61186218261719,
+            63.99999237060547,
+            526.8405151367188
+          ]
+        ],
+        "landmarks": {}
+      },
+      "optimized": {
+        "package": "startup_row_batched",
+        "bytes": 270828,
+        "meshes": 56,
+        "triangles": 32056,
+        "materials": 14,
+        "bounds": [
+          [
+            -710.5,
+            13.999996185302734,
+            -303.1529659441068
+          ],
+          [
+            62.61186044759294,
+            64.0,
+            526.8405151367188
+          ]
+        ],
+        "landmarks": {}
+      },
+      "meshReductionPercent": 62.66666666666667,
+      "packageByteDelta": 18807,
+      "packageSizeDeltaPercent": 7.462473365314803,
+      "maximumBoundsDriftMeters": 1.1842544324736082e-05,
+      "trianglesPreserved": true,
+      "materialsPreserved": true,
+      "currentBinarySHA256": {
+        "baselineUSDZ": "dbefe47bc52fcc4e174b6c9eb1650d963ff2541fad0cc08ef058c6714884a796",
+        "optimizedUSDZ": "25f1794d8fe67a30af93557e776e630b6766a17ce4f7bb2465cdd2bbc161d200"
+      },
+      "optimizedSemanticSHA256": "c99b3652898ec5a181541d017c0858c3c996abd42e3e2371e184af8ee9731ed6",
+      "classification": {
+        "batchable": "building architecture and static public-realm background geometry",
+        "preserveSeparate": "progression corridor meshes, route/cross-street meshes, building identity roots, and signage subtrees"
+      },
+      "preservedRoots": [
+        "/StartupRow/Progression_Startup_00",
+        "/StartupRow/Progression_Startup_01",
+        "/StartupRow/Progression_Startup_02",
+        "/StartupRow/Progression_Startup_03",
+        "/StartupRow/Progression_Startup_04",
+        "/StartupRow/StartupRow_CrossStreet_00",
+        "/StartupRow/Startup_ArrivalCafe",
+        "/StartupRow/Startup_BigBuildingContext",
+        "/StartupRow/Startup_Building_00",
+        "/StartupRow/Startup_Building_02",
+        "/StartupRow/Startup_Building_03",
+        "/StartupRow/Startup_Building_04",
+        "/StartupRow/Startup_Building_05",
+        "/StartupRow/Startup_Building_06",
+        "/StartupRow/Startup_Building_07",
+        "/StartupRow/Startup_Building_08",
+        "/StartupRow/Startup_Building_09",
+        "/StartupRow/Startup_Building_10",
+        "/StartupRow/Startup_Building_12",
+        "/StartupRow/Startup_Building_13",
+        "/StartupRow/Startup_Building_14",
+        "/StartupRow/Startup_Building_15",
+        "/StartupRow/Startup_Building_16",
+        "/StartupRow/Startup_Building_17",
+        "/StartupRow/Startup_Building_18",
+        "/StartupRow/Startup_Building_19",
+        "/StartupRow/Startup_Building_21",
+        "/StartupRow/Startup_Building_22",
+        "/StartupRow/Startup_Building_23",
+        "/StartupRow/Startup_Building_24",
+        "/StartupRow/Startup_Building_25",
+        "/StartupRow/Startup_Building_26",
+        "/StartupRow/Startup_Building_27",
+        "/StartupRow/Startup_Building_28",
+        "/StartupRow/Startup_Building_29",
+        "/StartupRow/Startup_Building_30",
+        "/StartupRow/Startup_Building_31",
+        "/StartupRow/Startup_CoreCafe",
+        "/StartupRow/Startup_IncubatorAnchor",
+        "/StartupRow/Startup_LaunchCafe",
+        "/StartupRow/Startup_Link_00",
+        "/StartupRow/Startup_LoftContext",
+        "/StartupRow/Startup_OfficeContext",
+        "/StartupRow/Startup_SmallBuildingContext",
+        "/StartupRow/Startup_SmallOfficeContext"
+      ],
+      "batchCount": 11,
+      "semanticAnchorCount": 0,
+      "physicalImportSeconds": {
+        "baseline": 13.503135375,
+        "optimized": 5.029669542,
+        "speedup": 2.6846963328788807,
+        "absoluteSaved": 8.473465832999999
+      }
+    },
+    "CommerceDistrict": {
+      "baseline": {
+        "package": "commerce_district",
+        "bytes": 266685,
+        "meshes": 217,
+        "triangles": 35659,
+        "materials": 21,
+        "bounds": [
+          [
+            -193.0032958984375,
+            14.0,
+            -111.87939453125
+          ],
+          [
+            533.5,
+            123.79999542236328,
+            356.73260498046875
+          ]
+        ],
+        "landmarks": {
+          "FlashpointHQ": [
+            430.0,
+            14.0,
+            240.0
+          ]
+        }
+      },
+      "optimized": {
+        "package": "commerce_district_batched",
+        "bytes": 324135,
+        "meshes": 54,
+        "triangles": 35659,
+        "materials": 21,
+        "bounds": [
+          [
+            -193.0032958984375,
+            14.0,
+            -111.87939453125
+          ],
+          [
+            533.5,
+            123.79999542236328,
+            356.73260498046875
+          ]
+        ],
+        "landmarks": {
+          "FlashpointHQ": [
+            430.0,
+            14.0,
+            240.0
+          ]
+        }
+      },
+      "meshReductionPercent": 75.11520737327189,
+      "packageByteDelta": 57450,
+      "packageSizeDeltaPercent": 21.542268969008372,
+      "maximumBoundsDriftMeters": 0.0,
+      "trianglesPreserved": true,
+      "materialsPreserved": true,
+      "currentBinarySHA256": {
+        "baselineUSDZ": "d872cb7eb4b2a4172addbeb65305c5885faef62092d3ea5cba9c9d0eaa07858e",
+        "optimizedUSDZ": "30a1c8e572fd5e370b20557d4631afd071fb3c26cc8ab20a1f9cedb469a0666a"
+      },
+      "optimizedSemanticSHA256": "ee39929f4fcd9b1b355a08644b4b2115e04362095ed6f70b308a4d2013caf509",
+      "classification": {
+        "batchable": "supporting architecture, props, and static route surfaces",
+        "preserveSeparate": "Flashpoint hierarchy; every top-level semantic/navigation anchor; building signs, labels, and occupied surfaces"
+      },
+      "preservedRoots": [
+        "/CommerceDistrict/RivalHQ_Slot_05"
+      ],
+      "batchCount": 13,
+      "semanticAnchorCount": 176,
+      "physicalImportSeconds": {
+        "baseline": 18.72340190410614,
+        "optimized": 7.540654897689819,
+        "speedup": 2.482994137530721,
+        "absoluteSaved": 11.18274700641632
+      }
+    },
+    "TechCore": {
+      "baseline": {
+        "package": "tech_core",
+        "bytes": 39572,
+        "meshes": 78,
+        "triangles": 2852,
+        "materials": 22,
+        "bounds": [
+          [
+            -263.0000305175781,
+            13.999996185302734,
+            -662.4998168945312
+          ],
+          [
+            372.869384765625,
+            294.0,
+            -56.20000457763672
+          ]
+        ],
+        "landmarks": {
+          "TheSpire": [
+            50.0,
+            14.0,
+            -420.0
+          ],
+          "PallasAIHQ": [
+            220.0,
+            14.0,
+            -300.0
+          ],
+          "NorthwindLabsHQ": [
+            -100.0,
+            14.0,
+            -520.0
+          ]
+        }
+      },
+      "optimized": {
+        "package": "tech_core_batched",
+        "bytes": 40336,
+        "meshes": 31,
+        "triangles": 2852,
+        "materials": 22,
+        "bounds": [
+          [
+            -263.0000305175781,
+            13.99997329711914,
+            -662.4998168945312
+          ],
+          [
+            372.869384765625,
+            293.999981880188,
+            -56.20000457763672
+          ]
+        ],
+        "landmarks": {
+          "TheSpire": [
+            50.0,
+            14.0,
+            -420.0
+          ],
+          "PallasAIHQ": [
+            220.0,
+            14.0,
+            -300.0
+          ],
+          "NorthwindLabsHQ": [
+            -100.0,
+            14.0,
+            -520.0
+          ]
+        }
+      },
+      "meshReductionPercent": 60.25641025641026,
+      "packageByteDelta": 764,
+      "packageSizeDeltaPercent": 1.9306580410391128,
+      "maximumBoundsDriftMeters": 2.288818359375e-05,
+      "trianglesPreserved": true,
+      "materialsPreserved": true,
+      "currentBinarySHA256": {
+        "baselineUSDZ": "6b3418b382066c5822140c94dbf7af59c484d1f5b99613ac3db820d7a3365760",
+        "optimizedUSDZ": "cecbd64cc7523eee5831576ae40172e1b17b743a51a4f193fd7cf33b68cf6a7f"
+      },
+      "optimizedSemanticSHA256": "cdcdb0b3136a43189449664328de06f645dbda12602f569c3c4ccc1e509aa27c",
+      "classification": {
+        "batchable": "supporting blocks, podiums, plaza, and static road geometry",
+        "preserveSeparate": "The Spire, Pallas AI HQ, and Northwind Labs HQ hierarchies; every top-level semantic/navigation anchor"
+      },
+      "preservedRoots": [
+        "/TechCore/RivalHQ_Slot_03",
+        "/TechCore/RivalHQ_Slot_04",
+        "/TechCore/TheSpire"
+      ],
+      "batchCount": 3,
+      "semanticAnchorCount": 50,
+      "physicalImportSeconds": {
+        "baseline": 6.87083101272583,
+        "optimized": 3.7034839391708374,
+        "speedup": 1.8552344564140655,
+        "absoluteSaved": 3.1673470735549927
+      }
+    },
+    "UnicornHeights": {
+      "baseline": {
+        "package": "unicorn_heights",
+        "bytes": 114020,
+        "meshes": 271,
+        "triangles": 10212,
+        "materials": 12,
+        "bounds": [
+          [
+            349.9435119628906,
+            -12.0,
+            -1270.0
+          ],
+          [
+            1240.0,
+            209.83999633789062,
+            -461.6616516113281
+          ]
+        ],
+        "landmarks": {
+          "PlayerUnicornHQSlot": [
+            970.0,
+            85.0,
+            -850.0
+          ]
+        }
+      },
+      "optimized": {
+        "package": "unicorn_heights_batched",
+        "bytes": 129232,
+        "meshes": 28,
+        "triangles": 10212,
+        "materials": 12,
+        "bounds": [
+          [
+            349.9435119628906,
+            -12.0,
+            -1270.0
+          ],
+          [
+            1240.0,
+            209.8399658203125,
+            -461.6616516113281
+          ]
+        ],
+        "landmarks": {
+          "PlayerUnicornHQSlot": [
+            970.0,
+            85.0,
+            -850.0
+          ]
+        }
+      },
+      "meshReductionPercent": 89.66789667896678,
+      "packageByteDelta": 15212,
+      "packageSizeDeltaPercent": 13.341519031748806,
+      "maximumBoundsDriftMeters": 3.0517578125e-05,
+      "trianglesPreserved": true,
+      "materialsPreserved": true,
+      "currentBinarySHA256": {
+        "baselineUSDZ": "84ed0ce7937567f5b5ae8e96d6773b978ae5aa7a8001b9e355bd770a8cab8775",
+        "optimizedUSDZ": "3baa4917343e711eabe7f69a1e1e7148953801426519d9753ab5732eb1abfcb5"
+      },
+      "optimizedSemanticSHA256": "2864808acec9e00f3bb3e5adc89c03245404355180df0e279a4e083719752cb7",
+      "classification": {
+        "batchable": "campus architecture, repeated landscape props, and static public-realm geometry",
+        "preserveSeparate": "Player Unicorn HQ slot hierarchy; every top-level semantic/navigation anchor; campus identity and occupied surfaces"
+      },
+      "preservedRoots": [
+        "/UnicornHeights/PlayerUnicornHQSlot"
+      ],
+      "batchCount": 12,
+      "semanticAnchorCount": 255,
+      "physicalImportSeconds": {
+        "baseline": 23.15775203704834,
+        "optimized": 6.789362072944641,
+        "speedup": 3.41088776651508,
+        "absoluteSaved": 16.3683899641037
+      }
+    },
+    "VentureDistrict": {
+      "baseline": {
+        "package": "venture_district",
+        "bytes": 26801,
+        "meshes": 49,
+        "triangles": 1824,
+        "materials": 9,
+        "bounds": [
+          [
+            -673.7999877929688,
+            13.999996185302734,
+            -391.0
+          ],
+          [
+            8.124692916870117,
+            124.25262451171875,
+            279.3028259277344
+          ]
+        ],
+        "landmarks": {
+          "VentureHall": [
+            -520.0,
+            14.0,
+            -110.0
+          ]
+        }
+      },
+      "optimized": {
+        "package": "venture_district_batched",
+        "bytes": 27554,
+        "meshes": 12,
+        "triangles": 1824,
+        "materials": 9,
+        "bounds": [
+          [
+            -673.7999877929688,
+            13.999980926513672,
+            -391.0
+          ],
+          [
+            8.124691009521484,
+            124.25260925292969,
+            279.3028259277344
+          ]
+        ],
+        "landmarks": {
+          "VentureHall": [
+            -520.0,
+            14.0,
+            -110.0
+          ]
+        }
+      },
+      "meshReductionPercent": 75.51020408163265,
+      "packageByteDelta": 753,
+      "packageSizeDeltaPercent": 2.8095966568411734,
+      "maximumBoundsDriftMeters": 1.52587890625e-05,
+      "trianglesPreserved": true,
+      "materialsPreserved": true,
+      "currentBinarySHA256": {
+        "baselineUSDZ": "1b33e463f957e5b4c1801ac91a41b4dadbbb6542175273d1ad8abdb248892150",
+        "optimizedUSDZ": "559b582072397e7f56deea3024aa47e54b5859d6a430525c241d11cba19402e5"
+      },
+      "optimizedSemanticSHA256": "15a062390f407cfd22fba3ad8c7f2fac0166968e26155caddc5aee0a00e3b8c9",
+      "classification": {
+        "batchable": "supporting blocks, landscape, and static public-realm geometry",
+        "preserveSeparate": "Venture Hall hierarchy and every top-level semantic/navigation anchor"
+      },
+      "preservedRoots": [
+        "/VentureDistrict/VentureHall"
+      ],
+      "batchCount": 8,
+      "semanticAnchorCount": 45,
+      "physicalImportSeconds": {
+        "baseline": 4.335379958152771,
+        "optimized": 1.8344619274139404,
+        "speedup": 2.3632978659112323,
+        "absoluteSaved": 2.5009180307388306
+      }
+    },
+    "MediaDistrict": {
+      "baseline": {
+        "package": "media_district",
+        "bytes": 28551,
+        "meshes": 63,
+        "triangles": 1620,
+        "materials": 15,
+        "bounds": [
+          [
+            416.3615417480469,
+            -12.0,
+            -620.0
+          ],
+          [
+            1060.0,
+            159.0,
+            -20.0
+          ]
+        ],
+        "landmarks": {
+          "TechComTower": [
+            835.0,
+            14.0,
+            -220.0
+          ],
+          "SignalTV": [
+            860.0,
+            14.0,
+            -460.0
+          ]
+        }
+      },
+      "optimized": {
+        "package": "media_district_batched",
+        "bytes": 28921,
+        "meshes": 23,
+        "triangles": 1620,
+        "materials": 15,
+        "bounds": [
+          [
+            416.3615417480469,
+            -12.0,
+            -620.0
+          ],
+          [
+            1060.0,
+            158.99999046325684,
+            -20.0
+          ]
+        ],
+        "landmarks": {
+          "TechComTower": [
+            835.0,
+            14.0,
+            -220.0
+          ],
+          "SignalTV": [
+            860.0,
+            14.0,
+            -460.0
+          ]
+        }
+      },
+      "meshReductionPercent": 63.49206349206349,
+      "packageByteDelta": 370,
+      "packageSizeDeltaPercent": 1.2959265875100767,
+      "maximumBoundsDriftMeters": 9.5367431640625e-06,
+      "trianglesPreserved": true,
+      "materialsPreserved": true,
+      "currentBinarySHA256": {
+        "baselineUSDZ": "887aec0ba517758985a89ba8d7e444caff51eb83b518cbac78cbb92dbe26cb32",
+        "optimizedUSDZ": "1f589798850e09d1042881974131bad2f3d50312fd0b668ce93ab1cc7237ccd9"
+      },
+      "optimizedSemanticSHA256": "9fe296c1692a8b5c666a45b73195072e26fdfd0af7474f029df31db1a02efbf0",
+      "classification": {
+        "batchable": "supporting blocks, landscape, and static waterfront/route geometry",
+        "preserveSeparate": "Tech.com and Signal TV hierarchies and every top-level semantic/navigation anchor"
+      },
+      "preservedRoots": [
+        "/MediaDistrict/SignalTV",
+        "/MediaDistrict/TechComTower"
+      ],
+      "batchCount": 8,
+      "semanticAnchorCount": 48,
+      "physicalImportSeconds": {
+        "baseline": 5.484300017356873,
+        "optimized": 2.799206018447876,
+        "speedup": 1.9592341475451125,
+        "absoluteSaved": 2.6850939989089966
+      }
+    }
+  },
+  "repeatedHardwareComparisons": {
+    "FounderDistrict": {
+      "baseline": {
+        "reports": [
+          "Documentation/Atlantis/Phase11B-iphone16pro-founder-baseline-run1.json",
+          "Documentation/Atlantis/Phase11B-iphone16pro-founder-baseline-run2.json",
+          "Documentation/Atlantis/Phase11B-iphone16pro-founder-baseline-run3.json"
+        ],
+        "importSeconds": {
+          "minimum": 40.0264205,
+          "median": 40.039769708,
+          "maximum": 40.119572042,
+          "runs": [
+            40.119572042,
+            40.0264205,
+            40.039769708
+          ]
+        },
+        "validationSeconds": {
+          "minimum": 0.000120709,
+          "median": 0.000131,
+          "maximum": 0.000148791,
+          "runs": [
+            0.000131,
+            0.000120709,
+            0.000148791
+          ]
+        },
+        "sceneInstallSeconds": {
+          "minimum": 0.0052925,
+          "median": 0.005464625,
+          "maximum": 0.0057475,
+          "runs": [
+            0.005464625,
+            0.0052925,
+            0.0057475
+          ]
+        },
+        "totalLoadSeconds": {
+          "minimum": 40.04538297653198,
+          "median": 40.04693806171417,
+          "maximum": 40.13411104679108,
+          "runs": [
+            40.13411104679108,
+            40.04538297653198,
+            40.04693806171417
+          ]
+        },
+        "sampledPeakMemoryMiB": {
+          "minimum": 275.48541259765625,
+          "median": 276.00106048583984,
+          "maximum": 278.21981048583984,
+          "runs": [
+            278.21981048583984,
+            276.00106048583984,
+            275.48541259765625
+          ]
+        },
+        "timeToFirstSceneUpdateSeconds": {
+          "minimum": 0.1544995,
+          "median": 0.156630041,
+          "maximum": 0.398094084,
+          "runs": [
+            0.398094084,
+            0.1544995,
+            0.156630041
+          ]
+        },
+        "timeToFounderVisibleSeconds": {
+          "minimum": 40.1077655,
+          "median": 40.163431459,
+          "maximum": 40.569533541,
+          "runs": [
+            40.569533541,
+            40.1077655,
+            40.163431459
+          ]
+        },
+        "timeToFounderPlayableSeconds": {
+          "minimum": 40.107769292,
+          "median": 40.16343675,
+          "maximum": 40.569536083,
+          "runs": [
+            40.569536083,
+            40.107769292,
+            40.16343675
+          ]
+        }
+      },
+      "optimized": {
+        "reports": [
+          "Documentation/Atlantis/Phase11B-iphone16pro-founder-batched-run1.json",
+          "Documentation/Atlantis/Phase11B-iphone16pro-founder-batched-run2.json",
+          "Documentation/Atlantis/Phase11B-iphone16pro-founder-batched-run3.json"
+        ],
+        "importSeconds": {
+          "minimum": 0.750354292,
+          "median": 0.783333333,
+          "maximum": 1.097557417,
+          "runs": [
+            1.097557417,
+            0.783333333,
+            0.750354292
+          ]
+        },
+        "validationSeconds": {
+          "minimum": 9.4708e-05,
+          "median": 0.000103292,
+          "maximum": 0.0001555,
+          "runs": [
+            0.000103292,
+            9.4708e-05,
+            0.0001555
+          ]
+        },
+        "sceneInstallSeconds": {
+          "minimum": 0.001362875,
+          "median": 0.001411083,
+          "maximum": 0.001464167,
+          "runs": [
+            0.001411083,
+            0.001362875,
+            0.001464167
+          ]
+        },
+        "totalLoadSeconds": {
+          "minimum": 0.7532309293746948,
+          "median": 0.7858119010925293,
+          "maximum": 1.103026032447815,
+          "runs": [
+            1.103026032447815,
+            0.7858119010925293,
+            0.7532309293746948
+          ]
+        },
+        "sampledPeakMemoryMiB": {
+          "minimum": 252.28226470947266,
+          "median": 254.34476470947266,
+          "maximum": 255.46974182128906,
+          "runs": [
+            252.28226470947266,
+            255.46974182128906,
+            254.34476470947266
+          ]
+        },
+        "timeToFirstSceneUpdateSeconds": {
+          "minimum": 0.14997125,
+          "median": 0.152211583,
+          "maximum": 0.159849417,
+          "runs": [
+            0.152211583,
+            0.159849417,
+            0.14997125
+          ]
+        },
+        "timeToFounderVisibleSeconds": {
+          "minimum": 0.836706917,
+          "median": 0.868352167,
+          "maximum": 1.220384958,
+          "runs": [
+            1.220384958,
+            0.868352167,
+            0.836706917
+          ]
+        },
+        "timeToFounderPlayableSeconds": {
+          "minimum": 0.83672,
+          "median": 0.868367833,
+          "maximum": 1.220434541,
+          "runs": [
+            1.220434541,
+            0.868367833,
+            0.83672
+          ]
+        }
+      }
+    },
+    "StartupRow": {
+      "baseline": {
+        "reports": [
+          "Documentation/Atlantis/Phase11B-iphone16pro-startup-baseline-run1.json",
+          "Documentation/Atlantis/Phase11B-iphone16pro-startup-baseline-run2.json",
+          "Documentation/Atlantis/Phase11B-iphone16pro-startup-baseline-run3.json"
+        ],
+        "importSeconds": {
+          "minimum": 13.499377375,
+          "median": 13.503135375,
+          "maximum": 13.504966542,
+          "runs": [
+            13.499377375,
+            13.504966542,
+            13.503135375
+          ]
+        },
+        "validationSeconds": {
+          "minimum": 9.8625e-05,
+          "median": 0.000113083,
+          "maximum": 0.000114084,
+          "runs": [
+            9.8625e-05,
+            0.000113083,
+            0.000114084
+          ]
+        },
+        "sceneInstallSeconds": {
+          "minimum": 0.00384225,
+          "median": 0.003927833,
+          "maximum": 0.004126917,
+          "runs": [
+            0.004126917,
+            0.00384225,
+            0.003927833
+          ]
+        },
+        "totalLoadSeconds": {
+          "minimum": 13.509269952774048,
+          "median": 13.509958028793335,
+          "maximum": 13.51124393939972,
+          "runs": [
+            13.51124393939972,
+            13.509958028793335,
+            13.509269952774048
+          ]
+        },
+        "sampledPeakMemoryMiB": {
+          "minimum": 273.06353759765625,
+          "median": 275.04791259765625,
+          "maximum": 275.62603759765625,
+          "runs": [
+            275.04791259765625,
+            273.06353759765625,
+            275.62603759765625
+          ]
+        },
+        "timeToFirstSceneUpdateSeconds": {
+          "minimum": 0.185075958,
+          "median": 0.189479417,
+          "maximum": 0.208806583,
+          "runs": [
+            0.208806583,
+            0.189479417,
+            0.185075958
+          ]
+        },
+        "timeToFounderVisibleSeconds": {
+          "minimum": 40.143008041,
+          "median": 40.164587792,
+          "maximum": 40.228585375,
+          "runs": [
+            40.228585375,
+            40.164587792,
+            40.143008041
+          ]
+        },
+        "timeToFounderPlayableSeconds": {
+          "minimum": 40.143012541,
+          "median": 40.164590125,
+          "maximum": 40.228587792,
+          "runs": [
+            40.228587792,
+            40.164590125,
+            40.143012541
+          ]
+        },
+        "timeToStartupReadySeconds": {
+          "minimum": 53.66364125,
+          "median": 53.689237,
+          "maximum": 53.755047125,
+          "runs": [
+            53.755047125,
+            53.689237,
+            53.66364125
+          ]
+        },
+        "longestPrefetchUpdateIntervalMilliseconds": {
+          "minimum": 32.62550011277199,
+          "median": 32.83191844820976,
+          "maximum": 32.910000532865524,
+          "runs": [
+            32.910000532865524,
+            32.62550011277199,
+            32.83191844820976
+          ]
+        }
+      },
+      "optimized": {
+        "reports": [
+          "Documentation/Atlantis/Phase11B-iphone16pro-startup-batched-run1.json",
+          "Documentation/Atlantis/Phase11B-iphone16pro-startup-batched-run2.json",
+          "Documentation/Atlantis/Phase11B-iphone16pro-startup-batched-run3.json"
+        ],
+        "importSeconds": {
+          "minimum": 4.878767167,
+          "median": 5.029669542,
+          "maximum": 5.111803375,
+          "runs": [
+            4.878767167,
+            5.111803375,
+            5.029669542
+          ]
+        },
+        "validationSeconds": {
+          "minimum": 7.5291e-05,
+          "median": 7.6125e-05,
+          "maximum": 9.6458e-05,
+          "runs": [
+            9.6458e-05,
+            7.6125e-05,
+            7.5291e-05
+          ]
+        },
+        "sceneInstallSeconds": {
+          "minimum": 0.002602542,
+          "median": 0.002741667,
+          "maximum": 0.002840583,
+          "runs": [
+            0.002840583,
+            0.002741667,
+            0.002602542
+          ]
+        },
+        "totalLoadSeconds": {
+          "minimum": 4.884768009185791,
+          "median": 5.03325891494751,
+          "maximum": 5.1169960498809814,
+          "runs": [
+            4.884768009185791,
+            5.1169960498809814,
+            5.03325891494751
+          ]
+        },
+        "sampledPeakMemoryMiB": {
+          "minimum": 252.01666259765625,
+          "median": 254.01666259765625,
+          "maximum": 262.76663970947266,
+          "runs": [
+            262.76663970947266,
+            252.01666259765625,
+            254.01666259765625
+          ]
+        },
+        "timeToFirstSceneUpdateSeconds": {
+          "minimum": 0.147994667,
+          "median": 0.189021417,
+          "maximum": 0.192219125,
+          "runs": [
+            0.189021417,
+            0.192219125,
+            0.147994667
+          ]
+        },
+        "timeToFounderVisibleSeconds": {
+          "minimum": 0.8016075,
+          "median": 1.227664375,
+          "maximum": 1.3536114590000001,
+          "runs": [
+            0.8016075,
+            1.3536114590000001,
+            1.227664375
+          ]
+        },
+        "timeToFounderPlayableSeconds": {
+          "minimum": 0.801620042,
+          "median": 1.227677833,
+          "maximum": 1.353631917,
+          "runs": [
+            0.801620042,
+            1.353631917,
+            1.227677833
+          ]
+        },
+        "timeToStartupReadySeconds": {
+          "minimum": 5.717901875,
+          "median": 6.292708125,
+          "maximum": 6.503107292,
+          "runs": [
+            5.717901875,
+            6.503107292,
+            6.292708125
+          ]
+        },
+        "longestPrefetchUpdateIntervalMilliseconds": {
+          "minimum": 29.261624440550804,
+          "median": 29.64416705071926,
+          "maximum": 30.324917286634445,
+          "runs": [
+            29.261624440550804,
+            29.64416705071926,
+            30.324917286634445
+          ]
+        }
+      }
+    }
+  },
+  "progressiveBoot": {
+    "normalWalkSpeedMetersPerSecond": 1.4,
+    "founderToStartupRouteMeters": 760.7492886431397,
+    "estimatedNaturalArrivalSeconds": 543.3923490308141,
+    "optimizedMedianFounderPlayableSeconds": 1.227677833,
+    "optimizedMedianStartupReadySeconds": 6.292708125,
+    "startupReadyBeforeNaturalArrival": true
+  },
+  "fullCityHardware": {
+    "baselineReport": "Documentation/Atlantis/Phase10/iphone16pro-device-benchmark.json",
+    "optimizedReport": "Documentation/Atlantis/Phase11B-iphone16pro-final-batched-fullcity-run1.json",
+    "baselineBackgroundSeconds": 112.32716906070709,
+    "optimizedBackgroundSeconds": 29.247913718223572,
+    "speedup": 3.840519024463585,
+    "absoluteSavedSeconds": 83.07925534248352,
+    "reductionPercent": 73.96185271755886,
+    "baselineSampledPeakMemoryMiB": 293.8605041503906,
+    "optimizedSampledPeakMemoryMiB": 247.17293548583984,
+    "peakMemoryDeltaMiB": -46.68756866455078,
+    "baselineLongestLoadUpdateIntervalMilliseconds": 74.27887618541718,
+    "optimizedLongestLoadUpdateIntervalMilliseconds": 39.02679309248924,
+    "optimizedErrors": [],
+    "optimizedPostUnloadMemoryMiB": null,
+    "postUnloadNote": "The optimized physical import-profile route intentionally ends after loading, so post-unload hardware residency was not measured."
+  },
+  "reproducibility": {
+    "canonicalSourceModified": false,
+    "generatorScripts": [
+      "Assets/Atlantis/Phase10/RuntimeSpike/build_import_batch_experiment.py",
+      "Assets/Atlantis/Phase11B/build_startup_selective_batch.py",
+      "Assets/Atlantis/Phase11B/build_selective_district_batch.py"
+    ],
+    "districtManifests": [
+      "Assets/Atlantis/Phase11B/startup_batch_manifest.json",
+      "Assets/Atlantis/Phase11B/commerce_batch_manifest.json",
+      "Assets/Atlantis/Phase11B/tech_batch_manifest.json",
+      "Assets/Atlantis/Phase11B/unicorn_batch_manifest.json",
+      "Assets/Atlantis/Phase11B/venture_batch_manifest.json",
+      "Assets/Atlantis/Phase11B/media_batch_manifest.json"
+    ],
+    "unchangedRegenerationSemanticHashesMatched": true,
+    "binaryHashesDeterministic": false,
+    "binaryHashNote": "Repeated unchanged exports preserved semantic hashes and metrics. USD crate and USDZ archive metadata changed binary hashes."
+  },
+  "verification": {
+    "atlantisUnitTests": {
+      "count": 20,
+      "failures": 0,
+      "scope": "included in full unit suite"
+    },
+    "garageFocusedTests": {
+      "count": 163,
+      "failures": 0
+    },
+    "fullUnitTests": {
+      "count": 804,
+      "failures": 0
+    },
+    "uiContinuityTests": {
+      "count": 2,
+      "failures": 0,
+      "captures": [
+        "founderStreet",
+        "startupBoulevard",
+        "commerceFlashpoint",
+        "techCoreSkyline",
+        "unicornOverlook",
+        "atlantisAerial"
+      ]
+    },
+    "debugIPhoneBuild": "passed",
+    "debugIPadAir11M4Build": "passed",
+    "releaseSimulatorBuild": "passed",
+    "gitDiffCheck": "passed",
+    "physicalIPad": "unavailable",
+    "gpuFrameMetrics": "not captured"
+  }
+}
