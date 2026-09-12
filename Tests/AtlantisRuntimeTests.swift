@@ -277,6 +277,56 @@ final class AtlantisRuntimeTests: XCTestCase {
     XCTAssertEqual(w.playerRoot.position.x,AtlantisSpatialContract.playerHQ.x,accuracy:0.03)
     XCTAssertEqual(w.playerRoot.position.z,AtlantisSpatialContract.playerHQ.z,accuracy:0.03);w.stop()
   }
+  func testInteractionDefinitionsUseStableUniqueCanonicalIntents() {
+    let targets=AtlantisInteractionDefinition.all
+    XCTAssertEqual(targets.count,8);XCTAssertEqual(Set(targets.map(\.id)).count,8)
+    XCTAssertEqual(Set(targets.map(\.anchorName)),["FounderGarageSlot","TechComTower","VentureHall","SignalTV","PallasAIHQ","NorthwindLabsHQ","FlashpointHQ","PlayerUnicornHQSlot"])
+    XCTAssertEqual(AtlantisCanonicalRoute.resolve(.openTechCom,availableRivalIDs:[]),.techCom)
+    XCTAssertEqual(AtlantisCanonicalRoute.resolve(.inspectRival(rivalID:"pallas"),availableRivalIDs:["pallas"]),.rival("pallas"))
+    XCTAssertNil(AtlantisCanonicalRoute.resolve(.inspectRival(rivalID:"unknown"),availableRivalIDs:["pallas"]))
+  }
+  func testInteractionCandidateProximityFacingAndPriorityAreDeterministic() {
+    let registry=AtlantisInteractionRegistry(),root=Entity(),anchor=Entity();anchor.name="FounderGarageSlot";root.addChild(anchor);registry.register(district:.founderDistrict,root:root)
+    XCTAssertEqual(registry.candidate(position:[-875,8,1040],forward:[0,0,-1],residentDistricts:[.founderDistrict])?.definition.id,"atlantis.interaction.founderGarage")
+    XCTAssertNil(registry.candidate(position:[-875,8,1040],forward:[0,0,1],residentDistricts:[.founderDistrict]))
+    XCTAssertNil(registry.candidate(position:[-875,8,1060],forward:[0,0,-1],residentDistricts:[.founderDistrict]))
+    let scores=[AtlantisInteractionCandidateScore(id:"z",priority:100,distance:1),.init(id:"b",priority:200,distance:3),.init(id:"a",priority:200,distance:3)]
+    XCTAssertEqual(AtlantisInteractionSelectionPolicy.select(scores),"a")
+  }
+  func testInteractionUnloadInvalidatesAndReloadRegistersExactlyOnce() async throws {
+    let w=AtlantisRealityWorld(manifest:try .load());await w.loader.load(.techCore)?.value
+    XCTAssertEqual(w.interactionRegistry.registeredIDs,["atlantis.interaction.pallasAI","atlantis.interaction.northwindLabs"])
+    let approachedPallas=await w.debugApproachInteraction("atlantis.interaction.pallasAI")
+    XCTAssertTrue(approachedPallas);XCTAssertEqual(w.activeInteractionID,"atlantis.interaction.pallasAI")
+    w.loader.unload(.techCore);XCTAssertNil(w.activeInteractionID);XCTAssertNil(w.interactionRegistry.target(id:"atlantis.interaction.pallasAI"))
+    XCTAssertNil(w.beginInteraction(),"An unloaded target must not remain actionable")
+    await w.loader.load(.techCore)?.value
+    XCTAssertEqual(w.interactionRegistry.count,2);XCTAssertEqual(w.interactionRegistry.registeredIDs.count,2);w.stop()
+  }
+  func testInteractionRoundTripRestoresPositionHeadingPhaseResidencyAndRoot() async throws {
+    let w=AtlantisRealityWorld(manifest:try .load());await w.loader.load(.founderDistrict)?.value
+    let approachedGarage=await w.debugApproachInteraction("atlantis.interaction.founderGarage")
+    XCTAssertTrue(approachedGarage);w.phase = .night;w.applyLighting()
+    let position=w.playerRoot.position,heading=w.heading,residents=w.streaming.residents,root=w.root
+    XCTAssertEqual(w.beginInteraction(),.enterFounderGarage);XCTAssertTrue(w.streaming.isFrozen)
+    w.selectCamera(.atlantisAerial)
+    XCTAssertTrue(w.returnFromInteraction());XCTAssertEqual(w.playerRoot.position,position);XCTAssertEqual(w.heading,heading);XCTAssertEqual(w.phase,.night)
+    XCTAssertEqual(w.streaming.residents,residents);XCTAssertTrue(w.root === root);XCTAssertFalse(w.streaming.isFrozen);w.stop()
+  }
+  func testStreamingAndInteractionSequencePreservesCanonicalStoreTruth() async throws {
+    let store=GameStore(),stats=store.stats,rng=store.randomNumberGenerator,w=AtlantisRealityWorld(manifest:try .load())
+    await w.loader.load(.founderDistrict)?.value
+    let enteredStartup=await w.streaming.enter(.startupRow,next:.commerceDistrict)
+    let enteredCommerce=await w.streaming.enter(.commerceDistrict,next:.techCore)
+    XCTAssertTrue(enteredStartup);XCTAssertTrue(enteredCommerce)
+    let approachedFlashpoint=await w.debugApproachInteraction("atlantis.interaction.flashpoint")
+    XCTAssertTrue(approachedFlashpoint);XCTAssertEqual(w.beginInteraction(),.inspectRival(rivalID:"flashpoint"))
+    XCTAssertEqual(AtlantisCanonicalRoute.resolve(.inspectRival(rivalID:"flashpoint"),availableRivalIDs:Set(ContentLibrary.rivalCompanies.map(\.id))),.rival("flashpoint"))
+    XCTAssertTrue(w.returnFromInteraction())
+    let enteredTech=await w.streaming.enter(.techCore,next:.unicornHeights)
+    XCTAssertTrue(enteredTech)
+    XCTAssertEqual(store.stats,stats);XCTAssertEqual(store.randomNumberGenerator,rng);XCTAssertEqual(GameStore.saveVersion,19);w.stop()
+  }
   private func models(_ e: Entity)->[ModelComponent] { (e.components[ModelComponent.self].map{[$0]} ?? [])+e.children.flatMap{models($0)} }
   private final class Controlled: AtlantisDistrictLoading {
     var count=0

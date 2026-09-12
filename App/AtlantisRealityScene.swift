@@ -39,12 +39,23 @@ struct AtlantisBenchmarkReport: Codable {
   var unloadCycles: [[String: Double]] = []
   var lod: [[String: String]] = []
   var streaming: [AtlantisStreamingMeasurement] = []
+  var interactions: [AtlantisInteractionMeasurement] = []
+  var registeredInteractionTargets = 0
+  var interactionCandidateEvaluations = 0
+  var meanInteractionCandidateMicroseconds: Double = 0
 }
 
 struct AtlantisStreamingMeasurement: Codable {
   let transition: String; let prefetchDistanceMeters: Float; let loadSeconds: Double
   let readyBeforeBoundary: Bool; let memoryBeforeMB: Double; let memoryAfterMB: Double
   let longestLoadFrameMS: Double; let unloadFrameMS: Double; let residents: [String]
+}
+
+struct AtlantisInteractionMeasurement: Codable {
+  let target: String; let cycle: Int; let intentDispatchMS: Double; let returnMS: Double
+  let memoryBeforeMB: Double; let memoryAfterMB: Double; let registeredTargets: Int
+  let worldRootCount: Int; let positionRestored: Bool; let headingRestored: Bool
+  let phasePreserved: Bool; let residencyPreserved: Bool
 }
 
 struct AtlantisDayPhaseComponent: Component, Codable { var phase: String }
@@ -92,6 +103,68 @@ final class AtlantisSemanticAnchorRegistry {
   var count: Int { anchors.count }
 }
 
+@MainActor
+final class AtlantisInteractionTarget {
+  let definition: AtlantisInteractionDefinition
+  weak var entity: Entity?
+  init(definition: AtlantisInteractionDefinition, entity: Entity) { self.definition=definition;self.entity=entity }
+}
+
+@MainActor
+final class AtlantisInteractionRegistry {
+  private var targetsByID: [String: AtlantisInteractionTarget] = [:]
+  private(set) var evaluationCount = 0
+  private(set) var evaluationNanoseconds: UInt64 = 0
+
+  var count: Int { targetsByID.count }
+  var registeredIDs: Set<String> { Set(targetsByID.keys) }
+  func target(id: String) -> AtlantisInteractionTarget? { targetsByID[id] }
+
+  func register(district: AtlantisDistrict, root: Entity) {
+    unregister(district:district)
+    for definition in AtlantisInteractionDefinition.definitions(for:district) {
+      guard targetsByID[definition.id] == nil,let entity=root.findEntity(named:definition.anchorName) else{continue}
+      targetsByID[definition.id]=AtlantisInteractionTarget(definition:definition,entity:entity)
+    }
+  }
+
+  func unregister(district: AtlantisDistrict) {
+    targetsByID = targetsByID.filter {$0.value.definition.district != district}
+  }
+
+  func candidate(position: SIMD3<Float>,forward: SIMD3<Float>,residentDistricts: Set<AtlantisDistrict>) -> AtlantisInteractionTarget? {
+    let start=DispatchTime.now().uptimeNanoseconds
+    defer {evaluationCount += 1;evaluationNanoseconds += DispatchTime.now().uptimeNanoseconds-start}
+    let candidates=targetsByID.values.compactMap { target -> AtlantisInteractionCandidateScore? in
+      let definition=target.definition
+      guard target.entity != nil,residentDistricts.contains(definition.district),definition.availability == .available else{return nil}
+      let offset=definition.activationPosition-position,distance=simd_length(SIMD2<Float>(offset.x,offset.z))
+      guard distance <= definition.activationRadius else{return nil}
+      if let threshold=definition.minimumFacingDot,distance>0.001 {
+        let targetDirection=simd_normalize(SIMD2<Float>(offset.x,offset.z)),look=simd_normalize(SIMD2<Float>(forward.x,forward.z))
+        guard simd_dot(targetDirection,look) >= threshold else{return nil}
+      }
+      return .init(id:definition.id,priority:definition.priority,distance:distance)
+    }
+    return AtlantisInteractionSelectionPolicy.select(candidates).flatMap {targetsByID[$0]}
+  }
+
+  var meanEvaluationMicroseconds: Double {
+    guard evaluationCount>0 else{return 0};return Double(evaluationNanoseconds)/Double(evaluationCount)/1_000
+  }
+}
+
+struct AtlantisInteractionReturnContext: Equatable {
+  let targetID: String
+  let position: SIMD3<Float>
+  let heading: Float
+  let phase: FounderEnvironmentTimeState
+  let previous: AtlantisDistrict?
+  let current: AtlantisDistrict
+  let next: AtlantisDistrict?
+  let residents: Set<AtlantisDistrict>
+}
+
 @MainActor @Observable
 final class AtlantisStreamingCoordinator {
   private(set) var previous: AtlantisDistrict?
@@ -99,6 +172,7 @@ final class AtlantisStreamingCoordinator {
   private(set) var next: AtlantisDistrict? = .startupRow
   private(set) var prefetched: Set<AtlantisDistrict> = []
   private(set) var status = "Founder current"
+  private(set) var isFrozen = false
   @ObservationIgnored private let loader: AtlantisDistrictLoader
   @ObservationIgnored private let policy: AtlantisStreamingPolicy
   @ObservationIgnored private let transitions: [AtlantisAssetManifest.TransitionRoute]
@@ -144,6 +218,7 @@ final class AtlantisStreamingCoordinator {
     prefetched.remove(district);status="\(district.title) current";reconcile();return true
   }
   func observe(position: SIMD3<Float>) {
+    guard !isFrozen else{return}
     guard transitionTask == nil || transitionTask?.isCancelled == true else{return}
     for route in transitions {
       guard route.from==current.rawValue,let target=AtlantisDistrict(rawValue:route.to) else{continue}
@@ -154,6 +229,7 @@ final class AtlantisStreamingCoordinator {
       }
     }
   }
+  func setFrozen(_ frozen: Bool) {isFrozen=frozen;status=frozen ? "Streaming retained for interaction" : "\(current.title) current"}
   func reconcile() {
     let keep=plan.residents
     for district in loader.loaded where !keep.contains(district) {loader.unload(district);prefetched.remove(district)}
@@ -168,10 +244,14 @@ final class AtlantisRealityWorld {
   let root = Entity(), playerRoot = Entity(), bodyHeadingRoot = Entity(), cameraRig = Entity(), camera = PerspectiveCamera()
   let sun = DirectionalLight(), environment = Entity(), collisionRoot = Entity()
   let semanticAnchors = AtlantisSemanticAnchorRegistry()
+  let interactionRegistry = AtlantisInteractionRegistry()
   let streaming: AtlantisStreamingCoordinator
   private(set) var error: String?
   private(set) var benchmarkStatus = "idle"
   private(set) var report = AtlantisBenchmarkReport()
+  private(set) var activeInteractionID: String?
+  private(set) var interactionReturnContext: AtlantisInteractionReturnContext?
+  private(set) var interactionStatus = "No nearby interaction"
   var selectedCamera = AtlantisBenchmarkCamera.founderStreet
   var phase = FounderEnvironmentTimeState.day
   var shadowMode = 0
@@ -179,7 +259,7 @@ final class AtlantisRealityWorld {
   var isWalking: Bool { locomotion == .walking }
   var walkInput: Float = 0
   private(set) var movementStatus = "Standing"
-  @ObservationIgnored private var heading: Float = 0
+  @ObservationIgnored private(set) var heading: Float = 0
   @ObservationIgnored private var subscription: EventSubscription?
   @ObservationIgnored private var benchmarkTask: Task<Void,Never>?
   @ObservationIgnored private var frameSamples: [Double] = []
@@ -202,7 +282,10 @@ final class AtlantisRealityWorld {
       guard let self else{return}
       entity.components.set(ImageBasedLightReceiverComponent(imageBasedLight:self.environment))
       entity.components.set(AtlantisDayPhaseComponent(phase:self.phase.rawValue))
-      if let district {self.semanticAnchors.register(district:district,root:entity,manifest:self.manifest)}
+      if let district {
+        self.semanticAnchors.register(district:district,root:entity,manifest:self.manifest)
+        self.interactionRegistry.register(district:district,root:entity)
+      }
       if district == .unicornHeights {
         entity.findEntity(named:"Bridge_TechCore_00")?.isEnabled=false
         entity.findEntity(named:"Unicorn_BridgeWalk_00")?.isEnabled=false
@@ -210,7 +293,9 @@ final class AtlantisRealityWorld {
       self.syncSpireSwap()
     }
     loader.onWillUnload={ [weak self] district,_ in
-      guard let self else{return};self.semanticAnchors.invalidate(district:district)
+      guard let self else{return};let invalidatesActive=self.activeInteraction?.definition.district == district
+      self.semanticAnchors.invalidate(district:district);self.interactionRegistry.unregister(district:district)
+      if invalidatesActive {self.activeInteractionID=nil;self.interactionStatus="Interaction unavailable: district unloaded"}
       if district == .techCore {self.loader.supportEntity(named:"SpireFarProxy")?.isEnabled=true}
     }
     selectCamera(.founderStreet);applyLighting()
@@ -233,11 +318,14 @@ final class AtlantisRealityWorld {
       print("Atlantis startup failed: \(error ?? "unknown")");writeReport();benchmarkStatus="failed";return
     }
     print("Atlantis startup: Founder ready")
+    refreshInteractionCandidate()
     report.startupMilestones["timeToFounderVisible"] = elapsed(since: startupStart)
     report.startupMilestones["timeToFounderPlayable"] = elapsed(since: startupStart)
     report.loads=loader.measurements;report.loadPhases=loader.phaseMeasurements
     benchmarkStatus="Founder ready"
-    if ProcessInfo.processInfo.arguments.contains("--atlantis-streaming-profile") {
+    if ProcessInfo.processInfo.arguments.contains("--atlantis-interaction-profile") {
+      await runInteractionBenchmark()
+    } else if ProcessInfo.processInfo.arguments.contains("--atlantis-streaming-profile") {
       await runStreamingBenchmark()
     } else if ProcessInfo.processInfo.arguments.contains("--atlantis-startup-profile") {
       let before=AtlantisMemory.footprintMB(),stageStart=Date()
@@ -270,7 +358,7 @@ final class AtlantisRealityWorld {
     let r=value.recipe;playerRoot.position=r.position-[0,AtlantisSpatialContract.eyeHeight,0];cameraRig.transform = .identity;camera.transform = .identity
     camera.look(at:r.target,from:r.position,relativeTo:nil)
     let orientation=camera.orientation(relativeTo:nil);let forward=simd_normalize(r.target-r.position);heading=atan2(-forward.x,-forward.z)
-    bodyHeadingRoot.orientation=simd_quatf(angle:heading,axis:[0,1,0]);cameraRig.orientation=bodyHeadingRoot.orientation.inverse*orientation;camera.orientation = .init();camera.position=[0,AtlantisSpatialContract.eyeHeight,0];camera.camera.fieldOfViewInDegrees=r.fov
+    bodyHeadingRoot.orientation=simd_quatf(angle:heading,axis:[0,1,0]);cameraRig.orientation=bodyHeadingRoot.orientation.inverse*orientation;camera.orientation = .init();camera.position=[0,AtlantisSpatialContract.eyeHeight,0];camera.camera.fieldOfViewInDegrees=r.fov;refreshInteractionCandidate()
   }
   func applyLighting() {
     let p=FounderEnvironmentLightingConfiguration.preset(for:phase)
@@ -299,7 +387,7 @@ final class AtlantisRealityWorld {
     guard abs(h-playerRoot.position.y)<=0.35 else { movementStatus="Blocked: step/drop at \(next.x), \(next.z)";return }
     next.y=h
     guard !grounding.blocked(next,loaded:loadedNames) else { movementStatus="Blocked: building envelope";return }
-    playerRoot.position=next;streaming.observe(position:next);movementStatus=String(format:"Walking 1.4 m/s · %.1f, %.2f, %.1f",next.x,next.y,next.z)
+    playerRoot.position=next;streaming.observe(position:next);refreshInteractionCandidate();movementStatus=String(format:"Walking 1.4 m/s · %.1f, %.2f, %.1f",next.x,next.y,next.z)
   }
   private func update(delta: Double) {
     if report.startupMilestones["timeToFirstSceneUpdate"] == nil {
@@ -307,7 +395,7 @@ final class AtlantisRealityWorld {
     }
     if collectingFrames {frameSamples.append(delta*1000)}
     frameCounter += 1
-    if frameCounter % 30 == 0 {let value=AtlantisMemory.footprintMB();if value>report.sampledPeakMemoryMB {report.sampledPeakMemoryMB=value}}
+    if frameCounter % 30 == 0 {let value=AtlantisMemory.footprintMB();if value>report.sampledPeakMemoryMB {report.sampledPeakMemoryMB=value};refreshInteractionCandidate()}
     if isWalking {move(input:walkInput,delta:delta)}
   }
   private func elapsed(since start: ContinuousClock.Instant) -> Double {
@@ -323,7 +411,54 @@ final class AtlantisRealityWorld {
     report.collisionEntityCount=collisionRoot.children.count
   }
   func unload(_ district: AtlantisDistrict) {_=streaming.requestUnload(district);collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;syncSpireSwap()}
-  func unloadAll() {loader.unloadAll();collisionRoot.children.removeAll();locomotion = .standing;walkInput=0}
+  func unloadAll() {loader.unloadAll();collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;activeInteractionID=nil;interactionReturnContext=nil;streaming.setFrozen(false)}
+
+  var activeInteraction: AtlantisInteractionTarget? {activeInteractionID.flatMap(interactionRegistry.target(id:))}
+  var interactionPrompt: String {activeInteraction?.definition.accessibilityLabel ?? interactionStatus}
+  var isPresentingInteraction: Bool {interactionReturnContext != nil}
+
+  func refreshInteractionCandidate() {
+    guard interactionReturnContext == nil else{return}
+    let forward=SIMD3<Float>(-sin(heading),0,-cos(heading))
+    activeInteractionID=interactionRegistry.candidate(position:playerRoot.position,forward:forward,residentDistricts:streaming.residents)?.definition.id
+    interactionStatus=activeInteractionID == nil ? "No nearby interaction" : "Ready"
+  }
+
+  func beginInteraction() -> AtlantisInteractionIntent? {
+    refreshInteractionCandidate()
+    guard let target=activeInteraction,target.entity != nil else {interactionStatus="Interaction unavailable";return nil}
+    interactionReturnContext = .init(targetID:target.definition.id,position:playerRoot.position,heading:heading,phase:phase,previous:streaming.previous,current:streaming.current,next:streaming.next,residents:streaming.residents)
+    locomotion = .standing;walkInput=0;streaming.setFrozen(true);interactionStatus="Opening \(target.definition.accessibilityLabel)"
+    return target.definition.intent
+  }
+
+  @discardableResult
+  func returnFromInteraction() -> Bool {
+    guard let context=interactionReturnContext else{return false}
+    guard loader.states[context.current] == .loaded,
+          let ground=grounding.height(at:context.position,loaded:loadedNames,referenceHeight:context.position.y),
+          abs(ground-context.position.y)<=0.35 else {
+      interactionReturnContext=nil;streaming.setFrozen(false);interactionStatus="Return failed: supporting district unavailable";refreshInteractionCandidate();return false
+    }
+    // Ground is a validity check. Preserve the captured transform exactly so a
+    // presentation round trip cannot introduce cumulative vertical drift.
+    playerRoot.position=context.position;heading=context.heading
+    bodyHeadingRoot.orientation=simd_quatf(angle:heading,axis:[0,1,0]);phase=context.phase;applyLighting()
+    interactionReturnContext=nil;streaming.setFrozen(false);interactionStatus="Returned to Atlantis";refreshInteractionCandidate();return true
+  }
+
+  func cancelInteraction(reason: String) {
+    interactionReturnContext=nil;streaming.setFrozen(false);interactionStatus=reason;refreshInteractionCandidate()
+  }
+
+  func debugApproachInteraction(_ id: String) async -> Bool {
+    guard let definition=AtlantisInteractionDefinition.all.first(where:{$0.id==id}) else{return false}
+    if loader.states[definition.district] != .loaded {await loader.load(definition.district)?.value}
+    guard interactionRegistry.target(id:id)?.entity != nil else{interactionStatus="Interaction anchor unavailable";return false}
+    let offset: SIMD3<Float> = definition.minimumFacingDot == nil ? [0,0,0] : [0,0,definition.activationRadius-1]
+    playerRoot.position=definition.activationPosition+offset;heading=definition.minimumFacingDot == nil ? heading : 0
+    bodyHeadingRoot.orientation=simd_quatf(angle:heading,axis:[0,1,0]);refreshInteractionCandidate();return activeInteractionID==id
+  }
   private func syncSpireSwap() {
     guard let proxy=loader.supportEntity(named:"SpireFarProxy") else{return}
     proxy.isEnabled = loader.states[.techCore] != .loaded
@@ -371,6 +506,43 @@ final class AtlantisRealityWorld {
       await wait(0.25)
       report.unloadCycles.append(["cycle":Double(cycle),"beforeMB":before,"afterMB":AtlantisMemory.footprintMB(),"seconds":Date().timeIntervalSince(start),"residentCount":Double(loader.loaded.count),"rootCount":Double(loader.root.children.count)])
     }
+    report.registeredInteractionTargets=interactionRegistry.count
+    report.interactionCandidateEvaluations=interactionRegistry.evaluationCount
+    report.meanInteractionCandidateMicroseconds=interactionRegistry.meanEvaluationMicroseconds
+    report.loads=loader.measurements;report.loadPhases=loader.phaseMeasurements;writeReport();benchmarkStatus=report.errors.isEmpty ? "complete" : "failed"
+  }
+  private func runInteractionBenchmark() async {
+    benchmarkStatus="interaction cycles"
+    let cycles=[("atlantis.interaction.techCom",5),("atlantis.interaction.ventureHall",5),("atlantis.interaction.founderGarage",3)]
+    for (targetID,count) in cycles {
+      for cycle in 1...count {
+        guard !Task.isCancelled else{return}
+        guard await debugApproachInteraction(targetID) else {report.errors.append("Interaction target unavailable: \(targetID)");continue}
+        phase = cycle.isMultiple(of:2) ? .night : .evening;applyLighting()
+        let position=playerRoot.position,savedHeading=heading,dayPhase=phase,residents=streaming.residents
+        let before=AtlantisMemory.footprintMB(),intentStart=ContinuousClock.now
+        guard beginInteraction() != nil else {report.errors.append("Interaction intent failed: \(targetID)");continue}
+        let dispatchMS=elapsed(since:intentStart)*1_000,returnStart=ContinuousClock.now
+        let returned=returnFromInteraction(),returnMS=elapsed(since:returnStart)*1_000,after=AtlantisMemory.footprintMB()
+        let measurement=AtlantisInteractionMeasurement(
+          target:targetID,cycle:cycle,intentDispatchMS:dispatchMS,returnMS:returnMS,
+          memoryBeforeMB:before,memoryAfterMB:after,registeredTargets:interactionRegistry.count,
+          worldRootCount:1,
+          positionRestored:returned && playerRoot.position==position,
+          headingRestored:returned && self.heading==savedHeading,
+          phasePreserved:returned && phase==dayPhase,
+          residencyPreserved:returned && streaming.residents==residents
+        )
+        report.interactions.append(measurement);report.sampledPeakMemoryMB=max(report.sampledPeakMemoryMB,after)
+        if !returned || !measurement.positionRestored || !measurement.headingRestored || !measurement.phasePreserved || !measurement.residencyPreserved {
+          report.errors.append("Interaction return invariant failed: \(targetID) cycle \(cycle)")
+        }
+        await Task.yield()
+      }
+    }
+    report.registeredInteractionTargets=interactionRegistry.count
+    report.interactionCandidateEvaluations=interactionRegistry.evaluationCount
+    report.meanInteractionCandidateMicroseconds=interactionRegistry.meanEvaluationMicroseconds
     report.loads=loader.measurements;report.loadPhases=loader.phaseMeasurements;writeReport();benchmarkStatus=report.errors.isEmpty ? "complete" : "failed"
   }
   private func runBenchmark() async {

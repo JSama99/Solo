@@ -24187,6 +24187,94 @@
             -851.2096074937836
           ]
         ]
+      },
+      {
+        "district": "TechCore",
+        "source": "InteractionSupport_Phase13_Pallas",
+        "surfaceClass": "collisionOnly",
+        "points": [
+          [
+            216,
+            15,
+            -272
+          ],
+          [
+            224,
+            15,
+            -264
+          ],
+          [
+            224,
+            15,
+            -272
+          ]
+        ]
+      },
+      {
+        "district": "TechCore",
+        "source": "InteractionSupport_Phase13_Pallas",
+        "surfaceClass": "collisionOnly",
+        "points": [
+          [
+            216,
+            15,
+            -272
+          ],
+          [
+            216,
+            15,
+            -264
+          ],
+          [
+            224,
+            15,
+            -264
+          ]
+        ]
+      },
+      {
+        "district": "TechCore",
+        "source": "InteractionSupport_Phase13_Northwind",
+        "surfaceClass": "collisionOnly",
+        "points": [
+          [
+            -104,
+            15,
+            -490
+          ],
+          [
+            -96,
+            15,
+            -482
+          ],
+          [
+            -96,
+            15,
+            -490
+          ]
+        ]
+      },
+      {
+        "district": "TechCore",
+        "source": "InteractionSupport_Phase13_Northwind",
+        "surfaceClass": "collisionOnly",
+        "points": [
+          [
+            -104,
+            15,
+            -490
+          ],
+          [
+            -104,
+            15,
+            -482
+          ],
+          [
+            -96,
+            15,
+            -482
+          ]
+        ]
       }
     ],
     "barriers": [
@@ -26309,6 +26397,16 @@
       },
       {
         "district": "TechCore",
+        "source": "InteractionSupport_Phase13_Northwind",
+        "classification": "collisionOnly"
+      },
+      {
+        "district": "TechCore",
+        "source": "InteractionSupport_Phase13_Pallas",
+        "classification": "collisionOnly"
+      },
+      {
+        "district": "TechCore",
         "source": "TechCore_CrossStreet_00",
         "classification": "walkable"
       },
@@ -26736,7 +26834,11 @@
       }
     ],
     "semanticAnchors": {
+      "FounderDistrict": [
+        "FounderGarageSlot"
+      ],
       "CommerceDistrict": [
+        "FlashpointHQ",
         "RivalHQ_Slot_05"
       ],
       "VentureDistrict": [
@@ -26748,6 +26850,8 @@
       ],
       "TechCore": [
         "TheSpire",
+        "PallasAIHQ",
+        "NorthwindLabsHQ",
         "RivalHQ_Slot_03",
         "RivalHQ_Slot_04"
       ],

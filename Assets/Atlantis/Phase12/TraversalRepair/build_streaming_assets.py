@@ -159,7 +159,7 @@ def main():
 
     manifest["traversal"]["triangles"] = [
         triangle for triangle in manifest["traversal"]["triangles"]
-        if not triangle["source"].startswith(("Tech_Ring_Phase12", "TechUnicornBridge_Repaired", "PrimaryRouteSupport_Phase12"))
+        if not triangle["source"].startswith(("Tech_Ring_Phase12", "TechUnicornBridge_Repaired", "PrimaryRouteSupport_Phase12", "InteractionSupport_Phase13"))
     ]
 
     for triangle in manifest["traversal"]["triangles"]:
@@ -181,6 +181,12 @@ def main():
     manifest["traversal"]["triangles"] += ribbon(
         progression, 3.0, "PrimaryRouteSupport", "PrimaryRouteSupport_Phase12", "collisionOnly"
     )
+    for name,point in (("Pallas",[220,15,-268]),("Northwind",[-100,15,-486])):
+        x,y,z=point;size=4
+        manifest["traversal"]["triangles"] += [
+            {"district":"TechCore","source":f"InteractionSupport_Phase13_{name}","surfaceClass":"collisionOnly","points":[[x-size,y,z-size],[x+size,y,z+size],[x+size,y,z-size]]},
+            {"district":"TechCore","source":f"InteractionSupport_Phase13_{name}","surfaceClass":"collisionOnly","points":[[x-size,y,z-size],[x-size,y,z+size],[x+size,y,z+size]]},
+        ]
     manifest["traversal"]["surfaces"] = [
         {"district": district, "source": source, "classification": classification}
         for district, source, classification in sorted({
@@ -210,8 +216,9 @@ def main():
             {"from":"TechCore","to":"UnicornHeights","boundary":[360,15,-470]},
         ],
         "semanticAnchors": {
-            "CommerceDistrict":["RivalHQ_Slot_05"], "VentureDistrict":["VentureHall"],
-            "MediaDistrict":["TechComTower","SignalTV"], "TechCore":["TheSpire","RivalHQ_Slot_03","RivalHQ_Slot_04"],
+            "FounderDistrict":["FounderGarageSlot"],
+            "CommerceDistrict":["FlashpointHQ","RivalHQ_Slot_05"], "VentureDistrict":["VentureHall"],
+            "MediaDistrict":["TechComTower","SignalTV"], "TechCore":["TheSpire","PallasAIHQ","NorthwindLabsHQ","RivalHQ_Slot_03","RivalHQ_Slot_04"],
             "UnicornHeights":["PlayerUnicornHQSlot"]
         },
     }

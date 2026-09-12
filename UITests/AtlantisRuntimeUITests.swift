@@ -42,5 +42,40 @@ final class AtlantisRuntimeUITests: XCTestCase {
       Thread.sleep(forTimeInterval:1);capture("Atlantis_\(camera)",app)
     }
   }
+  func testWorldInteractionsRouteToCanonicalScreensAndRestoreAtlantis() {
+    continueAfterFailure=false
+    let app=XCUIApplication();app.launchArguments=["--atlantis-realitykit","--atlantis-batched-assets"];app.launch()
+    let status=app.staticTexts["atlantis.debug.benchmarkStatus"];XCTAssertTrue(status.waitForExistence(timeout:30))
+    XCTAssertEqual(XCTWaiter.wait(for:[XCTNSPredicateExpectation(predicate:NSPredicate(format:"label == %@","Founder ready"),object:status)],timeout:45),.completed)
+
+    roundTrip(app,targetID:"atlantis.interaction.founderGarage",approachLabel:nil,routeID:"founderGarage",screenshot:"Atlantis_Phase13_Garage")
+    roundTrip(app,targetID:"atlantis.interaction.techCom",approachLabel:"Approach Open Tech.com",routeID:"techCom",screenshot:"Atlantis_Phase13_TechCom")
+    roundTrip(app,targetID:"atlantis.interaction.ventureHall",approachLabel:"Approach Enter Venture Hall",routeID:"venture",screenshot:"Atlantis_Phase13_Venture")
+    roundTrip(app,targetID:"atlantis.interaction.signalTV",approachLabel:"Approach Inspect Signal TV",routeID:"signalTV",screenshot:"Atlantis_Phase13_SignalTV")
+    roundTrip(app,targetID:"atlantis.interaction.pallasAI",approachLabel:"Approach Inspect Pallas AI",routeID:"rival.pallas",screenshot:"Atlantis_Phase13_Pallas")
+    roundTrip(app,targetID:"atlantis.interaction.northwindLabs",approachLabel:"Approach Inspect Northwind Labs",routeID:"rival.northwind",screenshot:"Atlantis_Phase13_Northwind")
+    roundTrip(app,targetID:"atlantis.interaction.flashpoint",approachLabel:"Approach Inspect Flashpoint",routeID:"rival.flashpoint",screenshot:"Atlantis_Phase13_Flashpoint")
+    roundTrip(app,targetID:"atlantis.interaction.playerHQ",approachLabel:"Approach Inspect Future Unicorn HQ",routeID:"playerHQ",screenshot:"Atlantis_Phase13_PlayerHQ")
+  }
+  private func roundTrip(_ app:XCUIApplication,targetID:String,approachLabel:String?,routeID:String,screenshot:String) {
+    if let approachLabel {
+      let menu=app.buttons["atlantis.debug.interactions"];XCTAssertTrue(menu.waitForExistence(timeout:10));menu.tap()
+      let approach=app.buttons[approachLabel];XCTAssertTrue(approach.waitForExistence(timeout:10));approach.tap()
+    }
+    let prompt=app.buttons[targetID];XCTAssertTrue(prompt.waitForExistence(timeout:45))
+    let position=app.staticTexts["atlantis.debug.streaming.position"].label
+    prompt.tap()
+    XCTAssertTrue(app.staticTexts["atlantis.canonical.\(routeID)"].waitForExistence(timeout:30))
+    XCTAssertTrue(app.buttons["atlantis.interaction.return"].exists)
+    capture(screenshot,app)
+    if routeID=="founderGarage" {
+      let computer=app.buttons["founder-desk-device-computer"];XCTAssertTrue(computer.waitForExistence(timeout:15));computer.tap()
+      let lookOut=app.buttons["founder-computer-look-out"];XCTAssertTrue(lookOut.waitForExistence(timeout:15));lookOut.tap()
+      XCTAssertTrue(computer.waitForExistence(timeout:15))
+    }
+    app.buttons["atlantis.interaction.return"].tap()
+    let restored=app.staticTexts["atlantis.debug.streaming.position"]
+    XCTAssertTrue(restored.waitForExistence(timeout:30));XCTAssertEqual(restored.label,position)
+  }
   private func capture(_ name:String,_ app:XCUIApplication) {let attachment=XCTAttachment(screenshot:app.screenshot());attachment.name=name;attachment.lifetime = .keepAlways;add(attachment)}
 }

@@ -42,7 +42,7 @@ enum AtlantisImportExperiment {
   }
 }
 
-enum AtlantisDistrict: String, CaseIterable, Codable, Identifiable {
+enum AtlantisDistrict: String, CaseIterable, Codable, Identifiable, Sendable {
   case founderDistrict = "FounderDistrict", startupRow = "StartupRow", commerceDistrict = "CommerceDistrict"
   case ventureDistrict = "VentureDistrict", mediaDistrict = "MediaDistrict", techCore = "TechCore", unicornHeights = "UnicornHeights"
   var id: String { rawValue }
@@ -65,6 +65,86 @@ enum AtlantisDistrictLoadState: Equatable {
 }
 
 enum AtlantisLocomotionState: String, Codable { case standing, walking }
+
+enum AtlantisInteractionIntent: Equatable, Sendable {
+  case enterFounderGarage
+  case openTechCom
+  case openVenture
+  case openSignalTV
+  case inspectRival(rivalID: String)
+  case inspectPlayerHQ
+}
+
+enum AtlantisInteractionAvailability: Equatable, Sendable {
+  case available
+  case unavailable(String)
+}
+
+struct AtlantisInteractionDefinition: Identifiable, Equatable, Sendable {
+  let id: String
+  let district: AtlantisDistrict
+  let anchorName: String
+  let intent: AtlantisInteractionIntent
+  let activationPosition: SIMD3<Float>
+  let activationRadius: Float
+  let minimumFacingDot: Float?
+  let priority: Int
+  let accessibilityLabel: String
+  var availability: AtlantisInteractionAvailability = .available
+
+  static let all: [Self] = [
+    .init(id:"atlantis.interaction.founderGarage",district:.founderDistrict,anchorName:"FounderGarageSlot",intent:.enterFounderGarage,activationPosition:[-875,8,1030],activationRadius:12,minimumFacingDot:0.35,priority:300,accessibilityLabel:"Enter Founder Garage"),
+    .init(id:"atlantis.interaction.techCom",district:.mediaDistrict,anchorName:"TechComTower",intent:.openTechCom,activationPosition:[835,14.7,-184],activationRadius:4,minimumFacingDot:nil,priority:200,accessibilityLabel:"Open Tech.com"),
+    .init(id:"atlantis.interaction.ventureHall",district:.ventureDistrict,anchorName:"VentureHall",intent:.openVenture,activationPosition:[-520,14.7,-66],activationRadius:4,minimumFacingDot:nil,priority:250,accessibilityLabel:"Enter Venture Hall"),
+    .init(id:"atlantis.interaction.signalTV",district:.mediaDistrict,anchorName:"SignalTV",intent:.openSignalTV,activationPosition:[860,14.7,-428],activationRadius:4,minimumFacingDot:nil,priority:200,accessibilityLabel:"Inspect Signal TV"),
+    .init(id:"atlantis.interaction.pallasAI",district:.techCore,anchorName:"PallasAIHQ",intent:.inspectRival(rivalID:"pallas"),activationPosition:[220,15,-268],activationRadius:6,minimumFacingDot:nil,priority:100,accessibilityLabel:"Inspect Pallas AI"),
+    .init(id:"atlantis.interaction.northwindLabs",district:.techCore,anchorName:"NorthwindLabsHQ",intent:.inspectRival(rivalID:"northwind"),activationPosition:[-100,15,-486],activationRadius:6,minimumFacingDot:nil,priority:100,accessibilityLabel:"Inspect Northwind Labs"),
+    .init(id:"atlantis.interaction.flashpoint",district:.commerceDistrict,anchorName:"FlashpointHQ",intent:.inspectRival(rivalID:"flashpoint"),activationPosition:[476,14.7,252],activationRadius:5,minimumFacingDot:nil,priority:100,accessibilityLabel:"Inspect Flashpoint"),
+    .init(id:"atlantis.interaction.playerHQ",district:.unicornHeights,anchorName:"PlayerUnicornHQSlot",intent:.inspectPlayerHQ,activationPosition:[970,85,-850],activationRadius:8,minimumFacingDot:nil,priority:100,accessibilityLabel:"Inspect Future Unicorn HQ")
+  ]
+
+  static func definitions(for district: AtlantisDistrict) -> [Self] { all.filter {$0.district == district} }
+}
+
+struct AtlantisInteractionCandidateScore: Equatable, Sendable {
+  let id: String
+  let priority: Int
+  let distance: Float
+}
+
+enum AtlantisInteractionSelectionPolicy {
+  static func select(_ candidates: [AtlantisInteractionCandidateScore]) -> String? {
+    candidates.sorted {
+      if $0.priority != $1.priority {return $0.priority > $1.priority}
+      if $0.distance != $1.distance {return $0.distance < $1.distance}
+      return $0.id < $1.id
+    }.first?.id
+  }
+}
+
+enum AtlantisCanonicalRoute: Identifiable, Equatable, Sendable {
+  case founderGarage, techCom, venture, signalTV, rival(String), playerHQ
+  var id: String {
+    switch self {
+    case .founderGarage: "founderGarage"
+    case .techCom: "techCom"
+    case .venture: "venture"
+    case .signalTV: "signalTV"
+    case .rival(let id): "rival.\(id)"
+    case .playerHQ: "playerHQ"
+    }
+  }
+  static func resolve(_ intent: AtlantisInteractionIntent, availableRivalIDs: Set<String>) -> Self? {
+    switch intent {
+    case .enterFounderGarage: .founderGarage
+    case .openTechCom: .techCom
+    case .openVenture: .venture
+    case .openSignalTV: .signalTV
+    case .inspectRival(let rivalID): availableRivalIDs.contains(rivalID) ? .rival(rivalID) : nil
+    case .inspectPlayerHQ: .playerHQ
+    }
+  }
+}
 
 struct AtlantisResidencyPlan: Equatable {
   let previous: AtlantisDistrict?

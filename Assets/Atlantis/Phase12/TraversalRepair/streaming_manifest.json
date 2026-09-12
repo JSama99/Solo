@@ -37,7 +37,7 @@
   "residencyPolicy": "previous + current + next",
   "surfaceCounts": {
     "walkable": 87,
-    "collisionOnly": 28,
+    "collisionOnly": 30,
     "visualOnly": 19
   },
   "bridge": {
