@@ -43,3 +43,6 @@ build-*/
 *.dSYM
 *.zip
 DerivedData/
+
+# Xcode Instruments traces
+*.trace/
