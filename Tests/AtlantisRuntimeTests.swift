@@ -327,6 +327,144 @@ final class AtlantisRuntimeTests: XCTestCase {
     XCTAssertTrue(enteredTech)
     XCTAssertEqual(store.stats,stats);XCTAssertEqual(store.randomNumberGenerator,rng);XCTAssertEqual(GameStore.saveVersion,19);w.stop()
   }
+  func testLivingWorldProfilesFollowDistrictAndDayPhase() {
+    XCTAssertEqual(AtlantisLivingWorldPresentationAdapter.profile(district:.startupRow,phase:.morning).pedestrians,6)
+    XCTAssertEqual(AtlantisLivingWorldPresentationAdapter.profile(district:.startupRow,phase:.day).pedestrians,10)
+    XCTAssertEqual(AtlantisLivingWorldPresentationAdapter.profile(district:.startupRow,phase:.evening).pedestrians,8)
+    XCTAssertEqual(AtlantisLivingWorldPresentationAdapter.profile(district:.startupRow,phase:.night).pedestrians,3)
+    XCTAssertEqual(AtlantisLivingWorldPresentationAdapter.profile(district:.commerceDistrict,phase:.day).vehicles,2)
+    XCTAssertLessThan(AtlantisLivingWorldPresentationAdapter.profile(district:.unicornHeights,phase:.day).pedestrians,AtlantisLivingWorldPresentationAdapter.profile(district:.startupRow,phase:.day).pedestrians)
+  }
+  func testLivingWorldPresentationSeedIsDeterministicAndIndependent() {
+    let a=(0..<20).map{AtlantisPresentationSeed.value("Startup",index:$0)},b=(0..<20).map{AtlantisPresentationSeed.value("Startup",index:$0)}
+    XCTAssertEqual(a,b);XCTAssertEqual(Set(a).count,20);XCTAssertNotEqual(a,(0..<20).map{AtlantisPresentationSeed.value("Commerce",index:$0)})
+  }
+  func testLivingWorldSemanticAnchorsAndRouteOwnershipAreStable() {
+    let anchors=AtlantisLivingWorldPresentationAdapter.activityAnchors,routes=AtlantisLivingWorldPresentationAdapter.routes
+    XCTAssertEqual(anchors.count,7);XCTAssertEqual(Set(anchors.map(\.id)).count,7);XCTAssertEqual(Set(anchors.map(\.district)),Set(AtlantisDistrict.allCases))
+    XCTAssertTrue(routes.allSatisfy{$0.points.count>1});XCTAssertEqual(Set(routes.filter{$0.kind == .vehicle}.map(\.district)),[.commerceDistrict])
+    XCTAssertEqual(routes.filter{$0.district == .startupRow && $0.kind == .pedestrian}.count,2)
+  }
+  func testLivingWorldResidencyActivationUnloadAndPoolReuse() {
+    let population=AtlantisLivingWorldDistrictPopulation();population.isEnabled=true
+    population.setBenchmarkPopulation(district:.startupRow,pedestrians:10,vehicles:0)
+    population.reconcile(residents:[.startupRow],current:.startupRow,phase:.day,playerPosition:[-460,15,340],immediate:true)
+    XCTAssertEqual(population.activePedestrians,10);XCTAssertEqual(population.root.children.count,10);let allocated=population.allocatedPedestrians
+    population.districtDidUnload(.startupRow);XCTAssertEqual(population.activeActorCount,0);XCTAssertEqual(population.pooledPedestrians,10);XCTAssertEqual(population.root.children.count,0)
+    population.reconcile(residents:[.startupRow],current:.startupRow,phase:.day,playerPosition:[-460,15,340],immediate:true)
+    XCTAssertEqual(population.activePedestrians,10);XCTAssertEqual(population.allocatedPedestrians,allocated);XCTAssertEqual(population.reusedPedestrians,10)
+  }
+  func testLivingWorldLateLoadUsesCurrentPhaseAndGraduallyAdjusts() {
+    let population=AtlantisLivingWorldDistrictPopulation();population.isEnabled=true
+    population.reconcile(residents:[.startupRow],current:.startupRow,phase:.night,playerPosition:[-460,15,340],immediate:true)
+    XCTAssertEqual(population.activePedestrians,3)
+    population.reconcile(residents:[.startupRow],current:.startupRow,phase:.day,playerPosition:[-460,15,340])
+    XCTAssertEqual(population.activePedestrians,5,"Normal phase changes add at most two actors per reconcile")
+  }
+  func testLivingWorldVehiclesAreCommerceOwnedNonblockingPresentation() {
+    let population=AtlantisLivingWorldDistrictPopulation();population.setBenchmarkPopulation(district:.commerceDistrict,pedestrians:5,vehicles:2)
+    population.reconcile(residents:[.commerceDistrict],current:.commerceDistrict,phase:.day,playerPosition:[300,15,190],immediate:true)
+    XCTAssertEqual(population.activePedestrians,5);XCTAssertEqual(population.activeVehicles,2);XCTAssertEqual(population.activeEntityIDs.count,7);XCTAssertEqual(population.root.children.count,7)
+    XCTAssertTrue(population.root.children.allSatisfy{$0.components[CollisionComponent.self] == nil})
+  }
+  func testLivingWorldDoesNotEnterInteractionRegistryOrConsumeCanonicalRNG() async throws {
+    let store=GameStore(),rng=store.randomNumberGenerator,stats=store.stats,w=AtlantisRealityWorld(manifest:try .load())
+    await w.loader.load(.startupRow)?.value;let registered=w.interactionRegistry.registeredIDs
+    w.livingWorld.isEnabled=true;w.livingWorld.setBenchmarkPopulation(district:.startupRow,pedestrians:20,vehicles:0)
+    w.livingWorld.reconcile(residents:w.streaming.residents,current:.startupRow,phase:.day,playerPosition:[-460,15,340],immediate:true)
+    XCTAssertEqual(w.livingWorld.activePedestrians,20);XCTAssertEqual(w.interactionRegistry.registeredIDs,registered)
+    XCTAssertTrue(w.livingWorld.root.children.allSatisfy{!$0.name.hasPrefix("atlantis.interaction")})
+    XCTAssertEqual(store.randomNumberGenerator,rng);XCTAssertEqual(store.stats,stats);w.stop()
+  }
+  func testLivingWorldInteractionRoundTripKeepsPopulationAndWorldRoot() async throws {
+    let w=AtlantisRealityWorld(manifest:try .load());await w.loader.load(.founderDistrict)?.value
+    w.phase = .evening;w.applyLighting();w.livingWorld.isEnabled=true;w.livingWorld.reconcile(residents:w.streaming.residents,current:.founderDistrict,phase:w.phase,playerPosition:[-875,8,1041],immediate:true)
+    let actors=w.livingWorld.activeActorCount,ids=w.livingWorld.activeEntityIDs,root=w.root
+    let approached=await w.debugApproachInteraction("atlantis.interaction.founderGarage");XCTAssertTrue(approached);XCTAssertEqual(w.beginInteraction(),.enterFounderGarage)
+    XCTAssertTrue(w.returnFromInteraction());XCTAssertEqual(w.livingWorld.activeActorCount,actors);XCTAssertEqual(w.livingWorld.activeEntityIDs,ids);XCTAssertTrue(w.root===root);w.stop()
+  }
+  func testPublicSnapshotExcludesHiddenRivalTruthAndDoesNotMutateStore() {
+    let store=GameStore(),rng=store.randomNumberGenerator,stats=store.stats
+    store.techComRivals=[.init(id:"pallas",name:"Pallas AI",claimedTrackRecord:40,actualTrackRecord:2,claimedRevenue:100,actualRevenue:1,claimedMomentum:90,actualMomentum:2)]
+    let before=AtlantisWorldSignalSnapshot.read(store)
+    store.techComRivals[0].actualMomentum=99;store.techComRivals[0].actualRevenue=99999
+    store.techComRivals[0].actualTrackRecord=100;store.techComRivals[0].isVerified=true
+    XCTAssertEqual(before,.read(store));XCTAssertEqual(store.stats,stats)
+    XCTAssertEqual(store.randomNumberGenerator,rng);XCTAssertEqual(GameStore.saveVersion,19)
+  }
+  func testFourFixturesProduceDifferentStartupWorldAndDistrictEmphasis() {
+    let values=AtlantisLivingWorldFixture.allCases.map{AtlantisWorldReactionAdapter.derive($0.snapshot,district:.startupRow,phase:.day)}
+    XCTAssertEqual(values.map(\.reaction),[.ordinary,.interest,.rival,.scrutiny])
+    XCTAssertGreaterThan(values[1].pedestrians,values[0].pedestrians)
+    XCTAssertTrue(values[2].detail.contains("Pallas AI"));XCTAssertEqual(values[2].encounter,.founderRumor)
+    XCTAssertEqual(values[1].encounter,.reporter);XCTAssertEqual(values[3].encounter,.customer)
+    let surge=AtlantisLivingWorldFixture.rivalSurge.snapshot
+    XCTAssertEqual(AtlantisWorldReactionAdapter.derive(surge,district:.techCore,phase:.day).reaction,.rival)
+    XCTAssertEqual(AtlantisWorldReactionAdapter.derive(surge,district:.ventureDistrict,phase:.day).reaction,.ordinary)
+    let positive=AtlantisLivingWorldFixture.spotlight.snapshot
+    XCTAssertGreaterThan(AtlantisWorldReactionAdapter.derive(positive,district:.startupRow,phase:.day).pedestrians,AtlantisWorldReactionAdapter.derive(positive,district:.startupRow,phase:.night).pedestrians)
+  }
+  func testDirectorEncountersHaveProximityCooldownAndUnloadLifetime() {
+    let director=AtlantisLivingWorldDirector();director.population.isEnabled=true;director.fixture = .rivalSurge
+    director.reconcile(residents:[.startupRow],current:.startupRow,phase:.day,position:[-460,14.45,336],immediate:true)
+    XCTAssertEqual(director.activeEncounters,1);XCTAssertTrue(director.encounterLine.contains("Pallas AI"))
+    XCTAssertEqual(director.activeDisplays,1)
+    for _ in 0..<28 {director.advance(delta:0.25,residents:[.startupRow],current:.startupRow,phase:.day,position:[-460,14.45,336])}
+    XCTAssertEqual(director.activeEncounters,0)
+    director.reconcile(residents:[.startupRow],current:.startupRow,phase:.day,position:[-460,14.45,336])
+    XCTAssertEqual(director.activeEncounters,0,"Cooldown prevents immediate replay")
+    director.districtDidUnload(.startupRow)
+    XCTAssertEqual(director.activeDisplays,0);XCTAssertEqual(director.population.activeActorCount,0)
+  }
+  func testDirectorLODAndRepeatedTransitionsStayWithinGlobalPoolBounds() {
+    let director=AtlantisLivingWorldDirector();director.population.isEnabled=true;director.fixture = .spotlight
+    for _ in 0..<8 {
+      for district in [AtlantisDistrict.startupRow,.commerceDistrict,.founderDistrict] {
+        let anchor=AtlantisLivingWorldPresentationAdapter.activityAnchors.first{$0.district==district}!
+        director.reconcile(residents:[.startupRow,.commerceDistrict,.founderDistrict],current:district,phase:.day,position:anchor.position,immediate:true)
+        XCTAssertLessThanOrEqual(director.population.activePedestrians,10)
+        XCTAssertLessThanOrEqual(director.population.allocatedPedestrians,10)
+        XCTAssertLessThanOrEqual(director.population.allocatedVehicles,2)
+      }
+    }
+    director.reconcile(residents:[.startupRow],current:.startupRow,phase:.day,position:[-160,14.45,340],immediate:true)
+    XCTAssertEqual(director.population.activePedestrians,2)
+    director.reconcile(residents:[.startupRow],current:.startupRow,phase:.day,position:[1000,14.45,340],immediate:true)
+    XCTAssertEqual(director.population.activePedestrians,0);XCTAssertEqual(director.activeEncounters,0)
+  }
+  func testActorRouteTurnsWithoutEndpointTeleportAndReduceMotionKeepsPosition() {
+    let actor=AtlantisAmbientActor(kind:.pedestrian,index:0)
+    let route=AtlantisAmbientRoute(id:"turn",district:.startupRow,kind:.pedestrian,points:[[0,0,0],[10,0,0]])
+    actor.configure(district:.startupRow,route:route,index:0,seed:1);actor.behavior = .walk;actor.speed=1;actor.progress=0.999
+    actor.update(delta:0,reduceMotion:true);let before=actor.entity.position
+    actor.update(delta:0.1,reduceMotion:true)
+    XCTAssertLessThan(simd_distance(before,actor.entity.position),0.11)
+    XCTAssertEqual(actor.entity.position.y,0)
+  }
+  func testBenchmarkOverrideIsCappedAndReturningToNormalImmediatelyHonorsBudget() {
+    let population=AtlantisLivingWorldDistrictPopulation()
+    population.setBenchmarkPopulation(district:.startupRow,pedestrians:1000,vehicles:100)
+    population.reconcile(residents:[.startupRow],current:.startupRow,phase:.day,playerPosition:[-460,14.45,340],immediate:true)
+    XCTAssertEqual(population.activePedestrians,20)
+    population.clearBenchmarkPopulation()
+    population.reconcile(residents:[.startupRow],current:.startupRow,phase:.day,playerPosition:[-460,14.45,340])
+    XCTAssertLessThanOrEqual(population.activePedestrians,10)
+  }
+  func testAmbientRoutesHaveContinuousWalkableSupportAndAvoidBuildingEnvelopes() throws {
+    let manifest=try AtlantisAssetManifest.load()
+    let walkable=manifest.traversal.triangles.filter{$0.surfaceClass == .walkable}
+    let grounding=AtlantisGrounding(traversal:.init(triangles:walkable,barriers:manifest.traversal.barriers,routes:[],surfaces:[]))
+    for route in AtlantisLivingWorldPresentationAdapter.routes {
+      for (a,b) in zip(route.points,route.points.dropFirst()) {
+        for sample in 0...20 {
+          let point=simd_mix(a,b,SIMD3<Float>(repeating:Float(sample)/20))
+          let height=try XCTUnwrap(grounding.height(at:point,loaded:[route.district.rawValue],referenceHeight:point.y),route.id)
+          XCTAssertEqual(height,point.y,accuracy:0.02,route.id)
+          XCTAssertFalse(grounding.blocked(point,loaded:[route.district.rawValue]),route.id)
+        }
+      }
+    }
+  }
   private func models(_ e: Entity)->[ModelComponent] { (e.components[ModelComponent.self].map{[$0]} ?? [])+e.children.flatMap{models($0)} }
   private final class Controlled: AtlantisDistrictLoading {
     var count=0

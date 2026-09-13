@@ -180,6 +180,213 @@ struct AtlantisWorldPresentationModel: Equatable {
   var dayPhase: FounderEnvironmentTimeState = .day
 }
 
+enum AtlantisAmbientActorKind: String, Codable, Sendable { case pedestrian, vehicle }
+enum AtlantisAmbientBehavior: String, CaseIterable, Codable, Sendable { case walk, idle, phoneIdle, talkGesture }
+enum AtlantisActivityType: String, Codable, Sendable { case passThrough, smallGathering, standingPair, arrivalDeparture }
+
+struct AtlantisLivingWorldProfile: Equatable, Sendable {
+  let pedestrians: Int
+  let vehicles: Int
+  let language: String
+}
+
+struct AtlantisActivityAnchorDefinition: Identifiable, Equatable, Sendable {
+  let id: String
+  let district: AtlantisDistrict
+  let type: AtlantisActivityType
+  let position: SIMD3<Float>
+  let radius: Float
+  let maximumActors: Int
+  let priority: Int
+}
+
+struct AtlantisAmbientRoute: Identifiable, Equatable, Sendable {
+  let id: String
+  let district: AtlantisDistrict
+  let kind: AtlantisAmbientActorKind
+  let points: [SIMD3<Float>]
+}
+
+enum AtlantisLivingWorldPresentationAdapter {
+  static let pedestrianBudget = 10
+  static let vehicleBudget = 2
+
+  static func profile(district: AtlantisDistrict, phase: FounderEnvironmentTimeState) -> AtlantisLivingWorldProfile {
+    let counts: [FounderEnvironmentTimeState:(Int,Int)]
+    let language: String
+    switch district {
+    case .founderDistrict: counts=[.morning:(3,0),.day:(4,0),.evening:(3,0),.night:(1,0)];language="low, neighborhood"
+    case .startupRow: counts=[.morning:(6,0),.day:(10,0),.evening:(8,0),.night:(3,0)];language="high founder energy"
+    case .commerceDistrict: counts=[.morning:(7,1),.day:(10,2),.evening:(8,2),.night:(4,1)];language="high commercial movement"
+    case .ventureDistrict: counts=[.morning:(4,0),.day:(6,0),.evening:(5,0),.night:(2,0)];language="moderate, formal"
+    case .mediaDistrict: counts=[.morning:(5,0),.day:(8,0),.evening:(6,0),.night:(2,0)];language="medium-high public frontage"
+    case .techCore: counts=[.morning:(4,0),.day:(6,0),.evening:(5,0),.night:(2,0)];language="moderate technical"
+    case .unicornHeights: counts=[.morning:(2,0),.day:(3,0),.evening:(2,0),.night:(1,0)];language="low, intentional"
+    }
+    let value=counts[phase] ?? (0,0)
+    return .init(pedestrians:value.0,vehicles:value.1,language:language)
+  }
+
+  static let activityAnchors: [AtlantisActivityAnchorDefinition] = [
+    .init(id:"atlantis.activity.founderPlaza",district:.founderDistrict,type:.passThrough,position:[-875,8.8,850],radius:70,maximumActors:4,priority:20),
+    .init(id:"atlantis.activity.startupPlaza",district:.startupRow,type:.smallGathering,position:[-460,15,340],radius:115,maximumActors:20,priority:100),
+    .init(id:"atlantis.activity.commerceCustomerPlaza",district:.commerceDistrict,type:.arrivalDeparture,position:[300,14.8,190],radius:110,maximumActors:12,priority:90),
+    .init(id:"atlantis.activity.ventureForecourt",district:.ventureDistrict,type:.standingPair,position:[-490,14.8,-180],radius:80,maximumActors:6,priority:60),
+    .init(id:"atlantis.activity.mediaFrontage",district:.mediaDistrict,type:.smallGathering,position:[800,14.8,-325],radius:90,maximumActors:8,priority:70),
+    .init(id:"atlantis.activity.techPlaza",district:.techCore,type:.passThrough,position:[30,14.8,-330],radius:100,maximumActors:6,priority:50),
+    .init(id:"atlantis.activity.unicornArrival",district:.unicornHeights,type:.arrivalDeparture,position:[710,86,-850],radius:100,maximumActors:3,priority:30)
+  ]
+
+  static let routes: [AtlantisAmbientRoute] = [
+    .init(id:"PedestrianRoute_Founder_01",district:.founderDistrict,kind:.pedestrian,points:[[-940,8.45,850],[-810,8.45,850]]),
+    .init(id:"PedestrianRoute_Startup_01",district:.startupRow,kind:.pedestrian,points:[[-478,14.45,340],[-460,14.45,340],[-442,14.45,340]]),
+    .init(id:"PedestrianRoute_Startup_02",district:.startupRow,kind:.pedestrian,points:[[-478,14.45,336],[-460,14.45,336],[-442,14.45,336]]),
+    .init(id:"PedestrianRoute_Commerce_01",district:.commerceDistrict,kind:.pedestrian,points:[[280,14.45,190],[300,14.45,190],[320,14.45,190]]),
+    .init(id:"PedestrianRoute_Venture_01",district:.ventureDistrict,kind:.pedestrian,points:[[-650,14.45,-180],[-490,14.45,-180],[-325,14.45,-180]]),
+    .init(id:"PedestrianRoute_Media_01",district:.mediaDistrict,kind:.pedestrian,points:[[645,14.45,-325],[800,14.45,-325],[950,14.45,-325]]),
+    .init(id:"PedestrianRoute_Tech_01",district:.techCore,kind:.pedestrian,points:[[-250,14.45,-330],[30,14.45,-330],[310,14.45,-330]]),
+    .init(id:"PedestrianRoute_Unicorn_01",district:.unicornHeights,kind:.pedestrian,points:[[680,85.6,-775],[710,85.6,-775],[740,85.6,-775]]),
+    .init(id:"VehicleRoute_Commerce_01",district:.commerceDistrict,kind:.vehicle,points:[[270,14.45,184],[300,14.45,184],[330,14.45,184]]),
+    .init(id:"VehicleRoute_Commerce_02",district:.commerceDistrict,kind:.vehicle,points:[[330,14.45,196],[300,14.45,196],[270,14.45,196]])
+  ]
+
+  static func routes(district: AtlantisDistrict,kind: AtlantisAmbientActorKind) -> [AtlantisAmbientRoute] {
+    routes.filter{$0.district==district && $0.kind==kind}
+  }
+}
+
+// Values admitted at the single canonical boundary. No agent or actual rival
+// metrics, save payload, RNG, or mutable store reference crosses this boundary.
+struct AtlantisPublicRivalSignal: Equatable {
+  let id: String
+  let name: String
+  let claimedMomentum: Int
+}
+
+struct AtlantisWorldSignalSnapshot: Equatable {
+  let trust: Int
+  let momentum: Int
+  let coverage: Int
+  let venture: Int
+  let rivals: [AtlantisPublicRivalSignal]
+
+  @MainActor static func read(_ store: GameStore) -> Self {
+    .init(trust:store.stats.trust,momentum:store.stats.momentum,coverage:store.stats.coverage,
+          venture:store.venture,rivals:store.techComRivals.sorted{$0.id<$1.id}.map {
+      .init(id:$0.id,name:$0.name,claimedMomentum:$0.claimedMomentum)
+    })
+  }
+}
+
+enum AtlantisLivingWorldFixture: String, CaseIterable, Identifiable {
+  case baseline = "A · Baseline"
+  case spotlight = "B · Momentum + Coverage"
+  case rivalSurge = "C · Pallas public surge"
+  case scrutiny = "D · Negative public state"
+  var id: String {rawValue}
+  var accessibilityID: String {
+    switch self {
+    case .baseline: "baseline"
+    case .spotlight: "spotlight"
+    case .rivalSurge: "rivalSurge"
+    case .scrutiny: "scrutiny"
+    }
+  }
+  var snapshot: AtlantisWorldSignalSnapshot {
+    let rival=AtlantisPublicRivalSignal(id:"pallas",name:"Pallas AI",claimedMomentum:self == .rivalSurge ? 90:35)
+    switch self {
+    case .baseline,.rivalSurge: return .init(trust:60,momentum:45,coverage:0,venture:1,rivals:[rival])
+    case .spotlight: return .init(trust:85,momentum:90,coverage:80,venture:4,rivals:[rival])
+    case .scrutiny: return .init(trust:20,momentum:25,coverage:-80,venture:1,rivals:[rival])
+    }
+  }
+}
+
+enum AtlantisLivingWorldLOD: String {case near, mid, far}
+enum AtlantisLivingWorldTuning {
+  static let nearRadius: Float = 220
+  static let midRadius: Float = 450
+  static let decisionInterval = 0.5
+  static let midMotionInterval = 0.2
+  static let encounterRadius: Float = 22
+  static let encounterDuration = 6.0
+  static let encounterCooldown = 30.0
+  static func lod(distance: Float) -> AtlantisLivingWorldLOD {
+    distance <= nearRadius ? .near:distance <= midRadius ? .mid:.far
+  }
+}
+
+enum AtlantisPublicReaction: String {case ordinary, interest, scrutiny, rival}
+enum AtlantisAmbientEncounter: String, CaseIterable {case founderRumor, reporter, customer}
+struct AtlantisDistrictReaction: Equatable {
+  let district: AtlantisDistrict
+  let pedestrians: Int
+  let vehicles: Int
+  let reaction: AtlantisPublicReaction
+  let headline: String
+  let detail: String
+  let encounter: AtlantisAmbientEncounter?
+  let encounterLine: String
+}
+
+enum AtlantisWorldReactionAdapter {
+  // Each district has its own signal emphasis; the city is not multiplied globally.
+  static func derive(_ signal: AtlantisWorldSignalSnapshot,district: AtlantisDistrict,
+                     phase: FounderEnvironmentTimeState) -> AtlantisDistrictReaction {
+    let base=AtlantisLivingWorldPresentationAdapter.profile(district:district,phase:phase)
+    let press=abs(signal.coverage)>=40,negative=signal.trust<35 || signal.coverage <= -40
+    let momentum=signal.momentum>=70
+    let rival=signal.rivals.filter{$0.claimedMomentum>=70}.sorted{$0.id<$1.id}.first
+    let reaction:AtlantisPublicReaction
+    if negative {reaction = .scrutiny}
+    else if rival != nil && [.startupRow,.techCore].contains(district) {reaction = .rival}
+    else if (press && [.founderDistrict,.startupRow,.mediaDistrict].contains(district)) ||
+      (momentum && [.founderDistrict,.startupRow,.ventureDistrict].contains(district)) ||
+      (signal.trust>=75 && district == .commerceDistrict) || (signal.venture>=4 && district == .unicornHeights) {reaction = .interest}
+    else {reaction = .ordinary}
+    let baseline=max(1,base.pedestrians/2)
+    let count:Int
+    switch reaction {
+    case .ordinary: count=baseline
+    case .interest: count=base.pedestrians
+    case .rival: count=min(10,baseline+3)
+    case .scrutiny: count=press && district == .mediaDistrict ? base.pedestrians:max(2,baseline-1)
+    }
+    let headline:String,detail:String,encounter:AtlantisAmbientEncounter?,line:String
+    switch reaction {
+    case .rival:
+      headline="RIVAL WATCH";detail="\(rival!.name) · public Momentum \(rival!.claimedMomentum)"
+      encounter = .founderRumor;line="Founder: \(rival!.name) is reporting stronger Momentum on Tech.com."
+    case .scrutiny:
+      headline=press ? "SIGNAL TV · SCRUTINY":"CUSTOMER VOICES"
+      detail="Public confidence needs rebuilding"
+      encounter = district == .mediaDistrict && press ? .reporter:.customer
+      line=encounter == .reporter ? "Reporter: Public attention is critical. We are following the company.":"Customer: I need more confidence before recommending this company."
+    case .interest:
+      headline=district == .ventureDistrict ? "VENTURE · ARRIVALS":press ? "SIGNAL TV · SPOTLIGHT":"COMPANY · VISITORS"
+      detail=district == .commerceDistrict ? "Customer confidence is strong":"Company activity is drawing attention"
+      encounter=press && [.founderDistrict,.startupRow,.mediaDistrict].contains(district) ? .reporter:.customer
+      line=encounter == .reporter ? "Reporter: The company is attracting public attention.":"Customer: The company's public progress looks encouraging."
+    case .ordinary:
+      headline="\(district.title.uppercased()) · DAILY WIRE";detail="Public activity · Venture \(signal.venture)"
+      encounter=nil;line=""
+    }
+    return .init(district:district,pedestrians:count,vehicles:district == .commerceDistrict ? (reaction == .interest ? base.vehicles:min(1,base.vehicles)):0,
+                 reaction:reaction,headline:headline,detail:detail,encounter:encounter,encounterLine:line)
+  }
+}
+
+enum AtlantisPresentationSeed {
+  static func value(_ id: String,index: Int,seed: UInt64=0x534F4C4F) -> UInt64 {
+    var value=seed ^ UInt64(index &* 0x9E37)
+    for byte in id.utf8 {value ^= UInt64(byte);value &*= 1_099_511_628_211}
+    value ^= value >> 30;value &*= 0xBF58476D1CE4E5B9;value ^= value >> 27;value &*= 0x94D049BB133111EB;return value ^ (value >> 31)
+  }
+  static func unit(_ id: String,index: Int,seed: UInt64=0x534F4C4F) -> Float {
+    Float(value(id,index:index,seed:seed)%10_000)/10_000
+  }
+}
+
 /// Future GameStore adapter accepts only visible projections. The spike has no
 /// store reference, mutator, timer-driven day advancement, or progression copy.
 enum AtlantisPresentationAdapter {

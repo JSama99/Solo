@@ -2,6 +2,7 @@
 import RealityKit
 import SwiftUI
 import Observation
+import Darwin
 
 struct AtlantisFrameMeasurement: Codable {
   let name: String; let seconds: Double; let callbacks: Int; let approximateFPS: Double
@@ -43,6 +44,10 @@ struct AtlantisBenchmarkReport: Codable {
   var registeredInteractionTargets = 0
   var interactionCandidateEvaluations = 0
   var meanInteractionCandidateMicroseconds: Double = 0
+  var livingWorld: [AtlantisLivingWorldMeasurement] = []
+  var livingReactions: [String:[String:Double]] = [:]
+  var livingStreaming: [AtlantisLivingWorldTransitionMeasurement] = []
+  var livingPooling: [[String: Double]] = []
 }
 
 struct AtlantisStreamingMeasurement: Codable {
@@ -56,6 +61,20 @@ struct AtlantisInteractionMeasurement: Codable {
   let memoryBeforeMB: Double; let memoryAfterMB: Double; let registeredTargets: Int
   let worldRootCount: Int; let positionRestored: Bool; let headingRestored: Bool
   let phasePreserved: Bool; let residencyPreserved: Bool
+}
+
+struct AtlantisLivingWorldMeasurement: Codable {
+  let configuration: String; let pedestrians: Int; let vehicles: Int; let seconds: Double
+  let callbackSamples: Int; let meanCallbackMS: Double; let p95CallbackMS: Double
+  let meanPopulationUpdateMS: Double; let p95PopulationUpdateMS: Double
+  let processCPUPercent: Double; let memoryBeforeMB: Double; let memoryAfterMB: Double
+  let spawnHitchMS: Double; let thermalBefore: String; let thermalAfter: String
+  var gpuMetric = "Unavailable from in-process instrumentation; callback cadence is not GPU FPS"
+}
+
+struct AtlantisLivingWorldTransitionMeasurement: Codable {
+  let transition: String; let actorsBefore: Int; let actorsAfter: Int
+  let duplicateActors: Bool; let memoryBeforeMB: Double; let memoryAfterMB: Double; let result: String
 }
 
 struct AtlantisDayPhaseComponent: Component, Codable { var phase: String }
@@ -165,6 +184,348 @@ struct AtlantisInteractionReturnContext: Equatable {
   let residents: Set<AtlantisDistrict>
 }
 
+@MainActor
+final class AtlantisAmbientActor {
+  let entity=Entity()
+  let kind: AtlantisAmbientActorKind
+  var district: AtlantisDistrict?
+  var route: AtlantisAmbientRoute?
+  var behavior = AtlantisAmbientBehavior.idle
+  var progress: Float = 0
+  var speed: Float = 0
+  var animationPhase: Float = 0
+  private var animationElapsed: Float = 0
+  private static let pedestrianBody = MeshResource.generateBox(size:[0.34,0.86,0.24])
+  private static let pedestrianLeg = MeshResource.generateBox(size:[0.12,0.4,0.15])
+  private static let pedestrianHead = MeshResource.generateSphere(radius:0.20)
+  private static let vehicleBody = MeshResource.generateBox(size:[1.65,0.48,3.5])
+  private static let vehicleCabin = MeshResource.generateBox(size:[1.35,0.42,1.65])
+
+  init(kind: AtlantisAmbientActorKind,index: Int) {
+    self.kind=kind;entity.name="AtlantisAmbientPool.\(kind.rawValue).\(index)"
+    if kind == .pedestrian {
+      let palette:[UIColor]=[.systemTeal,.systemOrange,.systemPurple,.systemBlue]
+      let material=SimpleMaterial(color:palette[index%palette.count],roughness:0.8,isMetallic:false)
+      let body=ModelEntity(mesh:Self.pedestrianBody,materials:[material]);body.position.y=0.82
+      let head=ModelEntity(mesh:Self.pedestrianHead,materials:[SimpleMaterial(color:.systemBrown,roughness:0.9,isMetallic:false)]);head.position.y=1.47
+      entity.addChild(body);entity.addChild(head)
+      for x:Float in [-0.1,0.1] {let leg=ModelEntity(mesh:Self.pedestrianLeg,materials:[material]);leg.position=[x,0.2,0];entity.addChild(leg)}
+    } else {
+      let palette:[UIColor]=[.systemRed,.systemIndigo,.systemGray]
+      let body=ModelEntity(mesh:Self.vehicleBody,materials:[SimpleMaterial(color:palette[index%palette.count],roughness:0.55,isMetallic:true)]);body.position.y=0.45
+      let cabin=ModelEntity(mesh:Self.vehicleCabin,materials:[SimpleMaterial(color:.darkGray,roughness:0.35,isMetallic:true)]);cabin.position=[0,0.86,-0.15]
+      entity.addChild(body);entity.addChild(cabin)
+    }
+    entity.components.remove(CollisionComponent.self)
+  }
+
+  func configure(district: AtlantisDistrict,route: AtlantisAmbientRoute,index: Int,seed: UInt64) {
+    self.district=district;self.route=route
+    for child in entity.children { child.orientation = simd_quatf(angle:0,axis:[0,1,0]) }
+    let unit=AtlantisPresentationSeed.unit(route.id,index:index,seed:seed)
+    animationElapsed=0;progress=unit;animationPhase=AtlantisPresentationSeed.unit(route.id,index:index+71,seed:seed)*(.pi*2)
+    speed=kind == .vehicle ? 4.5+unit*1.5 : 0.72+unit*0.32
+    behavior=kind == .vehicle ? .walk : AtlantisAmbientBehavior.allCases[Int(AtlantisPresentationSeed.value(route.id,index:index,seed:seed)%UInt64(AtlantisAmbientBehavior.allCases.count))]
+    let scale:Float=kind == .vehicle ? 0.92+unit*0.12 : 0.92+unit*0.10
+    entity.scale=[scale,scale,scale];entity.isEnabled=true;update(delta:0,reduceMotion:false)
+  }
+
+  func deactivate() {district=nil;route=nil;entity.removeFromParent();entity.isEnabled=false}
+
+  func update(delta: Double,reduceMotion: Bool) {
+    guard let route,route.points.count>1 else{return}
+    let moving=kind == .vehicle || behavior == .walk
+    if moving {progress += speed*Float(delta)/max(1,routeLength(route));progress.formTruncatingRemainder(dividingBy:2)}
+    let routeProgress=progress<=1 ? progress:2-progress
+    let scaled=max(0,routeProgress)*Float(route.points.count-1),segment=min(route.points.count-2,Int(scaled)),t=scaled-Float(segment)
+    let a=route.points[segment],b=route.points[segment+1];entity.position=simd_mix(a,b,SIMD3<Float>(repeating:t))
+    let direction=(b-a)*(progress<=1 ? Float(1):Float(-1));if simd_length_squared(SIMD2<Float>(direction.x,direction.z))>0.001 {entity.orientation=simd_quatf(angle:atan2(direction.x,direction.z),axis:[0,1,0])}
+    guard kind == .pedestrian else{return}
+    if reduceMotion { entity.children.first?.orientation = .init();return }
+    animationElapsed += Float(min(max(delta,0),0.1))
+    let time=animationPhase+animationElapsed*3
+    switch behavior {
+    case .idle: entity.position.y += sin(time)*0.012
+    case .phoneIdle: entity.children.first?.orientation=simd_quatf(angle:-0.05+sin(time)*0.02,axis:[1,0,0])
+    case .talkGesture: entity.children.first?.orientation=simd_quatf(angle:sin(time)*0.06,axis:[0,0,1])
+    case .walk: entity.position.y += abs(sin(time))*0.025
+    }
+  }
+
+  private func routeLength(_ route: AtlantisAmbientRoute) -> Float {
+    zip(route.points,route.points.dropFirst()).reduce(0){$0+simd_distance($1.0,$1.1)}
+  }
+}
+
+@MainActor @Observable
+final class AtlantisLivingWorldDistrictPopulation {
+  let root=Entity()
+  private(set) var allocatedPedestrians=0
+  private(set) var allocatedVehicles=0
+  private(set) var reusedPedestrians=0
+  private(set) var reusedVehicles=0
+  private(set) var recycledActors=0
+  private(set) var lastReconcileMS:Double=0
+  private(set) var maximumSpawnHitchMS:Double=0
+  @ObservationIgnored private(set) var updateSamples:[Double]=[]
+  @ObservationIgnored private var active:[AtlantisDistrict:[AtlantisAmbientActor]]=[:]
+  @ObservationIgnored private var pedestrianPool:[AtlantisAmbientActor]=[]
+  @ObservationIgnored private var vehiclePool:[AtlantisAmbientActor]=[]
+  @ObservationIgnored private var benchmarkOverride:(district:AtlantisDistrict,pedestrians:Int,vehicles:Int)?
+  var isEnabled=false
+  var reduceMotion=false
+  var reactions:[AtlantisDistrict:AtlantisDistrictReaction]=[:]
+  private var lods:[AtlantisDistrict:AtlantisLivingWorldLOD]=[:]
+  private var midElapsed=0.0
+  let seed:UInt64=0x534F4C4F_41544C41
+
+  init(){root.name="AtlantisLivingWorld"}
+  var activePedestrians:Int {active.values.flatMap{$0}.filter{$0.kind == .pedestrian}.count}
+  var activeVehicles:Int {active.values.flatMap{$0}.filter{$0.kind == .vehicle}.count}
+  var pooledPedestrians:Int {pedestrianPool.count}
+  var pooledVehicles:Int {vehiclePool.count}
+  var activeActorCount:Int {activePedestrians+activeVehicles}
+  var residentDistrictCount:Int {active.keys.count}
+  var activeEntityIDs:Set<ObjectIdentifier> {Set(active.values.flatMap{$0}.map{ObjectIdentifier($0.entity)})}
+  var meanUpdateMicroseconds:Double {updateSamples.isEmpty ? 0:updateSamples.reduce(0,+)/Double(updateSamples.count)*1_000}
+  var p95UpdateMS:Double {let s=updateSamples.sorted();return s.isEmpty ? 0:s[min(s.count-1,Int(Double(s.count)*0.95))]}
+
+  func setBenchmarkPopulation(district:AtlantisDistrict,pedestrians:Int,vehicles:Int){isEnabled=true;benchmarkOverride=(district,min(20,max(0,pedestrians)),min(2,max(0,vehicles)))}
+  func clearBenchmarkPopulation(){benchmarkOverride=nil}
+  func resetUpdateMeasurements(){updateSamples=[];maximumSpawnHitchMS=0}
+
+  func districtDidUnload(_ district:AtlantisDistrict){release(district:district,kind:nil,count:Int.max)}
+
+  func reconcile(residents:Set<AtlantisDistrict>,current:AtlantisDistrict,phase:FounderEnvironmentTimeState,playerPosition:SIMD3<Float>,immediate:Bool=false) {
+    let start=DispatchTime.now().uptimeNanoseconds
+    for district in AtlantisDistrict.allCases where !residents.contains(district){districtDidUnload(district)}
+    guard isEnabled else {for district in AtlantisDistrict.allCases{districtDidUnload(district)};lastReconcileMS=milliseconds(since:start);return}
+    var remainingPedestrians=benchmarkOverride?.pedestrians ?? AtlantisLivingWorldPresentationAdapter.pedestrianBudget
+    var remainingVehicles=benchmarkOverride?.vehicles ?? AtlantisLivingWorldPresentationAdapter.vehicleBudget
+    let ordered=AtlantisDistrict.allCases.sorted {lhs,rhs in
+      if lhs==rhs{return false};if lhs==current{return true};if rhs==current{return false}
+      return anchor(for:lhs).priority>anchor(for:rhs).priority
+    }
+    var targets:[AtlantisDistrict:(pedestrians:Int,vehicles:Int)]=[:]
+    for district in ordered {
+      guard residents.contains(district) else{continue}
+      let anchor=anchor(for:district)
+      let lod=AtlantisLivingWorldTuning.lod(distance:simd_distance(SIMD2<Float>(anchor.position.x,anchor.position.z),SIMD2<Float>(playerPosition.x,playerPosition.z)))
+      lods[district]=lod
+      let profile=AtlantisLivingWorldPresentationAdapter.profile(district:district,phase:phase)
+      let requestedPedestrians:Int,requestedVehicles:Int
+      if let value=benchmarkOverride {
+        requestedPedestrians=value.district==district ? value.pedestrians:0;requestedVehicles=value.district==district ? value.vehicles:0
+      } else {
+        let desired=reactions[district]?.pedestrians ?? profile.pedestrians
+        requestedPedestrians=lod == .far ? 0:lod == .mid ? min(2,desired):min(desired,anchor.maximumActors)
+        requestedVehicles=lod == .near ? (reactions[district]?.vehicles ?? profile.vehicles):0
+      }
+      let pedestrians=min(requestedPedestrians,remainingPedestrians),vehicles=min(requestedVehicles,remainingVehicles)
+      remainingPedestrians-=pedestrians;remainingVehicles-=vehicles
+      targets[district]=(pedestrians,vehicles)
+    }
+    // Recycle first so handoff cannot temporarily exceed the global cap or
+    // allocate another district's population before its pool is available.
+    for district in ordered {
+      let target=targets[district] ?? (pedestrians:0,vehicles:0)
+      for (kind,count) in [(AtlantisAmbientActorKind.pedestrian,target.pedestrians),(.vehicle,target.vehicles)] {
+        let excess=self.count(district:district,kind:kind)-count
+        if excess>0 {
+          let overBudget=kind == .pedestrian ? activePedestrians>(benchmarkOverride?.pedestrians ?? 10):activeVehicles>(benchmarkOverride?.vehicles ?? 2)
+          release(district:district,kind:kind,count:immediate || overBudget ? excess:min(excess,2))
+        }
+      }
+    }
+    let pedestrianCap=benchmarkOverride?.pedestrians ?? AtlantisLivingWorldPresentationAdapter.pedestrianBudget
+    let vehicleCap=benchmarkOverride?.vehicles ?? AtlantisLivingWorldPresentationAdapter.vehicleBudget
+    for district in ordered {
+      let target=targets[district] ?? (pedestrians:0,vehicles:0)
+      let p=self.count(district:district,kind:.pedestrian),v=self.count(district:district,kind:.vehicle)
+      if p<target.pedestrians {adjust(district:district,kind:.pedestrian,target:min(target.pedestrians,p+max(0,pedestrianCap-activePedestrians)),maximumChange:immediate ? Int.max:2)}
+      if v<target.vehicles {adjust(district:district,kind:.vehicle,target:min(target.vehicles,v+max(0,vehicleCap-activeVehicles)),maximumChange:immediate ? Int.max:2)}
+    }
+    lastReconcileMS=milliseconds(since:start);maximumSpawnHitchMS=max(maximumSpawnHitchMS,lastReconcileMS)
+  }
+
+  func update(delta:Double) {
+    guard isEnabled else{return};let start=DispatchTime.now().uptimeNanoseconds
+    midElapsed += delta
+    let updateMid=midElapsed>=AtlantisLivingWorldTuning.midMotionInterval
+    for (district,actors) in active {
+      guard lods[district] != .mid || updateMid else{continue}
+      for actor in actors {actor.update(delta:lods[district] == .mid ? midElapsed:delta,reduceMotion:reduceMotion)}
+    }
+    if updateMid {midElapsed=0}
+    updateSamples.append(milliseconds(since:start));if updateSamples.count>1_200{updateSamples.removeFirst(200)}
+  }
+
+  func count(district:AtlantisDistrict,kind:AtlantisAmbientActorKind?=nil)->Int {
+    active[district,default:[]].filter{kind==nil || $0.kind==kind}.count
+  }
+  func center(district:AtlantisDistrict)->SIMD3<Float>? {
+    let actors=active[district,default:[]];guard !actors.isEmpty else{return nil}
+    return actors.reduce(SIMD3<Float>.zero){$0+$1.entity.position}/Float(actors.count)
+  }
+
+  private func anchor(for district:AtlantisDistrict)->AtlantisActivityAnchorDefinition {
+    AtlantisLivingWorldPresentationAdapter.activityAnchors.first{$0.district==district}!
+  }
+  private func adjust(district:AtlantisDistrict,kind:AtlantisAmbientActorKind,target:Int,maximumChange:Int) {
+    let count=self.count(district:district,kind:kind)
+    if count<target {
+      let additions=min(target-count,maximumChange)
+      for index in count..<(count+additions){spawn(district:district,kind:kind,index:index)}
+    } else if count>target {release(district:district,kind:kind,count:min(count-target,maximumChange))}
+  }
+  private func spawn(district:AtlantisDistrict,kind:AtlantisAmbientActorKind,index:Int) {
+    let routes=AtlantisLivingWorldPresentationAdapter.routes(district:district,kind:kind);guard !routes.isEmpty else{return}
+    let actor:AtlantisAmbientActor
+    if kind == .pedestrian,let pooled=pedestrianPool.popLast(){actor=pooled;reusedPedestrians+=1}
+    else if kind == .vehicle,let pooled=vehiclePool.popLast(){actor=pooled;reusedVehicles+=1}
+    else {actor=AtlantisAmbientActor(kind:kind,index:kind == .pedestrian ? allocatedPedestrians:allocatedVehicles);if kind == .pedestrian{allocatedPedestrians+=1}else{allocatedVehicles+=1}}
+    actor.entity.name="AtlantisAmbient.\(district.rawValue).\(kind.rawValue).\(index)"
+    actor.configure(district:district,route:routes[index%routes.count],index:index,seed:seed);root.addChild(actor.entity);active[district,default:[]].append(actor)
+  }
+  private func release(district:AtlantisDistrict,kind:AtlantisAmbientActorKind?,count:Int) {
+    guard var actors=active[district] else{return};var remaining=count,index=actors.count-1
+    while index>=0,remaining>0 {
+      let actor=actors[index]
+      if kind==nil || actor.kind==kind {actors.remove(at:index);actor.deactivate();if actor.kind == .pedestrian{pedestrianPool.append(actor)}else{vehiclePool.append(actor)};recycledActors+=1;remaining-=1}
+      index-=1
+    }
+    if actors.isEmpty{active.removeValue(forKey:district)}else{active[district]=actors}
+  }
+  private func milliseconds(since start:UInt64)->Double{Double(DispatchTime.now().uptimeNanoseconds-start)/1_000_000}
+}
+
+/// All living presentation is orchestrated here; this type never retains GameStore.
+@MainActor @Observable
+final class AtlantisLivingWorldDirector {
+  let population = AtlantisLivingWorldDistrictPopulation()
+  let root = Entity()
+  private(set) var signals = AtlantisLivingWorldFixture.baseline.snapshot
+  var fixture: AtlantisLivingWorldFixture? {didSet {if oldValue != fixture {encounterLine="";activeEncounters=0;encounterDistrict=nil;cooldowns=[:];encounterExpires=0}}}
+  private(set) var reactions: [AtlantisDistrict:AtlantisDistrictReaction] = [:]
+  private(set) var encounterLine = ""
+  private(set) var activeDisplays = 0
+  private(set) var activeEncounters = 0
+  private(set) var encounterActivations = 0
+  private(set) var decisionCostMS = 0.0
+  @ObservationIgnored private var displays: [AtlantisDistrict:AtlantisPublicDisplay] = [:]
+  @ObservationIgnored private var cooldowns: [AtlantisAmbientEncounter:Double] = [:]
+  @ObservationIgnored private var elapsed = 0.0
+  @ObservationIgnored private var nextDecision = 0.0
+  @ObservationIgnored private var encounterExpires = 0.0
+  @ObservationIgnored private var encounterDistrict: AtlantisDistrict?
+
+  init() {root.name="AtlantisLivingWorldDirector";root.addChild(population.root)}
+  func receive(_ snapshot: AtlantisWorldSignalSnapshot) {signals=snapshot}
+  var effectiveSignals: AtlantisWorldSignalSnapshot {fixture?.snapshot ?? signals}
+  var entityCount: Int {
+    func count(_ entity:Entity)->Int {1+entity.children.reduce(0){$0+count($1)}}
+    return count(root)
+  }
+
+  func advance(delta:Double,residents:Set<AtlantisDistrict>,current:AtlantisDistrict,
+               phase:FounderEnvironmentTimeState,position:SIMD3<Float>) {
+    elapsed += max(0,min(delta,0.25));population.update(delta:delta)
+    guard elapsed>=nextDecision else{return}
+    nextDecision=elapsed+AtlantisLivingWorldTuning.decisionInterval
+    reconcile(residents:residents,current:current,phase:phase,position:position)
+  }
+
+  func reconcile(residents:Set<AtlantisDistrict>,current:AtlantisDistrict,
+                 phase:FounderEnvironmentTimeState,position:SIMD3<Float>,immediate:Bool=false) {
+    let start=DispatchTime.now().uptimeNanoseconds
+    reactions=Dictionary(uniqueKeysWithValues:AtlantisDistrict.allCases.map {
+      ($0,AtlantisWorldReactionAdapter.derive(effectiveSignals,district:$0,phase:phase))
+    })
+    population.reactions=reactions
+    population.reconcile(residents:residents,current:current,phase:phase,playerPosition:position,immediate:immediate)
+    let encounterPosition=encounterDistrict.flatMap{displays[$0]?.root.position}
+    let leftEncounter=encounterPosition.map{simd_distance(SIMD2(position.x,position.z),SIMD2($0.x,$0.z))>AtlantisLivingWorldTuning.encounterRadius} ?? false
+    if elapsed>=encounterExpires || leftEncounter || !population.isEnabled || !residents.contains(encounterDistrict ?? current) {
+      encounterLine="";activeEncounters=0;encounterDistrict=nil
+    }
+    activeDisplays=0
+    for district in AtlantisDistrict.allCases {
+      let visible=population.isEnabled && residents.contains(district)
+      guard visible,let reaction=reactions[district] else {displays[district]?.root.isEnabled=false;continue}
+      let display:AtlantisPublicDisplay
+      if let existing=displays[district] {display=existing} else {
+        display=AtlantisPublicDisplay(district:district);displays[district]=display;root.addChild(display.root)
+      }
+      display.root.isEnabled=true;activeDisplays+=1
+      let distance=simd_distance(SIMD2(position.x,position.z),SIMD2(display.root.position.x,display.root.position.z))
+      if activeEncounters==0,distance<=AtlantisLivingWorldTuning.encounterRadius,
+         let kind=reaction.encounter,elapsed >= cooldowns[kind,default:0] {
+        encounterLine=reaction.encounterLine;encounterDistrict=district;activeEncounters=1
+        encounterActivations += 1
+        encounterExpires=elapsed+AtlantisLivingWorldTuning.encounterDuration
+        cooldowns[kind]=elapsed+AtlantisLivingWorldTuning.encounterCooldown
+      }
+      display.apply(reaction,phase:phase,line:encounterDistrict==district ? encounterLine:"")
+    }
+    decisionCostMS=Double(DispatchTime.now().uptimeNanoseconds-start)/1_000_000
+  }
+  func districtDidUnload(_ district:AtlantisDistrict) {
+    population.districtDidUnload(district);displays[district]?.root.isEnabled=false
+    if encounterDistrict==district {encounterDistrict=nil;encounterLine="";activeEncounters=0}
+    activeDisplays=displays.values.filter{$0.root.isEnabled}.count
+  }
+}
+
+/// One reusable, collision-free street display per district. Text changes only
+/// when public content changes. No video, per-display timers, or unbounded cache.
+@MainActor
+final class AtlantisPublicDisplay {
+  let root=Entity()
+  private let board=ModelEntity(mesh:.generateBox(size:[14,3.4,0.18]))
+  private let title=ModelEntity(),detail=ModelEntity(),line=ModelEntity()
+  private let mediaCamera=ModelEntity(mesh:.generateBox(size:[0.7,0.45,0.8]))
+  private let beacon=ModelEntity(mesh:.generateBox(size:[0.5,4,0.5]))
+  private var key=""
+  init(district:AtlantisDistrict) {
+    root.name="AtlantisPublicDisplay.\(district.rawValue)"
+    let route=AtlantisLivingWorldPresentationAdapter.routes(district:district,kind:.pedestrian)[0]
+    root.position=route.points[route.points.count/2]+SIMD3<Float>(0,0,-4)
+    board.position=[0,3.3,0];title.position=[-6.5,4.1,0.12];detail.position=[-6.5,3.3,0.12];line.position=[-6.5,2.3,0.12]
+    mediaCamera.position=[-8,1.5,2];beacon.position=[8,2,0]
+    for entity in [board,title,detail,line,mediaCamera,beacon] {root.addChild(entity)}
+    mediaCamera.model?.materials=[SimpleMaterial(color:.darkGray,isMetallic:false)]
+  }
+  func apply(_ reaction:AtlantisDistrictReaction,phase:FounderEnvironmentTimeState,line ambient:String) {
+    let newKey="\(reaction.headline)|\(reaction.detail)|\(ambient)|\(phase.rawValue)"
+    guard newKey != key else{return};key=newKey
+    let color:UIColor=switch reaction.reaction {case .ordinary:.darkGray;case .interest:.systemTeal;case .scrutiny:.systemOrange;case .rival:.systemPurple}
+    board.model?.materials=[UnlitMaterial(color:color.withAlphaComponent(1))]
+    beacon.model?.materials=[UnlitMaterial(color:color)]
+    beacon.isEnabled=reaction.reaction != .ordinary
+    mediaCamera.isEnabled=reaction.encounter == .reporter
+    setText(title,reaction.headline,size:0.55);setText(detail,reaction.detail,size:0.34)
+    setText(line,ambient,size:0.22)
+    // Night changes display emphasis without introducing a second time authority.
+    board.scale.y=phase == .night ? 1.12:1
+  }
+  private func setText(_ entity:ModelEntity,_ value:String,size:CGFloat) {
+    entity.isEnabled = !value.isEmpty
+    guard !value.isEmpty else{return}
+    entity.model=ModelComponent(mesh:.generateText(value,extrusionDepth:0.002,font:.systemFont(ofSize:size),containerFrame:.zero,alignment:.left,lineBreakMode:.byWordWrapping),materials:[UnlitMaterial(color:.white)])
+  }
+}
+
+enum AtlantisProcessMetrics {
+  static func cpuSeconds()->Double {
+    var usage=rusage();guard getrusage(0,&usage)==0 else{return 0}
+    func seconds(_ value:timeval)->Double{Double(value.tv_sec)+Double(value.tv_usec)/1_000_000}
+    return seconds(usage.ru_utime)+seconds(usage.ru_stime)
+  }
+  static var thermal:String {
+    switch ProcessInfo.processInfo.thermalState {case .nominal:"nominal";case .fair:"fair";case .serious:"serious";case .critical:"critical";@unknown default:"unknown"}
+  }
+}
+
 @MainActor @Observable
 final class AtlantisStreamingCoordinator {
   private(set) var previous: AtlantisDistrict?
@@ -245,6 +606,8 @@ final class AtlantisRealityWorld {
   let sun = DirectionalLight(), environment = Entity(), collisionRoot = Entity()
   let semanticAnchors = AtlantisSemanticAnchorRegistry()
   let interactionRegistry = AtlantisInteractionRegistry()
+  let livingDirector = AtlantisLivingWorldDirector()
+  var livingWorld: AtlantisLivingWorldDistrictPopulation {livingDirector.population}
   let streaming: AtlantisStreamingCoordinator
   private(set) var error: String?
   private(set) var benchmarkStatus = "idle"
@@ -271,7 +634,8 @@ final class AtlantisRealityWorld {
   init(manifest: AtlantisAssetManifest) {
     self.manifest=manifest;loader=AtlantisDistrictLoader(manifest:manifest);grounding=AtlantisGrounding(traversal:manifest.traversal);streaming=AtlantisStreamingCoordinator(loader:loader,manifest:manifest)
     root.name="AtlantisPresentation";playerRoot.name="AtlantisPlayerRoot";bodyHeadingRoot.name="BodyHeadingRoot";cameraRig.name="CameraRig";camera.name="Camera";collisionRoot.name="TraversalCollision"
-    root.addChild(loader.root);root.addChild(playerRoot);playerRoot.addChild(bodyHeadingRoot);bodyHeadingRoot.addChild(cameraRig);cameraRig.addChild(camera);root.addChild(sun);root.addChild(environment);root.addChild(collisionRoot)
+    root.addChild(loader.root);root.addChild(livingDirector.root);root.addChild(playerRoot);playerRoot.addChild(bodyHeadingRoot);bodyHeadingRoot.addChild(cameraRig);cameraRig.addChild(camera);root.addChild(sun);root.addChild(environment);root.addChild(collisionRoot)
+    livingWorld.isEnabled=ProcessInfo.processInfo.arguments.contains("--atlantis-living-world") || ProcessInfo.processInfo.arguments.contains("--atlantis-living-world-profile")
     camera.camera.near=0.2;camera.camera.far=8000
     let image=UIGraphicsImageRenderer(size:CGSize(width:32,height:16)).image { c in UIColor.white.setFill();c.fill(CGRect(x:0,y:0,width:32,height:16)) }
     if let cg=image.cgImage {
@@ -285,6 +649,7 @@ final class AtlantisRealityWorld {
       if let district {
         self.semanticAnchors.register(district:district,root:entity,manifest:self.manifest)
         self.interactionRegistry.register(district:district,root:entity)
+        self.livingDirector.reconcile(residents:self.streaming.residents,current:self.streaming.current,phase:self.phase,position:self.playerRoot.position,immediate:true)
       }
       if district == .unicornHeights {
         entity.findEntity(named:"Bridge_TechCore_00")?.isEnabled=false
@@ -295,6 +660,7 @@ final class AtlantisRealityWorld {
     loader.onWillUnload={ [weak self] district,_ in
       guard let self else{return};let invalidatesActive=self.activeInteraction?.definition.district == district
       self.semanticAnchors.invalidate(district:district);self.interactionRegistry.unregister(district:district)
+      self.livingDirector.districtDidUnload(district)
       if invalidatesActive {self.activeInteractionID=nil;self.interactionStatus="Interaction unavailable: district unloaded"}
       if district == .techCore {self.loader.supportEntity(named:"SpireFarProxy")?.isEnabled=true}
     }
@@ -323,7 +689,9 @@ final class AtlantisRealityWorld {
     report.startupMilestones["timeToFounderPlayable"] = elapsed(since: startupStart)
     report.loads=loader.measurements;report.loadPhases=loader.phaseMeasurements
     benchmarkStatus="Founder ready"
-    if ProcessInfo.processInfo.arguments.contains("--atlantis-interaction-profile") {
+    if ProcessInfo.processInfo.arguments.contains("--atlantis-living-world-profile") {
+      await runLivingWorldBenchmark()
+    } else if ProcessInfo.processInfo.arguments.contains("--atlantis-interaction-profile") {
       await runInteractionBenchmark()
     } else if ProcessInfo.processInfo.arguments.contains("--atlantis-streaming-profile") {
       await runStreamingBenchmark()
@@ -360,6 +728,13 @@ final class AtlantisRealityWorld {
     let orientation=camera.orientation(relativeTo:nil);let forward=simd_normalize(r.target-r.position);heading=atan2(-forward.x,-forward.z)
     bodyHeadingRoot.orientation=simd_quatf(angle:heading,axis:[0,1,0]);cameraRig.orientation=bodyHeadingRoot.orientation.inverse*orientation;camera.orientation = .init();camera.position=[0,AtlantisSpatialContract.eyeHeight,0];camera.camera.fieldOfViewInDegrees=r.fov;refreshInteractionCandidate()
   }
+  func selectLivingWorldCamera(_ district: AtlantisDistrict) {
+    guard let center=livingWorld.center(district:district) else{return}
+    let target=center+[0,0.8,0],position=center+[12,2.5,32]
+    locomotion = .standing;walkInput=0;playerRoot.position=position-[0,AtlantisSpatialContract.eyeHeight,0];cameraRig.transform = .identity;camera.transform = .identity
+    camera.look(at:target,from:position,relativeTo:nil);let orientation=camera.orientation(relativeTo:nil),forward=simd_normalize(target-position)
+    heading=atan2(-forward.x,-forward.z);bodyHeadingRoot.orientation=simd_quatf(angle:heading,axis:[0,1,0]);cameraRig.orientation=bodyHeadingRoot.orientation.inverse*orientation;camera.orientation = .init();camera.position=[0,AtlantisSpatialContract.eyeHeight,0];camera.camera.fieldOfViewInDegrees=58;refreshInteractionCandidate()
+  }
   func applyLighting() {
     let p=FounderEnvironmentLightingConfiguration.preset(for:phase)
     sun.look(at:[0,0,0],from:p.directionalPosition*100,relativeTo:nil)
@@ -367,6 +742,7 @@ final class AtlantisRealityWorld {
     sun.shadow=shadowMode == 0 ? nil : .init(maximumDistance:shadowMode == 1 ? 120 : 500,depthBias:1)
     if var light=environment.components[ImageBasedLightComponent.self] { light.intensityExponent=phase == .night ? -5 : phase == .evening ? -3 : -1;environment.components.set(light) }
     for district in loader.loaded {loader.entity(for:district)?.components.set(AtlantisDayPhaseComponent(phase:phase.rawValue))}
+    livingDirector.reconcile(residents:streaming.residents,current:streaming.current,phase:phase,position:playerRoot.position)
   }
   var loadedNames: Set<String> {
     var names=Set(loader.loaded.map(\.rawValue));if loader.contextState == .loaded {names.insert("WorldContext")}
@@ -394,6 +770,7 @@ final class AtlantisRealityWorld {
       report.startupMilestones["timeToFirstSceneUpdate"] = elapsed(since: createdAt)
     }
     if collectingFrames {frameSamples.append(delta*1000)}
+    if !isPresentingInteraction {livingDirector.advance(delta:delta,residents:streaming.residents,current:streaming.current,phase:phase,position:playerRoot.position)}
     frameCounter += 1
     if frameCounter % 30 == 0 {let value=AtlantisMemory.footprintMB();if value>report.sampledPeakMemoryMB {report.sampledPeakMemoryMB=value};refreshInteractionCandidate()}
     if isWalking {move(input:walkInput,delta:delta)}
@@ -411,7 +788,7 @@ final class AtlantisRealityWorld {
     report.collisionEntityCount=collisionRoot.children.count
   }
   func unload(_ district: AtlantisDistrict) {_=streaming.requestUnload(district);collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;syncSpireSwap()}
-  func unloadAll() {loader.unloadAll();collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;activeInteractionID=nil;interactionReturnContext=nil;streaming.setFrozen(false)}
+  func unloadAll() {loader.unloadAll();for district in AtlantisDistrict.allCases{livingDirector.districtDidUnload(district)};collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;activeInteractionID=nil;interactionReturnContext=nil;streaming.setFrozen(false)}
 
   var activeInteraction: AtlantisInteractionTarget? {activeInteractionID.flatMap(interactionRegistry.target(id:))}
   var interactionPrompt: String {activeInteraction?.definition.accessibilityLabel ?? interactionStatus}
@@ -545,6 +922,103 @@ final class AtlantisRealityWorld {
     report.meanInteractionCandidateMicroseconds=interactionRegistry.meanEvaluationMicroseconds
     report.loads=loader.measurements;report.loadPhases=loader.phaseMeasurements;writeReport();benchmarkStatus=report.errors.isEmpty ? "complete" : "failed"
   }
+  private func runLivingWorldBenchmark() async {
+    benchmarkStatus="living world: Startup setup";livingWorld.isEnabled=true
+    await loader.load(.startupRow)?.value;await loader.load(.commerceDistrict)?.value
+    playerRoot.position=[-460,15,340]
+    let stages=[("0 actors",0,0),("5 pedestrians",5,0),("10 pedestrians",10,0),("20 pedestrians",20,0)]
+    var mayScale=true
+    for (name,pedestrians,vehicles) in stages {
+      guard mayScale || pedestrians==0 else{break}
+      let measurement=await measureLivingWorld(name:name,district:.startupRow,pedestrians:pedestrians,vehicles:vehicles)
+      report.livingWorld.append(measurement)
+      mayScale=measurement.meanPopulationUpdateMS<1 && measurement.memoryAfterMB-measurement.memoryBeforeMB<32 && !["serious","critical"].contains(measurement.thermalAfter)
+      if !mayScale {report.errors.append("Living-world scaling stopped after \(name): provisional safety gate")}
+    }
+    if mayScale {
+      playerRoot.position=[300,14.8,190]
+      report.livingWorld.append(await measureLivingWorld(name:"10 pedestrians + 2 vehicles",district:.commerceDistrict,pedestrians:10,vehicles:2))
+    }
+    livingWorld.setBenchmarkPopulation(district:.startupRow,pedestrians:10,vehicles:0)
+    livingWorld.reconcile(residents:streaming.residents,current:.startupRow,phase:phase,playerPosition:[-460,15,340],immediate:true)
+    report.livingPooling.append(poolingSnapshot(name:0))
+    livingWorld.districtDidUnload(.startupRow);report.livingPooling.append(poolingSnapshot(name:1))
+    let reuseBefore=livingWorld.reusedPedestrians
+    livingWorld.setBenchmarkPopulation(district:.startupRow,pedestrians:10,vehicles:0)
+    livingWorld.reconcile(residents:streaming.residents,current:.startupRow,phase:phase,playerPosition:[-460,15,340],immediate:true)
+    var reload=poolingSnapshot(name:2);reload["reusedThisStep"]=Double(livingWorld.reusedPedestrians-reuseBefore);report.livingPooling.append(reload)
+    livingWorld.clearBenchmarkPopulation()
+
+    playerRoot.position=AtlantisBenchmarkCamera.founderStreet.recipe.position-[0,AtlantisSpatialContract.eyeHeight,0]
+    livingWorld.reconcile(residents:streaming.residents,current:.founderDistrict,phase:phase,playerPosition:playerRoot.position,immediate:true)
+    for _ in 0..<3 {
+      await recordLivingTransition(to:.startupRow,next:.commerceDistrict)
+      await recordLivingTransition(to:.commerceDistrict,next:.startupRow)
+      await recordLivingTransition(to:.startupRow,next:.founderDistrict)
+      await recordLivingTransition(to:.founderDistrict,next:.startupRow)
+    }
+    report.livingPooling.append(poolingSnapshot(name:3))
+
+    let garageActors=livingWorld.activeActorCount
+    if await debugApproachInteraction("atlantis.interaction.founderGarage"),beginInteraction() == .enterFounderGarage {
+      if !returnFromInteraction() || livingWorld.activeActorCount != garageActors {report.errors.append("Garage living-world round trip changed population")}
+    } else {report.errors.append("Garage living-world round trip unavailable")}
+    _=await streaming.enter(.startupRow,next:.commerceDistrict);_=await streaming.enter(.commerceDistrict,next:.techCore)
+    phase = .evening
+    livingDirector.reconcile(residents:streaming.residents,current:.commerceDistrict,phase:phase,position:[476,14.7,252],immediate:true)
+    let commerceActors=livingWorld.activeActorCount;applyLighting()
+    if await debugApproachInteraction("atlantis.interaction.flashpoint"),beginInteraction() == .inspectRival(rivalID:"flashpoint") {
+      if !returnFromInteraction() || livingWorld.activeActorCount != commerceActors || phase != .evening {report.errors.append("Flashpoint living-world round trip changed population or phase")}
+    } else {report.errors.append("Flashpoint living-world round trip unavailable")}
+    _=await streaming.enter(.startupRow,next:.commerceDistrict)
+    livingWorld.clearBenchmarkPopulation()
+    for fixture in AtlantisLivingWorldFixture.allCases {
+      livingDirector.fixture=fixture;phase = .day;applyLighting();playerRoot.position=[-460,14.45,350]
+      let memory=AtlantisMemory.footprintMB(),cpu=AtlantisProcessMetrics.cpuSeconds(),start=Date()
+      let encounterActivationsBefore=livingDirector.encounterActivations
+      livingDirector.reconcile(residents:streaming.residents,current:.startupRow,phase:phase,position:playerRoot.position,immediate:true)
+      let changeCost=livingDirector.decisionCostMS
+      selectLivingWorldCamera(.startupRow);frameSamples=[];collectingFrames=true;await wait(4);collectingFrames=false
+      let seconds=Date().timeIntervalSince(start),samples=frameSamples.sorted()
+      report.livingReactions[fixture.rawValue]=[
+        "pedestrians":Double(livingWorld.activePedestrians),"vehicles":Double(livingWorld.activeVehicles),
+        "displays":Double(livingDirector.activeDisplays),"encounters":Double(livingDirector.encounterActivations-encounterActivationsBefore),
+        "entities":Double(livingDirector.entityCount),"stateChangeMS":changeCost,
+        "steadyDecisionMS":livingDirector.decisionCostMS,"memoryBeforeMB":memory,"memoryAfterMB":AtlantisMemory.footprintMB(),
+        "cpuPercent":(AtlantisProcessMetrics.cpuSeconds()-cpu)/seconds*100,
+        "callbackP95MS":samples.isEmpty ? 0:samples[min(samples.count-1,Int(Double(samples.count)*0.95))]]
+    }
+    report.loads=loader.measurements;report.loadPhases=loader.phaseMeasurements;writeReport();benchmarkStatus=report.errors.isEmpty ? "complete":"failed"
+  }
+
+  private func measureLivingWorld(name:String,district:AtlantisDistrict,pedestrians:Int,vehicles:Int) async -> AtlantisLivingWorldMeasurement {
+    benchmarkStatus="living world: \(name)";livingWorld.setBenchmarkPopulation(district:district,pedestrians:pedestrians,vehicles:vehicles);livingWorld.resetUpdateMeasurements()
+    let memoryBefore=AtlantisMemory.footprintMB(),thermalBefore=AtlantisProcessMetrics.thermal,cpuBefore=AtlantisProcessMetrics.cpuSeconds(),start=Date()
+    livingWorld.reconcile(residents:streaming.residents,current:district,phase:phase,playerPosition:playerRoot.position,immediate:true)
+    selectLivingWorldCamera(district)
+    frameSamples=[];collectingFrames=true;await wait(3);collectingFrames=false
+    let seconds=Date().timeIntervalSince(start),cpu=max(0,(AtlantisProcessMetrics.cpuSeconds()-cpuBefore)/max(seconds,0.001)*100)
+    let callbacks=frameSamples.sorted(),updates=livingWorld.updateSamples.sorted()
+    return .init(configuration:name,pedestrians:livingWorld.activePedestrians,vehicles:livingWorld.activeVehicles,seconds:seconds,callbackSamples:callbacks.count,meanCallbackMS:callbacks.isEmpty ? 0:callbacks.reduce(0,+)/Double(callbacks.count),p95CallbackMS:callbacks.isEmpty ? 0:callbacks[min(callbacks.count-1,Int(Double(callbacks.count)*0.95))],meanPopulationUpdateMS:updates.isEmpty ? 0:updates.reduce(0,+)/Double(updates.count),p95PopulationUpdateMS:livingWorld.p95UpdateMS,processCPUPercent:cpu,memoryBeforeMB:memoryBefore,memoryAfterMB:AtlantisMemory.footprintMB(),spawnHitchMS:livingWorld.maximumSpawnHitchMS,thermalBefore:thermalBefore,thermalAfter:AtlantisProcessMetrics.thermal)
+  }
+
+  private func recordLivingTransition(to district:AtlantisDistrict,next:AtlantisDistrict?) async {
+    let before=livingWorld.activeActorCount,memory=AtlantisMemory.footprintMB(),from=streaming.current
+    playerRoot.position=AtlantisLivingWorldPresentationAdapter.activityAnchors.first{$0.district==district}!.position
+    let entered=await streaming.enter(district,next:next);livingWorld.reconcile(residents:streaming.residents,current:streaming.current,phase:phase,playerPosition:playerRoot.position,immediate:true)
+    let duplicate=livingWorld.activeEntityIDs.count != livingWorld.activeActorCount || livingWorld.root.children.count != livingWorld.activeActorCount
+    let afterMemory=AtlantisMemory.footprintMB()
+    report.livingStreaming.append(.init(transition:"\(from.title) → \(district.title)",actorsBefore:before,actorsAfter:livingWorld.activeActorCount,duplicateActors:duplicate,memoryBeforeMB:memory,memoryAfterMB:afterMemory,result:entered && !duplicate ? "pass":"fail"))
+    if !entered || duplicate {report.errors.append("Living-world transition failed: \(from.rawValue) → \(district.rawValue)")}
+  }
+
+  private func poolingSnapshot(name:Double)->[String:Double] {[
+    "step":name,"allocatedPedestrians":Double(livingWorld.allocatedPedestrians),"allocatedVehicles":Double(livingWorld.allocatedVehicles),
+    "reusedPedestrians":Double(livingWorld.reusedPedestrians),"reusedVehicles":Double(livingWorld.reusedVehicles),
+    "recycled":Double(livingWorld.recycledActors),"pooledPedestrians":Double(livingWorld.pooledPedestrians),
+    "pooledVehicles":Double(livingWorld.pooledVehicles),"active":Double(livingWorld.activeActorCount),"destroyed":0,
+    "memoryMB":AtlantisMemory.footprintMB()
+  ]}
   private func runBenchmark() async {
     print("Atlantis benchmark: running")
     report=AtlantisBenchmarkReport();benchmarkStatus="running";unloadAll();await wait(1)

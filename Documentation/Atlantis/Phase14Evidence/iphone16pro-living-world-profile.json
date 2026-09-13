@@ -1,0 +1,825 @@
+{
+  "assetMode" : "batched",
+  "collisionEntityCount" : 0,
+  "configuration" : "Debug; physical iOS device; SceneEvents.Update cadence is not a GPU presentation counter",
+  "device" : "iPhone",
+  "errors" : [
+
+  ],
+  "frames" : [
+
+  ],
+  "interactionCandidateEvaluations" : 0,
+  "interactions" : [
+
+  ],
+  "livingPooling" : [
+    {
+      "active" : 10,
+      "allocatedPedestrians" : 20,
+      "allocatedVehicles" : 2,
+      "destroyed" : 0,
+      "memoryMB" : 235.28228759765625,
+      "pooledPedestrians" : 10,
+      "pooledVehicles" : 2,
+      "recycled" : 34,
+      "reusedPedestrians" : 22,
+      "reusedVehicles" : 0,
+      "step" : 0
+    },
+    {
+      "active" : 0,
+      "allocatedPedestrians" : 20,
+      "allocatedVehicles" : 2,
+      "destroyed" : 0,
+      "memoryMB" : 235.28228759765625,
+      "pooledPedestrians" : 20,
+      "pooledVehicles" : 2,
+      "recycled" : 44,
+      "reusedPedestrians" : 22,
+      "reusedVehicles" : 0,
+      "step" : 1
+    },
+    {
+      "active" : 10,
+      "allocatedPedestrians" : 20,
+      "allocatedVehicles" : 2,
+      "destroyed" : 0,
+      "memoryMB" : 235.28228759765625,
+      "pooledPedestrians" : 10,
+      "pooledVehicles" : 2,
+      "recycled" : 44,
+      "reusedPedestrians" : 32,
+      "reusedThisStep" : 10,
+      "reusedVehicles" : 0,
+      "step" : 2
+    },
+    {
+      "active" : 2,
+      "allocatedPedestrians" : 20,
+      "allocatedVehicles" : 2,
+      "destroyed" : 0,
+      "memoryMB" : 235.34481048583984,
+      "pooledPedestrians" : 18,
+      "pooledVehicles" : 2,
+      "recycled" : 108,
+      "reusedPedestrians" : 85,
+      "reusedVehicles" : 3,
+      "step" : 3
+    }
+  ],
+  "livingReactions" : {
+    "A · Baseline" : {
+      "callbackP95MS" : 18.379416316747665,
+      "cpuPercent" : 41.74495222474013,
+      "displays" : 3,
+      "encounters" : 0,
+      "entities" : 55,
+      "memoryAfterMB" : 231.20418548583984,
+      "memoryBeforeMB" : 235.11043548583984,
+      "pedestrians" : 5,
+      "stateChangeMS" : 0.937042,
+      "steadyDecisionMS" : 10.4025,
+      "vehicles" : 0
+    },
+    "B · Momentum + Coverage" : {
+      "callbackP95MS" : 16.853250563144684,
+      "cpuPercent" : 39.35900286918856,
+      "displays" : 3,
+      "encounters" : 1,
+      "entities" : 80,
+      "memoryAfterMB" : 234.37606048583984,
+      "memoryBeforeMB" : 235.57918548583984,
+      "pedestrians" : 10,
+      "stateChangeMS" : 12.497791,
+      "steadyDecisionMS" : 0.542041,
+      "vehicles" : 0
+    },
+    "C · Pallas public surge" : {
+      "callbackP95MS" : 16.92350022494793,
+      "cpuPercent" : 38.83324441773636,
+      "displays" : 3,
+      "encounters" : 1,
+      "entities" : 70,
+      "memoryAfterMB" : 232.29793548583984,
+      "memoryBeforeMB" : 236.31356048583984,
+      "pedestrians" : 8,
+      "stateChangeMS" : 16.694834,
+      "steadyDecisionMS" : 0.490917,
+      "vehicles" : 0
+    },
+    "D · Negative public state" : {
+      "callbackP95MS" : 16.827333718538284,
+      "cpuPercent" : 37.12171791927478,
+      "displays" : 3,
+      "encounters" : 1,
+      "entities" : 50,
+      "memoryAfterMB" : 232.73543548583984,
+      "memoryBeforeMB" : 233.61043548583984,
+      "pedestrians" : 4,
+      "stateChangeMS" : 20.860542,
+      "steadyDecisionMS" : 0.413208,
+      "vehicles" : 0
+    }
+  },
+  "livingStreaming" : [
+    {
+      "actorsAfter" : 5,
+      "actorsBefore" : 2,
+      "duplicateActors" : false,
+      "memoryAfterMB" : 235.28228759765625,
+      "memoryBeforeMB" : 235.28228759765625,
+      "result" : "pass",
+      "transition" : "Founder → Startup"
+    },
+    {
+      "actorsAfter" : 6,
+      "actorsBefore" : 5,
+      "duplicateActors" : false,
+      "memoryAfterMB" : 235.28228759765625,
+      "memoryBeforeMB" : 235.28228759765625,
+      "result" : "pass",
+      "transition" : "Startup → Commerce"
+    },
+    {
+      "actorsAfter" : 5,
+      "actorsBefore" : 6,
+      "duplicateActors" : false,
+      "memoryAfterMB" : 235.28228759765625,
+      "memoryBeforeMB" : 235.28228759765625,
+      "result" : "pass",
+      "transition" : "Commerce → Startup"
+    },
+    {
+      "actorsAfter" : 2,
+      "actorsBefore" : 5,
+      "duplicateActors" : false,
+      "memoryAfterMB" : 241.26668548583984,
+      "memoryBeforeMB" : 235.28228759765625,
+      "result" : "pass",
+      "transition" : "Startup → Founder"
+    },
+    {
+      "actorsAfter" : 5,
+      "actorsBefore" : 2,
+      "duplicateActors" : false,
+      "memoryAfterMB" : 241.26668548583984,
+      "memoryBeforeMB" : 241.26668548583984,
+      "result" : "pass",
+      "transition" : "Founder → Startup"
+    },
+    {
+      "actorsAfter" : 6,
+      "actorsBefore" : 5,
+      "duplicateActors" : false,
+      "memoryAfterMB" : 235.64168548583984,
+      "memoryBeforeMB" : 241.26668548583984,
+      "result" : "pass",
+      "transition" : "Startup → Commerce"
+    },
+    {
+      "actorsAfter" : 5,
+      "actorsBefore" : 6,
+      "duplicateActors" : false,
+      "memoryAfterMB" : 235.64168548583984,
+      "memoryBeforeMB" : 235.64168548583984,
+      "result" : "pass",
+      "transition" : "Commerce → Startup"
+    },
+    {
+      "actorsAfter" : 2,
+      "actorsBefore" : 5,
+      "duplicateActors" : false,
+      "memoryAfterMB" : 235.48543548583984,
+      "memoryBeforeMB" : 235.64168548583984,
+      "result" : "pass",
+      "transition" : "Startup → Founder"
+    },
+    {
+      "actorsAfter" : 5,
+      "actorsBefore" : 2,
+      "duplicateActors" : false,
+      "memoryAfterMB" : 235.48543548583984,
+      "memoryBeforeMB" : 235.48543548583984,
+      "result" : "pass",
+      "transition" : "Founder → Startup"
+    },
+    {
+      "actorsAfter" : 6,
+      "actorsBefore" : 5,
+      "duplicateActors" : false,
+      "memoryAfterMB" : 235.31356048583984,
+      "memoryBeforeMB" : 235.48543548583984,
+      "result" : "pass",
+      "transition" : "Startup → Commerce"
+    },
+    {
+      "actorsAfter" : 5,
+      "actorsBefore" : 6,
+      "duplicateActors" : false,
+      "memoryAfterMB" : 235.31356048583984,
+      "memoryBeforeMB" : 235.31356048583984,
+      "result" : "pass",
+      "transition" : "Commerce → Startup"
+    },
+    {
+      "actorsAfter" : 2,
+      "actorsBefore" : 5,
+      "duplicateActors" : false,
+      "memoryAfterMB" : 235.34481048583984,
+      "memoryBeforeMB" : 235.31356048583984,
+      "result" : "pass",
+      "transition" : "Startup → Founder"
+    }
+  ],
+  "livingWorld" : [
+    {
+      "callbackSamples" : 184,
+      "configuration" : "0 actors",
+      "gpuMetric" : "Unavailable from in-process instrumentation; callback cadence is not GPU FPS",
+      "meanCallbackMS" : 16.75830301626221,
+      "meanPopulationUpdateMS" : 0.009747744565217391,
+      "memoryAfterMB" : 238.87603759765625,
+      "memoryBeforeMB" : 239.07916259765625,
+      "p95CallbackMS" : 16.96520857512951,
+      "p95PopulationUpdateMS" : 0.012792,
+      "pedestrians" : 0,
+      "processCPUPercent" : 35.26710572713996,
+      "seconds" : 3.0773520469665527,
+      "spawnHitchMS" : 0.329042,
+      "thermalAfter" : "nominal",
+      "thermalBefore" : "nominal",
+      "vehicles" : 0
+    },
+    {
+      "callbackSamples" : 185,
+      "configuration" : "5 pedestrians",
+      "gpuMetric" : "Unavailable from in-process instrumentation; callback cadence is not GPU FPS",
+      "meanCallbackMS" : 16.759444385565615,
+      "meanPopulationUpdateMS" : 0.1956740918918918,
+      "memoryAfterMB" : 233.61041259765625,
+      "memoryBeforeMB" : 238.87603759765625,
+      "p95CallbackMS" : 16.808416694402695,
+      "p95PopulationUpdateMS" : 0.235541,
+      "pedestrians" : 5,
+      "processCPUPercent" : 37.26545108921142,
+      "seconds" : 3.096092939376831,
+      "spawnHitchMS" : 3.554792,
+      "thermalAfter" : "nominal",
+      "thermalBefore" : "nominal",
+      "vehicles" : 0
+    },
+    {
+      "callbackSamples" : 192,
+      "configuration" : "10 pedestrians",
+      "gpuMetric" : "Unavailable from in-process instrumentation; callback cadence is not GPU FPS",
+      "meanCallbackMS" : 16.756152794793405,
+      "meanPopulationUpdateMS" : 0.2778381354166666,
+      "memoryAfterMB" : 233.75103759765625,
+      "memoryBeforeMB" : 233.61041259765625,
+      "p95CallbackMS" : 16.815291717648506,
+      "p95PopulationUpdateMS" : 0.326541,
+      "pedestrians" : 10,
+      "processCPUPercent" : 38.425700145515506,
+      "seconds" : 3.2135549783706665,
+      "spawnHitchMS" : 3.264084,
+      "thermalAfter" : "nominal",
+      "thermalBefore" : "nominal",
+      "vehicles" : 0
+    },
+    {
+      "callbackSamples" : 181,
+      "configuration" : "20 pedestrians",
+      "gpuMetric" : "Unavailable from in-process instrumentation; callback cadence is not GPU FPS",
+      "meanCallbackMS" : 16.761646580300937,
+      "meanPopulationUpdateMS" : 0.46296659668508316,
+      "memoryAfterMB" : 235.40728759765625,
+      "memoryBeforeMB" : 233.75103759765625,
+      "p95CallbackMS" : 16.806500032544136,
+      "p95PopulationUpdateMS" : 0.522917,
+      "pedestrians" : 20,
+      "processCPUPercent" : 41.92594264699306,
+      "seconds" : 3.031170964241028,
+      "spawnHitchMS" : 5.009458,
+      "thermalAfter" : "nominal",
+      "thermalBefore" : "nominal",
+      "vehicles" : 0
+    },
+    {
+      "callbackSamples" : 186,
+      "configuration" : "10 pedestrians + 2 vehicles",
+      "gpuMetric" : "Unavailable from in-process instrumentation; callback cadence is not GPU FPS",
+      "meanCallbackMS" : 16.759788292029533,
+      "meanPopulationUpdateMS" : 0.3170194892473117,
+      "memoryAfterMB" : 235.28228759765625,
+      "memoryBeforeMB" : 235.40728759765625,
+      "p95CallbackMS" : 16.866624355316162,
+      "p95PopulationUpdateMS" : 0.368542,
+      "pedestrians" : 10,
+      "processCPUPercent" : 39.1405071550311,
+      "seconds" : 3.114182949066162,
+      "spawnHitchMS" : 6.941625,
+      "thermalAfter" : "nominal",
+      "thermalBefore" : "nominal",
+      "vehicles" : 2
+    }
+  ],
+  "loadPhases" : [
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "resolve",
+      "seconds" : 3.3375e-05
+    },
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "read",
+      "seconds" : 0.000176958
+    },
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "checksum",
+      "seconds" : 0.000194
+    },
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "realitykit-import",
+      "seconds" : 0.351851875
+    },
+    {
+      "district" : "WorldContext",
+      "package" : "world_context",
+      "phase" : "validation",
+      "seconds" : 0.000595917
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "resolve",
+      "seconds" : 0.000127042
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "read",
+      "seconds" : 0.000697375
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "checksum",
+      "seconds" : 0.00991525
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "realitykit-import",
+      "seconds" : 1.205323083
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "validation",
+      "seconds" : 0.000118958
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "scene-install",
+      "seconds" : 0.05345975
+    },
+    {
+      "district" : "StartupRow",
+      "package" : "startup_row_batched",
+      "phase" : "resolve",
+      "seconds" : 3.0708e-05
+    },
+    {
+      "district" : "StartupRow",
+      "package" : "startup_row_batched",
+      "phase" : "read",
+      "seconds" : 0.000203416
+    },
+    {
+      "district" : "StartupRow",
+      "package" : "startup_row_batched",
+      "phase" : "checksum",
+      "seconds" : 0.0011795
+    },
+    {
+      "district" : "StartupRow",
+      "package" : "startup_row_batched",
+      "phase" : "realitykit-import",
+      "seconds" : 5.130980042
+    },
+    {
+      "district" : "StartupRow",
+      "package" : "startup_row_batched",
+      "phase" : "validation",
+      "seconds" : 8.3417e-05
+    },
+    {
+      "district" : "StartupRow",
+      "package" : "startup_row_batched",
+      "phase" : "scene-install",
+      "seconds" : 0.013912375
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "resolve",
+      "seconds" : 4.1166e-05
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "read",
+      "seconds" : 0.000450875
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "checksum",
+      "seconds" : 0.001532041
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "realitykit-import",
+      "seconds" : 7.479723542
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "validation",
+      "seconds" : 7.5666e-05
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "scene-install",
+      "seconds" : 0.011289875
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "resolve",
+      "seconds" : 7.5458e-05
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "read",
+      "seconds" : 0.000463791
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "checksum",
+      "seconds" : 0.001445541
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "realitykit-import",
+      "seconds" : 0.132895875
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "validation",
+      "seconds" : 1.5875e-05
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "scene-install",
+      "seconds" : 0.001075583
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "resolve",
+      "seconds" : 2.8e-05
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "read",
+      "seconds" : 0.000167292
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "checksum",
+      "seconds" : 0.000255959
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "realitykit-import",
+      "seconds" : 5.018651375
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "validation",
+      "seconds" : 0.000175083
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "scene-install",
+      "seconds" : 0.005786167
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "resolve",
+      "seconds" : 7.0042e-05
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "read",
+      "seconds" : 0.000412708
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "checksum",
+      "seconds" : 0.001506334
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "realitykit-import",
+      "seconds" : 1.222614709
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "validation",
+      "seconds" : 7.5583e-05
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "scene-install",
+      "seconds" : 0.002474208
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "resolve",
+      "seconds" : 4.9333e-05
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "read",
+      "seconds" : 0.000273125
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "checksum",
+      "seconds" : 0.000390917
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "realitykit-import",
+      "seconds" : 7.515732875
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "validation",
+      "seconds" : 0.00017325
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "scene-install",
+      "seconds" : 0.005444458
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "resolve",
+      "seconds" : 6.5e-05
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "read",
+      "seconds" : 0.00037825
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "checksum",
+      "seconds" : 0.001443042
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "realitykit-import",
+      "seconds" : 1.272589667
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "validation",
+      "seconds" : 7.025e-05
+    },
+    {
+      "district" : "FounderDistrict",
+      "package" : "founder_district_batched",
+      "phase" : "scene-install",
+      "seconds" : 0.002743333
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "resolve",
+      "seconds" : 4.8458e-05
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "read",
+      "seconds" : 0.000295
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "checksum",
+      "seconds" : 0.000377125
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "realitykit-import",
+      "seconds" : 7.516229875
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "validation",
+      "seconds" : 0.000192125
+    },
+    {
+      "district" : "CommerceDistrict",
+      "package" : "commerce_district_batched",
+      "phase" : "scene-install",
+      "seconds" : 0.004339875
+    },
+    {
+      "district" : "TechCore",
+      "package" : "tech_core_batched",
+      "phase" : "resolve",
+      "seconds" : 4.3333e-05
+    },
+    {
+      "district" : "TechCore",
+      "package" : "tech_core_batched",
+      "phase" : "read",
+      "seconds" : 0.006692791
+    },
+    {
+      "district" : "TechCore",
+      "package" : "tech_core_batched",
+      "phase" : "checksum",
+      "seconds" : 0.001788375
+    },
+    {
+      "district" : "TechCore",
+      "package" : "tech_core_batched",
+      "phase" : "realitykit-import",
+      "seconds" : 3.666517958
+    },
+    {
+      "district" : "TechCore",
+      "package" : "tech_core_batched",
+      "phase" : "validation",
+      "seconds" : 0.00029725
+    },
+    {
+      "district" : "TechCore",
+      "package" : "tech_core_batched",
+      "phase" : "scene-install",
+      "seconds" : 0.012802417
+    }
+  ],
+  "loads" : [
+    {
+      "district" : "FounderDistrict",
+      "memoryAfterMB" : 229.28228759765625,
+      "memoryBeforeMB" : 235.53226470947266,
+      "outcome" : "loaded",
+      "package" : "founder_district_batched",
+      "seconds" : 1.2700080871582031
+    },
+    {
+      "district" : "StartupRow",
+      "memoryAfterMB" : 229.34478759765625,
+      "memoryBeforeMB" : 230.06353759765625,
+      "outcome" : "loaded",
+      "package" : "startup_row_batched",
+      "seconds" : 5.146520972251892
+    },
+    {
+      "district" : "CommerceDistrict",
+      "memoryAfterMB" : 238.79791259765625,
+      "memoryBeforeMB" : 229.56353759765625,
+      "outcome" : "loaded",
+      "package" : "commerce_district_batched",
+      "seconds" : 7.493219017982483
+    },
+    {
+      "district" : "FounderDistrict",
+      "memoryAfterMB" : 241.12606048583984,
+      "memoryBeforeMB" : 235.28228759765625,
+      "outcome" : "loaded",
+      "package" : "founder_district_batched",
+      "seconds" : 0.13603293895721436
+    },
+    {
+      "district" : "CommerceDistrict",
+      "memoryAfterMB" : 235.29793548583984,
+      "memoryBeforeMB" : 241.37606048583984,
+      "outcome" : "loaded",
+      "package" : "commerce_district_batched",
+      "seconds" : 5.025199055671692
+    },
+    {
+      "district" : "FounderDistrict",
+      "memoryAfterMB" : 235.36043548583984,
+      "memoryBeforeMB" : 235.78231048583984,
+      "outcome" : "loaded",
+      "package" : "founder_district_batched",
+      "seconds" : 1.2273529767990112
+    },
+    {
+      "district" : "CommerceDistrict",
+      "memoryAfterMB" : 235.01668548583984,
+      "memoryBeforeMB" : 235.53231048583984,
+      "outcome" : "loaded",
+      "package" : "commerce_district_batched",
+      "seconds" : 7.522224068641663
+    },
+    {
+      "district" : "FounderDistrict",
+      "memoryAfterMB" : 235.21981048583984,
+      "memoryBeforeMB" : 235.39168548583984,
+      "outcome" : "loaded",
+      "package" : "founder_district_batched",
+      "seconds" : 1.2774910926818848
+    },
+    {
+      "district" : "CommerceDistrict",
+      "memoryAfterMB" : 234.90731048583984,
+      "memoryBeforeMB" : 235.40731048583984,
+      "outcome" : "loaded",
+      "package" : "commerce_district_batched",
+      "seconds" : 7.521648049354553
+    },
+    {
+      "district" : "TechCore",
+      "memoryAfterMB" : 231.07918548583984,
+      "memoryBeforeMB" : 235.29793548583984,
+      "outcome" : "loaded",
+      "package" : "tech_core_batched",
+      "seconds" : 3.6883050203323364
+    }
+  ],
+  "lod" : [
+
+  ],
+  "meanInteractionCandidateMicroseconds" : 0,
+  "os" : "26.7",
+  "registeredInteractionTargets" : 0,
+  "sampledPeakMemoryMB" : 249.31353759765625,
+  "stages" : [
+
+  ],
+  "startupMilestones" : {
+    "timeToFirstSceneUpdate" : 0.407629166,
+    "timeToFounderPlayable" : 2.033806292,
+    "timeToFounderVisible" : 2.033788459
+  },
+  "streaming" : [
+
+  ],
+  "unloadCycles" : [
+
+  ],
+  "walks" : [
+
+  ]
+}
