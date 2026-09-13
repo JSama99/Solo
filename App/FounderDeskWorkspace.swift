@@ -16,6 +16,8 @@ struct FounderDeskWorkspace: View {
   @State private var dragStartCamera: FounderEnvironmentCameraState?
   @State private var transitionID = UUID()
   @State private var computerRequest: FounderComputerWorkspaceRequest?
+  @State private var serverComputerRequest: FounderComputerWorkspaceRequest?
+  @State private var computerReturnDevice: FounderDeskDevice?
   @State private var selectionFeedback = 0
   @State private var hasUsedFreeLook = false
   @State private var selectedGarageViewer: FounderGarageViewer?
@@ -39,19 +41,23 @@ struct FounderDeskWorkspace: View {
         reduceMotion: reduceMotion,
         sceneActive: scenePhase == .active
       )
+      let worldPresentation = FounderWorldPresentationModel.derive(
+        store: store,
+        progression: progression,
+        presentation: presentation
+      )
 
       ZStack {
-        FounderEnvironmentRendererView(
+        garageRenderer(
           projection: projection,
-          camera: navigation.camera,
           motion: motion,
-          increasedContrast: contrast == .increased
+          worldPresentation: worldPresentation
         )
-        .allowsHitTesting(false)
         .accessibilityHidden(navigation.selection != .overview)
         .brightness(navigation.selection == .overview ? 0 : -0.16)
 
-        if navigation.selection == .overview {
+        if navigation.selection == .overview,
+           FounderGarageRendererConfiguration.active == .swiftUI {
           deskOverview(size: geometry.size, motion: motion)
             .transition(reduceMotion ? .opacity : .scale(scale: 0.96).combined(with: .opacity))
         }
@@ -86,6 +92,11 @@ struct FounderDeskWorkspace: View {
       .onChange(of: store.stats.trackRecord, initial: true) { _, value in
         progression.observe(trackRecord: value)
       }
+      .onChange(of: serverComputerRequest?.id) { _, _ in
+        guard let request = serverComputerRequest else { return }
+        serverComputerRequest = nil
+        openComputerModule(request.target, from: .server)
+      }
       .onChange(of: scenePhase, initial: true) { _, phase in
         if phase == .active {
           settings.setAudioContext(audioContext(for: navigation.selection))
@@ -107,7 +118,7 @@ struct FounderDeskWorkspace: View {
       case .signalTV:
         SignalTVViewer(events: environmentProjection.signalTVEvents, coverage: store.stats.coverage)
       case .fundingBoard:
-        FounderFundingBoardViewer(store: store)
+        FounderStrategyBoardViewer(store: store, presentation: presentation)
       }
     }
     .sheet(item: $selectedEnvironmentalAction) { action in
@@ -122,6 +133,39 @@ struct FounderDeskWorkspace: View {
       MotionVerificationScreen()
     }
     #endif
+  }
+
+  @ViewBuilder
+  private func garageRenderer(
+    projection: FounderEnvironmentProjection,
+    motion: FounderGarageMotionPresentation,
+    worldPresentation: FounderWorldPresentationModel
+  ) -> some View {
+    switch FounderGarageRendererConfiguration.active {
+    case .swiftUI:
+      FounderEnvironmentRendererView(
+        projection: projection,
+        camera: navigation.camera,
+        motion: motion,
+        increasedContrast: contrast == .increased
+      )
+      .allowsHitTesting(false)
+    case .realityKitPrototype:
+      FounderGarageRealityView(
+        presentation: garageCameraPresentation(worldPresentation),
+        isActive: navigation.selection == .overview,
+        onOpenFounderComputer: { select(.computer) },
+        onCameraIntent: { navigation.observeGarage($0) }
+      )
+      .allowsHitTesting(navigation.selection == .overview)
+    }
+  }
+
+  private func garageCameraPresentation(_ model: FounderWorldPresentationModel) -> FounderWorldPresentationModel {
+    var result = model
+    result.cameraState = navigation.garageCameraState
+    result.founderComputerAvailable = model.founderComputerAvailable && navigation.garageCameraState.allowsComputer
+    return result
   }
 
   private var environmentProjection: FounderEnvironmentProjection {
@@ -231,9 +275,9 @@ struct FounderDeskWorkspace: View {
         deviceButton(.server, style: .wide, visible: true, motion: motion)
         Button("Open Signal TV", systemImage: "tv") { selectedGarageViewer = .signalTV }
           .buttonStyle(.bordered)
-        Button("Open Founder Funding Board", systemImage: "pin.fill") { selectedGarageViewer = .fundingBoard }
+        Button("Open Founder Strategy Board", systemImage: "pin.fill") { selectedGarageViewer = .fundingBoard }
           .buttonStyle(.bordered)
-          .accessibilityHint("Opens visible grant and fundraising opportunities.")
+          .accessibilityHint("Opens initiative planning, preparation, risks, and canonical execution routes.")
           .accessibilityIdentifier("funding-board-hotspot")
         environmentalButton(.rest)
         environmentalButton(.train)
@@ -380,12 +424,15 @@ struct FounderDeskWorkspace: View {
     let hotspot = FundingBoardHotspotLayout(viewportSize: size)
     let frame = hotspot.activationFrame(camera: navigation.camera)
     let visible = hotspot.isSelectable(camera: navigation.camera)
-    let actionable = store.fundingBoardOpportunities.filter { $0.status == .eligible || $0.canResolve }.count
+    let strategy = FounderStrategyBoardPolicy.project(
+      FounderStrategicInitiativeDefinition.all[0],
+      snapshot: .read(store)
+    )
     return Button {
       selectionFeedback += 1
       selectedGarageViewer = .fundingBoard
     } label: {
-      Label("Funding", systemImage: "pin.fill")
+      Label("Strategy", systemImage: "pin.fill")
         .font(.caption2.weight(.black))
         .foregroundStyle(.white)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -399,9 +446,9 @@ struct FounderDeskWorkspace: View {
     .opacity(visible ? 1 : 0)
     .allowsHitTesting(visible && navigation.lookOutActive)
     .accessibilityHidden(!visible || !navigation.lookOutActive)
-    .accessibilityLabel("Founder Funding Board")
-    .accessibilityValue("\(actionable) opportunities ready for attention")
-    .accessibilityHint("Opens grants, fundraising opportunities, deadlines, and visible eligibility requirements.")
+    .accessibilityLabel("Founder Strategy Board")
+    .accessibilityValue("Product Launch \(strategy.readiness.title), \(strategy.incompleteItemCount) preparation items incomplete")
+    .accessibilityHint("Opens initiative planning, preparation, risks, and canonical execution routes.")
     .accessibilityIdentifier("funding-board-hotspot")
   }
 
@@ -509,8 +556,7 @@ struct FounderDeskWorkspace: View {
       focusedDevice(.tablet, size: size) { VentureScreen(store: store) }
       focusedDevice(.server, size: size) {
         CompanyServerScreen(store: store) { target in
-          computerRequest = FounderComputerWorkspaceRequest(target: target)
-          select(.computer)
+          serverComputerRequest = FounderComputerWorkspaceRequest(target: target)
         }
       }
     }
@@ -537,6 +583,28 @@ struct FounderDeskWorkspace: View {
       .allowsHitTesting(selected)
       .accessibilityHidden(!selected)
       .zIndex(selected ? 10 : -1)
+  }
+
+  private func openComputerModule(
+    _ target: FounderComputerWorkspaceTarget,
+    from secondaryDevice: FounderDeskDevice
+  ) {
+    var routedNavigation = navigation
+    routedNavigation.closeSecondaryDevice()
+    guard let transition = routedNavigation.select(.computer) else { return }
+    routedNavigation.completeCameraTransition(to: transition)
+
+    computerReturnDevice = secondaryDevice
+    withAnimation(workspaceAnimation) {
+      navigation = routedNavigation
+      deviceStates[secondaryDevice] = .settling
+      deviceStates[.computer] = .active
+    }
+    computerRequest = FounderComputerWorkspaceRequest(target: target)
+    focusedDevice = .computer
+    selectionFeedback += 1
+    settings.setAudioContext(.companyCommand)
+    settings.playFeedback(.companyCommandFocus)
   }
 
   private func select(_ device: FounderDeskDevice) {
@@ -584,13 +652,15 @@ struct FounderDeskWorkspace: View {
       deviceStates[device] = .settling
     }
     if device == .computer {
+      let returnDevice = computerReturnDevice
+      computerReturnDevice = nil
       settings.playFeedback(.companyCommandClose)
       settings.setAudioContext(.garage)
       var transition: FounderEnvironmentMode?
       withAnimation(workspaceAnimation) {
         transition = navigation.lookOut()
       }
-      if let transition { beginTransition(completing: transition) }
+      if let transition { beginTransition(completing: transition, restoring: returnDevice) }
       return
     }
     withAnimation(workspaceAnimation) {
@@ -654,7 +724,10 @@ struct FounderDeskWorkspace: View {
     }
   }
 
-  private func beginTransition(completing destination: FounderEnvironmentMode) {
+  private func beginTransition(
+    completing destination: FounderEnvironmentMode,
+    restoring device: FounderDeskDevice? = nil
+  ) {
     let id = UUID()
     transitionID = id
     dragStartCamera = nil
@@ -671,7 +744,11 @@ struct FounderDeskWorkspace: View {
         withAnimation(reduceMotion ? nil : .smooth(duration: 0.28)) {
           deviceStates[.computer] = FounderDeviceTransitionPolicy.restingState(afterClosing: .computer)
         }
-        deskIsFocused = true
+        if let device {
+          performSelection(device)
+        } else {
+          deskIsFocused = true
+        }
       case .transitioningToComputerFocus, .transitioningToFreeLook:
         break
       }

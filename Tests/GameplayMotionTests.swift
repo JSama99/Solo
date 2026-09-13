@@ -322,7 +322,7 @@ final class GameplayMotionTests: XCTestCase {
     XCTAssertEqual(restored.stats.energy, energy)
     XCTAssertEqual(restored.attentionRemaining, 0)
     XCTAssertEqual(restored.randomNumberGenerator, rng)
-    XCTAssertEqual(GameStore.saveVersion, 19)
+    XCTAssertEqual(GameStore.saveVersion, 20)
   }
 
   func testFounderReviewRevealsFiveFactsInOrder() async throws {

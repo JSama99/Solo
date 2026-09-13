@@ -1,0 +1,395 @@
+{
+  "source": "App/RealityKit/Atlantis/venture_district.usdc",
+  "sourceSHA256": "00457da376d6eb155f1f3e9b5afd3ba4879dbe2bea0458a9677fd5c87d26142a",
+  "output": "App/RealityKit/Atlantis/venture_district_batched.usdz",
+  "outputSHA256": "559b582072397e7f56deea3024aa47e54b5859d6a430525c241d11cba19402e5",
+  "classification": {
+    "batchable": "supporting blocks, landscape, and static public-realm geometry",
+    "preserveSeparate": "Venture Hall hierarchy and every top-level semantic/navigation anchor"
+  },
+  "preservedRoots": [
+    "/VentureDistrict/VentureHall"
+  ],
+  "semanticAnchors": [
+    {
+      "path": "/VentureDistrict/Venture_Boulevard_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_Boulevard_01",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_Boulevard_02",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_Boulevard_03",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_CrossStreet_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_Forum",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_000",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_008",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_010",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_011",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_012",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_013",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_001_Terrace",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_001_GlazedCap",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_004_Terrace",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_004_GlazedCap",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_009",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_009_Terrace",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_009_GlazedCap",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_007",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_007_Terrace",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/VentureDistrict_Block_007_GlazedCap",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_ForumPaving",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_EntryWalk",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_ReflectingBasin__557",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_ReflectingWater__557",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_ReflectingBasin__483",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_ReflectingWater__483",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_LandscapeBed___565__9_",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_LandscapeMass___565__9_",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_LandscapeBed___565__55_",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_LandscapeMass___565__55_",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_LandscapeBed___475__9_",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_LandscapeMass___475__9_",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_LandscapeBed___475__55_",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Venture_LandscapeMass___475__55_",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/Landmark_VentureHall_Parcel",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/RivalHQ_Slot_02_Parcel",
+      "preservedChildren": []
+    },
+    {
+      "path": "/VentureDistrict/RivalHQ_Slot_02_Massing",
+      "preservedChildren": []
+    }
+  ],
+  "preservedMeshPaths": [
+    "/VentureDistrict/VentureHall/VentureHall_atrium_glazing/Geometry",
+    "/VentureDistrict/VentureHall/VentureHall_brushed_bronze/Geometry",
+    "/VentureDistrict/VentureHall/VentureHall_pale_limestone/Geometry",
+    "/VentureDistrict/VentureHall/VentureHall_warm_entry/Geometry"
+  ],
+  "batchedSourceMeshPaths": [
+    "/VentureDistrict/Landmark_VentureHall_Parcel/Geometry",
+    "/VentureDistrict/RivalHQ_Slot_02_Massing/Geometry",
+    "/VentureDistrict/RivalHQ_Slot_02_Parcel/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_000/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_001/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_001_GlazedCap/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_001_Terrace/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_002/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_003/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_004/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_004_GlazedCap/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_004_Terrace/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_005/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_006/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_007/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_007_GlazedCap/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_007_Terrace/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_008/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_009/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_009_GlazedCap/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_009_Terrace/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_010/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_011/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_012/Geometry",
+    "/VentureDistrict/VentureDistrict_Block_013/Geometry",
+    "/VentureDistrict/VentureDistrict_CrossStreet_00/Geometry",
+    "/VentureDistrict/Venture_Boulevard_00/Geometry",
+    "/VentureDistrict/Venture_Boulevard_01/Geometry",
+    "/VentureDistrict/Venture_Boulevard_02/Geometry",
+    "/VentureDistrict/Venture_Boulevard_03/Geometry",
+    "/VentureDistrict/Venture_EntryWalk/Geometry",
+    "/VentureDistrict/Venture_Forum/Geometry",
+    "/VentureDistrict/Venture_ForumPaving/Geometry",
+    "/VentureDistrict/Venture_LandscapeBed___475__55_/Geometry",
+    "/VentureDistrict/Venture_LandscapeBed___475__9_/Geometry",
+    "/VentureDistrict/Venture_LandscapeBed___565__55_/Geometry",
+    "/VentureDistrict/Venture_LandscapeBed___565__9_/Geometry",
+    "/VentureDistrict/Venture_LandscapeMass___475__55_/Geometry",
+    "/VentureDistrict/Venture_LandscapeMass___475__9_/Geometry",
+    "/VentureDistrict/Venture_LandscapeMass___565__55_/Geometry",
+    "/VentureDistrict/Venture_LandscapeMass___565__9_/Geometry",
+    "/VentureDistrict/Venture_ReflectingBasin__483/Geometry",
+    "/VentureDistrict/Venture_ReflectingBasin__557/Geometry",
+    "/VentureDistrict/Venture_ReflectingWater__483/Geometry",
+    "/VentureDistrict/Venture_ReflectingWater__557/Geometry"
+  ],
+  "batches": [
+    {
+      "material": "/VentureDistrict/Materials/TEMP_____VentureDistrict",
+      "sourceMeshes": [
+        "/VentureDistrict/RivalHQ_Slot_02_Massing/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_000/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_002/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_003/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_005/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_006/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_008/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_010/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_011/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_012/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_013/Geometry"
+      ]
+    },
+    {
+      "material": "/VentureDistrict/Materials/TEMP_____asphalt",
+      "sourceMeshes": [
+        "/VentureDistrict/VentureDistrict_CrossStreet_00/Geometry",
+        "/VentureDistrict/Venture_Boulevard_00/Geometry",
+        "/VentureDistrict/Venture_Boulevard_01/Geometry",
+        "/VentureDistrict/Venture_Boulevard_02/Geometry",
+        "/VentureDistrict/Venture_Boulevard_03/Geometry"
+      ]
+    },
+    {
+      "material": "/VentureDistrict/Materials/TEMP_____bridge___plaza",
+      "sourceMeshes": [
+        "/VentureDistrict/Landmark_VentureHall_Parcel/Geometry",
+        "/VentureDistrict/RivalHQ_Slot_02_Parcel/Geometry",
+        "/VentureDistrict/Venture_Forum/Geometry"
+      ]
+    },
+    {
+      "material": "/VentureDistrict/Materials/Venture_____atrium_glazing",
+      "sourceMeshes": [
+        "/VentureDistrict/VentureDistrict_Block_001_GlazedCap/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_004_GlazedCap/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_007_GlazedCap/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_009_GlazedCap/Geometry"
+      ]
+    },
+    {
+      "material": "/VentureDistrict/Materials/Venture_____brushed_bronze",
+      "sourceMeshes": [
+        "/VentureDistrict/Venture_ReflectingBasin__483/Geometry",
+        "/VentureDistrict/Venture_ReflectingBasin__557/Geometry"
+      ]
+    },
+    {
+      "material": "/VentureDistrict/Materials/Venture_____landscape_blockout",
+      "sourceMeshes": [
+        "/VentureDistrict/Venture_LandscapeMass___475__55_/Geometry",
+        "/VentureDistrict/Venture_LandscapeMass___475__9_/Geometry",
+        "/VentureDistrict/Venture_LandscapeMass___565__55_/Geometry",
+        "/VentureDistrict/Venture_LandscapeMass___565__9_/Geometry"
+      ]
+    },
+    {
+      "material": "/VentureDistrict/Materials/Venture_____pale_limestone",
+      "sourceMeshes": [
+        "/VentureDistrict/VentureDistrict_Block_001/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_001_Terrace/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_004/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_004_Terrace/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_007/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_007_Terrace/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_009/Geometry",
+        "/VentureDistrict/VentureDistrict_Block_009_Terrace/Geometry",
+        "/VentureDistrict/Venture_EntryWalk/Geometry",
+        "/VentureDistrict/Venture_ForumPaving/Geometry",
+        "/VentureDistrict/Venture_LandscapeBed___475__55_/Geometry",
+        "/VentureDistrict/Venture_LandscapeBed___475__9_/Geometry",
+        "/VentureDistrict/Venture_LandscapeBed___565__55_/Geometry",
+        "/VentureDistrict/Venture_LandscapeBed___565__9_/Geometry"
+      ]
+    },
+    {
+      "material": "/VentureDistrict/Materials/Venture_____reflecting_water",
+      "sourceMeshes": [
+        "/VentureDistrict/Venture_ReflectingWater__483/Geometry",
+        "/VentureDistrict/Venture_ReflectingWater__557/Geometry"
+      ]
+    }
+  ],
+  "baseline": {
+    "package": "venture_district",
+    "bytes": 26801,
+    "meshes": 49,
+    "triangles": 1824,
+    "materials": 9,
+    "textures": 0,
+    "bounds": [
+      [
+        -673.7999877929688,
+        13.999996185302734,
+        -391.0
+      ],
+      [
+        8.124692916870117,
+        124.25262451171875,
+        279.3028259277344
+      ]
+    ],
+    "landmarks": {
+      "VentureHall": [
+        -520.0,
+        14.0,
+        -110.0
+      ]
+    },
+    "sha256": "1b33e463f957e5b4c1801ac91a41b4dadbbb6542175273d1ad8abdb248892150",
+    "source_shared_mesh_variants": 0,
+    "mesh_payloads_exported": 49,
+    "instancing": "expanded per object in baseline; runtime sharing not assumed"
+  },
+  "optimized": {
+    "package": "venture_district_batched",
+    "bytes": 27554,
+    "meshes": 12,
+    "triangles": 1824,
+    "materials": 9,
+    "textures": 0,
+    "bounds": [
+      [
+        -673.7999877929688,
+        13.999980926513672,
+        -391.0
+      ],
+      [
+        8.124691009521484,
+        124.25260925292969,
+        279.3028259277344
+      ]
+    ],
+    "landmarks": {
+      "VentureHall": [
+        -520.0,
+        14.0,
+        -110.0
+      ]
+    },
+    "sha256": "559b582072397e7f56deea3024aa47e54b5859d6a430525c241d11cba19402e5",
+    "experiment": "Selective material batching with landmark subtrees and semantic anchors preserved"
+  }
+}

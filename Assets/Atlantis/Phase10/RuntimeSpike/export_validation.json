@@ -1,0 +1,193 @@
+{
+  "packages": {
+    "FounderDistrict": {
+      "checks": {
+        "opens": true,
+        "y_up": true,
+        "metres": true,
+        "identity_root": true,
+        "mesh_count": true,
+        "material_count": true,
+        "landmarks": true,
+        "dependencies_resolved": true,
+        "hash_matches": true,
+        "single_self_contained_stage": true
+      },
+      "landmarks": {
+        "FounderGarageSlot": [
+          -875.0,
+          8.000044822692871,
+          1030.0
+        ]
+      },
+      "missing": []
+    },
+    "StartupRow": {
+      "checks": {
+        "opens": true,
+        "y_up": true,
+        "metres": true,
+        "identity_root": true,
+        "mesh_count": true,
+        "material_count": true,
+        "landmarks": true,
+        "dependencies_resolved": true,
+        "hash_matches": true,
+        "single_self_contained_stage": true
+      },
+      "landmarks": {},
+      "missing": []
+    },
+    "CommerceDistrict": {
+      "checks": {
+        "opens": true,
+        "y_up": true,
+        "metres": true,
+        "identity_root": true,
+        "mesh_count": true,
+        "material_count": true,
+        "landmarks": true,
+        "dependencies_resolved": true,
+        "hash_matches": true,
+        "single_self_contained_stage": true
+      },
+      "landmarks": {
+        "FlashpointHQ": [
+          430.0,
+          14.00001049041748,
+          240.0
+        ]
+      },
+      "missing": []
+    },
+    "VentureDistrict": {
+      "checks": {
+        "opens": true,
+        "y_up": true,
+        "metres": true,
+        "identity_root": true,
+        "mesh_count": true,
+        "material_count": true,
+        "landmarks": true,
+        "dependencies_resolved": true,
+        "hash_matches": true,
+        "single_self_contained_stage": true
+      },
+      "landmarks": {
+        "VentureHall": [
+          -520.0,
+          13.999995231628418,
+          -110.0
+        ]
+      },
+      "missing": []
+    },
+    "MediaDistrict": {
+      "checks": {
+        "opens": true,
+        "y_up": true,
+        "metres": true,
+        "identity_root": true,
+        "mesh_count": true,
+        "material_count": true,
+        "landmarks": true,
+        "dependencies_resolved": true,
+        "hash_matches": true,
+        "single_self_contained_stage": true
+      },
+      "landmarks": {
+        "TechComTower": [
+          835.0,
+          13.999990463256836,
+          -220.0
+        ],
+        "SignalTV": [
+          860.0,
+          13.999979972839355,
+          -460.0
+        ]
+      },
+      "missing": []
+    },
+    "TechCore": {
+      "checks": {
+        "opens": true,
+        "y_up": true,
+        "metres": true,
+        "identity_root": true,
+        "mesh_count": true,
+        "material_count": true,
+        "landmarks": true,
+        "dependencies_resolved": true,
+        "hash_matches": true,
+        "single_self_contained_stage": true
+      },
+      "landmarks": {
+        "TheSpire": [
+          50.0,
+          13.999981880187988,
+          -420.0
+        ],
+        "PallasAIHQ": [
+          220.0,
+          13.99998664855957,
+          -300.0
+        ],
+        "NorthwindLabsHQ": [
+          -100.0,
+          13.999977111816406,
+          -520.0
+        ]
+      },
+      "missing": []
+    },
+    "UnicornHeights": {
+      "checks": {
+        "opens": true,
+        "y_up": true,
+        "metres": true,
+        "identity_root": true,
+        "mesh_count": true,
+        "material_count": true,
+        "landmarks": true,
+        "dependencies_resolved": true,
+        "hash_matches": true,
+        "single_self_contained_stage": true
+      },
+      "landmarks": {
+        "PlayerUnicornHQSlot": [
+          970.0,
+          84.99996185302734,
+          -850.0
+        ]
+      },
+      "missing": []
+    },
+    "WorldContext": {
+      "checks": {
+        "opens": true,
+        "y_up": true,
+        "metres": true,
+        "identity_root": true,
+        "mesh_count": true,
+        "material_count": true,
+        "landmarks": true,
+        "dependencies_resolved": true,
+        "hash_matches": true,
+        "single_self_contained_stage": true
+      },
+      "landmarks": {},
+      "missing": []
+    }
+  },
+  "protected_file_count": 537,
+  "intentional_existing_changes": [
+    "App/App.swift",
+    "SoloUnicornRun.xcodeproj/project.pbxproj"
+  ],
+  "generated_xcode_user_state": [
+    "SoloUnicornRun.xcodeproj/project.xcworkspace/xcuserdata/jermainenelson.xcuserdatad/UserInterfaceState.xcuserstate"
+  ],
+  "unchanged_count": 534,
+  "checks_passed": 80
+}

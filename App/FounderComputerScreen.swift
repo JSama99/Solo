@@ -26,6 +26,13 @@ struct FounderComputerScreen: View {
   @State private var resolutionTick = 0
   // Presentation-only choreography. None of these values participate in the
   // deterministic simulation or are persisted in a save.
+  @State private var observedPortraitPhases: [String: String] = [:]
+  @State private var portraitCueTokens: [String: String] = [:]
+  @State private var observedPortraitOutcomePhases: [String: String] = [:]
+  @State private var portraitOutcomeCueTokens: [String: String] = [:]
+  @State private var visiblePortraitIDs: Set<String> = []
+  @State private var portraitViewport: CGRect = .zero
+  @State private var portraitSheetCovered = false
   @State private var assignmentArrivalAgentID: String?
   @State private var activeReviewTaskID: UUID?
   @State private var reviewStage = 0
@@ -43,13 +50,15 @@ struct FounderComputerScreen: View {
   var body: some View {
     ScrollViewReader { proxy in
       ScrollView {
-        // These three sections have stable outer geometry. The compact floor
-        // owns lazy station layout; nesting it in another lazy stack can keep
-        // SwiftUI recalculating visible placements after an iPhone scroll.
+        // Keep the bounded Computer sections eagerly measured. Lazy placements
+        // inside the persistent Garage viewport can loop during an iPhone scroll.
         VStack(spacing: 16) {
           AIOperationsFloor(
             agents: livingAgentProjections,
+            agentModels: store.agents,
             tasks: store.tasks,
+            operations: store.agentOperations,
+            decisionRequests: agentOperationalDecisionRequests,
             summary: founderSummary,
             objective: store.currentObjective?.title ?? "Set the next company priority.",
             venture: store.venture,
@@ -59,10 +68,30 @@ struct FounderComputerScreen: View {
             fundingOpportunities: store.fundingBoardOpportunities,
             stats: store.stats,
             availability: agentAvailability,
-            reduceMotion: reduceMotion,
+            reduceMotion: reduceMotion || ProcessInfo.processInfo.arguments.contains("--agent-operations-reduce-motion"),
+            portraitViewport: portraitViewport,
+            portraitPresentationEligible: portraitPresentationEligible,
+            visiblePortraitIDs: visiblePortraitIDs,
+            portraitCueTokens: portraitCueTokens,
+            portraitOutcomeCueTokens: portraitOutcomeCueTokens,
+            onPortraitVisibility: portraitVisibilityChanged,
             onAssign: beginAssignment,
             onReview: review,
             onOpenDetail: openFullWorkstation,
+            onSetAllocation: { agentID, domain, value in
+              _ = store.setAgentOperationsAllocation(agentID: agentID, domain: domain, value: value)
+            },
+            onPreset: { agentID, preset in
+              _ = store.applyAgentOperationsPreset(agentID: agentID, preset: preset)
+            },
+            onAutonomy: { agentID, autonomy in
+              _ = store.setAgentOperationalAutonomy(agentID: agentID, autonomy: autonomy)
+            },
+            onDecision: { agentID, choice in
+              if store.resolveAgentOperationalDecision(agentID: agentID, choice: choice) {
+                announce(store.alertMessage ?? "Agent operations decision recorded.")
+              }
+            },
             onCommit: commit
           )
           .id("viewport")
@@ -80,6 +109,9 @@ struct FounderComputerScreen: View {
         .padding(16)
         .frame(maxWidth: .infinity)
         .scrollTargetLayout()
+      }
+      .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: {
+        portraitViewport = $0
       }
       .scrollTargetBehavior(.viewAligned)
       .scrollPosition($scrollPosition)
@@ -124,7 +156,30 @@ struct FounderComputerScreen: View {
     .appSensoryFeedback(.success, trigger: levelUpAgentID)
     .onChange(of: presentation.latestEvent?.id) { _, _ in handlePresentationEvent() }
     .onChange(of: assignmentIdentity) { _, _ in reconcilePresentationAfterAssignmentChange() }
-    .sheet(item: $assignmentDestination) { destination in
+    .onChange(of: livingAgentProjections.map(AIOperationsFloorProjection.portraitIdentity), initial: true) { _, _ in
+      reconcilePortraits(allowTransitions: true)
+    }
+    .onChange(of: livingAgentProjections.map(AIOperationsFloorProjection.portraitOutcomeObservationIdentity), initial: true) { _, _ in
+      reconcilePortraitOutcomes(allowTransitions: true)
+    }
+    .onChange(of: portraitPresentationEligible) { _, _ in
+      portraitCueTokens.removeAll()
+      portraitOutcomeCueTokens.removeAll()
+      reconcilePortraits(allowTransitions: false)
+      reconcilePortraitOutcomes(allowTransitions: false)
+    }
+    .onChange(of: reduceMotion) { _, _ in
+      portraitCueTokens.removeAll()
+      portraitOutcomeCueTokens.removeAll()
+      reconcilePortraits(allowTransitions: false)
+      reconcilePortraitOutcomes(allowTransitions: false)
+    }
+    .onDisappear {
+      visiblePortraitIDs.removeAll()
+      portraitCueTokens.removeAll()
+      portraitOutcomeCueTokens.removeAll()
+    }
+    .sheet(item: $assignmentDestination, onDismiss: { portraitSheetCovered = false }) { destination in
       TaskAssignmentSheet(store: store, presentation: presentation, agentID: destination.agentID) { feedback in
         assignmentDestination = nil
         announce(feedback)
@@ -143,6 +198,7 @@ struct FounderComputerScreen: View {
       finishReviewFeedbackIfReady()
     }
     .sheet(item: $workSessionDestination, onDismiss: {
+      portraitSheetCovered = false
       workSessionDismissed = true
       continueDismissedWorkSession()
     }) { destination in
@@ -166,7 +222,7 @@ struct FounderComputerScreen: View {
       }
       .presentationDetents([.large])
     }
-    .sheet(item: $detailDestination) { destination in
+    .sheet(item: $detailDestination, onDismiss: { portraitSheetCovered = false }) { destination in
       NavigationStack {
         ScrollView {
           detailedWorkstation(destination)
@@ -178,12 +234,13 @@ struct FounderComputerScreen: View {
       .presentationDetents([.medium, .large])
     }
     #if DEBUG
-    .sheet(isPresented: $showsMotionVerification) {
+    .sheet(isPresented: $showsMotionVerification, onDismiss: { portraitSheetCovered = false }) {
       MotionVerificationScreen()
     }
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {
         Button("Motion QA", systemImage: "waveform.path.ecg") {
+          portraitSheetCovered = true
           showsMotionVerification = true
         }
         .labelStyle(.iconOnly)
@@ -202,6 +259,43 @@ struct FounderComputerScreen: View {
       Button("Cancel", role: .cancel) { }
     } message: {
       Text(restCandidate?.hasAssignment == true ? "Rest clears the unreviewed assignment. The agent performs no task and recovers stress when the sprint commits." : "The agent performs no task and recovers stress when the sprint commits.")
+    }
+  }
+
+  private var portraitPresentationEligible: Bool {
+    scenePhase == .active && isFocused && !portraitSheetCovered
+      && assignmentDestination == nil && workSessionDestination == nil
+      && detailDestination == nil && restCandidate == nil
+  }
+
+  private func reconcilePortraits(allowTransitions: Bool) {
+    AIOperationsFloorProjection.reconcilePortraits(
+      agents: livingAgentProjections, visibleIDs: visiblePortraitIDs,
+      eligible: portraitPresentationEligible, reduceMotion: reduceMotion,
+      allowTransitions: allowTransitions, observed: &observedPortraitPhases, cues: &portraitCueTokens
+    )
+  }
+
+  private func reconcilePortraitOutcomes(allowTransitions: Bool) {
+    AIOperationsFloorProjection.reconcilePortraitOutcomes(
+      agents: livingAgentProjections, visibleIDs: visiblePortraitIDs,
+      eligible: portraitPresentationEligible, reduceMotion: reduceMotion,
+      allowTransitions: allowTransitions, observed: &observedPortraitOutcomePhases,
+      cues: &portraitOutcomeCueTokens
+    )
+  }
+
+  private func portraitVisibilityChanged(_ agentID: String, _ visible: Bool) {
+    let wasVisible = visiblePortraitIDs.contains(agentID)
+    guard wasVisible != visible else { return }
+    if visible { visiblePortraitIDs.insert(agentID) } else { visiblePortraitIDs.remove(agentID) }
+    portraitCueTokens[agentID] = nil
+    portraitOutcomeCueTokens[agentID] = nil
+    // Only this portrait's baseline changes. Scrolling Brio into view must not
+    // consume a simultaneous live transition for an already-visible Aurora.
+    if let agent = livingAgentProjections.first(where: { $0.agentID == agentID }) {
+      observedPortraitPhases[agentID] = AIOperationsFloorProjection.portraitIdentity(agent)
+      observedPortraitOutcomePhases[agentID] = AIOperationsFloorProjection.portraitOutcomeObservationIdentity(agent)
     }
   }
 
@@ -322,6 +416,12 @@ struct FounderComputerScreen: View {
     })
   }
 
+  private var agentOperationalDecisionRequests: [String: AgentOperationalDecisionRequest] {
+    Dictionary(uniqueKeysWithValues: store.agents.compactMap { agent in
+      store.agentOperationalDecisionRequest(for: agent.id).map { (agent.id, $0) }
+    })
+  }
+
   @ViewBuilder
   private func workspaceCard(for station: AgentStationViewModel) -> some View {
     let agentID = station.agentID
@@ -411,6 +511,7 @@ struct FounderComputerScreen: View {
 
   private func openFullWorkstation(_ target: CompanyCommandFocus) {
     guard target == .founder || agent(for: target.scrollID) != nil else { return }
+    portraitSheetCovered = true
     detailDestination = .init(target: target)
     announce("Opened the detailed \(target.scrollID == "founder" ? "Founder" : agent(for: target.scrollID)?.name ?? "agent") workstation.")
   }
@@ -439,6 +540,7 @@ struct FounderComputerScreen: View {
 
   private func beginAssignment(_ agentID: String) {
     guard availability(for: agentID).canAssign else { return }
+    portraitSheetCovered = true
     assignmentDestination = .init(agentID: agentID)
   }
 
@@ -465,6 +567,7 @@ struct FounderComputerScreen: View {
     if let family = store.workSessionFamily(taskID: task.id) {
       guard store.prepareWorkSession(taskID: task.id, expectedFamily: family) else { return }
       workSessionDismissed = false
+      portraitSheetCovered = true
       workSessionDestination = .init(taskID: task.id)
       let agentName = agent(for: id)?.name ?? id.capitalized
       announce("\(agentName) work complete. Choose Review Work or Delegate.")
@@ -575,6 +678,33 @@ struct FounderComputerScreen: View {
     AccessibilityNotification.Announcement(text).post()
   }
 }
+
+#if DEBUG
+struct AgentOperationsQAHost: View {
+  @State private var store = GameStore()
+  @State private var presentation = PresentationCoordinator()
+  @State private var configured = false
+
+  var body: some View {
+    FounderComputerScreen(store: store, presentation: presentation)
+      .onAppear {
+        guard !configured else { return }
+        configured = true
+        store.resetCareer()
+        store.startCareer(seed: 19_019)
+        if store.awaitingThesisSelection { store.selectThesisAndBegin() }
+        if let choice = store.activeDilemma?.choices.first { store.selectDilemmaChoice(choice.id) }
+        let fixture = AgentOperationsFixture.allCases.first {
+          ProcessInfo.processInfo.arguments.contains("--agent-operations-fixture-\($0.rawValue)")
+        } ?? .balanced
+        store.installAgentOperationsForTesting(fixture.state, agents: fixture.agents)
+        if fixture == .stacksOverloaded, let task = store.tasks.first {
+          store.assign(agentID: "stacks", to: task.id)
+        }
+      }
+  }
+}
+#endif
 
 private struct AssignmentDestination: Identifiable { var agentID: String; var id: String { agentID } }
 private struct WorkSessionDestination: Identifiable { var taskID: UUID; var id: UUID { taskID } }

@@ -1,0 +1,1735 @@
+{
+  "source": "App/RealityKit/Atlantis/unicorn_heights.usdc",
+  "sourceSHA256": "dd1054190838cdd5d8c8e5a9bdd9321fec6b39048dc2f758b4a7e85fa1021474",
+  "output": "App/RealityKit/Atlantis/unicorn_heights_batched.usdz",
+  "outputSHA256": "2d3d2de5c9756ad33217257a86fb6a56d3fd945508e4b7777afb5ea9496860e8",
+  "classification": {
+    "batchable": "campus architecture, repeated landscape props, and static public-realm geometry",
+    "preserveSeparate": "Player Unicorn HQ slot and legacy Tech Core bridge hierarchies; every top-level semantic/navigation anchor; campus identity and occupied surfaces"
+  },
+  "preservedRoots": [
+    "/UnicornHeights/Bridge_TechCore_00",
+    "/UnicornHeights/PlayerUnicornHQSlot",
+    "/UnicornHeights/Unicorn_BridgeWalk_00"
+  ],
+  "semanticAnchors": [
+    {
+      "path": "/UnicornHeights/Unicorn_Raised_Headland",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Bridge_TechCore_Pier_0_2",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Bridge_TechCore_Pier_0_5",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Bridge_TechCore_Pier_0_8",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_01",
+      "preservedChildren": [
+        "Unicorn_Campus_01_Identity",
+        "Unicorn_Campus_01_OccupiedSurfaces"
+      ]
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_02",
+      "preservedChildren": [
+        "Unicorn_Campus_02_Identity",
+        "Unicorn_Campus_02_OccupiedSurfaces"
+      ]
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_03",
+      "preservedChildren": [
+        "Unicorn_Campus_03_Identity",
+        "Unicorn_Campus_03_OccupiedSurfaces"
+      ]
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_04",
+      "preservedChildren": [
+        "Unicorn_Campus_04_Identity",
+        "Unicorn_Campus_04_OccupiedSurfaces"
+      ]
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_05",
+      "preservedChildren": [
+        "Unicorn_Campus_05_Identity",
+        "Unicorn_Campus_05_OccupiedSurfaces"
+      ]
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_06",
+      "preservedChildren": [
+        "Unicorn_Campus_06_Identity",
+        "Unicorn_Campus_06_OccupiedSurfaces"
+      ]
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_07",
+      "preservedChildren": [
+        "Unicorn_Campus_07_Identity",
+        "Unicorn_Campus_07_OccupiedSurfaces"
+      ]
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_08",
+      "preservedChildren": [
+        "Unicorn_Campus_08_Identity",
+        "Unicorn_Campus_08_OccupiedSurfaces"
+      ]
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LandscapeGround",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_ArrivalRoad_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_ArrivalRoad_01",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_BoulevardWalk_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_CampusSpine_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_CampusSpine_01",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_CampusCrosswalk_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_WestGardenWalk_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_WestGardenWalk_01",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_WestGardenWalk_02",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_OverlookLink_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_OverlookLink_01",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_PlazaArrival_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_PlayerArrival_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_PlayerFrontage_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_FounderPlaza_Surface",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_ScenicOverlook_Surface",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_PlayerReservedLawn",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_01_Landscape",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_01_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_02_Landscape",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_02_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_03_Landscape",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_03_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_04_Landscape",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_04_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_05_Landscape",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_05_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_06_Landscape",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_06_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_06_01",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_07_Landscape",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_07_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Campus_08_Landscape",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_08_00",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_007",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_007",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_008",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_008",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_009",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_009",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_010",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_010",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_011",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_011",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_012",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_012",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_013",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_013",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_014",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_014",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_015",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_015",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_016",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_016",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_017",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_017",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_018",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_018",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_019",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_019",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_020",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_020",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_021",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_021",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_022",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_022",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_023",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_023",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_024",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_024",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_025",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_025",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_026",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_026",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_027",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_027",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_028",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_028",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_029",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_029",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_030",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_030",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_031",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_031",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_032",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_032",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_033",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_033",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_034",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_034",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_035",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_035",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_036",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_036",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_037",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_037",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_038",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_038",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_039",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_039",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_040",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_040",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_041",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_041",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_042",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_042",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_043",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_043",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_044",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_044",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_045",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_045",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_046",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_046",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_047",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_047",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_048",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_048",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_049",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_049",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_050",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_050",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_051",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_051",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_052",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_052",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_053",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_053",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_054",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_054",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_055",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_055",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_056",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_056",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_057",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_057",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_058",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_058",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_059",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_059",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_060",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_060",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_061",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_061",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_062",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_062",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_063",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_063",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_064",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_064",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_065",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_065",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_066",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_066",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_067",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_067",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_068",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_068",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_069",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_069",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_070",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_070",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_071",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_071",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_072",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_072",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_073",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_073",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_074",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_074",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_075",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_075",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_076",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_076",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_077",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_077",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_078",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_078",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_079",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_079",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_080",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_080",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_081",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_081",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_082",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_082",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_083",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_083",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeTrunk_084",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_TreeCanopy_084",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Seat",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_SeatSupport",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_SeatSupport_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Seat_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_SeatSupport_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_SeatSupport_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Seat_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_SeatSupport_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_SeatSupport_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Seat_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_SeatSupport_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_SeatSupport_007",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Seat_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_SeatSupport_008",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_SeatSupport_009",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_Seat_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_SeatSupport_010",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_SeatSupport_011",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LightBase",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LandscapeLight",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LightBase_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LandscapeLight_001",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LightBase_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LandscapeLight_002",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LightBase_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LandscapeLight_003",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LightBase_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LandscapeLight_004",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LightBase_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LandscapeLight_005",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LightBase_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_LandscapeLight_006",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_ReflectingPool",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_PoolSurface",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_OverlookGuard",
+      "preservedChildren": []
+    },
+    {
+      "path": "/UnicornHeights/Unicorn_ContinuousPaving",
+      "preservedChildren": []
+    }
+  ],
+  "preservedMeshPaths": [
+    "/UnicornHeights/Bridge_TechCore_00/Geometry",
+    "/UnicornHeights/Unicorn_BridgeWalk_00/Geometry",
+    "/UnicornHeights/Unicorn_Campus_01/Unicorn_Campus_01_Identity/Geometry",
+    "/UnicornHeights/Unicorn_Campus_01/Unicorn_Campus_01_OccupiedSurfaces/Geometry",
+    "/UnicornHeights/Unicorn_Campus_02/Unicorn_Campus_02_Identity/Geometry",
+    "/UnicornHeights/Unicorn_Campus_02/Unicorn_Campus_02_OccupiedSurfaces/Geometry",
+    "/UnicornHeights/Unicorn_Campus_03/Unicorn_Campus_03_Identity/Geometry",
+    "/UnicornHeights/Unicorn_Campus_03/Unicorn_Campus_03_OccupiedSurfaces/Geometry",
+    "/UnicornHeights/Unicorn_Campus_04/Unicorn_Campus_04_Identity/Geometry",
+    "/UnicornHeights/Unicorn_Campus_04/Unicorn_Campus_04_OccupiedSurfaces/Geometry",
+    "/UnicornHeights/Unicorn_Campus_05/Unicorn_Campus_05_Identity/Geometry",
+    "/UnicornHeights/Unicorn_Campus_05/Unicorn_Campus_05_OccupiedSurfaces/Geometry",
+    "/UnicornHeights/Unicorn_Campus_06/Unicorn_Campus_06_Identity/Geometry",
+    "/UnicornHeights/Unicorn_Campus_06/Unicorn_Campus_06_OccupiedSurfaces/Geometry",
+    "/UnicornHeights/Unicorn_Campus_07/Unicorn_Campus_07_Identity/Geometry",
+    "/UnicornHeights/Unicorn_Campus_07/Unicorn_Campus_07_OccupiedSurfaces/Geometry",
+    "/UnicornHeights/Unicorn_Campus_08/Unicorn_Campus_08_Identity/Geometry",
+    "/UnicornHeights/Unicorn_Campus_08/Unicorn_Campus_08_OccupiedSurfaces/Geometry"
+  ],
+  "batchedSourceMeshPaths": [
+    "/UnicornHeights/Bridge_TechCore_Pier_0_2/Geometry",
+    "/UnicornHeights/Bridge_TechCore_Pier_0_5/Geometry",
+    "/UnicornHeights/Bridge_TechCore_Pier_0_8/Geometry",
+    "/UnicornHeights/Unicorn_ArrivalRoad_00/Geometry",
+    "/UnicornHeights/Unicorn_ArrivalRoad_01/Geometry",
+    "/UnicornHeights/Unicorn_BoulevardWalk_00/Geometry",
+    "/UnicornHeights/Unicorn_CampusCrosswalk_00/Geometry",
+    "/UnicornHeights/Unicorn_CampusSpine_00/Geometry",
+    "/UnicornHeights/Unicorn_CampusSpine_01/Geometry",
+    "/UnicornHeights/Unicorn_Campus_01/Unicorn_Campus_01_Architecture/Geometry",
+    "/UnicornHeights/Unicorn_Campus_01_Landscape/Geometry",
+    "/UnicornHeights/Unicorn_Campus_02/Unicorn_Campus_02_Architecture/Geometry",
+    "/UnicornHeights/Unicorn_Campus_02_Landscape/Geometry",
+    "/UnicornHeights/Unicorn_Campus_03/Unicorn_Campus_03_Architecture/Geometry",
+    "/UnicornHeights/Unicorn_Campus_03_Landscape/Geometry",
+    "/UnicornHeights/Unicorn_Campus_04/Unicorn_Campus_04_Architecture/Geometry",
+    "/UnicornHeights/Unicorn_Campus_04_Landscape/Geometry",
+    "/UnicornHeights/Unicorn_Campus_05/Unicorn_Campus_05_Architecture/Geometry",
+    "/UnicornHeights/Unicorn_Campus_05_Landscape/Geometry",
+    "/UnicornHeights/Unicorn_Campus_06/Unicorn_Campus_06_Architecture/Geometry",
+    "/UnicornHeights/Unicorn_Campus_06_Landscape/Geometry",
+    "/UnicornHeights/Unicorn_Campus_07/Unicorn_Campus_07_Architecture/Geometry",
+    "/UnicornHeights/Unicorn_Campus_07_Landscape/Geometry",
+    "/UnicornHeights/Unicorn_Campus_08/Unicorn_Campus_08_Architecture/Geometry",
+    "/UnicornHeights/Unicorn_Campus_08_Landscape/Geometry",
+    "/UnicornHeights/Unicorn_ContinuousPaving/Geometry",
+    "/UnicornHeights/Unicorn_FounderPlaza_Surface/Geometry",
+    "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_01_00/Geometry",
+    "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_02_00/Geometry",
+    "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_03_00/Geometry",
+    "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_04_00/Geometry",
+    "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_05_00/Geometry",
+    "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_06_00/Geometry",
+    "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_06_01/Geometry",
+    "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_07_00/Geometry",
+    "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_08_00/Geometry",
+    "/UnicornHeights/Unicorn_LandscapeGround/Geometry",
+    "/UnicornHeights/Unicorn_LandscapeLight/Geometry",
+    "/UnicornHeights/Unicorn_LandscapeLight_001/Geometry",
+    "/UnicornHeights/Unicorn_LandscapeLight_002/Geometry",
+    "/UnicornHeights/Unicorn_LandscapeLight_003/Geometry",
+    "/UnicornHeights/Unicorn_LandscapeLight_004/Geometry",
+    "/UnicornHeights/Unicorn_LandscapeLight_005/Geometry",
+    "/UnicornHeights/Unicorn_LandscapeLight_006/Geometry",
+    "/UnicornHeights/Unicorn_LightBase/Geometry",
+    "/UnicornHeights/Unicorn_LightBase_001/Geometry",
+    "/UnicornHeights/Unicorn_LightBase_002/Geometry",
+    "/UnicornHeights/Unicorn_LightBase_003/Geometry",
+    "/UnicornHeights/Unicorn_LightBase_004/Geometry",
+    "/UnicornHeights/Unicorn_LightBase_005/Geometry",
+    "/UnicornHeights/Unicorn_LightBase_006/Geometry",
+    "/UnicornHeights/Unicorn_OverlookGuard/Geometry",
+    "/UnicornHeights/Unicorn_OverlookLink_00/Geometry",
+    "/UnicornHeights/Unicorn_OverlookLink_01/Geometry",
+    "/UnicornHeights/Unicorn_PlayerArrival_00/Geometry",
+    "/UnicornHeights/Unicorn_PlayerFrontage_00/Geometry",
+    "/UnicornHeights/Unicorn_PlayerReservedLawn/Geometry",
+    "/UnicornHeights/Unicorn_PlazaArrival_00/Geometry",
+    "/UnicornHeights/Unicorn_PoolSurface/Geometry",
+    "/UnicornHeights/Unicorn_Raised_Headland/Geometry",
+    "/UnicornHeights/Unicorn_ReflectingPool/Geometry",
+    "/UnicornHeights/Unicorn_ScenicOverlook_Surface/Geometry",
+    "/UnicornHeights/Unicorn_Seat/Geometry",
+    "/UnicornHeights/Unicorn_SeatSupport/Geometry",
+    "/UnicornHeights/Unicorn_SeatSupport_001/Geometry",
+    "/UnicornHeights/Unicorn_SeatSupport_002/Geometry",
+    "/UnicornHeights/Unicorn_SeatSupport_003/Geometry",
+    "/UnicornHeights/Unicorn_SeatSupport_004/Geometry",
+    "/UnicornHeights/Unicorn_SeatSupport_005/Geometry",
+    "/UnicornHeights/Unicorn_SeatSupport_006/Geometry",
+    "/UnicornHeights/Unicorn_SeatSupport_007/Geometry",
+    "/UnicornHeights/Unicorn_SeatSupport_008/Geometry",
+    "/UnicornHeights/Unicorn_SeatSupport_009/Geometry",
+    "/UnicornHeights/Unicorn_SeatSupport_010/Geometry",
+    "/UnicornHeights/Unicorn_SeatSupport_011/Geometry",
+    "/UnicornHeights/Unicorn_Seat_001/Geometry",
+    "/UnicornHeights/Unicorn_Seat_002/Geometry",
+    "/UnicornHeights/Unicorn_Seat_003/Geometry",
+    "/UnicornHeights/Unicorn_Seat_004/Geometry",
+    "/UnicornHeights/Unicorn_Seat_005/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_001/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_002/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_003/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_004/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_005/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_006/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_007/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_008/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_009/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_010/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_011/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_012/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_013/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_014/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_015/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_016/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_017/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_018/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_019/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_020/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_021/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_022/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_023/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_024/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_025/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_026/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_027/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_028/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_029/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_030/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_031/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_032/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_033/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_034/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_035/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_036/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_037/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_038/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_039/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_040/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_041/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_042/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_043/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_044/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_045/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_046/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_047/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_048/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_049/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_050/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_051/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_052/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_053/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_054/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_055/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_056/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_057/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_058/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_059/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_060/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_061/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_062/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_063/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_064/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_065/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_066/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_067/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_068/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_069/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_070/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_071/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_072/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_073/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_074/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_075/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_076/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_077/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_078/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_079/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_080/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_081/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_082/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_083/Geometry",
+    "/UnicornHeights/Unicorn_TreeCanopy_084/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_001/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_002/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_003/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_004/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_005/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_006/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_007/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_008/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_009/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_010/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_011/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_012/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_013/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_014/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_015/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_016/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_017/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_018/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_019/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_020/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_021/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_022/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_023/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_024/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_025/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_026/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_027/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_028/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_029/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_030/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_031/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_032/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_033/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_034/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_035/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_036/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_037/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_038/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_039/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_040/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_041/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_042/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_043/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_044/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_045/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_046/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_047/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_048/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_049/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_050/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_051/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_052/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_053/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_054/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_055/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_056/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_057/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_058/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_059/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_060/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_061/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_062/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_063/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_064/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_065/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_066/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_067/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_068/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_069/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_070/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_071/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_072/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_073/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_074/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_075/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_076/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_077/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_078/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_079/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_080/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_081/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_082/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_083/Geometry",
+    "/UnicornHeights/Unicorn_TreeTrunk_084/Geometry",
+    "/UnicornHeights/Unicorn_WestGardenWalk_00/Geometry",
+    "/UnicornHeights/Unicorn_WestGardenWalk_01/Geometry",
+    "/UnicornHeights/Unicorn_WestGardenWalk_02/Geometry"
+  ],
+  "batches": [
+    {
+      "material": "/UnicornHeights/Materials/TEMP_____bridge___plaza",
+      "sourceMeshes": [
+        "/UnicornHeights/Bridge_TechCore_Pier_0_2/Geometry",
+        "/UnicornHeights/Bridge_TechCore_Pier_0_5/Geometry",
+        "/UnicornHeights/Bridge_TechCore_Pier_0_8/Geometry"
+      ]
+    },
+    {
+      "material": "/UnicornHeights/Materials/TEMP_____coastal_limestone",
+      "sourceMeshes": [
+        "/UnicornHeights/Unicorn_Raised_Headland/Geometry"
+      ]
+    },
+    {
+      "material": "/UnicornHeights/Materials/Unicorn_QuietLobbyGlow",
+      "sourceMeshes": [
+        "/UnicornHeights/Unicorn_LandscapeLight/Geometry",
+        "/UnicornHeights/Unicorn_LandscapeLight_001/Geometry",
+        "/UnicornHeights/Unicorn_LandscapeLight_002/Geometry",
+        "/UnicornHeights/Unicorn_LandscapeLight_003/Geometry",
+        "/UnicornHeights/Unicorn_LandscapeLight_004/Geometry",
+        "/UnicornHeights/Unicorn_LandscapeLight_005/Geometry",
+        "/UnicornHeights/Unicorn_LandscapeLight_006/Geometry"
+      ]
+    },
+    {
+      "material": "/UnicornHeights/Materials/Unicorn_glass",
+      "sourceMeshes": [
+        "/UnicornHeights/Unicorn_Campus_01/Unicorn_Campus_01_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_02/Unicorn_Campus_02_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_03/Unicorn_Campus_03_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_04/Unicorn_Campus_04_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_05/Unicorn_Campus_05_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_06/Unicorn_Campus_06_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_07/Unicorn_Campus_07_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_08/Unicorn_Campus_08_Architecture/Geometry"
+      ]
+    },
+    {
+      "material": "/UnicornHeights/Materials/Unicorn_lawn",
+      "sourceMeshes": [
+        "/UnicornHeights/Unicorn_Campus_01/Unicorn_Campus_01_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_01_Landscape/Geometry",
+        "/UnicornHeights/Unicorn_Campus_02/Unicorn_Campus_02_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_02_Landscape/Geometry",
+        "/UnicornHeights/Unicorn_Campus_03/Unicorn_Campus_03_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_03_Landscape/Geometry",
+        "/UnicornHeights/Unicorn_Campus_04/Unicorn_Campus_04_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_04_Landscape/Geometry",
+        "/UnicornHeights/Unicorn_Campus_05/Unicorn_Campus_05_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_05_Landscape/Geometry",
+        "/UnicornHeights/Unicorn_Campus_06/Unicorn_Campus_06_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_06_Landscape/Geometry",
+        "/UnicornHeights/Unicorn_Campus_07/Unicorn_Campus_07_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_07_Landscape/Geometry",
+        "/UnicornHeights/Unicorn_Campus_08/Unicorn_Campus_08_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_08_Landscape/Geometry",
+        "/UnicornHeights/Unicorn_LandscapeGround/Geometry",
+        "/UnicornHeights/Unicorn_PlayerReservedLawn/Geometry"
+      ]
+    },
+    {
+      "material": "/UnicornHeights/Materials/Unicorn_leaves",
+      "sourceMeshes": [
+        "/UnicornHeights/Unicorn_TreeCanopy/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_001/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_002/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_003/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_004/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_005/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_006/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_007/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_008/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_009/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_010/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_011/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_012/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_013/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_014/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_015/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_016/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_017/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_018/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_019/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_020/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_021/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_022/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_023/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_024/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_025/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_026/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_027/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_028/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_029/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_030/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_031/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_032/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_033/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_034/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_035/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_036/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_037/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_038/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_039/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_040/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_041/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_042/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_043/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_044/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_045/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_046/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_047/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_048/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_049/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_050/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_051/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_052/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_053/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_054/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_055/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_056/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_057/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_058/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_059/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_060/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_061/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_062/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_063/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_064/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_065/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_066/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_067/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_068/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_069/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_070/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_071/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_072/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_073/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_074/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_075/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_076/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_077/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_078/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_079/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_080/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_081/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_082/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_083/Geometry",
+        "/UnicornHeights/Unicorn_TreeCanopy_084/Geometry"
+      ]
+    },
+    {
+      "material": "/UnicornHeights/Materials/Unicorn_metal",
+      "sourceMeshes": [
+        "/UnicornHeights/Unicorn_Campus_01/Unicorn_Campus_01_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_02/Unicorn_Campus_02_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_03/Unicorn_Campus_03_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_04/Unicorn_Campus_04_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_05/Unicorn_Campus_05_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_06/Unicorn_Campus_06_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_07/Unicorn_Campus_07_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_08/Unicorn_Campus_08_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_LightBase/Geometry",
+        "/UnicornHeights/Unicorn_LightBase_001/Geometry",
+        "/UnicornHeights/Unicorn_LightBase_002/Geometry",
+        "/UnicornHeights/Unicorn_LightBase_003/Geometry",
+        "/UnicornHeights/Unicorn_LightBase_004/Geometry",
+        "/UnicornHeights/Unicorn_LightBase_005/Geometry",
+        "/UnicornHeights/Unicorn_LightBase_006/Geometry",
+        "/UnicornHeights/Unicorn_OverlookGuard/Geometry",
+        "/UnicornHeights/Unicorn_SeatSupport/Geometry",
+        "/UnicornHeights/Unicorn_SeatSupport_001/Geometry",
+        "/UnicornHeights/Unicorn_SeatSupport_002/Geometry",
+        "/UnicornHeights/Unicorn_SeatSupport_003/Geometry",
+        "/UnicornHeights/Unicorn_SeatSupport_004/Geometry",
+        "/UnicornHeights/Unicorn_SeatSupport_005/Geometry",
+        "/UnicornHeights/Unicorn_SeatSupport_006/Geometry",
+        "/UnicornHeights/Unicorn_SeatSupport_007/Geometry",
+        "/UnicornHeights/Unicorn_SeatSupport_008/Geometry",
+        "/UnicornHeights/Unicorn_SeatSupport_009/Geometry",
+        "/UnicornHeights/Unicorn_SeatSupport_010/Geometry",
+        "/UnicornHeights/Unicorn_SeatSupport_011/Geometry"
+      ]
+    },
+    {
+      "material": "/UnicornHeights/Materials/Unicorn_paving",
+      "sourceMeshes": [
+        "/UnicornHeights/Unicorn_BoulevardWalk_00/Geometry",
+        "/UnicornHeights/Unicorn_CampusCrosswalk_00/Geometry",
+        "/UnicornHeights/Unicorn_CampusSpine_00/Geometry",
+        "/UnicornHeights/Unicorn_CampusSpine_01/Geometry",
+        "/UnicornHeights/Unicorn_Campus_01/Unicorn_Campus_01_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_02/Unicorn_Campus_02_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_03/Unicorn_Campus_03_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_04/Unicorn_Campus_04_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_05/Unicorn_Campus_05_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_06/Unicorn_Campus_06_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_07/Unicorn_Campus_07_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_08/Unicorn_Campus_08_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_ContinuousPaving/Geometry",
+        "/UnicornHeights/Unicorn_FounderPlaza_Surface/Geometry",
+        "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_01_00/Geometry",
+        "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_02_00/Geometry",
+        "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_03_00/Geometry",
+        "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_04_00/Geometry",
+        "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_05_00/Geometry",
+        "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_06_00/Geometry",
+        "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_06_01/Geometry",
+        "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_07_00/Geometry",
+        "/UnicornHeights/Unicorn_Frontage_Unicorn_Campus_08_00/Geometry",
+        "/UnicornHeights/Unicorn_OverlookLink_00/Geometry",
+        "/UnicornHeights/Unicorn_OverlookLink_01/Geometry",
+        "/UnicornHeights/Unicorn_PlayerArrival_00/Geometry",
+        "/UnicornHeights/Unicorn_PlayerFrontage_00/Geometry",
+        "/UnicornHeights/Unicorn_PlazaArrival_00/Geometry",
+        "/UnicornHeights/Unicorn_ScenicOverlook_Surface/Geometry",
+        "/UnicornHeights/Unicorn_WestGardenWalk_00/Geometry",
+        "/UnicornHeights/Unicorn_WestGardenWalk_01/Geometry",
+        "/UnicornHeights/Unicorn_WestGardenWalk_02/Geometry"
+      ]
+    },
+    {
+      "material": "/UnicornHeights/Materials/Unicorn_road",
+      "sourceMeshes": [
+        "/UnicornHeights/Unicorn_ArrivalRoad_00/Geometry",
+        "/UnicornHeights/Unicorn_ArrivalRoad_01/Geometry"
+      ]
+    },
+    {
+      "material": "/UnicornHeights/Materials/Unicorn_stone",
+      "sourceMeshes": [
+        "/UnicornHeights/Unicorn_Campus_01/Unicorn_Campus_01_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_02/Unicorn_Campus_02_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_03/Unicorn_Campus_03_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_04/Unicorn_Campus_04_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_05/Unicorn_Campus_05_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_06/Unicorn_Campus_06_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_07/Unicorn_Campus_07_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_Campus_08/Unicorn_Campus_08_Architecture/Geometry",
+        "/UnicornHeights/Unicorn_ReflectingPool/Geometry"
+      ]
+    },
+    {
+      "material": "/UnicornHeights/Materials/Unicorn_water",
+      "sourceMeshes": [
+        "/UnicornHeights/Unicorn_PoolSurface/Geometry"
+      ]
+    },
+    {
+      "material": "/UnicornHeights/Materials/Unicorn_wood",
+      "sourceMeshes": [
+        "/UnicornHeights/Unicorn_Seat/Geometry",
+        "/UnicornHeights/Unicorn_Seat_001/Geometry",
+        "/UnicornHeights/Unicorn_Seat_002/Geometry",
+        "/UnicornHeights/Unicorn_Seat_003/Geometry",
+        "/UnicornHeights/Unicorn_Seat_004/Geometry",
+        "/UnicornHeights/Unicorn_Seat_005/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_001/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_002/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_003/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_004/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_005/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_006/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_007/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_008/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_009/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_010/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_011/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_012/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_013/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_014/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_015/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_016/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_017/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_018/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_019/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_020/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_021/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_022/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_023/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_024/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_025/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_026/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_027/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_028/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_029/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_030/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_031/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_032/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_033/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_034/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_035/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_036/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_037/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_038/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_039/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_040/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_041/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_042/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_043/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_044/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_045/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_046/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_047/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_048/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_049/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_050/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_051/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_052/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_053/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_054/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_055/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_056/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_057/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_058/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_059/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_060/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_061/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_062/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_063/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_064/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_065/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_066/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_067/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_068/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_069/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_070/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_071/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_072/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_073/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_074/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_075/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_076/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_077/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_078/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_079/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_080/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_081/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_082/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_083/Geometry",
+        "/UnicornHeights/Unicorn_TreeTrunk_084/Geometry"
+      ]
+    }
+  ],
+  "baseline": {
+    "package": "unicorn_heights",
+    "bytes": 114020,
+    "meshes": 271,
+    "triangles": 10212,
+    "materials": 12,
+    "textures": 0,
+    "bounds": [
+      [
+        349.9435119628906,
+        -12.0,
+        -1270.0
+      ],
+      [
+        1240.0,
+        209.83999633789062,
+        -461.6616516113281
+      ]
+    ],
+    "landmarks": {
+      "PlayerUnicornHQSlot": [
+        970.0,
+        85.0,
+        -850.0
+      ]
+    },
+    "sha256": "84ed0ce7937567f5b5ae8e96d6773b978ae5aa7a8001b9e355bd770a8cab8775",
+    "source_shared_mesh_variants": 8,
+    "mesh_payloads_exported": 271,
+    "instancing": "expanded per object in baseline; runtime sharing not assumed"
+  },
+  "optimized": {
+    "package": "unicorn_heights_batched",
+    "bytes": 129455,
+    "meshes": 30,
+    "triangles": 10212,
+    "materials": 12,
+    "textures": 0,
+    "bounds": [
+      [
+        349.94350653364666,
+        -12.0,
+        -1270.0
+      ],
+      [
+        1240.0,
+        209.8399658203125,
+        -461.66165677290223
+      ]
+    ],
+    "landmarks": {
+      "PlayerUnicornHQSlot": [
+        970.0,
+        85.0,
+        -850.0
+      ]
+    },
+    "sha256": "2d3d2de5c9756ad33217257a86fb6a56d3fd945508e4b7777afb5ea9496860e8",
+    "experiment": "Selective material batching with landmark subtrees and semantic anchors preserved"
+  }
+}

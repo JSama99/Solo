@@ -1,0 +1,21 @@
+{
+  "source": "Documentation/Atlantis/Phase12-iPhone16Pro-Metal.trace",
+  "captureSeconds": 10,
+  "device": "iPhone 16 Pro (iPhone17,1), A18 Pro, iOS 26.7",
+  "presentRequests": 670,
+  "presentRatePerSecond": 60.08691325197144,
+  "presentIntervalP95MS": 18.027916,
+  "presentIntervalMaximumMS": 23.085542,
+  "displayedSurfaceP95MS": 50.008375,
+  "targetMetalDriverIntervals": 597,
+  "targetMetalDriverTotalMS": 210.974921,
+  "targetMetalDriverP95MS": 0.481166,
+  "targetMetalDriverMaximumMS": 0.594584,
+  "cpuTimeSamples": 4351,
+  "cpuThreadStates": {
+    "Blocked": 1,
+    "Unknown": 4349,
+    "Running": 1
+  },
+  "limitations": "A bounded post-stream steady-state capture. It is authoritative physical Metal/CPU timing evidence, but does not expose a GPU-utilization percentage or thermal sensor value through xctrace export."
+}

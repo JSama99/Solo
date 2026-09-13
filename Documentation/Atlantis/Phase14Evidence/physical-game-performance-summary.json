@@ -1,0 +1,29 @@
+{
+  "method": "Final reactive revision. Physical Game Performance traces were attached to the completed Startup Row reactive scenario on each device. The Game Performance template retained 6.65 seconds on iPhone and 7.53 seconds on iPad from each 12-second attachment. Top-level Metal GPU work intervals may overlap and are not per-frame GPU time or utilization. Present requests measure drawable-request cadence, not confirmed displayed FPS. These are bounded steady-state captures, not sustained traversal traces.",
+  "devices": {
+    "iPhone 16 Pro": {
+      "trace": "iphone16pro-reactive-final.trace",
+      "captureSpanSeconds": 6.649897,
+      "topLevelGPUWorkIntervals": 1595,
+      "meanTopLevelGPUWorkIntervalMS": 1.131436700940439,
+      "p95TopLevelGPUWorkIntervalMS": 3.204333,
+      "maximumTopLevelGPUWorkIntervalMS": 3.309333,
+      "presentRequests": 399,
+      "presentRatePerSecond": 59.850551068685725,
+      "presentIntervalP95MS": 18.22016599999987,
+      "presentIntervalMaximumMS": 34.93062499999944
+    },
+    "iPad Air 11-inch (M4)": {
+      "trace": "ipad-air-m4-reactive-final.trace",
+      "captureSpanSeconds": 7.532976166999999,
+      "topLevelGPUWorkIntervals": 1814,
+      "meanTopLevelGPUWorkIntervalMS": 0.9909185270121279,
+      "p95TopLevelGPUWorkIntervalMS": 2.812042,
+      "maximumTopLevelGPUWorkIntervalMS": 4.208958,
+      "presentRequests": 453,
+      "presentRatePerSecond": 60.002844822487816,
+      "presentIntervalP95MS": 19.884041000000074,
+      "presentIntervalMaximumMS": 21.532792000000356
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "info" : {
+    "arguments" : [
+      "devicectl",
+      "device",
+      "install",
+      "app",
+      "--device",
+      "1A743F7C-023B-5502-9352-E77140D2A8AF",
+      "/tmp/SoloPhase17IPhoneDevice/Build/Products/Debug-iphoneos/Solo Unicorn Run.app",
+      "--json-output",
+      "Documentation/Atlantis/Phase17Evidence/iphone16pro-install.json"
+    ],
+    "commandType" : "devicectl.device.install.app",
+    "environment" : {
+      "TERM" : "dumb"
+    },
+    "jsonVersion" : 3,
+    "outcome" : "success",
+    "version" : "518.33"
+  },
+  "result" : {
+    "deviceIdentifier" : "1A743F7C-023B-5502-9352-E77140D2A8AF",
+    "installedApplications" : [
+      {
+        "bundleID" : "com.talonsight.solounicornrun",
+        "databaseSequenceNumber" : 2244,
+        "databaseUUID" : "F7432F1A-1E61-4474-AE6C-A5DAC76A0095",
+        "installationURL" : "file:///private/var/containers/Bundle/Application/70623B7D-FEF0-449D-B7F2-8F72052E1FC5/Solo%20Unicorn%20Run.app/",
+        "launchServicesIdentifier" : "unknown",
+        "options" : {
+
+        }
+      }
+    ]
+  }
+}

@@ -4,7 +4,10 @@ import SwiftUI
 /// owns only disclosure state; simulation, finance and calendar mutations stay in GameStore.
 struct AIOperationsFloor: View {
   var agents: [LivingAgentProjection]
+  var agentModels: [SoloAgent]
   var tasks: [SoloTask]
+  var operations: AgentOperationsState
+  var decisionRequests: [String: AgentOperationalDecisionRequest]
   var summary: CompanyCommandFounderSummary
   var objective: String
   var venture: Int
@@ -15,9 +18,19 @@ struct AIOperationsFloor: View {
   var stats: FounderStats
   var availability: [String: CompanyCommandAgentAvailability]
   var reduceMotion: Bool
+  var portraitViewport: CGRect = .zero
+  var portraitPresentationEligible = false
+  var visiblePortraitIDs: Set<String> = []
+  var portraitCueTokens: [String: String] = [:]
+  var portraitOutcomeCueTokens: [String: String] = [:]
+  var onPortraitVisibility: (String, Bool) -> Void = { _, _ in }
   var onAssign: (String) -> Void
   var onReview: (String) -> Void
   var onOpenDetail: (CompanyCommandFocus) -> Void
+  var onSetAllocation: (String, AgentOperationalDomain, Int) -> Void
+  var onPreset: (String, AgentOperationsPreset) -> Void
+  var onAutonomy: (String, AgentOperationalAutonomy) -> Void
+  var onDecision: (String, AgentOperationalDecisionChoice) -> Void
   var onCommit: () -> Void
 
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -50,7 +63,9 @@ struct AIOperationsFloor: View {
   }
 
   private var compactFloor: some View {
-    LazyVStack(alignment: .leading, spacing: 14) {
+    // Only three stations: stable eager measurements avoid the reproduced
+    // compact Computer scroll loop inside the persistent Garage viewport.
+    VStack(alignment: .leading, spacing: 14) {
       floorHeader
       console
       reviewQueue
@@ -289,9 +304,14 @@ struct AIOperationsFloor: View {
   }
 
   private func station(_ agent: LivingAgentProjection) -> some View {
-    OperationsStationCard(agent: agent, availability: availability[agent.agentID] ?? .init(), expanded: expandedStationID == agent.agentID, reduceMotion: motionReduced) {
+    let profile = operations.profile(for: agent.agentID)
+    let urgency = tasks.first(where: { $0.assignedAgentID == agent.agentID })?.urgency
+    let workload = AgentOperationsPolicy.workload(profile: profile, assignmentUrgency: urgency)
+    return OperationsStationCard(agent: agent, canonicalAgent: agentModels.first(where: { $0.id == agent.agentID }), profile: profile, workload: workload, decisionRequest: decisionRequests[agent.agentID], availability: availability[agent.agentID] ?? .init(), expanded: expandedStationID == agent.agentID, reduceMotion: motionReduced, usesWidePortraitMotion: isWide, portraitViewport: portraitViewport, portraitEligible: portraitPresentationEligible && visiblePortraitIDs.contains(agent.agentID), portraitCueToken: portraitCueTokens[agent.agentID], portraitOutcomeCueToken: portraitOutcomeCueTokens[agent.agentID], onPortraitVisibility: { onPortraitVisibility(agent.agentID, $0) }) {
       withAnimation(motionReduced ? nil : .smooth) { expandedStationID = expandedStationID == agent.agentID ? nil : agent.agentID }
-    } onAssign: { onAssign(agent.agentID) } onReview: { onReview(agent.agentID) } onOpenDetail: { onOpenDetail(.agent(agent.agentID)) }
+    } onAssign: { onAssign(agent.agentID) } onReview: { onReview(agent.agentID) } onOpenDetail: { onOpenDetail(.agent(agent.agentID)) } onSetAllocation: { domain, value in
+      onSetAllocation(agent.agentID, domain, value)
+    } onPreset: { onPreset(agent.agentID, $0) } onAutonomy: { onAutonomy(agent.agentID, $0) } onDecision: { onDecision(agent.agentID, $0) }
   }
 
   private var orderedAgents: [LivingAgentProjection] {
@@ -316,13 +336,27 @@ struct AIOperationsFloor: View {
 
 private struct OperationsStationCard: View {
   var agent: LivingAgentProjection
+  var canonicalAgent: SoloAgent?
+  var profile: AgentOperationsProfile
+  var workload: Int
+  var decisionRequest: AgentOperationalDecisionRequest?
   var availability: CompanyCommandAgentAvailability
   var expanded: Bool
   var reduceMotion: Bool
+  var usesWidePortraitMotion: Bool
+  var portraitViewport: CGRect
+  var portraitEligible: Bool
+  var portraitCueToken: String?
+  var portraitOutcomeCueToken: String?
+  var onPortraitVisibility: (Bool) -> Void
   var onToggle: () -> Void
   var onAssign: () -> Void
   var onReview: () -> Void
   var onOpenDetail: () -> Void
+  var onSetAllocation: (AgentOperationalDomain, Int) -> Void
+  var onPreset: (AgentOperationsPreset) -> Void
+  var onAutonomy: (AgentOperationalAutonomy) -> Void
+  var onDecision: (AgentOperationalDecisionChoice) -> Void
 
   private var accent: Color { agent.role == .research ? SoloTheme.cyan : agent.role == .engineering ? SoloTheme.amber : SoloTheme.coral }
   private var specialty: String { agent.role == .research ? "INTELLIGENCE · EVIDENCE" : agent.role == .engineering ? "ENGINEERING · DELIVERY" : "GROWTH · PUBLIC SIGNAL" }
@@ -342,6 +376,7 @@ private struct OperationsStationCard: View {
       }
       .buttonStyle(.plain)
       .accessibilityLabel("\(agent.name), \(specialty). \(expanded ? "Collapse" : "Expand") station")
+      .accessibilityIdentifier("agent-operations-toggle-\(agent.agentID)")
       statusLine
       Text(agent.taskTitle ?? "No assigned objective — available for a Founder priority.").font(.caption).foregroundStyle(.secondary).lineLimit(expanded ? nil : 2)
       roleSnapshot
@@ -385,11 +420,143 @@ private struct OperationsStationCard: View {
       roleDetails
       Divider()
       HStack { Label("Stress \(agent.stressLabel)", systemImage: "gauge.with.dots.needle.33percent"); Spacer(); Text("Level \(agent.level)") }.font(.caption2)
+      operationsSurface
       Button("Open detailed workstation", systemImage: "rectangle.expand.vertical", action: onOpenDetail)
         .buttonStyle(.bordered).tint(accent).frame(minHeight: 44)
     }
     .padding(10).background(.black.opacity(0.28), in: .rect(cornerRadius: 10))
     .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
+  }
+
+  private var operationsSurface: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      HStack(alignment: .firstTextBaseline) {
+        Text("OPERATIONS").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+        Spacer()
+        Text("\(workload)% · \(AgentOperationalWorkloadBand.classify(workload).title)")
+          .font(.caption2.monospacedDigit().weight(.bold))
+          .foregroundStyle(workload > 105 ? SoloTheme.coral : accent)
+          .accessibilityIdentifier("agent-operations-workload-\(agent.agentID)")
+      }
+      if let canonicalAgent {
+        Text("Reliability \(canonicalAgent.reliability) · Calibration \(Int((canonicalAgent.calibration * 100).rounded())) · Trust \(Int(canonicalAgent.trust.rounded()))")
+          .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
+          .accessibilityIdentifier("agent-operations-attributes-\(agent.agentID)")
+      }
+      if workload > 100 {
+        Label("Projected workload exceeds capacity. Headroom can absorb assignments and incidents.", systemImage: "exclamationmark.triangle.fill")
+          .font(.caption2).foregroundStyle(SoloTheme.amber)
+          .accessibilityIdentifier("agent-operations-overload-warning-\(agent.agentID)")
+      }
+      Text("PRESETS").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+      ScrollView(.horizontal) {
+        HStack(spacing: 6) {
+          ForEach(AgentOperationsPreset.allCases) { preset in
+            Button { onPreset(preset) } label: { Text(preset.title).frame(minHeight: 44) }
+              .buttonStyle(.bordered).controlSize(.small)
+              .accessibilityIdentifier("agent-operations-preset-\(agent.agentID)-\(preset.rawValue)")
+          }
+        }
+      }
+      ForEach(AgentOperationalDomain.domains(for: agent.agentID)) { domain in
+        allocationRow(domain)
+      }
+      HStack {
+        Text("HEADROOM").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+        Spacer()
+        Text("\(profile.headroom)%").font(.caption.monospacedDigit().weight(.bold))
+      }
+      .accessibilityElement(children: .combine)
+      .accessibilityIdentifier("agent-operations-headroom-\(agent.agentID)")
+      Text("AUTONOMY").font(.caption2.weight(.black)).foregroundStyle(.secondary)
+      Picker("Autonomy", selection: Binding(get: { profile.autonomy }, set: onAutonomy)) {
+        ForEach(AgentOperationalAutonomy.allCases) { Text($0.title).tag($0) }
+      }
+      .pickerStyle(.segmented)
+      .accessibilityIdentifier("agent-operations-autonomy-\(agent.agentID)")
+      Text(profile.autonomy.detail).font(.caption2).foregroundStyle(.secondary)
+      if let request = decisionRequest { decisionSurface(request) }
+      #if DEBUG
+      operationsDiagnostics
+      #endif
+    }
+    .padding(10)
+    .background(accent.opacity(0.08), in: .rect(cornerRadius: 10))
+    .accessibilityElement(children: .contain)
+    .accessibilityIdentifier("agent-operations-controls-\(agent.agentID)")
+  }
+
+  #if DEBUG
+  private var operationsDiagnostics: some View {
+    let confidence = decisionRequest.map { "\($0.reportedConfidence)%" } ?? "none"
+    let knownDrift = agent.conditions.contains(.drifting) ? "detected through review" : "not disclosed"
+    let reliability = canonicalAgent.map { "\($0.reliability)" } ?? "unavailable"
+    let calibration = canonicalAgent.map { "\(Int(($0.calibration * 100).rounded()))%" } ?? "unavailable"
+    let allocationText = AgentOperationalDomain.domains(for: agent.agentID)
+      .map { "\($0.title) \(profile.allocation(for: $0))" }.joined(separator: ", ")
+    let assignmentLoad = max(0, workload - profile.allocated)
+    let diagnosticText = [
+      "DEBUG", "capacity \(profile.capacity)", "allocations \(allocationText)", "headroom \(profile.headroom)",
+      "assignment load \(assignmentLoad)", "effective workload \(workload)", "autonomy \(profile.autonomy.title)",
+      "reported confidence \(confidence)", "calibration \(calibration)", "reliability \(reliability)",
+      "known drift state \(knownDrift)", "founder interventions \(profile.founderInterventionCount)",
+      "autonomous decisions \(profile.autonomousDecisionCount)",
+      "micromanagement penalties \(profile.micromanagementPenaltyActivations)"
+    ].joined(separator: " · ")
+    return Text(diagnosticText)
+    .font(.caption2.monospaced())
+    .foregroundStyle(.secondary)
+    .fixedSize(horizontal: false, vertical: true)
+    .accessibilityIdentifier("agent-operations-diagnostics-\(agent.agentID)")
+  }
+  #endif
+
+  private func allocationRow(_ domain: AgentOperationalDomain) -> some View {
+    let value = profile.allocation(for: domain)
+    return HStack(spacing: 8) {
+      Text(domain.title).font(.caption).frame(maxWidth: .infinity, alignment: .leading)
+      Button { onSetAllocation(domain, max(0, value - 5)) } label: {
+        Image(systemName: "minus").frame(width: 44, height: 44)
+      }
+      .buttonStyle(.bordered).disabled(value == 0)
+      .accessibilityIdentifier("agent-operations-decrement-\(agent.agentID)-\(domain.rawValue)")
+      Text("\(value)%").font(.caption.monospacedDigit().weight(.bold)).frame(minWidth: 38)
+      Button { onSetAllocation(domain, min(100, value + 5)) } label: {
+        Image(systemName: "plus").frame(width: 44, height: 44)
+      }
+      .buttonStyle(.bordered).disabled(profile.allocated >= profile.capacity)
+      .accessibilityIdentifier("agent-operations-increment-\(agent.agentID)-\(domain.rawValue)")
+    }
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(domain.title)
+    .accessibilityValue("\(value) percent")
+    .accessibilityAdjustableAction { direction in
+      onSetAllocation(domain, min(100, max(0, value + (direction == .increment ? 5 : -5))))
+    }
+    .accessibilityIdentifier("agent-operations-allocation-\(agent.agentID)-\(domain.rawValue)")
+  }
+
+  private func decisionSurface(_ request: AgentOperationalDecisionRequest) -> some View {
+    VStack(alignment: .leading, spacing: 7) {
+      Text("AGENT DECISION").font(.caption2.weight(.black)).foregroundStyle(accent)
+      Text(request.title).font(.caption.weight(.bold))
+      Text(request.context).font(.caption2).foregroundStyle(.secondary)
+      Text("Reported confidence \(request.reportedConfidence)% · \(request.stakes)")
+        .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
+      Button("Let \(agent.name) Decide", systemImage: "sparkles") { onDecision(.letAgentDecide) }
+        .buttonStyle(.borderedProminent).tint(accent).frame(minHeight: 44)
+        .accessibilityHint("Uses reliability, calibration, workload and undisclosed canonical conditions. The agent may not choose the optimal path.")
+        .accessibilityIdentifier("agent-operations-let-decide-\(agent.agentID)")
+      ForEach(request.founderChoices) { choice in
+        Button(choice.title) { onDecision(choice) }
+          .buttonStyle(.bordered).frame(minHeight: 44)
+          .accessibilityHint("Founder intervention costs one Attention. Its operating effect resolves at the sprint boundary.")
+          .accessibilityIdentifier("agent-operations-intervene-\(agent.agentID)-\(choice.rawValue)")
+      }
+    }
+    .padding(.top, 4)
+    .accessibilityElement(children: .contain)
+    .accessibilityIdentifier("agent-operations-decision-\(agent.agentID)")
   }
 
   @ViewBuilder private var roleDetails: some View {
@@ -472,10 +639,66 @@ private struct OperationsStationCard: View {
   private var portrait: some View {
     ZStack {
       Circle().fill(accent.opacity(0.2))
-      if let asset = AgentPortraitAsset.name(for: agent.agentID) { Image(asset).resizable().scaledToFill().accessibilityHidden(true) } else { Text(agent.initials).font(.headline.weight(.black)) }
+      portraitArtwork
+        .frame(width: AIOperationsFloorProjection.portraitFootprint, height: AIOperationsFloorProjection.portraitFootprint)
+        .phaseAnimator(workingPortrait ? [0.0, 1.0, 0.0] : [0.0]) { content, phase in
+          content.offset(y: workingPortrait ? phase * AIOperationsFloorProjection.portraitWorkingTravel(isWide: usesWidePortraitMotion, agentID: agent.agentID) : 0)
+        } animation: { _ in
+          SoloMotion.resolved(.easeInOut(duration: agent.agentID == "aurora" ? 0.72 : agent.agentID == "stacks" ? 0.86 : 0.64), reduceMotion: reduceMotion)
+        }
+        .phaseAnimator([0.0, 1.0, 0.0], trigger: portraitCueToken) { content, phase in
+          content
+            .offset(y: livePortraitCue && agent.activity == .assignmentReceived ? phase * 1.5 : 0)
+            .scaleEffect(livePortraitCue && agent.activity == .workComplete ? 1 - phase * AIOperationsFloorProjection.portraitCompletionScaleDelta(isWide: usesWidePortraitMotion, agentID: agent.agentID) : 1)
+        } animation: { _ in
+          livePortraitCue ? SoloMotion.resolved(SoloMotion.settle, reduceMotion: reduceMotion) : nil
+        }
+        .phaseAnimator([0.0, 1.0, 0.0], trigger: portraitOutcomeCueToken) { content, phase in
+          let offset = livePortraitOutcome.map { AIOperationsFloorProjection.portraitOutcomeOffset($0, phase: phase) } ?? .zero
+          content
+            .offset(x: offset.width, y: offset.height)
+            .scaleEffect(livePortraitOutcome.map { AIOperationsFloorProjection.portraitOutcomeScale($0, phase: phase) } ?? 1)
+        } animation: { _ in
+          livePortraitOutcome == nil ? nil : SoloMotion.resolved(SoloMotion.settle, reduceMotion: reduceMotion)
+        }
+        // Cancel immediately, including an in-flight phase, without inheriting
+        // the station's lifecycle animation. The 48-point shell never moves.
+        .transaction { transaction in
+          if !portraitEligible || reduceMotion { transaction.animation = nil; transaction.disablesAnimations = true }
+        }
+        .accessibilityHidden(true)
       Circle().fill(agent.needsFounderAttention ? SoloTheme.amber : accent).frame(width: 9, height: 9).overlay { Circle().stroke(.black, lineWidth: 2) }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing).accessibilityHidden(true)
     }
-    .frame(width: 48, height: 48).clipShape(.circle).overlay { Circle().stroke(accent.opacity(0.8), lineWidth: 1.5) }
+    .frame(width: AIOperationsFloorProjection.portraitFootprint, height: AIOperationsFloorProjection.portraitFootprint).clipShape(.circle).overlay {
+      Circle().stroke(accent.opacity(agent.activity == .reviewing ? 1 : 0.8), lineWidth: 1.5)
+    }
+    .onGeometryChange(for: Bool.self) { geometry in
+      let intersection = geometry.frame(in: .global).intersection(portraitViewport)
+      return !intersection.isNull && intersection.width >= 24 && intersection.height >= 24
+    } action: { onPortraitVisibility($0) }
+    .onDisappear { onPortraitVisibility(false) }
+  }
+  private var workingPortrait: Bool {
+    AIOperationsFloorProjection.portraitWorks(activity: agent.activity, eligible: portraitEligible, reduceMotion: reduceMotion)
+  }
+  private var livePortraitCue: Bool {
+    portraitEligible && !reduceMotion && portraitCueToken == AIOperationsFloorProjection.portraitIdentity(agent)
+  }
+  private var livePortraitOutcome: ReviewResultVisual? {
+    guard portraitEligible, !reduceMotion,
+          portraitOutcomeCueToken == AIOperationsFloorProjection.portraitOutcomeObservationIdentity(agent) else { return nil }
+    return AIOperationsFloorProjection.portraitOutcomeReaction(agent)
+  }
+  @ViewBuilder private var portraitArtwork: some View {
+    if let asset = AgentPortraitAsset.name(for: agent.agentID) {
+      Image(asset)
+        .resizable()
+        .scaledToFill()
+        .scaleEffect(AIOperationsFloorProjection.portraitImageScale(agentID: agent.agentID))
+        .offset(AIOperationsFloorProjection.portraitImageOffset(agentID: agent.agentID))
+    } else {
+      Text(agent.initials).font(.headline.weight(.black))
+    }
   }
   private var accessibilityPriority: Double { agent.agentID == "aurora" ? 23 : agent.agentID == "stacks" ? 22 : agent.agentID == "brio" ? 21 : 20 }
 }
@@ -507,6 +730,125 @@ private struct StationPipeline: View {
 }
 
 struct AIOperationsFloorProjection: Equatable {
+  static let portraitFootprint: CGFloat = 48
+
+  static func portraitImageScale(agentID: String) -> CGFloat {
+    switch agentID {
+    case "stacks": 1.04
+    case "brio": 1.05
+    default: 1
+    }
+  }
+
+  static func portraitImageOffset(agentID: String) -> CGSize {
+    agentID == "brio" ? CGSize(width: 0, height: -0.7) : .zero
+  }
+
+  static func portraitWorkingTravel(isWide: Bool, agentID: String) -> CGFloat {
+    guard isWide else { return 0.65 }
+    return agentID == "stacks" || agentID == "brio" ? 1.2 : 1.0
+  }
+
+  static func portraitCompletionScaleDelta(isWide: Bool, agentID: String) -> CGFloat {
+    guard isWide else { return 0.025 }
+    return agentID == "stacks" || agentID == "brio" ? 0.040 : 0.035
+  }
+
+  // Only existing lifecycle identity enters portrait choreography. Conditions,
+  // emphasis, cached results and simulation randomness are deliberately absent.
+  static func portraitIdentity(_ agent: LivingAgentProjection) -> String {
+    "\(agent.agentID):\(agent.taskID?.uuidString ?? "none"):\(agent.presentationSequenceID?.uuidString ?? "none"):\(agent.activity.rawValue)"
+  }
+
+  static func portraitWorks(activity: LivingAgentActivity, eligible: Bool, reduceMotion: Bool) -> Bool {
+    activity == .working && eligible && !reduceMotion
+  }
+
+  static func portraitOutcomeReaction(_ agent: LivingAgentProjection) -> ReviewResultVisual? {
+    guard agent.taskID != nil, agent.presentationSequenceID != nil,
+          agent.reviewRevealStep >= 5,
+          [.reviewing, .reviewed, .resolving, .resolved].contains(agent.activity) else { return nil }
+    let result = ReviewResultVisual.map(conditions: agent.conditions, revealStep: agent.reviewRevealStep)
+    return result == .pending ? nil : result
+  }
+
+  static func portraitOutcomeSequenceIdentity(_ agent: LivingAgentProjection) -> String? {
+    guard let taskID = agent.taskID, let sequenceID = agent.presentationSequenceID else { return nil }
+    return "\(agent.agentID):\(taskID.uuidString):\(sequenceID.uuidString)"
+  }
+
+  static func portraitOutcomeObservationIdentity(_ agent: LivingAgentProjection) -> String {
+    let sequence = portraitOutcomeSequenceIdentity(agent) ?? "\(agent.agentID):none:none"
+    let result = ReviewResultVisual.map(conditions: agent.conditions, revealStep: agent.reviewRevealStep)
+    return "\(sequence):\(result.rawValue)"
+  }
+
+  static func portraitOutcomeOffset(_ result: ReviewResultVisual, phase: CGFloat) -> CGSize {
+    switch result {
+    case .verified: CGSize(width: 0, height: -1.4 * phase)
+    case .evidenceIncomplete: CGSize(width: 0.9 * phase, height: 0)
+    case .overclaimed, .driftDetected: CGSize(width: 0, height: 1.2 * phase)
+    case .pending: .zero
+    }
+  }
+
+  static func portraitOutcomeScale(_ result: ReviewResultVisual, phase: CGFloat) -> CGFloat {
+    switch result {
+    case .verified: 1 + 0.025 * phase
+    case .evidenceIncomplete: 1 - 0.015 * phase
+    case .overclaimed, .driftDetected: 1 - 0.025 * phase
+    case .pending: 1
+    }
+  }
+
+  /// Outcome reactions are admitted only by a live, same-sequence transition
+  /// from the sealed `pending` projection to an already-revealed visual result.
+  static func reconcilePortraitOutcomes(
+    agents: [LivingAgentProjection], visibleIDs: Set<String>, eligible: Bool,
+    reduceMotion: Bool, allowTransitions: Bool,
+    observed: inout [String: String], cues: inout [String: String]
+  ) {
+    let currentIDs = Set(agents.map(\.agentID))
+    observed = observed.filter { currentIDs.contains($0.key) }
+    cues = cues.filter { currentIDs.contains($0.key) }
+    for agent in agents {
+      let identity = portraitOutcomeObservationIdentity(agent)
+      let previous = observed.updateValue(identity, forKey: agent.agentID)
+      let canAnimate = eligible && !reduceMotion && visibleIDs.contains(agent.agentID)
+      guard canAnimate, allowTransitions,
+            portraitOutcomeReaction(agent) != nil,
+            let sequence = portraitOutcomeSequenceIdentity(agent),
+            previous == "\(sequence):\(ReviewResultVisual.pending.rawValue)" else {
+        cues[agent.agentID] = nil
+        continue
+      }
+      cues[agent.agentID] = identity
+    }
+  }
+
+  /// Observe every phase, including hidden phases. Visibility/eligibility changes
+  /// adopt a baseline with allowTransitions=false; they never drain a cue queue.
+  static func reconcilePortraits(
+    agents: [LivingAgentProjection], visibleIDs: Set<String>, eligible: Bool,
+    reduceMotion: Bool, allowTransitions: Bool,
+    observed: inout [String: String], cues: inout [String: String]
+  ) {
+    let currentIDs = Set(agents.map(\.agentID))
+    observed = observed.filter { currentIDs.contains($0.key) }
+    cues = cues.filter { currentIDs.contains($0.key) }
+    for agent in agents {
+      let identity = portraitIdentity(agent)
+      let previous = observed.updateValue(identity, forKey: agent.agentID)
+      let canAnimate = eligible && !reduceMotion && visibleIDs.contains(agent.agentID)
+      guard canAnimate else { cues[agent.agentID] = nil; continue }
+      if previous != identity {
+        cues[agent.agentID] = allowTransitions && previous != nil && agent.taskID != nil
+          && agent.presentationSequenceID != nil
+          && (agent.activity == .assignmentReceived || agent.activity == .workComplete) ? identity : nil
+      }
+    }
+  }
+
   enum Priority: Int, Comparable, Equatable {
     case informational, important, critical
     static func < (lhs: Self, rhs: Self) -> Bool { lhs.rawValue < rhs.rawValue }
