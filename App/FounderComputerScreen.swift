@@ -55,7 +55,10 @@ struct FounderComputerScreen: View {
         VStack(spacing: 16) {
           AIOperationsFloor(
             agents: livingAgentProjections,
+            agentModels: store.agents,
             tasks: store.tasks,
+            operations: store.agentOperations,
+            decisionRequests: agentOperationalDecisionRequests,
             summary: founderSummary,
             objective: store.currentObjective?.title ?? "Set the next company priority.",
             venture: store.venture,
@@ -65,7 +68,7 @@ struct FounderComputerScreen: View {
             fundingOpportunities: store.fundingBoardOpportunities,
             stats: store.stats,
             availability: agentAvailability,
-            reduceMotion: reduceMotion,
+            reduceMotion: reduceMotion || ProcessInfo.processInfo.arguments.contains("--agent-operations-reduce-motion"),
             portraitViewport: portraitViewport,
             portraitPresentationEligible: portraitPresentationEligible,
             visiblePortraitIDs: visiblePortraitIDs,
@@ -75,6 +78,20 @@ struct FounderComputerScreen: View {
             onAssign: beginAssignment,
             onReview: review,
             onOpenDetail: openFullWorkstation,
+            onSetAllocation: { agentID, domain, value in
+              _ = store.setAgentOperationsAllocation(agentID: agentID, domain: domain, value: value)
+            },
+            onPreset: { agentID, preset in
+              _ = store.applyAgentOperationsPreset(agentID: agentID, preset: preset)
+            },
+            onAutonomy: { agentID, autonomy in
+              _ = store.setAgentOperationalAutonomy(agentID: agentID, autonomy: autonomy)
+            },
+            onDecision: { agentID, choice in
+              if store.resolveAgentOperationalDecision(agentID: agentID, choice: choice) {
+                announce(store.alertMessage ?? "Agent operations decision recorded.")
+              }
+            },
             onCommit: commit
           )
           .id("viewport")
@@ -399,6 +416,12 @@ struct FounderComputerScreen: View {
     })
   }
 
+  private var agentOperationalDecisionRequests: [String: AgentOperationalDecisionRequest] {
+    Dictionary(uniqueKeysWithValues: store.agents.compactMap { agent in
+      store.agentOperationalDecisionRequest(for: agent.id).map { (agent.id, $0) }
+    })
+  }
+
   @ViewBuilder
   private func workspaceCard(for station: AgentStationViewModel) -> some View {
     let agentID = station.agentID
@@ -655,6 +678,33 @@ struct FounderComputerScreen: View {
     AccessibilityNotification.Announcement(text).post()
   }
 }
+
+#if DEBUG
+struct AgentOperationsQAHost: View {
+  @State private var store = GameStore()
+  @State private var presentation = PresentationCoordinator()
+  @State private var configured = false
+
+  var body: some View {
+    FounderComputerScreen(store: store, presentation: presentation)
+      .onAppear {
+        guard !configured else { return }
+        configured = true
+        store.resetCareer()
+        store.startCareer(seed: 19_019)
+        if store.awaitingThesisSelection { store.selectThesisAndBegin() }
+        if let choice = store.activeDilemma?.choices.first { store.selectDilemmaChoice(choice.id) }
+        let fixture = AgentOperationsFixture.allCases.first {
+          ProcessInfo.processInfo.arguments.contains("--agent-operations-fixture-\($0.rawValue)")
+        } ?? .balanced
+        store.installAgentOperationsForTesting(fixture.state, agents: fixture.agents)
+        if fixture == .stacksOverloaded, let task = store.tasks.first {
+          store.assign(agentID: "stacks", to: task.id)
+        }
+      }
+  }
+}
+#endif
 
 private struct AssignmentDestination: Identifiable { var agentID: String; var id: String { agentID } }
 private struct WorkSessionDestination: Identifiable { var taskID: UUID; var id: UUID { taskID } }

@@ -75,6 +75,13 @@ final class GameStore {
   private(set) var publicMediaEvents: [PublicMediaEvent] = []
   private(set) var processedCoverageEventIDs: Set<String> = []
   private(set) var latestCoverageChange: CoverageChange?
+  /// The single persisted major-initiative operation. Its preparation is
+  /// frozen before sprint commit and its canonical effects resolve once.
+  private(set) var productLaunchOperation: ProductLaunchOperation?
+  /// Persistent strategic emphasis for Aurora, Stacks and Brio. Workload is
+  /// derived from these allocations plus canonical assignments, never stored
+  /// as a competing agent-state truth.
+  private(set) var agentOperations = AgentOperationsState.balanced
   private(set) var statementSpent = 0
   private(set) var feedPosts: [FeedPost] = []
   private var pendingFeedEffects = SimulationEffects()
@@ -963,6 +970,8 @@ final class GameStore {
     publicMediaEvents = []
     processedCoverageEventIDs = []
     latestCoverageChange = nil
+    productLaunchOperation = nil
+    agentOperations = .balanced
     techComHeadlines = []
     techComRivals = TechComEngine.rivals(seed: seed ?? 0x534F4C4F)
     talentBoardRefreshes = 0
@@ -1005,6 +1014,10 @@ final class GameStore {
        let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
        envelope.version == Self.saveVersion {
       loadedSave = envelope.career
+    } else if let data = UserDefaults.standard.data(forKey: Self.v19SaveKey),
+              let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
+              envelope.version == 19 {
+      loadedSave = migrateV19(envelope.career)
     } else if let data = UserDefaults.standard.data(forKey: Self.v18SaveKey),
               let envelope = try? decoder.decode(SaveEnvelope.self, from: data),
               envelope.version == 18 {
@@ -1195,8 +1208,11 @@ final class GameStore {
         if let cached = cachedReport(taskID: taskID, agentID: agentID) {
           tasks[taskIndex].result = cached
         } else {
+          let operationalAgent = AgentOperationsPolicy.assignmentAgent(
+            agent, profile: agentOperations.profile(for: agentID), task: tasks[taskIndex]
+          )
           let result = SimulationEngine.makeResult(
-            for: tasks[taskIndex], agent: agent, intent: intent, doctrine: doctrine,
+            for: tasks[taskIndex], agent: operationalAgent, intent: intent, doctrine: doctrine,
             correlatedFailureEvent: correlatedFailureEvent, allTasks: tasks, allAgents: agents,
             facilityBonuses: facilityBonuses,
             coordinate: DrawCoordinate(
@@ -1230,6 +1246,142 @@ final class GameStore {
     updateKnownOperationalRisks()
     syncAssignments()
     save()
+  }
+
+  func agentOperationsProfile(for agentID: String) -> AgentOperationsProfile {
+    agentOperations.profile(for: agentID)
+  }
+
+  func agentOperationsWorkload(for agentID: String) -> Int {
+    let urgency = tasks.first(where: { $0.assignedAgentID == agentID })?.urgency
+    return AgentOperationsPolicy.workload(profile: agentOperations.profile(for: agentID), assignmentUrgency: urgency)
+  }
+
+  func agentOperationsWorkloadBand(for agentID: String) -> AgentOperationalWorkloadBand {
+    .classify(agentOperationsWorkload(for: agentID))
+  }
+
+  @discardableResult
+  func setAgentOperationsAllocation(agentID: String, domain: AgentOperationalDomain, value: Int) -> Bool {
+    guard agents.contains(where: { $0.id == agentID }) else { return false }
+    var profile = agentOperations.profile(for: agentID)
+    guard profile.setAllocation(value, for: domain) else {
+      alertMessage = "Allocations cannot be negative or exceed \(profile.capacity) total capacity."
+      return false
+    }
+    agentOperations.update(profile)
+    save()
+    return true
+  }
+
+  @discardableResult
+  func applyAgentOperationsPreset(agentID: String, preset: AgentOperationsPreset) -> Bool {
+    guard agents.contains(where: { $0.id == agentID }) else { return false }
+    var profile = agentOperations.profile(for: agentID)
+    profile.applyPreset(preset)
+    agentOperations.update(profile)
+    save()
+    return true
+  }
+
+  @discardableResult
+  func setAgentOperationalAutonomy(agentID: String, autonomy: AgentOperationalAutonomy) -> Bool {
+    guard agents.contains(where: { $0.id == agentID }) else { return false }
+    var profile = agentOperations.profile(for: agentID)
+    profile.autonomy = autonomy
+    agentOperations.update(profile)
+    save()
+    return true
+  }
+
+  func agentOperationalDecisionRequest(for agentID: String) -> AgentOperationalDecisionRequest? {
+    guard let agent = agents.first(where: { $0.id == agentID }) else { return nil }
+    let profile = agentOperations.profile(for: agentID)
+    let request = AgentOperationsPolicy.request(agent: agent, profile: profile, venture: venture, sprint: sprint)
+    guard !agentOperations.recentDecisions.contains(where: { $0.id == request.id }) else { return nil }
+    return request
+  }
+
+  @discardableResult
+  func resolveAgentOperationalDecision(agentID: String, choice: AgentOperationalDecisionChoice) -> Bool {
+    guard let agentIndex = agents.firstIndex(where: { $0.id == agentID }),
+          let request = agentOperationalDecisionRequest(for: agentID) else { return false }
+    let agent = agents[agentIndex]
+    var profile = agentOperations.profile(for: agentID)
+    let urgency = tasks.first(where: { $0.assignedAgentID == agentID })?.urgency
+    let resolvedFocus: AgentOperationalDomain
+    var penalty = false
+    if choice == .letAgentDecide {
+      let agentKey: UInt64 = switch agentID { case "aurora": 0xA0; case "stacks": 0x57; default: 0xB2 }
+      let seed = SeededRandomNumberGenerator.mixed(
+        RivalEngine.careerSeed(founderName: founderName, productType: productType)
+          ^ UInt64(venture * 1_000 + sprint * 10) ^ agentKey
+      )
+      resolvedFocus = AgentOperationsPolicy.autonomousFocus(
+        agent: agent, profile: profile, request: request, assignmentUrgency: urgency, seed: seed
+      )
+      profile.autonomousDecisionCount += 1
+    } else {
+      guard request.founderChoices.contains(choice) else { return false }
+      guard attentionRemaining > 0 else {
+        alertMessage = "Founder intervention needs 1 Attention."
+        return false
+      }
+      founderAttentionSpent += 1
+      profile.recentInterventionCount = min(6, profile.recentInterventionCount + 1)
+      profile.founderInterventionCount += 1
+      resolvedFocus = operationalFocus(for: choice)
+      let workload = AgentOperationsPolicy.workload(profile: profile, assignmentUrgency: urgency)
+      penalty = agent.calibration >= 0.80 && agent.reliability >= 80 && agent.drift < 25 && workload <= 100
+      if penalty {
+        profile.pendingTrustDelta -= 2
+        profile.pendingRelationshipDelta -= 1
+        profile.micromanagementPenaltyActivations += 1
+      } else if agent.calibration < 0.65 || agent.reliability < 65 {
+        profile.pendingCalibrationDelta += 0.015
+      }
+    }
+    reallocate(&profile, toward: resolvedFocus)
+    agentOperations.update(profile)
+    agentOperations.record(.init(
+      id: request.id, agentID: agentID, venture: venture, sprint: sprint,
+      selectedChoice: choice, resolvedFocus: resolvedFocus,
+      micromanagementPenaltyApplied: penalty
+    ))
+    alertMessage = choice == .letAgentDecide
+      ? "\(agent.name) set the operating emphasis."
+      : "Founder intervention recorded. Its operating effect resolves at the sprint boundary."
+    save()
+    return true
+  }
+
+  private func operationalFocus(for choice: AgentOperationalDecisionChoice) -> AgentOperationalDomain {
+    switch choice {
+    case .verifyEvidence: .evidenceVerification
+    case .trustMarketRead: .marketResearch
+    case .prioritizeReliability: .reliability
+    case .prioritizeSpeed: .productDevelopment
+    case .prioritizeAcquisition: .acquisition
+    case .prioritizePublicResponse: .publicResponse
+    case .letAgentDecide: .continuousMonitoring
+    }
+  }
+
+  private func reallocate(_ profile: inout AgentOperationsProfile, toward focus: AgentOperationalDomain) {
+    guard focus.agentID == profile.agentID else { return }
+    let target = min(45, profile.allocation(for: focus) + 10)
+    let increase = target - profile.allocation(for: focus)
+    guard increase > 0 else { return }
+    let donors = AgentOperationalDomain.domains(for: profile.agentID)
+      .filter { $0 != focus }.sorted { profile.allocation(for: $0) > profile.allocation(for: $1) }
+    var remaining = increase
+    for donor in donors where remaining > 0 {
+      let available = max(0, profile.allocation(for: donor) - 5)
+      let transfer = min(available, remaining)
+      _ = profile.setAllocation(profile.allocation(for: donor) - transfer, for: donor)
+      remaining -= transfer
+    }
+    _ = profile.setAllocation(target - remaining, for: focus)
   }
 
   /// Marks an agent unavailable for the current sprint without changing the
@@ -1813,6 +1965,7 @@ final class GameStore {
       recordAgentProgress(for: agentIndex, task: tasks[index], result: result)
     }
 
+    resolveAgentOperationsAtSprintBoundary()
     recoverUnassignedAgents(assignedIDs: Set(assignedIndices.compactMap { tasks[$0].assignedAgentID }))
     achievementStore?.recordWorkforce(agents)
 
@@ -1914,6 +2067,223 @@ final class GameStore {
     }
     saveCareer()
   }
+
+  /// Captures prepared launch work, commits that sprint through the existing
+  /// authority, then hands the founder to the dedicated operation lifecycle.
+  @discardableResult
+  func beginProductLaunch() -> Bool {
+    guard productLaunchOperation?.state == .resolved || productLaunchOperation == nil else {
+      alertMessage = "A Product Launch operation is already in progress."
+      return false
+    }
+    guard canCommitSprint else { alertMessage = commitBlockerMessage; return false }
+    guard let captured = captureProductLaunchPreparation() else {
+      alertMessage = "Aurora, Stacks, and Brio must each have reviewed, resolved launch preparation and recorded evidence."
+      return false
+    }
+    let sourceVenture = venture
+    let sourceSprint = sprint
+    guard productLaunchOperation?.preparation.venture != sourceVenture
+      || productLaunchOperation?.preparation.sprint != sourceSprint else {
+      alertMessage = "This sprint already created a Product Launch operation."
+      return false
+    }
+    let seedKey = randomNumberGenerator.state
+      ^ UInt64(sourceVenture &* 10_000 + sourceSprint &* 100)
+      ^ UInt64(captured.snapshot.aurora.visibleQuality &* 7 + captured.snapshot.stacks.visibleQuality &* 11 + captured.snapshot.brio.visibleQuality &* 13)
+    productLaunchOperation = ProductLaunchOperation(
+      id: "product-launch-v\(sourceVenture)-s\(sourceSprint)",
+      state: .committed,
+      preparation: captured.snapshot,
+      resolutionTruth: captured.truth,
+      deterministicSeed: SeededRandomNumberGenerator.mixed(seedKey)
+    )
+    commitSprint()
+    productLaunchOperation?.state = .launchCheck
+    saveCareer()
+    return true
+  }
+
+  @discardableResult
+  func resumeCommittedProductLaunch() -> Bool {
+    guard productLaunchOperation?.state == .committed else { return false }
+    productLaunchOperation?.state = .launchCheck
+    saveCareer()
+    return true
+  }
+
+  @discardableResult
+  func advanceProductLaunchToDecisions() -> Bool {
+    guard let state = productLaunchOperation?.state,
+          state == .committed || state == .launchCheck else { return false }
+    productLaunchOperation?.state = .founderDecision
+    saveCareer()
+    return true
+  }
+
+  @discardableResult
+  func selectProductLaunchReleasePosture(_ posture: ProductLaunchReleasePosture) -> Bool {
+    guard let state = productLaunchOperation?.state,
+          state == .launchCheck || state == .founderDecision else { return false }
+    productLaunchOperation?.releasePosture = posture
+    productLaunchOperation?.state = .founderDecision
+    saveCareer()
+    return true
+  }
+
+  @discardableResult
+  func selectProductLaunchPublicPosture(_ posture: ProductLaunchPublicPosture) -> Bool {
+    guard let state = productLaunchOperation?.state,
+          state == .launchCheck || state == .founderDecision else { return false }
+    productLaunchOperation?.publicPosture = posture
+    productLaunchOperation?.state = .founderDecision
+    saveCareer()
+    return true
+  }
+
+  @discardableResult
+  func executeProductLaunch() -> Bool {
+    guard productLaunchOperation != nil else { return false }
+    productLaunchOperation?.executionInvocationCount += 1
+    guard productLaunchOperation?.state == .founderDecision,
+          productLaunchOperation?.decisionsComplete == true else {
+      saveCareer()
+      return false
+    }
+    productLaunchOperation?.state = .executing
+    saveCareer()
+    return true
+  }
+
+  /// Atomic canonical boundary for Product Launch results. Momentum and Trust
+  /// apply with the resolved operation; Coverage routes through the public
+  /// media ledger so its event ID remains deduplicated across save/load.
+  @discardableResult
+  func resolveProductLaunch() -> Bool {
+    guard productLaunchOperation != nil else { return false }
+    productLaunchOperation?.resolutionInvocationCount += 1
+    guard productLaunchOperation?.state == .executing else {
+      if productLaunchOperation?.state == .resolved {
+        productLaunchOperation?.duplicateResolutionPreventionCount += 1
+      }
+      saveCareer()
+      return false
+    }
+    productLaunchOperation?.state = .resolving
+    guard let operation = productLaunchOperation,
+          let result = ProductLaunchResolutionPolicy.resolve(operation) else {
+      productLaunchOperation?.state = .founderDecision
+      saveCareer()
+      return false
+    }
+    apply(result.effects)
+    _ = applyPublicMediaEvent(PublicMediaEvent(
+      id: "\(operation.id)-resolved",
+      program: result.overall == .breakout ? .founderSpotlight : .breaking,
+      tone: result.coverageDelta > 0 ? .favorable : result.coverageDelta < 0 ? .critical : .neutral,
+      headline: result.headline,
+      summary: "The public launch resolved \(result.overall.rawValue) with \(result.marketRating.rawValue) market and \(result.publicRating.rawValue) public reception.",
+      tickerItems: [result.headline.uppercased(), "SOLO PRODUCT LAUNCH", "MARKET \(result.marketRating.rawValue.uppercased())"],
+      coverageDelta: result.coverageDelta,
+      venture: operation.preparation.venture,
+      sprint: operation.preparation.sprint,
+      concernsPlayerCompany: true
+    ), persist: false)
+    productLaunchOperation?.result = result
+    productLaunchOperation?.canonicalEffectApplicationCount += 1
+    productLaunchOperation?.state = .resolved
+    sanitizeState()
+    saveCareer()
+    return true
+  }
+
+  /// Removes only a founder-acknowledged resolved presentation. Interrupted
+  /// outcomes remain persisted until this explicit return-to-world action.
+  @discardableResult
+  func finishProductLaunchPresentation() -> Bool {
+    guard productLaunchOperation?.state == .resolved else { return false }
+    productLaunchOperation = nil
+    saveCareer()
+    return true
+  }
+
+  private func captureProductLaunchPreparation() -> (snapshot: ProductLaunchPreparationSnapshot, truth: ProductLaunchResolutionTruth)? {
+    let evidenceIDs = Set(evidence.map(\.taskInstanceID))
+    func preparation(for agentID: String) -> (ProductLaunchAgentPreparation, Int, Bool)? {
+      guard let task = tasks.first(where: { $0.assignedAgentID == agentID }),
+            task.isReviewed, task.resolutionLocked,
+            evidenceIDs.contains(task.id.uuidString), let result = task.result else { return nil }
+      let visible = result.revealedActualQuality ?? result.reportedQuality
+      let profile = agentOperations.profile(for: agentID)
+      let workload = AgentOperationsPolicy.workload(profile: profile, assignmentUrgency: task.urgency)
+      var risks: [String] = []
+      let taskRisk = result.knownOperationalRisk.trimmingCharacters(in: .whitespacesAndNewlines)
+      if !taskRisk.isEmpty && !taskRisk.lowercased().hasPrefix("no known") { risks.append(taskRisk) }
+      if workload > 105 { risks.append("\(agentID.capitalized) operational workload is \(workload)%") }
+      if agentID == "stacks", profile.allocation(for: .reliability) < 15 {
+        risks.append("Stacks reliability capacity is constrained")
+      }
+      if agentID == "aurora", profile.allocation(for: .evidenceVerification) < 10 {
+        risks.append("Aurora verification capacity is constrained")
+      }
+      if agentID == "brio", profile.allocation(for: .publicResponse) < 10 {
+        risks.append("Brio public-response capacity is constrained")
+      }
+      let operationalAdjustment = AgentOperationsPolicy.productLaunchQualityAdjustment(
+        agentID: agentID, profile: profile, assignmentUrgency: task.urgency
+      )
+      return (
+        ProductLaunchAgentPreparation(
+          visibleQuality: visible,
+          evidenceCompleteness: result.evidenceCompleteness,
+          founderVerified: result.verificationState.revealsActualQuality,
+          knownRisk: risks.isEmpty ? nil : risks.joined(separator: " · ")
+        ),
+        clamped(result.deliveredQualityForSimulation + operationalAdjustment),
+        !result.verificationState.revealsActualQuality && visible != result.deliveredQualityForSimulation
+      )
+    }
+    guard let aurora = preparation(for: "aurora"),
+          let stacks = preparation(for: "stacks"),
+          let brio = preparation(for: "brio") else { return nil }
+    let knownRisks = [aurora.0.knownRisk, stacks.0.knownRisk, brio.0.knownRisk].compactMap { $0 }
+    let snapshot = ProductLaunchPreparationSnapshot(
+      venture: venture, sprint: sprint, projectName: "\(productType.name) Launch",
+      aurora: aurora.0, stacks: stacks.0, brio: brio.0,
+      reviewedEvidenceCount: 3, requiredEvidenceCount: 3,
+      attentionRemaining: attentionRemaining, runway: stats.runway, cash: finance.cash,
+      trust: stats.trust, momentum: stats.momentum, coverage: stats.coverage,
+      strongestPublicRivalClaim: techComRivals.map(\.claimedMomentum).max() ?? 0,
+      knownRisks: knownRisks
+    )
+    var unresolved: Set<String> = []
+    if aurora.2 { unresolved.insert("aurora") }
+    if stacks.2 { unresolved.insert("stacks") }
+    if brio.2 { unresolved.insert("brio") }
+    return (snapshot, ProductLaunchResolutionTruth(
+      auroraQuality: aurora.1, stacksQuality: stacks.1, brioQuality: brio.1,
+      unrevealedVarianceAgentIDs: unresolved
+    ))
+  }
+
+  #if DEBUG
+  func installAgentOperationsForTesting(
+    _ state: AgentOperationsState, agents testAgents: [SoloAgent]? = nil, persist: Bool = false
+  ) {
+    agentOperations = state
+    if let testAgents { agents = testAgents }
+    sanitizeState()
+    syncAssignments()
+    if persist { saveCareer() }
+  }
+
+  /// Test/visual-acceptance seam. Production creation remains exclusively in
+  /// `beginProductLaunch()` and callers cannot inject arbitrary operations.
+  func installProductLaunchOperationForTesting(_ operation: ProductLaunchOperation, persist: Bool = false) {
+    productLaunchOperation = operation
+    if persist { saveCareer() }
+  }
+  #endif
 
   /// Called when the Founder Pass becomes active while a career is held at the
   /// venture gate. Idempotent and safe to call on every entitlement change.
@@ -2601,6 +2971,37 @@ final class GameStore {
     }
   }
 
+  private func resolveAgentOperationsAtSprintBoundary() {
+    var applied = false
+    for index in agents.indices {
+      let agentID = agents[index].id
+      guard AgentOperationalDomain.domains(for: agentID).count == 4 else { continue }
+      var profile = agentOperations.profile(for: agentID)
+      guard profile.lastResolvedCareerSprint != careerSprintIndex else { continue }
+      let urgency = tasks.first(where: { $0.assignedAgentID == agentID })?.urgency
+      let outcome = AgentOperationsPolicy.sprintOutcome(
+        agent: agents[index], profile: profile, assignmentUrgency: urgency
+      )
+      agents[index].progression.adjustStress(outcome.stressDelta)
+      agents[index].reliability += outcome.reliabilityDelta
+      agents[index].calibration += outcome.calibrationDelta
+      agents[index].drift += outcome.driftDelta
+      agents[index].trust += outcome.trustDelta
+      agents[index].relationship += outcome.relationshipDelta
+      profile.overloadStreak = outcome.band == .overloaded || outcome.band == .critical
+        ? min(6, profile.overloadStreak + 1) : max(0, profile.overloadStreak - 1)
+      profile.lastResolvedCareerSprint = careerSprintIndex
+      profile.pendingTrustDelta = 0
+      profile.pendingRelationshipDelta = 0
+      profile.pendingCalibrationDelta = 0
+      profile.recentInterventionCount = max(0, profile.recentInterventionCount - 1)
+      agentOperations.update(profile)
+      applied = true
+    }
+    if applied { agentOperations.sprintResolutionCount += 1 }
+    sanitizeState()
+  }
+
   private func completeAmbitionIfEligible(_ index: Int) {
     guard !agents[index].progression.ambitionCompleted else { return }
     let progress = agents[index].progression
@@ -2740,6 +3141,8 @@ final class GameStore {
     techComRivals = save.techComRivals.isEmpty ? TechComEngine.rivals(seed: UInt64(save.venture * 100 + save.sprint)) : save.techComRivals
     publicMediaEvents = save.publicMediaEvents.filter(\.isPublic)
     processedCoverageEventIDs = save.processedCoverageEventIDs
+    productLaunchOperation = save.productLaunchOperation
+    agentOperations = save.agentOperations
     latestCoverageChange = nil
     talentBoardRefreshes = save.talentBoardRefreshes
     recallsShownThisVenture = 0
@@ -2901,6 +3304,14 @@ final class GameStore {
   /// v18 -> v19: `CareerSave`'s tolerant decoder seeds finance from legacy
   /// spendable capital and starts Day 1. No legacy assignment is charged.
   private func migrateV18(_ legacy: CareerSave) -> CareerSave { legacy }
+
+  /// v19 -> v20: agent operations did not exist, so every agent starts with
+  /// the compatibility behavior and balanced headroom instead of a penalty.
+  private func migrateV19(_ legacy: CareerSave) -> CareerSave {
+    var migrated = legacy
+    migrated.agentOperations = .balanced
+    return migrated
+  }
 
   private func migrateV6(_ legacy: CareerSave) -> CareerSave {
     legacy
@@ -3392,7 +3803,9 @@ final class GameStore {
       processedCoverageEventIDs: processedCoverageEventIDs,
       finance: finance,
       operatingCalendar: operatingCalendar,
-      workSessions: workSessions
+      workSessions: workSessions,
+      productLaunchOperation: productLaunchOperation,
+      agentOperations: agentOperations
     )
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)
     if let data = try? JSONEncoder().encode(envelope) {
@@ -3560,11 +3973,12 @@ final class GameStore {
     min(100, max(0, value))
   }
 
-  static let saveVersion = 19
+  static let saveVersion = 20
   /// The key the current save format is written to. Not private so tests can
   /// assert against the live key instead of hard-coding a version that goes
   /// stale the next time the format changes.
-  static let saveKey = "solo-unicorn-run-native-save-v19"
+  static let saveKey = "solo-unicorn-run-native-save-v20"
+  static let v19SaveKey = "solo-unicorn-run-native-save-v19"
   private static let v18SaveKey = "solo-unicorn-run-native-save-v18"
   private static let v17SaveKey = "solo-unicorn-run-native-save-v17"
   private static let v16SaveKey = "solo-unicorn-run-native-save-v16"
@@ -3584,12 +3998,12 @@ final class GameStore {
   private static let v2SaveKey = "solo-unicorn-run-native-save-v2"
   private static let legacySaveKey = "solo-unicorn-run-native-save-v1"
   static let saveCareerPurgeKeys = [
-    v17SaveKey, v16SaveKey, v15SaveKey, v14SaveKey, v13SaveKey, v12SaveKey, v11SaveKey,
+    v19SaveKey, v18SaveKey, v17SaveKey, v16SaveKey, v15SaveKey, v14SaveKey, v13SaveKey, v12SaveKey, v11SaveKey,
     v10SaveKey, v9SaveKey, v8SaveKey, v7SaveKey, v6SaveKey,
     v5SaveKey, v4SaveKey, v3SaveKey, v2SaveKey, legacySaveKey
   ]
   static let resetCareerPurgeKeys = [
-    v17SaveKey, v16SaveKey, v15SaveKey, v14SaveKey, v13SaveKey, v12SaveKey, v11SaveKey,
+    v19SaveKey, v18SaveKey, v17SaveKey, v16SaveKey, v15SaveKey, v14SaveKey, v13SaveKey, v12SaveKey, v11SaveKey,
     v10SaveKey, v9SaveKey, v8SaveKey, v7SaveKey, v6SaveKey,
     v5SaveKey, v4SaveKey, v3SaveKey, v2SaveKey, legacySaveKey
   ]

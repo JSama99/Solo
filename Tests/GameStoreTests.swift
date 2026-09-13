@@ -13,7 +13,7 @@ final class GameStoreTests: XCTestCase {
 
   func testResetAndSavePurgeIdenticalLegacyKeySets() {
     XCTAssertEqual(GameStore.resetCareerPurgeKeys, GameStore.saveCareerPurgeKeys)
-    XCTAssertEqual(GameStore.resetCareerPurgeKeys.count, 17)
+    XCTAssertEqual(GameStore.resetCareerPurgeKeys.count, 19)
 
     for key in GameStore.resetCareerPurgeKeys {
       UserDefaults.standard.set(Data([0x1]), forKey: key)
@@ -912,7 +912,7 @@ final class GameStoreTests: XCTestCase {
     XCTAssertEqual(restored.finance.cash, cash)
     XCTAssertTrue(restored.publicMediaEvents.isEmpty)
     XCTAssertEqual(restored.precedents, store.precedents)
-    XCTAssertEqual(GameStore.saveVersion, 19)
+    XCTAssertEqual(GameStore.saveVersion, 20)
   }
 
   func testFundingMilestoneMetResolvesOnceWithoutTrustPenalty() throws {

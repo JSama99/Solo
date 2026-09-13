@@ -1399,6 +1399,8 @@ struct CareerSave: Codable {
   var finance: CompanyFinance
   var operatingCalendar: OperatingCalendar
   var workSessions: [WorkSessionRecord]
+  var productLaunchOperation: ProductLaunchOperation?
+  var agentOperations: AgentOperationsState
 
   private enum CodingKeys: String, CodingKey {
     case founderName, doctrine, productType, talentBoardRefreshes, sprint, venture, intent, stats, agents, tasks
@@ -1410,7 +1412,7 @@ struct CareerSave: Codable {
     case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, completedVentureObjectives, ventureObjective, thesis, thesisHistory, awaitingThesisSelection, pendingChapterMilestone
     case techComHeadlines, techComRivals, latentDefects, poachingOffer, exposedRivalIDs
     case activeDivergence, divergenceRecords, forksUsedThisVenture, doctrineProfile, unicornIdentity
-    case rivalDiscontinuities, publicMediaEvents, processedCoverageEventIDs, finance, operatingCalendar, workSessions
+    case rivalDiscontinuities, publicMediaEvents, processedCoverageEventIDs, finance, operatingCalendar, workSessions, productLaunchOperation, agentOperations
   }
 
   init(
@@ -1470,7 +1472,9 @@ struct CareerSave: Codable {
     processedCoverageEventIDs: Set<String> = [],
     finance: CompanyFinance? = nil,
     operatingCalendar: OperatingCalendar = OperatingCalendar(),
-    workSessions: [WorkSessionRecord] = []
+    workSessions: [WorkSessionRecord] = [],
+    productLaunchOperation: ProductLaunchOperation? = nil,
+    agentOperations: AgentOperationsState = .balanced
   ) {
     self.founderName = founderName
     self.doctrine = doctrine
@@ -1529,6 +1533,8 @@ struct CareerSave: Codable {
     self.finance = finance ?? CompanyFinance(cash: stats.capital, capitalRaised: stats.capital, lifetimeRevenue: stats.revenue)
     self.operatingCalendar = operatingCalendar
     self.workSessions = workSessions
+    self.productLaunchOperation = productLaunchOperation
+    self.agentOperations = agentOperations
   }
 
   init(from decoder: Decoder) throws {
@@ -1605,6 +1611,8 @@ struct CareerSave: Codable {
       ?? CompanyFinance(cash: stats.capital, capitalRaised: stats.capital, lifetimeRevenue: stats.revenue)
     operatingCalendar = try container.decodeIfPresent(OperatingCalendar.self, forKey: .operatingCalendar) ?? OperatingCalendar()
     workSessions = try container.decodeIfPresent([WorkSessionRecord].self, forKey: .workSessions) ?? []
+    productLaunchOperation = try container.decodeIfPresent(ProductLaunchOperation.self, forKey: .productLaunchOperation)
+    agentOperations = try container.decodeIfPresent(AgentOperationsState.self, forKey: .agentOperations) ?? .balanced
   }
 }
 
