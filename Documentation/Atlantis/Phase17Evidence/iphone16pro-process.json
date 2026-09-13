@@ -1,0 +1,12 @@
+{
+  "deviceIdentifier": "1A743F7C-023B-5502-9352-E77140D2A8AF",
+  "bundleID": "com.talonsight.solounicornrun",
+  "installationURL": "file:///private/var/containers/Bundle/Application/70623B7D-FEF0-449D-B7F2-8F72052E1FC5/Solo%20Unicorn%20Run.app/",
+  "runningProcesses": [
+    {
+      "executable": "file:///private/var/containers/Bundle/Application/70623B7D-FEF0-449D-B7F2-8F72052E1FC5/Solo%20Unicorn%20Run.app/Solo%20Unicorn%20Run",
+      "processIdentifier": 6674
+    }
+  ],
+  "matchCount": 1
+}

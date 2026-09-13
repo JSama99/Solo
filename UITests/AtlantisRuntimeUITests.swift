@@ -98,6 +98,89 @@ final class AtlantisRuntimeUITests: XCTestCase {
       capture("Atlantis_Phase14_Reactive_"+proof,app)
     }
   }
+  func testNamedFounderDialogueResponseDismissAndCooldown() {
+    continueAfterFailure=false
+    let app=XCUIApplication();app.launchArguments=["--atlantis-realitykit","--atlantis-batched-assets","--atlantis-living-world","--atlantis-named-encounters"];app.launch()
+    let status=app.staticTexts["atlantis.debug.benchmarkStatus"]
+    XCTAssertTrue(status.waitForExistence(timeout:30));XCTAssertTrue(wait(status,contains:"Founder ready",timeout:45))
+    let fixture=app.buttons["atlantis.debug.named.fixture.founderPeer"]
+    XCTAssertTrue(fixture.waitForExistence(timeout:15));fixture.tap()
+    let prompt=app.buttons["atlantis.namedNPC.mara-chen"]
+    XCTAssertTrue(prompt.waitForExistence(timeout:30));XCTAssertTrue(prompt.label.contains("Mara Chen"));prompt.tap()
+    XCTAssertTrue(app.otherElements["atlantis.named.dialogue.mara-chen"].waitForExistence(timeout:10))
+    XCTAssertTrue(app.staticTexts["atlantis.named.dialogue.prompt"].label.contains("protecting this sprint"))
+    capture("Atlantis_Phase15_FounderDialogue",app)
+    app.buttons["atlantis.named.dialogue.response.focus"].tap()
+    XCTAssertTrue(app.staticTexts["atlantis.named.dialogue.consequence"].waitForExistence(timeout:5))
+    XCTAssertEqual(app.staticTexts["atlantis.named.dialogue.consequence"].label,"Presentation only")
+    app.buttons["atlantis.named.dialogue.continue"].tap()
+    XCTAssertTrue(app.staticTexts["atlantis.debug.named.state"].waitForExistence(timeout:10))
+    XCTAssertTrue(wait(app.staticTexts["atlantis.debug.named.state"],contains:"mara.peer-advice",timeout:10))
+    XCTAssertFalse(app.otherElements["atlantis.named.dialogue.mara-chen"].exists)
+    XCTAssertFalse(app.buttons["atlantis.namedNPC.mara-chen"].exists,"Cooldown must remove the immediate prompt")
+  }
+  func testNamedReporterInvestorRivalAndCustomerFixtures() {
+    continueAfterFailure=false
+    let app=XCUIApplication();app.launchArguments=["--atlantis-realitykit","--atlantis-batched-assets","--atlantis-living-world","--atlantis-named-encounters"];app.launch()
+    let status=app.staticTexts["atlantis.debug.benchmarkStatus"]
+    XCTAssertTrue(status.waitForExistence(timeout:30));XCTAssertTrue(wait(status,contains:"Founder ready",timeout:45))
+    let cases:[(fixture:String,npc:String,proof:String)]=[
+      ("reporterSpotlight","sloane-park","covering your momentum"),
+      ("reporterScrutiny","sloane-park","confidence is under pressure"),
+      ("investorInterest","nia-okafor","Venture conversation"),
+      ("pallasSurge","iris-vale","Pallas is hiring"),
+      ("customerComplaint","devon-reyes","disrupted our workflow")]
+    for item in cases {
+      let fixture=app.buttons["atlantis.debug.named.fixture.\(item.fixture)"]
+      XCTAssertTrue(fixture.waitForExistence(timeout:15));fixture.tap()
+      let prompt=app.buttons["atlantis.namedNPC.\(item.npc)"]
+      XCTAssertTrue(prompt.waitForExistence(timeout:45),item.fixture);prompt.tap()
+      let dialogue=app.otherElements["atlantis.named.dialogue.\(item.npc)"]
+      XCTAssertTrue(dialogue.waitForExistence(timeout:10),item.fixture)
+      XCTAssertTrue(app.staticTexts["atlantis.named.dialogue.prompt"].label.contains(item.proof),item.fixture)
+      capture("Atlantis_Phase15_\(item.fixture)",app)
+      app.buttons["atlantis.named.dialogue.leave"].tap()
+      XCTAssertFalse(dialogue.exists)
+    }
+  }
+  func testFounderWorldConsequencesUseOneCameraAcrossFourStates() {
+    continueAfterFailure=false
+    let app=launchConsequences()
+    let states=[("founderBaseline","founder.baseline","baseline"),("founderGrowth","founder.growth","growth"),("founderSpotlight","founder.spotlight","spotlight"),("founderScrutiny","founder.scrutiny","scrutiny")]
+    for state in states {
+      let fixture=app.buttons["atlantis.debug.consequence.fixture.\(state.0)"]
+      XCTAssertTrue(fixture.waitForExistence(timeout:15));fixture.tap()
+      let diagnostics=app.staticTexts["atlantis.debug.consequence.states"],presentation=app.staticTexts["atlantis.debug.consequence.presentation"]
+      XCTAssertTrue(wait(diagnostics,contains:state.1,timeout:30));XCTAssertTrue(wait(presentation,contains:"Founder HQ: \(state.2)",timeout:10))
+      XCTAssertTrue(app.staticTexts["atlantis.debug.consequence.metrics"].label.contains("conflicts 0"))
+      capture("Atlantis_Phase16_Founder_\(state.2)",app)
+    }
+  }
+  func testPallasWorldConsequencesUseOneCameraAndReconstructAfterStreaming() {
+    continueAfterFailure=false
+    let app=launchConsequences()
+    let states=[("pallasBaseline","pallas.baseline","baseline"),("pallasSurge","pallas.surge","surge"),("pallasEvent","pallas.event","event")]
+    for state in states {
+      let fixture=app.buttons["atlantis.debug.consequence.fixture.\(state.0)"]
+      XCTAssertTrue(fixture.waitForExistence(timeout:15));fixture.tap()
+      let diagnostics=app.staticTexts["atlantis.debug.consequence.states"],presentation=app.staticTexts["atlantis.debug.consequence.presentation"]
+      XCTAssertTrue(wait(diagnostics,contains:state.1,timeout:45));XCTAssertTrue(wait(presentation,contains:"pallasCampus=\(state.2)",timeout:10))
+      XCTAssertTrue(app.staticTexts["atlantis.debug.consequence.metrics"].label.contains("conflicts 0"))
+      capture("Atlantis_Phase16_Pallas_\(state.2)",app)
+    }
+    app.buttons["atlantis.debug.consequence.unload"].tap()
+    XCTAssertTrue(wait(app.staticTexts["atlantis.debug.consequence.presentation"],contains:"pallasCampus=event",timeout:10),"Derived state remains reproducible while unloaded")
+    XCTAssertFalse(app.staticTexts["atlantis.debug.consequence.states"].label.contains("pallas.event"),"Physical Pallas staging leaves with its district")
+    app.buttons["atlantis.debug.consequence.reload"].tap()
+    XCTAssertTrue(wait(app.staticTexts["atlantis.debug.consequence.states"],contains:"pallas.event",timeout:45))
+    XCTAssertFalse(app.staticTexts["atlantis.debug.consequence.metrics"].label.contains("Consequence entities 0"))
+    XCTAssertTrue(app.staticTexts["atlantis.debug.consequence.metrics"].label.contains("duplicates 0 · conflicts 0"))
+  }
+  private func launchConsequences()->XCUIApplication {
+    let app=XCUIApplication();app.launchArguments=["--atlantis-realitykit","--atlantis-batched-assets","--atlantis-living-world","--atlantis-named-encounters","--atlantis-world-consequences"];app.launch()
+    let status=app.staticTexts["atlantis.debug.benchmarkStatus"]
+    XCTAssertTrue(status.waitForExistence(timeout:30));XCTAssertTrue(wait(status,contains:"Founder ready",timeout:45));return app
+  }
   private func roundTrip(_ app:XCUIApplication,targetID:String,approachLabel:String?,routeID:String,screenshot:String) {
     if let approachLabel {
       let menu=app.buttons["atlantis.debug.interactions"];XCTAssertTrue(menu.waitForExistence(timeout:10));menu.tap()

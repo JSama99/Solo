@@ -73,6 +73,7 @@ enum AtlantisInteractionIntent: Equatable, Sendable {
   case openSignalTV
   case inspectRival(rivalID: String)
   case inspectPlayerHQ
+  case talkNamedNPC(npcID: String)
 }
 
 enum AtlantisInteractionAvailability: Equatable, Sendable {
@@ -142,6 +143,7 @@ enum AtlantisCanonicalRoute: Identifiable, Equatable, Sendable {
     case .openSignalTV: .signalTV
     case .inspectRival(let rivalID): availableRivalIDs.contains(rivalID) ? .rival(rivalID) : nil
     case .inspectPlayerHQ: .playerHQ
+    case .talkNamedNPC: nil
     }
   }
 }
@@ -269,12 +271,17 @@ struct AtlantisWorldSignalSnapshot: Equatable {
   let coverage: Int
   let venture: Int
   let rivals: [AtlantisPublicRivalSignal]
+  let facilityTier: FacilityTier
+
+  init(trust:Int,momentum:Int,coverage:Int,venture:Int,rivals:[AtlantisPublicRivalSignal],facilityTier:FacilityTier = .founderGarage) {
+    self.trust=trust;self.momentum=momentum;self.coverage=coverage;self.venture=venture;self.rivals=rivals;self.facilityTier=facilityTier
+  }
 
   @MainActor static func read(_ store: GameStore) -> Self {
     .init(trust:store.stats.trust,momentum:store.stats.momentum,coverage:store.stats.coverage,
           venture:store.venture,rivals:store.techComRivals.sorted{$0.id<$1.id}.map {
       .init(id:$0.id,name:$0.name,claimedMomentum:$0.claimedMomentum)
-    })
+    },facilityTier:store.progressionStore?.currentFacility ?? .founderGarage)
   }
 }
 
@@ -299,6 +306,319 @@ enum AtlantisLivingWorldFixture: String, CaseIterable, Identifiable {
     case .spotlight: return .init(trust:85,momentum:90,coverage:80,venture:4,rivals:[rival])
     case .scrutiny: return .init(trust:20,momentum:25,coverage:-80,venture:1,rivals:[rival])
     }
+  }
+}
+
+enum AtlantisNamedNPCRole: String, CaseIterable, Sendable {
+  case founder, investor, reporter, customer, rivalEmployee
+  var title: String {
+    switch self {
+    case .founder: "Founder"
+    case .investor: "Investor"
+    case .reporter: "Reporter"
+    case .customer: "Customer"
+    case .rivalEmployee: "Rival employee"
+    }
+  }
+}
+
+enum AtlantisNamedNPCPresentationArchetype: String, Sendable {
+  case peerFounder, capitalPartner, fieldReporter, customerOperator, rivalOperator
+}
+
+enum AtlantisNamedNPCLifecycle: String, Sendable {
+  case eligible, spawned, available, engaged, coolingDown, despawned
+}
+
+enum AtlantisNamedEncounterArchetype: String, CaseIterable, Sendable {
+  case founderRumor, founderAdvice, investorInterest, investorSkepticism
+  case reporterQuestion, customerPraise, customerComplaint, rivalSignal
+}
+
+enum AtlantisEncounterConsequence: String, Sendable {
+  case presentationOnly, existingCanonicalAction, deferredConsequence
+  var label: String {
+    switch self {
+    case .presentationOnly: "Presentation only"
+    case .existingCanonicalAction: "Existing canonical action"
+    case .deferredConsequence: "Future consequence integration deferred"
+    }
+  }
+}
+
+struct AtlantisNamedEncounterResponse: Identifiable, Equatable, Sendable {
+  let id: String
+  let title: String
+  let acknowledgment: String
+  let consequence: AtlantisEncounterConsequence
+}
+
+struct AtlantisNamedNPCDefinition: Identifiable, Equatable, Sendable {
+  let id: String
+  let displayName: String
+  let role: AtlantisNamedNPCRole
+  let affiliation: String
+  let homeDistrict: AtlantisDistrict
+  let presentationArchetype: AtlantisNamedNPCPresentationArchetype
+  let position: SIMD3<Float>
+  let interactionRadius: Float
+  let encounterCategories: Set<AtlantisNamedEncounterArchetype>
+  let publicKnowledgeScope: String
+  var interactionID: String { "atlantis.namedNPC.\(id)" }
+
+  static let all: [Self] = [
+    .init(id:"mara-chen",displayName:"Mara Chen",role:.founder,affiliation:"Quarry Labs",homeDistrict:.founderDistrict,presentationArchetype:.peerFounder,position:[-840,8.03,940],interactionRadius:7,encounterCategories:[.founderAdvice],publicKnowledgeScope:"Public company progress and founder ecosystem context"),
+    .init(id:"eli-navarro",displayName:"Eli Navarro",role:.founder,affiliation:"Relay Foundry",homeDistrict:.startupRow,presentationArchetype:.peerFounder,position:[-460,14.45,340],interactionRadius:7,encounterCategories:[.founderRumor,.founderAdvice],publicKnowledgeScope:"Public rival claims and public Momentum"),
+    .init(id:"nia-okafor",displayName:"Nia Okafor",role:.investor,affiliation:"Tideglass Ventures",homeDistrict:.ventureDistrict,presentationArchetype:.capitalPartner,position:[-490,14.45,-180],interactionRadius:7,encounterCategories:[.investorInterest,.investorSkepticism],publicKnowledgeScope:"Public Momentum, Coverage, Trust consequences, and Venture progression"),
+    .init(id:"sloane-park",displayName:"Sloane Park",role:.reporter,affiliation:"Signal TV",homeDistrict:.mediaDistrict,presentationArchetype:.fieldReporter,position:[800,14.45,-325],interactionRadius:7,encounterCategories:[.reporterQuestion],publicKnowledgeScope:"Public Coverage and Trust consequences"),
+    .init(id:"devon-reyes",displayName:"Devon Reyes",role:.customer,affiliation:"Harborline Systems",homeDistrict:.commerceDistrict,presentationArchetype:.customerOperator,position:[300,14.45,190],interactionRadius:7,encounterCategories:[.customerPraise,.customerComplaint],publicKnowledgeScope:"Public Trust and Momentum consequences"),
+    .init(id:"iris-vale",displayName:"Iris Vale",role:.rivalEmployee,affiliation:"Pallas AI",homeDistrict:.techCore,presentationArchetype:.rivalOperator,position:[30,14.45,-330],interactionRadius:7,encounterCategories:[.rivalSignal],publicKnowledgeScope:"Tech.com-visible Pallas AI claims only")
+  ]
+}
+
+struct AtlantisNamedEncounterDefinition: Identifiable, Equatable, Sendable {
+  let id: String
+  let npcID: String
+  let archetype: AtlantisNamedEncounterArchetype
+  let priority: Int
+  let allowedPhases: Set<FounderEnvironmentTimeState>
+  let prompt: String
+  let responses: [AtlantisNamedEncounterResponse]
+
+  static let all: [Self] = [
+    .init(id:"mara.peer-advice",npcID:"mara-chen",archetype:.founderAdvice,priority:40,allowedPhases:[.morning,.day,.evening],prompt:"Atlantis rewards focus. What are you protecting this sprint?",responses:[
+      .init(id:"focus",title:"Protect the core",acknowledgment:"Mara nods. “Clear constraints travel fast.”",consequence:.presentationOnly),
+      .init(id:"listen",title:"Ask what she sees",acknowledgment:"“Founders here notice steady delivery before bold claims.”",consequence:.presentationOnly)]),
+    .init(id:"eli.ecosystem-rumor",npcID:"eli-navarro",archetype:.founderRumor,priority:90,allowedPhases:[.day,.evening,.night],prompt:"Pallas is recruiting again. Their public Momentum claim is getting attention.",responses:[
+      .init(id:"source",title:"Ask what is public",acknowledgment:"“Only the Tech.com claim. I have no private read on it.”",consequence:.presentationOnly),
+      .init(id:"move-on",title:"Move on",acknowledgment:"Eli lets the rumor pass.",consequence:.presentationOnly)]),
+    .init(id:"eli.peer-reaction",npcID:"eli-navarro",archetype:.founderAdvice,priority:55,allowedPhases:[.morning,.day,.evening],prompt:"People on Startup Row are noticing your company’s public momentum.",responses:[
+      .init(id:"credit",title:"Credit the team",acknowledgment:"“That answer will play well with other founders.”",consequence:.presentationOnly),
+      .init(id:"work",title:"Get back to work",acknowledgment:"Eli smiles. “Consistent.”",consequence:.presentationOnly)]),
+    .init(id:"nia.interest",npcID:"nia-okafor",archetype:.investorInterest,priority:80,allowedPhases:[.morning,.day,.evening],prompt:"Your public progress is creating a credible Venture conversation.",responses:[
+      .init(id:"thesis",title:"Share the thesis",acknowledgment:"Nia listens, then asks you to keep the signal disciplined.",consequence:.presentationOnly),
+      .init(id:"later",title:"Revisit later",acknowledgment:"“Good. Raise when the company is ready.”",consequence:.deferredConsequence)]),
+    .init(id:"nia.skepticism",npcID:"nia-okafor",archetype:.investorSkepticism,priority:95,allowedPhases:[.morning,.day],prompt:"Coverage is outpacing confidence. How are you closing that gap?",responses:[
+      .init(id:"evidence",title:"Point to public evidence",acknowledgment:"“Bring that discipline into the next update.”",consequence:.presentationOnly),
+      .init(id:"defer",title:"Decline to speculate",acknowledgment:"Nia accepts the boundary.",consequence:.presentationOnly)]),
+    .init(id:"sloane.spotlight",npcID:"sloane-park",archetype:.reporterQuestion,priority:90,allowedPhases:[.day,.evening],prompt:"Signal TV is covering your momentum. What should founders understand?",responses:[
+      .init(id:"answer",title:"Answer directly",acknowledgment:"Sloane records the public statement and closes the interview.",consequence:.presentationOnly),
+      .init(id:"brio",title:"Refer Sloane to Brio",acknowledgment:"“I’ll request a formal comment.”",consequence:.deferredConsequence),
+      .init(id:"decline",title:"No comment",acknowledgment:"Sloane lowers the microphone.",consequence:.presentationOnly)]),
+    .init(id:"sloane.scrutiny",npcID:"sloane-park",archetype:.reporterQuestion,priority:100,allowedPhases:[.morning,.day,.evening,.night],prompt:"Public confidence is under pressure. Can you address the concern?",responses:[
+      .init(id:"facts",title:"Stay with public facts",acknowledgment:"“Understood. We’ll report the facts available.”",consequence:.presentationOnly),
+      .init(id:"brio",title:"Refer Sloane to Brio",acknowledgment:"“We’ll seek the company’s formal response.”",consequence:.deferredConsequence),
+      .init(id:"decline",title:"Decline",acknowledgment:"Sloane ends the question without speculation.",consequence:.presentationOnly)]),
+    .init(id:"devon.praise",npcID:"devon-reyes",archetype:.customerPraise,priority:65,allowedPhases:[.morning,.day,.evening],prompt:"Your public progress has made our team more confident in the product.",responses:[
+      .init(id:"learn",title:"Ask what helped",acknowledgment:"“Clear delivery and visible follow-through.”",consequence:.presentationOnly),
+      .init(id:"thanks",title:"Thank Devon",acknowledgment:"Devon returns to the Commerce crowd.",consequence:.presentationOnly)]),
+    .init(id:"devon.complaint",npcID:"devon-reyes",archetype:.customerComplaint,priority:110,allowedPhases:[.day,.evening],prompt:"The last update disrupted our workflow. I need the team to understand what happened.",responses:[
+      .init(id:"details",title:"Ask what happened",acknowledgment:"Devon shares the visible symptoms. Investigation is deferred to a canonical Evidence flow.",consequence:.deferredConsequence),
+      .init(id:"acknowledge",title:"Acknowledge the issue",acknowledgment:"“Thank you. I needed to know you heard it.”",consequence:.presentationOnly)]),
+    .init(id:"iris.hiring",npcID:"iris-vale",archetype:.rivalSignal,priority:85,allowedPhases:[.day,.evening,.night],prompt:"Pallas is hiring around the momentum it reports publicly.",responses:[
+      .init(id:"claim",title:"Ask about the claim",acknowledgment:"“The Tech.com number is the only figure I can discuss.”",consequence:.presentationOnly),
+      .init(id:"leave",title:"End the conversation",acknowledgment:"Iris returns to Tech Core.",consequence:.presentationOnly)]),
+    .init(id:"iris.positioning",npcID:"iris-vale",archetype:.rivalSignal,priority:80,allowedPhases:[.morning,.day,.evening],prompt:"Pallas is positioning its public Momentum as a market signal.",responses:[
+      .init(id:"public",title:"Keep it to public facts",acknowledgment:"Iris repeats only the published claim.",consequence:.presentationOnly),
+      .init(id:"pass",title:"Walk away",acknowledgment:"The competitor signal remains public context.",consequence:.presentationOnly)])
+  ]
+}
+
+enum AtlantisNamedEncounterFixture: String, CaseIterable, Identifiable {
+  case founderPeer = "A · Founder peer"
+  case reporterSpotlight = "B · Reporter spotlight"
+  case reporterScrutiny = "C · Reporter scrutiny"
+  case investorInterest = "D · Investor interest"
+  case pallasSurge = "E · Pallas public surge"
+  case customerComplaint = "F · Customer complaint · presentation fixture"
+  var id: String {rawValue}
+  var accessibilityID: String {
+    switch self {
+    case .founderPeer: "founderPeer"
+    case .reporterSpotlight: "reporterSpotlight"
+    case .reporterScrutiny: "reporterScrutiny"
+    case .investorInterest: "investorInterest"
+    case .pallasSurge: "pallasSurge"
+    case .customerComplaint: "customerComplaint"
+    }
+  }
+  var targetNPCID: String {
+    switch self {
+    case .founderPeer: "mara-chen"
+    case .reporterSpotlight,.reporterScrutiny: "sloane-park"
+    case .investorInterest: "nia-okafor"
+    case .pallasSurge: "iris-vale"
+    case .customerComplaint: "devon-reyes"
+    }
+  }
+  var forcedEncounterID: String? {self == .customerComplaint ? "devon.complaint":nil}
+  var snapshot: AtlantisWorldSignalSnapshot {
+    let pallas=AtlantisPublicRivalSignal(id:"pallas",name:"Pallas AI",claimedMomentum:self == .pallasSurge ? 92:35)
+    switch self {
+    case .founderPeer: return .init(trust:60,momentum:45,coverage:0,venture:1,rivals:[pallas])
+    case .reporterSpotlight: return .init(trust:85,momentum:90,coverage:80,venture:4,rivals:[pallas])
+    case .reporterScrutiny: return .init(trust:20,momentum:25,coverage:-80,venture:1,rivals:[pallas])
+    case .investorInterest: return .init(trust:75,momentum:85,coverage:20,venture:4,rivals:[pallas])
+    case .pallasSurge: return .init(trust:60,momentum:45,coverage:0,venture:1,rivals:[pallas])
+    case .customerComplaint: return .init(trust:60,momentum:45,coverage:0,venture:1,rivals:[pallas])
+    }
+  }
+}
+
+enum AtlantisNamedEncounterPolicy {
+  static func eligible(_ encounter: AtlantisNamedEncounterDefinition,signals: AtlantisWorldSignalSnapshot,
+                       phase: FounderEnvironmentTimeState,fixture: AtlantisNamedEncounterFixture?=nil) -> Bool {
+    guard encounter.allowedPhases.contains(phase) else{return false}
+    if let forced=fixture?.forcedEncounterID {return encounter.id == forced}
+    switch encounter.id {
+    case "mara.peer-advice": return signals.momentum < 70
+    case "eli.ecosystem-rumor": return signals.rivals.contains{$0.claimedMomentum>=70}
+    case "eli.peer-reaction": return signals.momentum>=70
+    case "nia.interest": return signals.momentum>=70 || signals.venture>=4
+    case "nia.skepticism": return abs(signals.coverage)>=40 && signals.trust<50
+    case "sloane.spotlight": return signals.coverage>=40 && signals.trust>=50
+    case "sloane.scrutiny": return signals.coverage <= -40 || signals.trust<35
+    case "devon.praise": return signals.trust>=75
+    case "devon.complaint": return false
+    case "iris.hiring","iris.positioning": return signals.rivals.contains{$0.id=="pallas" && $0.claimedMomentum>=70}
+    default: return false
+    }
+  }
+
+  static func select(_ encounters:[AtlantisNamedEncounterDefinition],signals:AtlantisWorldSignalSnapshot,
+                     phase:FounderEnvironmentTimeState,fixture:AtlantisNamedEncounterFixture?=nil,
+                     cooling:Set<String>=[],seed:UInt64=0x534F4C4F)->AtlantisNamedEncounterDefinition? {
+    encounters.filter{!cooling.contains($0.id) && eligible($0,signals:signals,phase:phase,fixture:fixture)}.sorted {
+      if $0.priority != $1.priority{return $0.priority>$1.priority}
+      let lhs=AtlantisPresentationSeed.value($0.id,index:0,seed:seed),rhs=AtlantisPresentationSeed.value($1.id,index:0,seed:seed)
+      return lhs == rhs ? $0.id<$1.id:lhs<rhs
+    }.first
+  }
+}
+
+enum AtlantisWorldConsequenceSite: String, CaseIterable, Sendable {
+  case founderHQ, pallasCampus, northwindCampus, flashpointCampus
+}
+
+enum AtlantisWorldConsequenceCategory: String, Sendable {
+  case companyPresence, rivalCampus, publicEvent
+}
+
+enum AtlantisWorldConsequencePresentationState: String, Sendable {
+  case baseline, growth, spotlight, scrutiny, surge, event
+}
+
+enum AtlantisWorldConsequenceEligibility: Equatable, Sendable {
+  case always
+  case founderGrowth
+  case founderSpotlight
+  case founderScrutiny
+  case rivalClaim(rivalID:String,minimum:Int)
+  case rivalEvent(rivalID:String,minimum:Int)
+}
+
+struct AtlantisWorldConsequenceDefinition: Identifiable, Equatable, Sendable {
+  let id:String
+  let site:AtlantisWorldConsequenceSite
+  let district:AtlantisDistrict
+  let targetAnchor:String
+  let category:AtlantisWorldConsequenceCategory
+  let state:AtlantisWorldConsequencePresentationState
+  let priority:Int
+  let exclusiveGroups:Set<String>
+  let eligibility:AtlantisWorldConsequenceEligibility
+  let signage:String
+  let accessibilitySummary:String
+  let constructionProps:Int
+  let eventProps:Int
+  let activityModifier:Int
+  let publicKnowledgeScope:String
+
+  static let all:[Self] = [
+    .init(id:"founder.baseline",site:.founderHQ,district:.founderDistrict,targetAnchor:"FounderGarageSlot",category:.companyPresence,state:.baseline,priority:10,exclusiveGroups:["founderHQ.signage","founderHQ.eventZone"],eligibility:.always,signage:"SOLO · FOUNDER GARAGE",accessibilitySummary:"Founder company presence is quiet and early stage.",constructionProps:0,eventProps:0,activityModifier:0,publicKnowledgeScope:"Current public facility progression"),
+    .init(id:"founder.growth",site:.founderHQ,district:.founderDistrict,targetAnchor:"FounderGarageSlot",category:.companyPresence,state:.growth,priority:40,exclusiveGroups:["founderHQ.signage","founderHQ.eventZone"],eligibility:.founderGrowth,signage:"SOLO · GROWING",accessibilitySummary:"Founder company frontage shows growth, deliveries, and expansion staging.",constructionProps:3,eventProps:1,activityModifier:2,publicKnowledgeScope:"Current facility tier or public Momentum"),
+    .init(id:"founder.spotlight",site:.founderHQ,district:.founderDistrict,targetAnchor:"FounderGarageSlot",category:.publicEvent,state:.spotlight,priority:80,exclusiveGroups:["founderHQ.signage","founderHQ.eventZone"],eligibility:.founderSpotlight,signage:"SOLO · PUBLIC SPOTLIGHT",accessibilitySummary:"Founder company frontage has a public spotlight and media staging.",constructionProps:0,eventProps:4,activityModifier:2,publicKnowledgeScope:"Positive public Coverage"),
+    .init(id:"founder.scrutiny",site:.founderHQ,district:.founderDistrict,targetAnchor:"FounderGarageSlot",category:.publicEvent,state:.scrutiny,priority:100,exclusiveGroups:["founderHQ.signage","founderHQ.eventZone"],eligibility:.founderScrutiny,signage:"SOLO · PUBLIC UPDATE",accessibilitySummary:"Founder company frontage is restrained under public scrutiny.",constructionProps:1,eventProps:3,activityModifier:-2,publicKnowledgeScope:"Negative public Coverage or low public Trust"),
+    .init(id:"pallas.baseline",site:.pallasCampus,district:.techCore,targetAnchor:"PallasAIHQ",category:.rivalCampus,state:.baseline,priority:10,exclusiveGroups:["pallasHQ.signage","pallasHQ.eventZone"],eligibility:.always,signage:"PALLAS AI",accessibilitySummary:"Pallas AI campus presentation is at baseline.",constructionProps:0,eventProps:0,activityModifier:0,publicKnowledgeScope:"Public rival identity"),
+    .init(id:"pallas.surge",site:.pallasCampus,district:.techCore,targetAnchor:"PallasAIHQ",category:.rivalCampus,state:.surge,priority:60,exclusiveGroups:["pallasHQ.signage","pallasHQ.eventZone"],eligibility:.rivalClaim(rivalID:"pallas",minimum:70),signage:"PALLAS AI · NOW HIRING",accessibilitySummary:"Pallas AI campus shows recruiting and activity around its public Momentum claim.",constructionProps:2,eventProps:2,activityModifier:2,publicKnowledgeScope:"Tech.com-visible claimed Momentum only"),
+    .init(id:"pallas.event",site:.pallasCampus,district:.techCore,targetAnchor:"PallasAIHQ",category:.publicEvent,state:.event,priority:90,exclusiveGroups:["pallasHQ.signage","pallasHQ.eventZone"],eligibility:.rivalEvent(rivalID:"pallas",minimum:70),signage:"PALLAS AI · PUBLIC LAUNCH",accessibilitySummary:"Pallas AI campus has public launch and media staging.",constructionProps:0,eventProps:5,activityModifier:2,publicKnowledgeScope:"Public Coverage plus Tech.com-visible claimed Momentum"),
+    .init(id:"northwind.baseline",site:.northwindCampus,district:.techCore,targetAnchor:"NorthwindLabsHQ",category:.rivalCampus,state:.baseline,priority:10,exclusiveGroups:["northwindHQ.signage","northwindHQ.eventZone"],eligibility:.always,signage:"NORTHWIND LABS",accessibilitySummary:"Northwind Labs campus is at baseline.",constructionProps:0,eventProps:0,activityModifier:0,publicKnowledgeScope:"Public rival identity"),
+    .init(id:"flashpoint.baseline",site:.flashpointCampus,district:.commerceDistrict,targetAnchor:"FlashpointHQ",category:.rivalCampus,state:.baseline,priority:10,exclusiveGroups:["flashpointHQ.signage","flashpointHQ.eventZone"],eligibility:.always,signage:"FLASHPOINT",accessibilitySummary:"Flashpoint campus is at baseline.",constructionProps:0,eventProps:0,activityModifier:0,publicKnowledgeScope:"Public rival identity")
+  ]
+}
+
+enum AtlantisWorldConsequenceFixture:String,CaseIterable,Identifiable {
+  case founderBaseline="Founder A · Baseline · presentation fixture"
+  case founderGrowth="Founder B · Growth · presentation fixture"
+  case founderSpotlight="Founder C · Spotlight · presentation fixture"
+  case founderScrutiny="Founder D · Scrutiny · presentation fixture"
+  case pallasBaseline="Pallas A · Baseline · presentation fixture"
+  case pallasSurge="Pallas B · Surge · presentation fixture"
+  case pallasEvent="Pallas C · Event · presentation fixture"
+  var id:String{rawValue}
+  var accessibilityID:String {
+    switch self {
+    case .founderBaseline:"founderBaseline"
+    case .founderGrowth:"founderGrowth"
+    case .founderSpotlight:"founderSpotlight"
+    case .founderScrutiny:"founderScrutiny"
+    case .pallasBaseline:"pallasBaseline"
+    case .pallasSurge:"pallasSurge"
+    case .pallasEvent:"pallasEvent"
+    }
+  }
+  var site:AtlantisWorldConsequenceSite {
+    switch self {case .founderBaseline,.founderGrowth,.founderSpotlight,.founderScrutiny:.founderHQ;default:.pallasCampus}
+  }
+  var forcedDefinitionID:String {
+    switch self {
+    case .founderBaseline:"founder.baseline"
+    case .founderGrowth:"founder.growth"
+    case .founderSpotlight:"founder.spotlight"
+    case .founderScrutiny:"founder.scrutiny"
+    case .pallasBaseline:"pallas.baseline"
+    case .pallasSurge:"pallas.surge"
+    case .pallasEvent:"pallas.event"
+    }
+  }
+  var snapshot:AtlantisWorldSignalSnapshot {
+    let claimed=self == .pallasSurge || self == .pallasEvent ? 90:35
+    let rival=AtlantisPublicRivalSignal(id:"pallas",name:"Pallas AI",claimedMomentum:claimed)
+    switch self {
+    case .founderBaseline,.pallasBaseline:return .init(trust:60,momentum:45,coverage:0,venture:1,rivals:[rival])
+    case .founderGrowth:return .init(trust:75,momentum:85,coverage:10,venture:3,rivals:[rival],facilityTier:.founderLoft)
+    case .founderSpotlight:return .init(trust:85,momentum:90,coverage:80,venture:4,rivals:[rival],facilityTier:.founderLoft)
+    case .founderScrutiny:return .init(trust:20,momentum:25,coverage:-80,venture:1,rivals:[rival])
+    case .pallasSurge:return .init(trust:60,momentum:45,coverage:0,venture:1,rivals:[rival])
+    case .pallasEvent:return .init(trust:60,momentum:45,coverage:80,venture:1,rivals:[rival])
+    }
+  }
+}
+
+struct AtlantisWorldConsequenceState:Equatable,Sendable {
+  let active:[AtlantisWorldConsequenceDefinition]
+  var activeIDs:[String]{active.map(\.id).sorted()}
+  func definition(site:AtlantisWorldConsequenceSite)->AtlantisWorldConsequenceDefinition?{active.first{$0.site==site}}
+}
+
+enum AtlantisWorldConsequencePolicy {
+  static func eligible(_ definition:AtlantisWorldConsequenceDefinition,signals:AtlantisWorldSignalSnapshot)->Bool {
+    switch definition.eligibility {
+    case .always:return true
+    case .founderGrowth:return signals.facilityTier.rawValue >= FacilityTier.founderLoft.rawValue || signals.momentum>=70
+    case .founderSpotlight:return signals.coverage>=40 && signals.trust>=35
+    case .founderScrutiny:return signals.coverage <= -40 || signals.trust<35
+    case .rivalClaim(let rivalID,let minimum):return signals.rivals.contains{$0.id==rivalID && $0.claimedMomentum>=minimum}
+    case .rivalEvent(let rivalID,let minimum):return signals.coverage>=40 && signals.rivals.contains{$0.id==rivalID && $0.claimedMomentum>=minimum}
+    }
+  }
+  static func derive(signals:AtlantisWorldSignalSnapshot,fixture:AtlantisWorldConsequenceFixture?=nil)->AtlantisWorldConsequenceState {
+    let selected=AtlantisWorldConsequenceSite.allCases.compactMap {site -> AtlantisWorldConsequenceDefinition? in
+      let definitions=AtlantisWorldConsequenceDefinition.all.filter{$0.site==site}
+      if let fixture,fixture.site==site {return definitions.first{$0.id==fixture.forcedDefinitionID}}
+      return definitions.filter{eligible($0,signals:signals)}.sorted{if $0.priority != $1.priority{return $0.priority>$1.priority};return $0.id<$1.id}.first
+    }
+    return .init(active:selected)
   }
 }
 

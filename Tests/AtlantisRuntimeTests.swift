@@ -325,7 +325,7 @@ final class AtlantisRuntimeTests: XCTestCase {
     XCTAssertTrue(w.returnFromInteraction())
     let enteredTech=await w.streaming.enter(.techCore,next:.unicornHeights)
     XCTAssertTrue(enteredTech)
-    XCTAssertEqual(store.stats,stats);XCTAssertEqual(store.randomNumberGenerator,rng);XCTAssertEqual(GameStore.saveVersion,19);w.stop()
+    XCTAssertEqual(store.stats,stats);XCTAssertEqual(store.randomNumberGenerator,rng);XCTAssertEqual(GameStore.saveVersion,20);w.stop()
   }
   func testLivingWorldProfilesFollowDistrictAndDayPhase() {
     XCTAssertEqual(AtlantisLivingWorldPresentationAdapter.profile(district:.startupRow,phase:.morning).pedestrians,6)
@@ -390,7 +390,7 @@ final class AtlantisRuntimeTests: XCTestCase {
     store.techComRivals[0].actualMomentum=99;store.techComRivals[0].actualRevenue=99999
     store.techComRivals[0].actualTrackRecord=100;store.techComRivals[0].isVerified=true
     XCTAssertEqual(before,.read(store));XCTAssertEqual(store.stats,stats)
-    XCTAssertEqual(store.randomNumberGenerator,rng);XCTAssertEqual(GameStore.saveVersion,19)
+    XCTAssertEqual(store.randomNumberGenerator,rng);XCTAssertEqual(GameStore.saveVersion,20)
   }
   func testFourFixturesProduceDifferentStartupWorldAndDistrictEmphasis() {
     let values=AtlantisLivingWorldFixture.allCases.map{AtlantisWorldReactionAdapter.derive($0.snapshot,district:.startupRow,phase:.day)}
@@ -449,6 +449,137 @@ final class AtlantisRuntimeTests: XCTestCase {
     population.clearBenchmarkPopulation()
     population.reconcile(residents:[.startupRow],current:.startupRow,phase:.day,playerPosition:[-460,14.45,340])
     XCTAssertLessThanOrEqual(population.activePedestrians,10)
+  }
+  func testNamedNPCRegistryHasExactBoundedRosterAndDistrictOwnership() {
+    let roster=AtlantisNamedNPCDefinition.all,encounters=AtlantisNamedEncounterDefinition.all
+    XCTAssertEqual(roster.count,6);XCTAssertEqual(Set(roster.map(\.id)).count,6)
+    XCTAssertEqual(Set(roster.map(\.interactionID)).count,6)
+    XCTAssertEqual(roster.filter{$0.role == .founder}.count,2)
+    XCTAssertEqual(Set(roster.map(\.role)),Set(AtlantisNamedNPCRole.allCases))
+    XCTAssertEqual(Set(roster.map(\.homeDistrict)),[.founderDistrict,.startupRow,.ventureDistrict,.mediaDistrict,.commerceDistrict,.techCore])
+    XCTAssertTrue(roster.allSatisfy{$0.interactionID.hasPrefix("atlantis.namedNPC.") && $0.interactionRadius>=7})
+    XCTAssertEqual(encounters.count,11);XCTAssertEqual(Set(encounters.map(\.id)).count,11)
+    XCTAssertTrue(encounters.allSatisfy{encounter in roster.contains{$0.id==encounter.npcID && $0.encounterCategories.contains(encounter.archetype)}})
+    XCTAssertTrue(encounters.allSatisfy{(2...3).contains($0.responses.count)})
+  }
+  func testNamedEncounterFixturesSelectExpectedPublicArchetypes() {
+    let expected:[AtlantisNamedEncounterFixture:String]=[
+      .founderPeer:"mara.peer-advice",.reporterSpotlight:"sloane.spotlight",.reporterScrutiny:"sloane.scrutiny",
+      .investorInterest:"nia.interest",.pallasSurge:"iris.hiring",.customerComplaint:"devon.complaint"]
+    for (fixture,id) in expected {
+      let npcEncounters=AtlantisNamedEncounterDefinition.all.filter{$0.npcID==fixture.targetNPCID}
+      XCTAssertEqual(AtlantisNamedEncounterPolicy.select(npcEncounters,signals:fixture.snapshot,phase:.day,fixture:fixture)?.id,id)
+    }
+    XCTAssertFalse(AtlantisNamedEncounterPolicy.eligible(AtlantisNamedEncounterDefinition.all.first{$0.id=="devon.complaint"}!,signals:AtlantisLivingWorldFixture.scrutiny.snapshot,phase:.day))
+  }
+  func testNamedEncounterSelectionIsDeterministicAndCooldownAware() {
+    let signals=AtlantisNamedEncounterFixture.pallasSurge.snapshot
+    let values=(0..<20).map{_ in AtlantisNamedEncounterPolicy.select(AtlantisNamedEncounterDefinition.all,signals:signals,phase:.day,seed:42)?.id}
+    XCTAssertEqual(Set(values.compactMap{$0}).count,1)
+    let first=try! XCTUnwrap(values[0])
+    XCTAssertNotEqual(AtlantisNamedEncounterPolicy.select(AtlantisNamedEncounterDefinition.all,signals:signals,phase:.day,cooling:[first],seed:42)?.id,first)
+  }
+  func testNamedDirectorPreventsDuplicatesReusesEntitiesAndHonorsUnload() {
+    let director=AtlantisNamedEncounterDirector();director.isEnabled=true;director.fixture = .founderPeer
+    for _ in 0..<4 {director.reconcile(residents:[.founderDistrict],phase:.day,position:[-840,8.03,940],signals:AtlantisLivingWorldFixture.baseline.snapshot,immediate:true)}
+    XCTAssertEqual(director.namedNPCCount,1);XCTAssertEqual(director.activeNPCIDs,["mara-chen"]);XCTAssertEqual(director.root.children.count,1);XCTAssertEqual(director.duplicateViolations,0)
+    director.districtDidUnload(.founderDistrict);XCTAssertEqual(director.namedNPCCount,0);XCTAssertEqual(director.state(npcID:"mara-chen"),.despawned)
+    director.reconcile(residents:[.founderDistrict],phase:.day,position:[-840,8.03,940],signals:AtlantisLivingWorldFixture.baseline.snapshot,immediate:true)
+    XCTAssertEqual(director.namedNPCCount,1);XCTAssertEqual(director.reusedEntityCount,1)
+  }
+  func testNamedDirectorAllowsOneActiveEncounterAndAppliesSessionCooldown() throws {
+    let director=AtlantisNamedEncounterDirector();director.isEnabled=true;director.fixture = .founderPeer
+    let position=SIMD3<Float>(-840,8.03,946)
+    director.reconcile(residents:[.founderDistrict],phase:.day,position:position,signals:AtlantisLivingWorldFixture.baseline.snapshot,immediate:true)
+    let candidate=try XCTUnwrap(director.candidate(position:position,forward:[0,0,-1]))
+    XCTAssertNotNil(director.begin(npcID:candidate.npc.id,encounterID:candidate.encounter.id,founderPosition:position))
+    XCTAssertNil(director.begin(npcID:candidate.npc.id,encounterID:candidate.encounter.id,founderPosition:position))
+    XCTAssertNotNil(director.respond(responseID:"focus"));XCTAssertEqual(director.presentationOnlyResponseCount,1);XCTAssertEqual(director.canonicalWritebackCount,0)
+    XCTAssertTrue(director.dismiss());director.reconcile(residents:[.founderDistrict],phase:.day,position:position,signals:AtlantisLivingWorldFixture.baseline.snapshot)
+    XCTAssertNil(director.candidate(position:position,forward:[0,0,-1]));XCTAssertEqual(director.cooldownCount,1)
+    for _ in 0..<181 {director.advance(delta:0.25)}
+    director.reconcile(residents:[.founderDistrict],phase:.day,position:position,signals:AtlantisLivingWorldFixture.baseline.snapshot)
+    XCTAssertNotNil(director.candidate(position:position,forward:[0,0,-1]))
+  }
+  func testNamedDialogueContainsOnlyPublicProjectionLanguage() {
+    let forbidden=["actualMomentum","actualRevenue","actualTrackRecord","isVerified","verification state","agent drift","calibration","hidden RNG","unrevealed evidence"]
+    let corpus=AtlantisNamedEncounterDefinition.all.flatMap{[$0.prompt]+$0.responses.flatMap{[$0.title,$0.acknowledgment]}}.joined(separator:" ").lowercased()
+    for term in forbidden {XCTAssertFalse(corpus.contains(term.lowercased()),term)}
+    XCTAssertTrue(corpus.contains("tech.com"));XCTAssertTrue(corpus.contains("public"))
+    XCTAssertTrue(AtlantisNamedNPCDefinition.all.first{$0.id=="iris-vale"}!.publicKnowledgeScope.contains("claims only"))
+  }
+  func testNamedWorldInteractionSharesPhase13SelectionAndPreservesCanonicalStore() async throws {
+    let store=GameStore(),stats=store.stats,rng=store.randomNumberGenerator,w=AtlantisRealityWorld(manifest:try .load())
+    await w.loader.load(.founderDistrict)?.value
+    let approachedNamed=await w.debugApproachNamedNPC("mara-chen",fixture:.founderPeer);XCTAssertTrue(approachedNamed)
+    XCTAssertEqual(w.activeInteractionID,"atlantis.namedNPC.mara-chen")
+    XCTAssertEqual(w.beginInteraction(),.talkNamedNPC(npcID:"mara-chen"));XCTAssertTrue(w.streaming.isFrozen)
+    XCTAssertNotNil(w.respondToNamedEncounter("focus"));XCTAssertTrue(w.dismissNamedEncounter());XCTAssertFalse(w.streaming.isFrozen)
+    XCTAssertEqual(store.stats,stats);XCTAssertEqual(store.randomNumberGenerator,rng);XCTAssertEqual(GameStore.saveVersion,20)
+    let approachedGarage=await w.debugApproachInteraction("atlantis.interaction.founderGarage");XCTAssertTrue(approachedGarage);XCTAssertEqual(w.beginInteraction(),.enterFounderGarage);XCTAssertTrue(w.returnFromInteraction());w.stop()
+  }
+  func testWorldConsequenceFixturesDeriveExpectedFounderAndPallasStates() {
+    let expected:[AtlantisWorldConsequenceFixture:String]=[
+      .founderBaseline:"founder.baseline",.founderGrowth:"founder.growth",.founderSpotlight:"founder.spotlight",.founderScrutiny:"founder.scrutiny",
+      .pallasBaseline:"pallas.baseline",.pallasSurge:"pallas.surge",.pallasEvent:"pallas.event"]
+    for (fixture,id) in expected {
+      let state=AtlantisWorldConsequencePolicy.derive(signals:fixture.snapshot,fixture:fixture)
+      XCTAssertEqual(state.definition(site:fixture.site)?.id,id)
+    }
+    XCTAssertEqual(AtlantisWorldConsequencePolicy.derive(signals:AtlantisWorldConsequenceFixture.founderGrowth.snapshot).definition(site:.founderHQ)?.state,.growth)
+    XCTAssertEqual(AtlantisWorldConsequencePolicy.derive(signals:AtlantisWorldConsequenceFixture.pallasSurge.snapshot).definition(site:.pallasCampus)?.state,.surge)
+    XCTAssertEqual(AtlantisWorldConsequencePolicy.derive(signals:AtlantisWorldConsequenceFixture.pallasEvent.snapshot).definition(site:.pallasCampus)?.state,.event)
+  }
+  func testWorldConsequenceRegistryHasStableUniqueAnchorsAndBoundedProps() {
+    let definitions=AtlantisWorldConsequenceDefinition.all
+    XCTAssertEqual(definitions.count,9);XCTAssertEqual(Set(definitions.map(\.id)).count,9)
+    XCTAssertEqual(Set(definitions.map(\.site)),Set(AtlantisWorldConsequenceSite.allCases))
+    let verified=Set(AtlantisInteractionDefinition.all.map(\.anchorName))
+    XCTAssertTrue(definitions.allSatisfy{verified.contains($0.targetAnchor)})
+    XCTAssertTrue(definitions.allSatisfy{$0.constructionProps<=3 && $0.eventProps<=5 && !$0.exclusiveGroups.isEmpty})
+    XCTAssertEqual(definitions.filter{$0.site == .northwindCampus}.map(\.state),[.baseline])
+    XCTAssertEqual(definitions.filter{$0.site == .flashpointCampus}.map(\.state),[.baseline])
+  }
+  func testWorldConsequencePriorityAndExclusiveGroupsPreventContradiction() {
+    for fixture in AtlantisWorldConsequenceFixture.allCases {
+      let state=AtlantisWorldConsequencePolicy.derive(signals:fixture.snapshot,fixture:fixture)
+      XCTAssertEqual(Set(state.active.map(\.site)).count,state.active.count)
+      let groups=state.active.flatMap(\.exclusiveGroups)
+      XCTAssertEqual(Set(groups).count,groups.count)
+    }
+    let scrutiny=AtlantisWorldConsequenceFixture.founderScrutiny.snapshot
+    XCTAssertEqual(AtlantisWorldConsequencePolicy.derive(signals:scrutiny).definition(site:.founderHQ)?.id,"founder.scrutiny")
+    let event=AtlantisWorldConsequenceFixture.pallasEvent.snapshot
+    XCTAssertEqual(AtlantisWorldConsequencePolicy.derive(signals:event).definition(site:.pallasCampus)?.id,"pallas.event")
+  }
+  func testWorldConsequenceIgnoresHiddenRivalTruthAndStoreRemainsUnchanged() {
+    let store=GameStore(),stats=store.stats,rng=store.randomNumberGenerator
+    store.techComRivals=[.init(id:"pallas",name:"Pallas AI",claimedTrackRecord:40,actualTrackRecord:2,claimedRevenue:100,actualRevenue:1,claimedMomentum:90,actualMomentum:2)]
+    let before=AtlantisWorldSignalSnapshot.read(store),state=AtlantisWorldConsequencePolicy.derive(signals:before)
+    store.techComRivals[0].actualMomentum=99;store.techComRivals[0].actualRevenue=99999;store.techComRivals[0].isVerified=true
+    XCTAssertEqual(before,AtlantisWorldSignalSnapshot.read(store))
+    XCTAssertEqual(state,AtlantisWorldConsequencePolicy.derive(signals:.read(store)))
+    XCTAssertEqual(state.definition(site:.pallasCampus)?.state,.surge)
+    XCTAssertEqual(store.stats,stats);XCTAssertEqual(store.randomNumberGenerator,rng);XCTAssertEqual(GameStore.saveVersion,20)
+  }
+  func testWorldConsequenceStreamingReconstructsWithoutDuplicates() {
+    let director=AtlantisWorldConsequenceDirector();director.isEnabled=true;director.fixture = .founderGrowth
+    func districtRoot()->Entity {let root=Entity(),anchor=Entity();anchor.name="FounderGarageSlot";root.addChild(anchor);return root}
+    let first=districtRoot();director.districtDidLoad(.founderDistrict,root:first)
+    director.reconcile(residents:[.founderDistrict],signals:AtlantisWorldConsequenceFixture.founderGrowth.snapshot)
+    XCTAssertEqual(director.activeIDs,["founder.growth"]);XCTAssertEqual(director.activeConstructionPropCount,3);XCTAssertEqual(director.duplicateViolations,0);XCTAssertEqual(director.exclusiveGroupConflicts,0)
+    director.districtDidUnload(.founderDistrict);XCTAssertTrue(director.activeIDs.isEmpty);XCTAssertEqual(director.activeConstructionPropCount,0);XCTAssertEqual(director.activeEventPropCount,0);XCTAssertEqual(first.findEntity(named:"FounderGarageSlot")?.children.count,0)
+    let reloaded=districtRoot();director.districtDidLoad(.founderDistrict,root:reloaded);director.reconcile(residents:[.founderDistrict],signals:AtlantisWorldConsequenceFixture.founderGrowth.snapshot)
+    XCTAssertEqual(director.activeIDs,["founder.growth"]);XCTAssertEqual(director.activeConstructionPropCount,3);XCTAssertEqual(reloaded.findEntity(named:"FounderGarageSlot")?.children.count,1)
+  }
+  func testWorldConsequencePublicStateKeepsLivingAndNamedSystemsConsistent() {
+    let director=AtlantisLivingWorldDirector();director.population.isEnabled=true;director.namedEncounters.isEnabled=true;director.consequences.isEnabled=true;director.consequences.fixture = .pallasSurge
+    let district=Entity(),anchor=Entity();anchor.name="PallasAIHQ";district.addChild(anchor);director.consequences.districtDidLoad(.techCore,root:district)
+    director.reconcile(residents:[.techCore],current:.techCore,phase:.day,position:[30,14.45,-324],immediate:true)
+    XCTAssertEqual(director.consequences.definition(site:.pallasCampus)?.state,.surge)
+    XCTAssertEqual(director.reactions[.techCore]?.reaction,.rival)
+    XCTAssertTrue(director.namedEncounters.activeNPCIDs.contains("iris-vale"))
+    XCTAssertLessThanOrEqual(director.population.activePedestrians,AtlantisLivingWorldPresentationAdapter.pedestrianBudget)
   }
   func testAmbientRoutesHaveContinuousWalkableSupportAndAvoidBuildingEnvelopes() throws {
     let manifest=try AtlantisAssetManifest.load()

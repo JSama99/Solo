@@ -173,6 +173,22 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     }
   }
 
+  func testServerHandoffUsesExistingCloseAndComputerFocusSequence() {
+    var state = FounderDeskNavigationState()
+    state.select(.server)
+    state.closeSecondaryDevice()
+    XCTAssertEqual(state.select(.computer), .computerFocused)
+    XCTAssertEqual(state.selection, .overview)
+    XCTAssertEqual(state.camera.mode, .transitioningToComputerFocus)
+    state.completeCameraTransition(to: .computerFocused)
+    XCTAssertEqual(state.selection, .device(.computer))
+
+    XCTAssertEqual(state.lookOut(), .freeLook)
+    state.completeCameraTransition(to: .freeLook)
+    XCTAssertNil(state.select(.server))
+    XCTAssertEqual(state.selection, .device(.server))
+  }
+
   func testSecondaryDeviceRoundTripRetainsCameraOrientation() {
     var state = FounderDeskNavigationState()
     state.setLook(horizontal: 0.55, vertical: -0.12, reduceMotion: false)
@@ -766,6 +782,111 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     }
   }
 
+  func testStrategyBoardInitiativesHaveStableUniqueRoutes() {
+    let initiatives = FounderStrategicInitiativeDefinition.all
+    XCTAssertEqual(Set(initiatives.map(\.id)).count, initiatives.count)
+    XCTAssertEqual(initiatives.map(\.category), [.productLaunch, .fundraising, .competitiveMove])
+
+    let launch = initiatives[0]
+    XCTAssertTrue(launch.executionSupported)
+    XCTAssertEqual(launch.executionRoute, .commitSprint)
+    XCTAssertEqual(Set(launch.preparation.map(\.id)).count, launch.preparation.count)
+    XCTAssertEqual(Set(launch.preparation.map(\.track)), Set(FounderStrategyTrack.allCases))
+    XCTAssertTrue(launch.preparation.filter(\.blocksCommit).allSatisfy { $0.route == .agentOperations || $0.route == .evidenceLedger })
+  }
+
+  func testStrategyBoardSixFixturesCoverReadinessStates() {
+    let launch = FounderStrategicInitiativeDefinition.all[0]
+    let expected: [FounderStrategyBoardFixture: FounderInitiativeReadiness] = [
+      .empty: .notReady,
+      .partial: .needsReview,
+      .evidenceBlocker: .needsReview,
+      .technicalBlocker: .blocked,
+      .ready: .ready,
+      .publicRivalRisk: .ready
+    ]
+
+    XCTAssertEqual(FounderStrategyBoardFixture.allCases.count, 6)
+    for fixture in FounderStrategyBoardFixture.allCases {
+      let projection = FounderStrategyBoardPolicy.project(launch, snapshot: fixture.snapshot)
+      XCTAssertEqual(projection.readiness, expected[fixture], "Unexpected readiness for \(fixture.rawValue)")
+      XCTAssertEqual(projection.commitEligible, fixture == .ready || fixture == .publicRivalRisk)
+    }
+  }
+
+  func testStrategyBoardEvidenceAttentionAndTechnicalBlockersStayCanonical() {
+    let launch = FounderStrategicInitiativeDefinition.all[0]
+    let evidence = FounderStrategyBoardPolicy.project(launch, snapshot: FounderStrategyBoardFixture.evidenceBlocker.snapshot)
+    let technical = FounderStrategyBoardPolicy.project(launch, snapshot: FounderStrategyBoardFixture.technicalBlocker.snapshot)
+
+    XCTAssertEqual(evidence.evidenceBlockerCount, 1)
+    XCTAssertTrue(evidence.blockers.contains { $0.contains("Founder Attention insufficient") })
+    XCTAssertTrue(technical.blockers.contains { $0.contains("canonical resolution") || $0.contains("resolve Stacks") })
+    XCTAssertFalse(evidence.commitEligible)
+    XCTAssertFalse(technical.commitEligible)
+  }
+
+  func testStrategyBoardUsesPublicRivalClaimsWithoutHiddenTruth() {
+    let launch = FounderStrategicInitiativeDefinition.all[0]
+    let projection = FounderStrategyBoardPolicy.project(launch, snapshot: FounderStrategyBoardFixture.publicRivalRisk.snapshot)
+    let visibleText = (projection.risks + projection.blockers + projection.preparation.map(\.detail)).joined(separator: " ").lowercased()
+
+    XCTAssertTrue(visibleText.contains("publicly claims 90 momentum"))
+    for forbidden in ["actual quality", "correctness", "overclaim", "drift", "hidden", "rng", "future outcome"] {
+      XCTAssertFalse(visibleText.contains(forbidden), "Strategy projection leaked \(forbidden)")
+    }
+  }
+
+  func testStrategyBoardCommitGateAllowsOneCanonicalExecutionPerPresentation() {
+    var gate = FounderStrategyCommitGate()
+    XCTAssertTrue(gate.claim(eligible: true, sprint: 2))
+    XCTAssertFalse(gate.claim(eligible: true, sprint: 2))
+    XCTAssertFalse(gate.claim(eligible: false, sprint: 3))
+    XCTAssertEqual(gate.invocationCount, 3)
+    XCTAssertEqual(gate.canonicalExecutionCount, 1)
+    XCTAssertEqual(gate.duplicatePreventionCount, 1)
+    XCTAssertEqual(gate.committedSprint, 2)
+  }
+
+  func testStrategyBoardProjectionIsPureAndKeepsCurrentSaveVersion() {
+    let snapshot = FounderStrategyBoardFixture.ready.snapshot
+    let launch = FounderStrategicInitiativeDefinition.all[0]
+    let first = FounderStrategyBoardPolicy.project(launch, snapshot: snapshot)
+    let second = FounderStrategyBoardPolicy.project(launch, snapshot: snapshot)
+
+    XCTAssertEqual(first, second)
+    XCTAssertEqual(snapshot, FounderStrategyBoardFixture.ready.snapshot)
+    XCTAssertEqual(GameStore.saveVersion, 20)
+  }
+
+  @MainActor
+  func testStrategyBoardLiveProjectionCannotMutateGameStoreOrAtlantisSignals() {
+    let store = GameStore()
+    let stats = store.stats
+    let rng = store.randomNumberGenerator
+    let tasks = store.tasks
+    let atlantis = AtlantisWorldSignalSnapshot.read(store)
+
+    let snapshot = FounderStrategyBoardSnapshot.read(store)
+    _ = FounderStrategyBoardPolicy.project(FounderStrategicInitiativeDefinition.all[0], snapshot: snapshot)
+
+    XCTAssertEqual(store.stats, stats)
+    XCTAssertEqual(store.randomNumberGenerator, rng)
+    XCTAssertEqual(store.tasks, tasks)
+    XCTAssertEqual(AtlantisWorldSignalSnapshot.read(store), atlantis)
+    XCTAssertEqual(GameStore.saveVersion, 20)
+  }
+
+  func testStrategyBoardUnsupportedInitiativesRemainPlanningOnly() {
+    for initiative in FounderStrategicInitiativeDefinition.all.dropFirst() {
+      let projection = FounderStrategyBoardPolicy.project(initiative, snapshot: FounderStrategyBoardFixture.publicRivalRisk.snapshot)
+      XCTAssertFalse(projection.commitEligible)
+      XCTAssertEqual(projection.readiness, .notReady)
+      XCTAssertTrue(projection.blockers.contains { $0.contains("Planning projection only") })
+      XCTAssertEqual(projection.canonicalRouteCount, 1)
+    }
+  }
+
   private func input(
     visibleWorkCount: Int = 0,
     visibleReviewCount: Int = 0,
@@ -888,5 +1009,427 @@ final class FounderDeskWorkspaceTests: XCTestCase {
       needsFounderAttention: needsFounderAttention,
       isResting: false
     )
+  }
+}
+
+@MainActor
+final class AgentOperationsEconomyTests: XCTestCase {
+  func testBalancedDefaultsAreAgentSpecificBoundedAndLeaveHeadroom() {
+    let state = AgentOperationsState.balanced
+    for agentID in ["aurora", "stacks", "brio"] {
+      let profile = state.profile(for: agentID)
+      XCTAssertEqual(profile.capacity, 100)
+      XCTAssertEqual(profile.allocated, 75)
+      XCTAssertEqual(profile.headroom, 25)
+      XCTAssertEqual(profile.autonomy, .guided)
+      XCTAssertEqual(Set(profile.allocations.keys), Set(AgentOperationalDomain.domains(for: agentID)))
+    }
+    XCTAssertNotEqual(Set(state.profile(for: "aurora").allocations.keys), Set(state.profile(for: "stacks").allocations.keys))
+  }
+
+  func testAllocationRejectsNegativeWrongOwnerAndCapacityOverflow() {
+    var profile = AgentOperationsProfile.balanced(agentID: "stacks")
+    XCTAssertFalse(profile.setAllocation(-5, for: .reliability))
+    XCTAssertFalse(profile.setAllocation(20, for: .marketResearch))
+    XCTAssertFalse(profile.setAllocation(60, for: .productDevelopment))
+    XCTAssertEqual(profile.allocated, 75)
+    XCTAssertTrue(profile.setAllocation(45, for: .productDevelopment))
+    XCTAssertEqual(profile.allocated, 95)
+  }
+
+  func testAssignmentLoadProducesDeterministicOverloadWithoutStoredWorkloadTruth() {
+    let balanced = AgentOperationsFixture.balanced.state.profile(for: "stacks")
+    XCTAssertEqual(AgentOperationsPolicy.workload(profile: balanced, assignmentUrgency: nil), 75)
+    XCTAssertEqual(AgentOperationsPolicy.workload(profile: balanced, assignmentUrgency: .critical), 100)
+    let overloaded = AgentOperationsFixture.stacksOverloaded.state.profile(for: "stacks")
+    let workload = AgentOperationsPolicy.workload(profile: overloaded, assignmentUrgency: .critical)
+    XCTAssertEqual(workload, 125)
+    XCTAssertEqual(AgentOperationalWorkloadBand.classify(workload), .critical)
+  }
+
+  func testPresetsOnlyRearrangeAllocationAndPreserveHeadroom() {
+    var profile = AgentOperationsProfile.balanced(agentID: "aurora")
+    profile.applyPreset(.primary)
+    XCTAssertEqual(profile.allocation(for: .marketResearch), 45)
+    XCTAssertEqual(profile.allocated, 80)
+    XCTAssertEqual(profile.headroom, 20)
+    profile.applyPreset(.safeguard)
+    XCTAssertEqual(profile.allocation(for: .evidenceVerification), 35)
+    XCTAssertEqual(profile.allocated, 80)
+  }
+
+  func testAgentSpecificAllocationChangesOnlyRelevantAssignmentInputs() {
+    let agents = ContentLibrary.initialAgents
+    let aurora = agents.first { $0.id == "aurora" }!
+    let stacks = agents.first { $0.id == "stacks" }!
+    let brio = agents.first { $0.id == "brio" }!
+    let research = SoloTask(title: "Market study", detail: "", role: .research, category: .research, impact: .trust(1))
+    let engineering = SoloTask(title: "Harden release", detail: "", role: .engineering, category: .operations, impact: .trust(1))
+    let campaign = SoloTask(title: "Campaign", detail: "", role: .marketing, category: .sales, impact: .momentum(1))
+    let auroraAdjusted = AgentOperationsPolicy.assignmentAgent(aurora, profile: AgentOperationsFixture.auroraVerification.state.profile(for: "aurora"), task: research)
+    let stacksAdjusted = AgentOperationsPolicy.assignmentAgent(stacks, profile: AgentOperationsFixture.reliabilityNeglected.state.profile(for: "stacks"), task: engineering)
+    let brioAdjusted = AgentOperationsPolicy.assignmentAgent(brio, profile: AgentOperationsFixture.brioAcquisitionHeavy.state.profile(for: "brio"), task: campaign)
+    XCTAssertGreaterThan(auroraAdjusted.calibration, aurora.calibration)
+    XCTAssertNotEqual(stacksAdjusted.reliability, stacks.reliability)
+    XCTAssertGreaterThan(brioAdjusted.reliability, brio.reliability)
+  }
+
+  func testAutonomyCreatesCalibrationThroughputAndRiskTradeoffs() {
+    let agent = ContentLibrary.initialAgents.first { $0.id == "aurora" }!
+    let task = SoloTask(title: "Research", detail: "", role: .research, impact: .trust(1))
+    var controlled = AgentOperationsProfile.balanced(agentID: "aurora"); controlled.autonomy = .founderControlled
+    var autonomous = controlled; autonomous.autonomy = .autonomous
+    let founderInput = AgentOperationsPolicy.assignmentAgent(agent, profile: controlled, task: task)
+    let autonomousInput = AgentOperationsPolicy.assignmentAgent(agent, profile: autonomous, task: task)
+    XCTAssertGreaterThan(founderInput.calibration, autonomousInput.calibration)
+    XCTAssertLessThan(founderInput.reliability, autonomousInput.reliability)
+  }
+
+  func testAutonomousDecisionIsDeterministicAndResolvesOnce() {
+    let store = configuredStore(seed: 19_101)
+    let request = store.agentOperationalDecisionRequest(for: "stacks")
+    XCTAssertNotNil(request)
+    let attention = store.attentionRemaining
+    XCTAssertTrue(store.resolveAgentOperationalDecision(agentID: "stacks", choice: .letAgentDecide))
+    XCTAssertEqual(store.attentionRemaining, attention)
+    XCTAssertEqual(store.agentOperations.profile(for: "stacks").autonomousDecisionCount, 1)
+    XCTAssertFalse(store.resolveAgentOperationalDecision(agentID: "stacks", choice: .letAgentDecide))
+    XCTAssertEqual(store.agentOperations.recentDecisions.filter { $0.id == request?.id }.count, 1)
+    store.resetCareer()
+  }
+
+  func testMicromanagementPenaltyIsContextual() {
+    let high = configuredStore(seed: 19_102)
+    high.installAgentOperationsForTesting(AgentOperationsFixture.highCalibrationFounderOverride.state, agents: AgentOperationsFixture.highCalibrationFounderOverride.agents)
+    XCTAssertTrue(high.resolveAgentOperationalDecision(agentID: "aurora", choice: .verifyEvidence))
+    XCTAssertEqual(high.agentOperations.profile(for: "aurora").micromanagementPenaltyActivations, 1)
+    XCTAssertEqual(high.agentOperations.profile(for: "aurora").pendingTrustDelta, -2)
+    high.resetCareer()
+
+    let low = configuredStore(seed: 19_103)
+    low.installAgentOperationsForTesting(AgentOperationsFixture.lowCalibrationIntervention.state, agents: AgentOperationsFixture.lowCalibrationIntervention.agents)
+    XCTAssertTrue(low.resolveAgentOperationalDecision(agentID: "aurora", choice: .verifyEvidence))
+    XCTAssertEqual(low.agentOperations.profile(for: "aurora").micromanagementPenaltyActivations, 0)
+    XCTAssertGreaterThan(low.agentOperations.profile(for: "aurora").pendingCalibrationDelta, 0)
+    low.resetCareer()
+  }
+
+  func testSprintOutcomesUseExistingTraitsAndRewardHeadroom() {
+    let stacks = ContentLibrary.initialAgents.first { $0.id == "stacks" }!
+    let healthy = AgentOperationsPolicy.sprintOutcome(agent: stacks, profile: AgentOperationsFixture.balanced.state.profile(for: "stacks"), assignmentUrgency: .normal)
+    let overloaded = AgentOperationsPolicy.sprintOutcome(agent: stacks, profile: AgentOperationsFixture.stacksOverloaded.state.profile(for: "stacks"), assignmentUrgency: .critical)
+    let neglected = AgentOperationsPolicy.sprintOutcome(agent: stacks, profile: AgentOperationsFixture.reliabilityNeglected.state.profile(for: "stacks"), assignmentUrgency: .normal)
+    XCTAssertLessThan(healthy.stressDelta, overloaded.stressDelta)
+    XCTAssertLessThan(overloaded.reliabilityDelta, healthy.reliabilityDelta)
+    XCTAssertGreaterThan(neglected.driftDelta, healthy.driftDelta)
+  }
+
+  func testOperationalChoicesPersistThroughCanonicalVersionTwentySave() throws {
+    let source = configuredStore(seed: 19_104)
+    XCTAssertTrue(source.setAgentOperationsAllocation(agentID: "stacks", domain: .reliability, value: 30))
+    XCTAssertTrue(source.setAgentOperationalAutonomy(agentID: "brio", autonomy: .autonomous))
+    let restored = GameStore()
+    restored.continueCareer()
+    XCTAssertEqual(restored.agentOperations.profile(for: "stacks").allocation(for: .reliability), 30)
+    XCTAssertEqual(restored.agentOperations.profile(for: "brio").autonomy, .autonomous)
+    let data = try XCTUnwrap(UserDefaults.standard.data(forKey: GameStore.saveKey))
+    XCTAssertEqual(try JSONDecoder().decode(SaveEnvelope.self, from: data).version, 20)
+    restored.resetCareer()
+  }
+
+  func testLegacyVersionNineteenSaveMigratesToBalancedOperations() throws {
+    let source = configuredStore(seed: 19_105)
+    let data = try XCTUnwrap(UserDefaults.standard.data(forKey: GameStore.saveKey))
+    var root = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    var career = try XCTUnwrap(root["career"] as? [String: Any])
+    career.removeValue(forKey: "agentOperations")
+    root["career"] = career
+    root["version"] = 19
+    let legacy = try JSONSerialization.data(withJSONObject: root)
+    source.resetCareer()
+    UserDefaults.standard.set(legacy, forKey: GameStore.v19SaveKey)
+    let restored = GameStore()
+    restored.continueCareer()
+    XCTAssertEqual(restored.agentOperations, .balanced)
+    let migrated = try XCTUnwrap(UserDefaults.standard.data(forKey: GameStore.saveKey))
+    XCTAssertEqual(try JSONDecoder().decode(SaveEnvelope.self, from: migrated).version, 20)
+    restored.resetCareer()
+  }
+
+  func testProductLaunchConsumesOperationsWithoutBypassingPreparation() {
+    let balanced = AgentOperationsFixture.balanced.state.profile(for: "stacks")
+    let neglected = AgentOperationsFixture.reliabilityNeglected.state.profile(for: "stacks")
+    let balancedAdjustment = AgentOperationsPolicy.productLaunchQualityAdjustment(agentID: "stacks", profile: balanced, assignmentUrgency: .normal)
+    let neglectedAdjustment = AgentOperationsPolicy.productLaunchQualityAdjustment(agentID: "stacks", profile: neglected, assignmentUrgency: .normal)
+    XCTAssertGreaterThan(balancedAdjustment, neglectedAdjustment)
+    XCTAssertTrue(GameStore().productLaunchOperation == nil)
+  }
+
+  func testStrategyBoardAddsOnlyFounderKnownOperationalRisk() {
+    let store = configuredStore(seed: 19_106)
+    store.installAgentOperationsForTesting(AgentOperationsFixture.reliabilityNeglected.state)
+    let snapshot = FounderStrategyBoardSnapshot.read(store)
+    XCTAssertTrue(snapshot.operationalRisks.contains { $0.contains("reliability allocation") })
+    let description = snapshot.operationalRisks.joined(separator: " ").lowercased()
+    XCTAssertFalse(description.contains("drift"))
+    XCTAssertFalse(description.contains("actual quality"))
+    store.resetCareer()
+  }
+
+  func testHiddenDriftDoesNotEnterOperationsPlayerSurfaceOrRequest() throws {
+    let agent = AgentOperationsFixture.hiddenDrift.agents.first { $0.id == "stacks" }!
+    let request = AgentOperationsPolicy.request(agent: agent, profile: AgentOperationsFixture.hiddenDrift.state.profile(for: "stacks"), venture: 1, sprint: 1)
+    XCTAssertFalse(String(describing: request).lowercased().contains("drift"))
+    let source = try sourceText("App/AIOperationsFloor.swift")
+    let operationsSurface = source.components(separatedBy: "private var operationsSurface").dropFirst().first?.components(separatedBy: "private var primaryAction").first ?? ""
+    XCTAssertFalse(operationsSurface.contains("canonicalAgent.drift"))
+    XCTAssertFalse(operationsSurface.lowercased().contains("actual quality"))
+  }
+
+  func testOperationsResolutionHasNoAtlantisOrRuntimeNetworkAuthority() throws {
+    let source = try sourceText("App/GameStore.swift")
+    let boundary = source.components(separatedBy: "private func resolveAgentOperationsAtSprintBoundary()").dropFirst().first?.components(separatedBy: "private func completeAmbitionIfEligible").first ?? ""
+    XCTAssertFalse(boundary.contains("Atlantis"))
+    XCTAssertFalse(boundary.contains("URLSession"))
+    XCTAssertFalse(boundary.contains(".random("))
+  }
+
+  private func configuredStore(seed: UInt64) -> GameStore {
+    let store = GameStore()
+    store.resetCareer()
+    store.startCareer(seed: seed)
+    store.confirmVentureThesisIfNeeded()
+    if let choice = store.activeDilemma?.choices.first { store.selectDilemmaChoice(choice.id) }
+    return store
+  }
+
+  private func sourceText(_ relativePath: String) throws -> String {
+    let repository = URL(fileURLWithPath: #filePath)
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+    return try String(contentsOf: repository.appendingPathComponent(relativePath), encoding: .utf8)
+  }
+}
+
+@MainActor
+final class ProductLaunchOperationTests: XCTestCase {
+  func testBeginLaunchCapturesPreparedSprintCommitsOnceAndRejectsDuplicate() throws {
+    let store = preparedStoreForLaunch(stacksState: .evidenceIncomplete)
+    let sourceSprint = store.sprint
+    let expectedTrust = store.stats.trust
+    XCTAssertTrue(store.beginProductLaunch(), store.alertMessage ?? "")
+    let operation = try XCTUnwrap(store.productLaunchOperation)
+    XCTAssertEqual(operation.state, .launchCheck)
+    XCTAssertEqual(operation.preparation.sprint, sourceSprint)
+    XCTAssertEqual(operation.preparation.trust, expectedTrust)
+    XCTAssertEqual(operation.preparation.reviewedEvidenceCount, 3)
+    XCTAssertEqual(operation.preparation.stacks.visibleQuality, 88)
+    XCTAssertFalse(operation.preparation.stacks.founderVerified)
+    XCTAssertEqual(operation.resolutionTruth.stacksQuality, 46)
+    XCTAssertEqual(store.sprint, sourceSprint + 1)
+
+    XCTAssertFalse(store.beginProductLaunch())
+    XCTAssertEqual(store.sprint, sourceSprint + 1)
+    XCTAssertEqual(store.productLaunchOperation?.id, operation.id)
+  }
+
+  func testLifecycleRequiresDecisionsAndPreventsExecutionRollback() {
+    let store = GameStore()
+    store.installProductLaunchOperationForTesting(ProductLaunchFixture.strongPreparation.operation)
+
+    XCTAssertFalse(store.executeProductLaunch())
+    XCTAssertTrue(store.advanceProductLaunchToDecisions())
+    XCTAssertFalse(store.executeProductLaunch())
+    XCTAssertTrue(store.selectProductLaunchReleasePosture(.shipNow))
+    XCTAssertTrue(store.selectProductLaunchPublicPosture(.evidenceLed))
+    XCTAssertTrue(store.executeProductLaunch())
+    XCTAssertEqual(store.productLaunchOperation?.state, .executing)
+    XCTAssertFalse(store.advanceProductLaunchToDecisions())
+    XCTAssertFalse(store.selectProductLaunchPublicPosture(.bold))
+  }
+
+  func testResolutionIsDeterministicForSameSnapshotSeedAndDecisions() throws {
+    var first = ProductLaunchFixture.strongPreparation.operation
+    first.releasePosture = .shipNow
+    first.publicPosture = .bold
+    let second = first
+    XCTAssertEqual(try XCTUnwrap(ProductLaunchResolutionPolicy.resolve(first)), ProductLaunchResolutionPolicy.resolve(second))
+  }
+
+  func testAgentPreparationAffectsDistinctDimensions() throws {
+    let strong = try resolve(.strongPreparation)
+    let technicalRisk = try resolve(.technicalRisk)
+    let marketHeavy = try resolve(.strongMarketWeakProduct)
+    let productHeavy = try resolve(.strongProductWeakGrowth)
+
+    XCTAssertLessThan(technicalRisk.technicalScore, strong.technicalScore)
+    XCTAssertGreaterThan(marketHeavy.marketScore, marketHeavy.technicalScore)
+    XCTAssertGreaterThan(productHeavy.technicalScore, productHeavy.marketScore)
+  }
+
+  func testWeakEvidenceMakesBoldPublicPostureRiskier() throws {
+    let strong = try resolve(.strongPreparation, publicPosture: .bold)
+    let weak = try resolve(.weakEvidence, publicPosture: .bold)
+    XCTAssertLessThan(weak.publicScore, strong.publicScore)
+    XCTAssertLessThan(weak.effects.trust, strong.effects.trust)
+  }
+
+  func testReleaseAndPublicPosturesMateriallyChangeResolution() throws {
+    let ship = try resolve(.technicalRisk, release: .shipNow, publicPosture: .bold)
+    let conservative = try resolve(.technicalRisk, release: .conservative, publicPosture: .evidenceLed)
+    let quiet = try resolve(.technicalRisk, release: .conservative, publicPosture: .quiet)
+    XCTAssertGreaterThan(conservative.technicalScore, ship.technicalScore)
+    XCTAssertNotEqual(ship.marketScore, conservative.marketScore)
+    XCTAssertNotEqual(conservative.coverageDelta, quiet.coverageDelta)
+  }
+
+  func testHiddenVarianceDoesNotEnterFounderSnapshotOrExplanation() throws {
+    let operation = ProductLaunchFixture.hiddenOverclaim.operation
+    XCTAssertEqual(operation.preparation.stacks.visibleQuality, 88)
+    XCTAssertFalse(operation.preparation.stacks.founderVerified)
+    let visible = String(describing: operation.preparation).lowercased()
+    for forbidden in ["actualquality", "overclaim", "drift", "rng", "future"] {
+      XCTAssertFalse(visible.contains(forbidden))
+    }
+    let result = try resolve(.hiddenOverclaim)
+    XCTAssertTrue(result.unresolvedCause)
+    let explanation = result.explanation.joined(separator: " ").lowercased()
+    XCTAssertTrue(explanation.contains("not yet fully understood"))
+    XCTAssertFalse(explanation.contains("overclaim"))
+    XCTAssertFalse(explanation.contains("actual quality"))
+  }
+
+  func testCanonicalResolutionAppliesAllEffectsOnceAndPublishesOneEvent() throws {
+    let store = GameStore()
+    var operation = ProductLaunchFixture.duplicateResolution.operation
+    operation.state = .founderDecision
+    operation.releasePosture = .shipNow
+    operation.publicPosture = .bold
+    store.installProductLaunchOperationForTesting(operation)
+    let before = store.stats
+
+    XCTAssertTrue(store.executeProductLaunch())
+    XCTAssertTrue(store.resolveProductLaunch())
+    let resolvedStats = store.stats
+    let result = try XCTUnwrap(store.productLaunchOperation?.result)
+    XCTAssertEqual(resolvedStats.momentum, min(100, max(0, before.momentum + result.effects.momentum)))
+    XCTAssertEqual(resolvedStats.trust, min(100, max(0, before.trust + result.effects.trust)))
+    XCTAssertEqual(resolvedStats.coverage, min(100, max(-100, before.coverage + result.coverageDelta)))
+    XCTAssertEqual(store.productLaunchOperation?.canonicalEffectApplicationCount, 1)
+
+    XCTAssertFalse(store.resolveProductLaunch())
+    XCTAssertEqual(store.stats, resolvedStats)
+    XCTAssertEqual(store.productLaunchOperation?.canonicalEffectApplicationCount, 1)
+    XCTAssertEqual(store.productLaunchOperation?.duplicateResolutionPreventionCount, 1)
+    XCTAssertEqual(store.publicMediaEvents.filter { $0.id == "\(operation.id)-resolved" }.count, 1)
+    XCTAssertTrue(store.finishProductLaunchPresentation())
+    XCTAssertNil(store.productLaunchOperation)
+    XCTAssertFalse(store.finishProductLaunchPresentation())
+  }
+
+  func testOperationRoundTripRecoversEveryInterruptedStage() throws {
+    for state in [ProductLaunchOperationState.committed, .launchCheck, .founderDecision, .executing, .resolved] {
+      var operation = ProductLaunchFixture.strongPreparation.operation
+      operation.state = state
+      operation.releasePosture = state == .committed || state == .launchCheck ? nil : .conservative
+      operation.publicPosture = state == .committed || state == .launchCheck ? nil : .evidenceLed
+      if state == .resolved { operation.result = ProductLaunchResolutionPolicy.resolve(operation) }
+      let restored = try JSONDecoder().decode(ProductLaunchOperation.self, from: JSONEncoder().encode(operation))
+      XCTAssertEqual(restored, operation)
+    }
+  }
+
+  func testInterruptedOperationRecoversThroughCanonicalCareerSave() throws {
+    let source = GameStore()
+    source.resetCareer()
+    defer { source.resetCareer() }
+    source.startCareer(seed: 18_181)
+    source.confirmVentureThesisIfNeeded()
+    var interrupted = ProductLaunchFixture.technicalRisk.operation
+    interrupted.state = .founderDecision
+    interrupted.releasePosture = .conservative
+    source.installProductLaunchOperationForTesting(interrupted, persist: true)
+
+    let restored = GameStore()
+    restored.continueCareer()
+    XCTAssertEqual(restored.productLaunchOperation, interrupted)
+    XCTAssertEqual(restored.productLaunchOperation?.state, .founderDecision)
+    XCTAssertEqual(restored.productLaunchOperation?.releasePosture, .conservative)
+  }
+
+  func testAdditiveCareerSaveFieldKeepsCurrentVersionAndDecodesWhenMissing() throws {
+    let store = GameStore()
+    store.resetCareer()
+    store.startCareer(seed: 18_018)
+    store.confirmVentureThesisIfNeeded()
+    guard let data = UserDefaults.standard.data(forKey: GameStore.saveKey) else { return XCTFail("Missing baseline save") }
+    var root = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    var career = try XCTUnwrap(root["career"] as? [String: Any])
+    career.removeValue(forKey: "productLaunchOperation")
+    root["career"] = career
+    let legacyCompatible = try JSONSerialization.data(withJSONObject: root)
+    let decoded = try JSONDecoder().decode(SaveEnvelope.self, from: legacyCompatible)
+    XCTAssertEqual(decoded.version, 20)
+    XCTAssertNil(decoded.career.productLaunchOperation)
+    store.resetCareer()
+  }
+
+  func testResolutionHasNoAtlantisAuthorityOrRuntimeRandomness() {
+    let launchSource = try? String(contentsOfFile: "App/GameStore.swift", encoding: .utf8)
+    XCTAssertFalse(launchSource?.contains("resolveProductLaunch") == false)
+    let method = launchSource?.components(separatedBy: "func resolveProductLaunch()").dropFirst().first?.components(separatedBy: "private func captureProductLaunchPreparation").first ?? ""
+    XCTAssertFalse(method.contains("Atlantis"))
+    XCTAssertFalse(method.contains(".random("))
+  }
+
+  private func resolve(
+    _ fixture: ProductLaunchFixture,
+    release: ProductLaunchReleasePosture = .shipNow,
+    publicPosture: ProductLaunchPublicPosture = .evidenceLed
+  ) throws -> ProductLaunchResolution {
+    var operation = fixture.operation
+    operation.releasePosture = release
+    operation.publicPosture = publicPosture
+    return try XCTUnwrap(ProductLaunchResolutionPolicy.resolve(operation))
+  }
+
+  private func preparedStoreForLaunch(stacksState: VerificationState) -> GameStore {
+    let store = GameStore()
+    store.resetCareer()
+    store.startCareer(seed: 18_180)
+    store.confirmVentureThesisIfNeeded()
+    if let choice = store.activeDilemma?.choices.first { store.selectDilemmaChoice(choice.id) }
+    let specs: [(String, AgentRole, Int, Int, VerificationState)] = [
+      ("aurora", .research, 82, 84, .confirmed),
+      ("stacks", .engineering, 46, 88, stacksState),
+      ("brio", .marketing, 78, 80, .confirmed)
+    ]
+    store.tasks = specs.map { agentID, role, actual, reported, state in
+      SoloTask(
+        title: "\(agentID.capitalized) launch preparation", detail: "Prepared launch work",
+        role: role, impact: .momentum(1), assignedAgentID: agentID, isReviewed: true,
+        result: TaskResult(
+          actualQuality: actual, reportedQuality: reported, verificationState: state,
+          evidenceCompleteness: state == .evidenceIncomplete ? 38 : 82,
+          correlatedFailureIdentifier: nil, immediateEffects: SimulationEffects(), delayedEffects: SimulationEffects(),
+          confidenceLowerBound: 40, confidenceUpperBound: 90,
+          knownOperationalRisk: agentID == "stacks" ? "Release reliability needs monitoring" : "No known risk"
+        ),
+        resolution: .approve, resolutionLocked: true
+      )
+    }
+    store.evidence = store.tasks.map { task in
+      let result = task.result!
+      return EvidenceEntry(
+        sprint: store.sprint, taskInstanceID: task.id.uuidString, task: task.title,
+        agent: task.assignedAgentID!.capitalized, reviewed: true,
+        evidenceVerified: result.verificationState != .evidenceIncomplete,
+        verdict: "Reviewed", note: "Founder review complete", reportedQuality: result.reportedQuality,
+        actualQuality: result.revealedActualQuality, verificationState: result.verificationState,
+        overclaimAmount: 0, evidenceCompleteness: result.evidenceCompleteness,
+        correlatedFailureIdentifier: nil
+      )
+    }
+    return store
   }
 }

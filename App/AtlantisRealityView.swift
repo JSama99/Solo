@@ -31,6 +31,7 @@ struct AtlantisRealityView: View {
   }
 
   private func open(_ intent: AtlantisInteractionIntent,world: AtlantisRealityWorld) {
+    if case .talkNamedNPC = intent {return}
     let rivalIDs=Set(ContentLibrary.rivalCompanies.map(\.id))
     guard let destination=AtlantisCanonicalRoute.resolve(intent,availableRivalIDs:rivalIDs) else {world.cancelInteraction(reason:"Canonical route unavailable");return}
     route=destination
@@ -76,6 +77,19 @@ private struct AtlantisDebugContent: View {
           Text("Reactions: \(world.livingDirector.fixture?.rawValue ?? "Live public state") · \(world.livingDirector.activeDisplays) displays · \(world.livingDirector.activeEncounters) encounters · \(world.livingDirector.entityCount) entities")
             .font(.caption).accessibilityIdentifier("atlantis.debug.living.reactions")
           if !world.livingDirector.encounterLine.isEmpty {Text(world.livingDirector.encounterLine).font(.callout).accessibilityIdentifier("atlantis.debug.living.encounter")}
+          Text("Named: \(world.livingDirector.namedEncounters.namedNPCCount)/6 present · \(world.livingDirector.namedEncounters.activeNPCIDs.joined(separator:", ")) · \(world.livingDirector.namedEncounters.eligibleEncounterCount) eligible")
+            .font(.caption).accessibilityIdentifier("atlantis.debug.named.counts")
+          Text("Named state: \(world.livingDirector.namedEncounters.publicSignalClassification) · \(world.streaming.current.title) · cooldowns \(world.livingDirector.namedEncounters.cooldownSummary)")
+            .font(.caption).accessibilityIdentifier("atlantis.debug.named.state")
+          Text("Named active: \(world.livingDirector.namedEncounters.activeSession?.npc.displayName ?? "none") · \(world.livingDirector.namedEncounters.activeSession?.encounter.archetype.rawValue ?? "none") · duplicates \(world.livingDirector.namedEncounters.duplicateViolations) · canonical writes \(world.livingDirector.namedEncounters.canonicalWritebackCount) · presentation responses \(world.livingDirector.namedEncounters.presentationOnlyResponseCount)")
+            .font(.caption).accessibilityIdentifier("atlantis.debug.named.metrics")
+          Text("Consequences: \(world.livingDirector.consequences.activeStateCount) active · \(world.livingDirector.consequences.activeIDs.joined(separator:", ")) · event \(world.livingDirector.consequences.activeEventState) · \(worldConsequenceAccessibilityLabel)")
+            .font(.caption)
+            .accessibilityIdentifier("atlantis.debug.consequence.states")
+          Text("Founder HQ: \(world.livingDirector.consequences.founderHQState) · rivals: \(world.livingDirector.consequences.rivalCampusStates) · signs \(world.livingDirector.consequences.activeSignageCount) · construction \(world.livingDirector.consequences.activeConstructionPropCount) · event props \(world.livingDirector.consequences.activeEventPropCount)")
+            .font(.caption).accessibilityIdentifier("atlantis.debug.consequence.presentation")
+          Text(String(format:"Consequence entities %d · reconcile %.3f ms · duplicates %d · conflicts %d",world.livingDirector.consequences.activeEntityCount,world.livingDirector.consequences.reconciliationCostMS,world.livingDirector.consequences.duplicateViolations,world.livingDirector.consequences.exclusiveGroupConflicts))
+            .font(.caption.monospacedDigit()).accessibilityIdentifier("atlantis.debug.consequence.metrics")
           HStack {
             Text("Interactions: \(world.interactionRegistry.count) · candidate cost \(world.interactionRegistry.meanEvaluationMicroseconds.formatted(.number.precision(.fractionLength(2)))) µs")
               .font(.caption).accessibilityIdentifier("atlantis.debug.interaction.metrics")
@@ -83,7 +97,7 @@ private struct AtlantisDebugContent: View {
             Button(world.interactionPrompt) {
               guard let intent=world.beginInteraction() else{return};onActivate(intent)
             }
-            .disabled(world.activeInteraction == nil)
+            .disabled(world.activeInteractionID == nil)
             .accessibilityIdentifier(world.activeInteractionID ?? "atlantis.interaction.none")
           }
           ScrollView(.horizontal) {
@@ -93,6 +107,26 @@ private struct AtlantisDebugContent: View {
               Button("Load all") {Task {await world.loader.loadContext()?.value;for d in AtlantisDistrict.allCases {await world.loader.load(d)?.value}}}.accessibilityIdentifier("atlantis.debug.loadAll")
               Button("Unload all") {world.unloadAll()}.accessibilityIdentifier("atlantis.debug.unloadAll")
               Button("Benchmark") {world.beginBenchmark()}.accessibilityIdentifier("atlantis.debug.benchmark")
+            }
+          }
+          ScrollView(.horizontal) {
+            HStack {
+              ForEach(AtlantisNamedEncounterFixture.allCases) {fixture in
+                Button(fixture.accessibilityID) {showNamedFixture(fixture)}
+                  .accessibilityIdentifier("atlantis.debug.named.fixture.\(fixture.accessibilityID)")
+              }
+            }
+          }
+          ScrollView(.horizontal) {
+            HStack {
+              ForEach(AtlantisWorldConsequenceFixture.allCases) {fixture in
+                Button(fixture.accessibilityID) {showConsequenceFixture(fixture)}
+                  .accessibilityIdentifier("atlantis.debug.consequence.fixture.\(fixture.accessibilityID)")
+              }
+              Button("Unload consequence site") {unloadConsequenceFixtureDistrict()}
+                .accessibilityIdentifier("atlantis.debug.consequence.unload")
+              Button("Reload consequence site") {reloadConsequenceFixtureDistrict()}
+                .accessibilityIdentifier("atlantis.debug.consequence.reload")
             }
           }
           ScrollView(.horizontal) {
@@ -196,8 +230,15 @@ private struct AtlantisDebugContent: View {
       .controlSize(.regular)
       .background(.black)
     }
+    .overlay {
+      if let session=world.livingDirector.namedEncounters.activeSession {
+        AtlantisNamedDialogueCard(session:session,onResponse:{_ = world.respondToNamedEncounter($0)},onDismiss:{_ = world.dismissNamedEncounter()})
+      }
+    }
     .task {
       world.livingWorld.reduceMotion=reduceMotion
+      world.livingDirector.namedEncounters.reduceMotion=reduceMotion
+      world.livingDirector.consequences.reduceMotion=reduceMotion
       await world.start()
       if ProcessInfo.processInfo.arguments.contains("--atlantis-benchmark"),
          !ProcessInfo.processInfo.arguments.contains("--atlantis-founder-profile"),
@@ -207,7 +248,7 @@ private struct AtlantisDebugContent: View {
          world.loader.states[.founderDistrict] == .loaded {world.beginBenchmark()}
     }
     .onChange(of:scenePhase) {_,phase in if phase != .active {world.walkInput=0}}
-    .onChange(of:reduceMotion) {_,value in world.livingWorld.reduceMotion=value}
+    .onChange(of:reduceMotion) {_,value in world.livingWorld.reduceMotion=value;world.livingDirector.namedEncounters.reduceMotion=value;world.livingDirector.consequences.reduceMotion=value}
     .onDisappear {world.stop()}
   }
 
@@ -249,6 +290,82 @@ private struct AtlantisDebugContent: View {
       world.livingWorld.setBenchmarkPopulation(district:.commerceDistrict,pedestrians:10,vehicles:2)
       world.livingWorld.reconcile(residents:world.streaming.residents,current:.commerceDistrict,phase:world.phase,playerPosition:world.playerRoot.position,immediate:true)
       world.selectLivingWorldCamera(.commerceDistrict)
+    }
+  }
+
+  private func showNamedFixture(_ fixture:AtlantisNamedEncounterFixture) {
+    Task {
+      world.livingDirector.namedEncounters.fixture=fixture
+      _=await world.debugApproachNamedNPC(fixture.targetNPCID,fixture:fixture)
+    }
+  }
+
+  private var worldConsequenceAccessibilityLabel:String {
+    let director=world.livingDirector.consequences
+    let summaries=AtlantisWorldConsequenceSite.allCases.compactMap{director.definition(site:$0)?.accessibilitySummary}
+    return summaries.joined(separator:" ")
+  }
+
+  private func showConsequenceFixture(_ fixture:AtlantisWorldConsequenceFixture) {
+    Task {
+      let definition=AtlantisWorldConsequenceDefinition.all.first{$0.id==fixture.forcedDefinitionID}!
+      world.livingDirector.consequences.isEnabled=true;world.livingDirector.consequences.fixture=fixture
+      if world.loader.states[definition.district] != .loaded {await world.loader.load(definition.district)?.value}
+      world.livingDirector.reconcile(residents:world.streaming.residents,current:world.streaming.current,phase:world.phase,position:world.playerRoot.position,immediate:true)
+      world.selectCamera(fixture.site == .founderHQ ? .founderStreet:.techCoreSkyline)
+    }
+  }
+
+  private func unloadConsequenceFixtureDistrict() {
+    guard let fixture=world.livingDirector.consequences.fixture,
+          let definition=AtlantisWorldConsequenceDefinition.all.first(where:{$0.id==fixture.forcedDefinitionID}) else{return}
+    world.loader.unload(definition.district)
+  }
+
+  private func reloadConsequenceFixtureDistrict() {
+    guard let fixture=world.livingDirector.consequences.fixture,
+          let definition=AtlantisWorldConsequenceDefinition.all.first(where:{$0.id==fixture.forcedDefinitionID}) else{return}
+    Task {
+      await world.loader.load(definition.district)?.value
+      world.livingDirector.reconcile(residents:world.streaming.residents,current:world.streaming.current,phase:world.phase,position:world.playerRoot.position,immediate:true)
+      world.selectCamera(fixture.site == .founderHQ ? .founderStreet:.techCoreSkyline)
+    }
+  }
+}
+
+private struct AtlantisNamedDialogueCard: View {
+  let session:AtlantisNamedEncounterSession
+  let onResponse:(String)->Void
+  let onDismiss:()->Void
+  var body:some View {
+    ZStack {Color.black.opacity(0.35).ignoresSafeArea().accessibilityHidden(true)
+      ScrollView {
+        VStack(alignment:.leading,spacing:12) {
+          Text(session.npc.displayName).font(.title2.bold())
+          Text("\(session.npc.role.title) · \(session.npc.affiliation)").font(.subheadline).foregroundStyle(.secondary)
+          if let response=session.selectedResponse {
+            Text(response.acknowledgment).font(.body)
+            Text(response.consequence.label).font(.caption.bold()).foregroundStyle(.secondary)
+              .accessibilityIdentifier("atlantis.named.dialogue.consequence")
+            Button("Return to Atlantis",action:onDismiss).buttonStyle(.borderedProminent)
+              .frame(minHeight:44).accessibilityIdentifier("atlantis.named.dialogue.continue")
+          } else {
+            Text(session.encounter.prompt).font(.body)
+              .accessibilityIdentifier("atlantis.named.dialogue.prompt")
+            ForEach(session.encounter.responses) {response in
+              Button(response.title){onResponse(response.id)}.buttonStyle(.borderedProminent)
+                .frame(maxWidth:.infinity,minHeight:44,alignment:.leading)
+                .accessibilityIdentifier("atlantis.named.dialogue.response.\(response.id)")
+            }
+            Button("Leave",action:onDismiss).frame(minHeight:44)
+              .accessibilityIdentifier("atlantis.named.dialogue.leave")
+          }
+        }
+        .padding(20).frame(maxWidth:520,alignment:.leading)
+        .background(.regularMaterial,in:RoundedRectangle(cornerRadius:20))
+        .accessibilityElement(children:.contain)
+        .accessibilityIdentifier("atlantis.named.dialogue.\(session.npc.id)")
+      }.padding()
     }
   }
 }

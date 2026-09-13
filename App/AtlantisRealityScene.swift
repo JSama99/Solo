@@ -399,10 +399,334 @@ final class AtlantisLivingWorldDistrictPopulation {
   private func milliseconds(since start:UInt64)->Double{Double(DispatchTime.now().uptimeNanoseconds-start)/1_000_000}
 }
 
+struct AtlantisNamedInteractionCandidate {
+  let npc: AtlantisNamedNPCDefinition
+  let encounter: AtlantisNamedEncounterDefinition
+  let distance: Float
+}
+
+struct AtlantisNamedEncounterSession: Identifiable, Equatable {
+  let npc: AtlantisNamedNPCDefinition
+  let encounter: AtlantisNamedEncounterDefinition
+  var selectedResponse: AtlantisNamedEncounterResponse?
+  var id: String {encounter.id}
+}
+
+@MainActor
+final class AtlantisNamedNPCEntity {
+  let definition: AtlantisNamedNPCDefinition
+  let root=Entity()
+  private let torso:ModelEntity,head:ModelEntity,glyph:ModelEntity,nameplate=ModelEntity(),subtitle=ModelEntity()
+  var lifecycle=AtlantisNamedNPCLifecycle.despawned
+  private var phase:Float=0
+
+  init(definition:AtlantisNamedNPCDefinition,index:Int) {
+    self.definition=definition
+    let palette:[UIColor]=[.systemCyan,.systemMint,.systemIndigo,.systemOrange,.systemGreen,.systemPurple]
+    torso=ModelEntity(mesh:.generateBox(size:[0.46,0.92,0.3]),materials:[SimpleMaterial(color:palette[index%palette.count],roughness:0.55,isMetallic:false)])
+    head=ModelEntity(mesh:.generateSphere(radius:0.22),materials:[SimpleMaterial(color:.systemBrown,roughness:0.85,isMetallic:false)])
+    glyph=ModelEntity(mesh:.generateSphere(radius:0.09),materials:[UnlitMaterial(color:.white)])
+    root.name=definition.interactionID;root.position=definition.position
+    torso.position.y=0.86;head.position.y=1.55;glyph.position=[0,2.06,0]
+    nameplate.position=[-0.7,1.96,0.03];subtitle.position=[-0.7,1.72,0.03]
+    root.addChild(torso);root.addChild(head);root.addChild(glyph);root.addChild(nameplate);root.addChild(subtitle)
+    setText(nameplate,definition.displayName,size:0.14)
+    setText(subtitle,"\(definition.role.title) · \(definition.affiliation)",size:0.085)
+    root.components.remove(CollisionComponent.self)
+  }
+
+  func setLifecycle(_ value:AtlantisNamedNPCLifecycle,founderPosition:SIMD3<Float>,reduceMotion:Bool) {
+    lifecycle=value
+    if [.engaged].contains(value) {
+      let offset=founderPosition-root.position
+      root.orientation=simd_quatf(angle:atan2(offset.x,offset.z),axis:[0,1,0])
+    }
+    glyph.isEnabled=value == .available || value == .engaged
+    torso.scale=value == .engaged && !reduceMotion ? [1.03,1.03,1.03]:[1,1,1]
+  }
+
+  func update(delta:Double,reduceMotion:Bool) {
+    guard !reduceMotion else{head.orientation = .init();return}
+    phase += Float(max(0,min(delta,0.25)))
+    let amount:Float=lifecycle == .engaged ? 0.08:0.035
+    head.orientation=simd_quatf(angle:sin(phase*1.4)*amount,axis:[0,1,0])
+    glyph.position.y=2.06+sin(phase*1.8)*0.025
+  }
+
+  private func setText(_ entity:ModelEntity,_ value:String,size:CGFloat) {
+    entity.model=ModelComponent(mesh:.generateText(value,extrusionDepth:0.001,font:.systemFont(ofSize:size,weight:.semibold),containerFrame:.zero,alignment:.left,lineBreakMode:.byClipping),materials:[UnlitMaterial(color:.white)])
+  }
+}
+
+/// Bounded, session-only named encounter state. It consumes public snapshots and
+/// never retains GameStore or writes canonical simulation values.
+@MainActor @Observable
+final class AtlantisNamedEncounterDirector {
+  let root=Entity()
+  var isEnabled=false
+  var reduceMotion=false
+  var fixture:AtlantisNamedEncounterFixture? {didSet {if oldValue != fixture {cooldownUntil=[:];activeSession=nil}}}
+  private(set) var activeSession:AtlantisNamedEncounterSession?
+  private(set) var eligibleEncounterCount=0
+  private(set) var presentationOnlyResponseCount=0
+  private(set) var deferredResponseCount=0
+  private(set) var canonicalWritebackCount=0
+  private(set) var duplicateViolations=0
+  private(set) var reusedEntityCount=0
+  private(set) var decisionCostMS=0.0
+  @ObservationIgnored private var entities:[String:AtlantisNamedNPCEntity]=[:]
+  @ObservationIgnored private var cooldownUntil:[String:Double]=[:]
+  @ObservationIgnored private var elapsed=0.0
+  @ObservationIgnored private var latestSignals=AtlantisLivingWorldFixture.baseline.snapshot
+  @ObservationIgnored private var latestPhase=FounderEnvironmentTimeState.day
+  @ObservationIgnored private var latestResidents:Set<AtlantisDistrict>=[]
+
+  init(){root.name="AtlantisNamedEncounterDirector"}
+  var activeNPCIDs:[String]{entities.values.filter{$0.root.parent != nil}.map{$0.definition.id}.sorted()}
+  var namedNPCCount:Int{activeNPCIDs.count}
+  var cooldownCount:Int{cooldownUntil.values.filter{$0>elapsed}.count}
+  var cooldownSummary:String {
+    let active=cooldownUntil.filter{$0.value>elapsed}.map{"\($0.key) \(Int(ceil($0.value-elapsed)))s"}.sorted()
+    return active.isEmpty ? "none":active.joined(separator:", ")
+  }
+  var publicSignalClassification:String {
+    if latestSignals.coverage <= -40 || latestSignals.trust<35{return "public scrutiny"}
+    if latestSignals.rivals.contains(where:{$0.claimedMomentum>=70}){return "public rival surge"}
+    if latestSignals.coverage>=40{return "public spotlight"}
+    if latestSignals.momentum>=70{return "public momentum"}
+    return "baseline public state"
+  }
+  func entity(npcID:String)->AtlantisNamedNPCEntity?{entities[npcID]}
+  func state(npcID:String)->AtlantisNamedNPCLifecycle?{entities[npcID]?.lifecycle}
+
+  func advance(delta:Double) {
+    elapsed += max(0,min(delta,0.25))
+    for entity in entities.values where entity.root.parent != nil {entity.update(delta:delta,reduceMotion:reduceMotion)}
+  }
+
+  func reconcile(residents:Set<AtlantisDistrict>,phase:FounderEnvironmentTimeState,
+                 position:SIMD3<Float>,signals:AtlantisWorldSignalSnapshot,immediate:Bool=false) {
+    let start=DispatchTime.now().uptimeNanoseconds
+    latestSignals=fixture?.snapshot ?? signals;latestPhase=phase;latestResidents=residents
+    let cooling=Set(cooldownUntil.filter{$0.value>elapsed}.map(\.key))
+    let residentNPCs=AtlantisNamedNPCDefinition.all.filter{residents.contains($0.homeDistrict)}
+    let baseEligible=AtlantisNamedEncounterDefinition.all.filter { encounter in
+      residentNPCs.contains{$0.id==encounter.npcID} && AtlantisNamedEncounterPolicy.eligible(encounter,signals:latestSignals,phase:phase,fixture:fixture)
+    }
+    eligibleEncounterCount=baseEligible.filter{!cooling.contains($0.id)}.count
+    let desired=Set(baseEligible.map(\.npcID))
+    for (id,entity) in entities where !isEnabled || !desired.contains(id) {
+      if entity.root.parent != nil {entity.root.removeFromParent()}
+      entity.lifecycle = .despawned
+    }
+    if isEnabled {
+      for npc in residentNPCs where desired.contains(npc.id) {
+        let entity:AtlantisNamedNPCEntity
+        let wasExisting=entities[npc.id] != nil
+        if let existing=entities[npc.id] {entity=existing} else {
+          entity=AtlantisNamedNPCEntity(definition:npc,index:entities.count);entities[npc.id]=entity
+        }
+        if entity.root.parent == nil {if wasExisting{reusedEntityCount += 1};root.addChild(entity.root)}
+        let encounters=baseEligible.filter{$0.npcID==npc.id}
+        let lifecycle:AtlantisNamedNPCLifecycle
+        if activeSession?.npc.id == npc.id {lifecycle = .engaged}
+        else if encounters.allSatisfy({cooling.contains($0.id)}) {lifecycle = .coolingDown}
+        else {lifecycle = .available}
+        entity.setLifecycle(lifecycle,founderPosition:position,reduceMotion:reduceMotion)
+      }
+    }
+    let ids=root.children.map(\.name),duplicates=ids.count-Set(ids).count
+    if duplicates>0{duplicateViolations += duplicates}
+    decisionCostMS=Double(DispatchTime.now().uptimeNanoseconds-start)/1_000_000
+  }
+
+  func candidate(position:SIMD3<Float>,forward:SIMD3<Float>)->AtlantisNamedInteractionCandidate? {
+    guard isEnabled,activeSession == nil else{return nil}
+    let cooling=Set(cooldownUntil.filter{$0.value>elapsed}.map(\.key))
+    return entities.values.compactMap {entity -> AtlantisNamedInteractionCandidate? in
+      let npc=entity.definition
+      guard entity.root.parent != nil,entity.lifecycle == .available else{return nil}
+      let offset=npc.position-position,distance=simd_length(SIMD2<Float>(offset.x,offset.z))
+      guard distance<=npc.interactionRadius else{return nil}
+      let encounters=AtlantisNamedEncounterDefinition.all.filter{$0.npcID==npc.id}
+      guard let selected=AtlantisNamedEncounterPolicy.select(encounters,signals:latestSignals,phase:latestPhase,fixture:fixture,cooling:cooling) else{return nil}
+      return .init(npc:npc,encounter:selected,distance:distance)
+    }.sorted {
+      if $0.encounter.priority != $1.encounter.priority{return $0.encounter.priority>$1.encounter.priority}
+      if $0.distance != $1.distance{return $0.distance<$1.distance}
+      return $0.npc.id<$1.npc.id
+    }.first
+  }
+
+  func begin(npcID:String,encounterID:String,founderPosition:SIMD3<Float>)->AtlantisNamedEncounterSession? {
+    guard activeSession == nil,let npc=AtlantisNamedNPCDefinition.all.first(where:{$0.id==npcID}),
+          let encounter=AtlantisNamedEncounterDefinition.all.first(where:{$0.id==encounterID && $0.npcID==npcID}),
+          entity(npcID:npcID)?.root.parent != nil else{return nil}
+    let session=AtlantisNamedEncounterSession(npc:npc,encounter:encounter,selectedResponse:nil);activeSession=session
+    entity(npcID:npcID)?.setLifecycle(.engaged,founderPosition:founderPosition,reduceMotion:reduceMotion)
+    return session
+  }
+
+  @discardableResult func respond(responseID:String)->AtlantisNamedEncounterResponse? {
+    guard var session=activeSession,session.selectedResponse == nil,
+          let response=session.encounter.responses.first(where:{$0.id==responseID}) else{return nil}
+    session.selectedResponse=response;activeSession=session
+    switch response.consequence {
+    case .presentationOnly: presentationOnlyResponseCount += 1
+    case .deferredConsequence: deferredResponseCount += 1
+    case .existingCanonicalAction: canonicalWritebackCount += 1
+    }
+    return response
+  }
+
+  @discardableResult func dismiss()->Bool {
+    guard let session=activeSession else{return false}
+    cooldownUntil[session.encounter.id]=elapsed+45
+    entity(npcID:session.npc.id)?.lifecycle = .coolingDown
+    activeSession=nil;return true
+  }
+
+  func districtDidUnload(_ district:AtlantisDistrict) {
+    for entity in entities.values where entity.definition.homeDistrict==district {
+      entity.root.removeFromParent();entity.lifecycle = .despawned
+    }
+    if activeSession?.npc.homeDistrict==district {activeSession=nil}
+  }
+}
+
+@MainActor
+final class AtlantisWorldConsequencePresentation {
+  let site:AtlantisWorldConsequenceSite
+  let root=Entity()
+  private let base=ModelEntity(mesh:.generateBox(size:[10,0.18,4]))
+  private let signBoard=ModelEntity(mesh:.generateBox(size:[9,1.7,0.16]))
+  private let signText=ModelEntity()
+  private var construction:[ModelEntity]=[]
+  private var event:[ModelEntity]=[]
+  private var occupied:[ModelEntity]=[]
+  private var key=""
+  private(set) var definition:AtlantisWorldConsequenceDefinition?
+
+  init(site:AtlantisWorldConsequenceSite) {
+    self.site=site;root.name="AtlantisConsequence.\(site.rawValue)"
+    base.position=[0,0.1,0];signBoard.position=[0,2.5,-1.7];signText.position=[-4.2,2.65,-1.79]
+    root.addChild(base);root.addChild(signBoard);root.addChild(signText)
+    for index in 0..<3 {
+      let prop=ModelEntity(mesh:.generateBox(size:[1.5,0.65,1.1]));prop.position=[Float(index-1)*2.1,0.42,0.8];construction.append(prop);root.addChild(prop)
+    }
+    for index in 0..<5 {
+      let prop=ModelEntity(mesh:.generateBox(size:[0.22,2.2,0.22]));prop.position=[Float(index-2)*1.7,1.15,-1.2];event.append(prop);root.addChild(prop)
+    }
+    for index in 0..<4 {
+      let strip=ModelEntity(mesh:.generateBox(size:[1.5,0.12,0.1]));strip.position=[Float(index-2)*1.8+0.9,1.35,-1.8];occupied.append(strip);root.addChild(strip)
+    }
+    for child in root.children {child.components.remove(CollisionComponent.self)}
+  }
+
+  var entityCount:Int{1+root.children.count}
+  var activeConstructionProps:Int{construction.filter(\.isEnabled).count}
+  var activeEventProps:Int{event.filter(\.isEnabled).count}
+  var activeSignageCount:Int{root.isEnabled ? 1:0}
+
+  func apply(_ value:AtlantisWorldConsequenceDefinition,reduceMotion:Bool) {
+    definition=value;root.isEnabled=true
+    guard key != value.id else{return};key=value.id
+    let color:UIColor=switch value.state {
+    case .baseline:.systemGray
+    case .growth:.systemMint
+    case .spotlight:.systemCyan
+    case .scrutiny:.systemOrange
+    case .surge:.systemPurple
+    case .event:.systemPink
+    }
+    base.model?.materials=[SimpleMaterial(color:color.withAlphaComponent(0.8),roughness:0.75,isMetallic:false)]
+    signBoard.model?.materials=[UnlitMaterial(color:color)]
+    signText.model=ModelComponent(mesh:.generateText(value.signage,extrusionDepth:0.002,font:.systemFont(ofSize:0.38,weight:.bold),containerFrame:.zero,alignment:.left,lineBreakMode:.byClipping),materials:[UnlitMaterial(color:.white)])
+    for (index,prop) in construction.enumerated() {
+      prop.isEnabled=index<value.constructionProps
+      prop.model?.materials=[SimpleMaterial(color:.systemYellow,roughness:0.9,isMetallic:false)]
+    }
+    for (index,prop) in event.enumerated() {
+      prop.isEnabled=index<value.eventProps
+      prop.model?.materials=[UnlitMaterial(color:index.isMultiple(of:2) ? color:.white)]
+    }
+    for (index,strip) in occupied.enumerated() {
+      strip.isEnabled=index < max(1,min(4,2+value.activityModifier))
+      strip.model?.materials=[UnlitMaterial(color:color.withAlphaComponent(reduceMotion ? 0.75:1))]
+    }
+  }
+}
+
+/// Reproducible world consequences derived from public state. Presentation roots
+/// attach only to verified district anchors and are reconstructed on every load.
+@MainActor @Observable
+final class AtlantisWorldConsequenceDirector {
+  let root=Entity()
+  var isEnabled=false
+  var reduceMotion=false
+  var fixture:AtlantisWorldConsequenceFixture?
+  private(set) var state=AtlantisWorldConsequenceState(active:[])
+  private(set) var reconciliationCostMS=0.0
+  private(set) var duplicateViolations=0
+  private(set) var exclusiveGroupConflicts=0
+  private(set) var missingAnchorCount=0
+  @ObservationIgnored private var presentations:[AtlantisWorldConsequenceSite:AtlantisWorldConsequencePresentation]=[:]
+  @ObservationIgnored private var attachedDistricts:Set<AtlantisDistrict>=[]
+  @ObservationIgnored private(set) var latestSignals=AtlantisLivingWorldFixture.baseline.snapshot
+
+  init(){root.name="AtlantisWorldConsequenceDirector"}
+  var effectiveSignals:AtlantisWorldSignalSnapshot{fixture?.snapshot ?? latestSignals}
+  var activeIDs:[String]{presentations.values.compactMap{$0.root.parent == nil || !$0.root.isEnabled ? nil:$0.definition?.id}.sorted()}
+  var activeStateCount:Int{activeIDs.count}
+  var activeEventState:String{state.active.first{$0.category == .publicEvent}?.id ?? "none"}
+  var founderHQState:String{state.definition(site:.founderHQ)?.state.rawValue ?? "none"}
+  var rivalCampusStates:String{[AtlantisWorldConsequenceSite.pallasCampus,.northwindCampus,.flashpointCampus].compactMap{site in state.definition(site:site).map{"\(site.rawValue)=\($0.state.rawValue)"}}.joined(separator:", ")}
+  var activeSignageCount:Int{presentations.values.reduce(0){$0+($1.root.parent == nil ? 0:$1.activeSignageCount)}}
+  var activeConstructionPropCount:Int{presentations.values.reduce(0){$0+($1.root.parent == nil || !$1.root.isEnabled ? 0:$1.activeConstructionProps)}}
+  var activeEventPropCount:Int{presentations.values.reduce(0){$0+($1.root.parent == nil || !$1.root.isEnabled ? 0:$1.activeEventProps)}}
+  var activeEntityCount:Int{presentations.values.reduce(0){$0+($1.root.parent == nil || !$1.root.isEnabled ? 0:$1.entityCount)}}
+  func definition(site:AtlantisWorldConsequenceSite)->AtlantisWorldConsequenceDefinition?{state.definition(site:site)}
+
+  func districtDidLoad(_ district:AtlantisDistrict,root districtRoot:Entity) {
+    attachedDistricts.insert(district)
+    for site in AtlantisWorldConsequenceSite.allCases {
+      guard let definition=AtlantisWorldConsequenceDefinition.all.first(where:{$0.site==site && $0.district==district}) else{continue}
+      guard let anchor=districtRoot.findEntity(named:definition.targetAnchor) else{missingAnchorCount += 1;continue}
+      let presentation:AtlantisWorldConsequencePresentation
+      if let existing=presentations[site] {presentation=existing} else {presentation=AtlantisWorldConsequencePresentation(site:site);presentations[site]=presentation}
+      if presentation.root.parent !== anchor {presentation.root.removeFromParent();anchor.addChild(presentation.root)}
+    }
+  }
+
+  func districtDidUnload(_ district:AtlantisDistrict) {
+    attachedDistricts.remove(district)
+    for presentation in presentations.values where AtlantisWorldConsequenceDefinition.all.first(where:{$0.site==presentation.site})?.district==district {
+      presentation.root.removeFromParent()
+    }
+  }
+
+  func reconcile(residents:Set<AtlantisDistrict>,signals:AtlantisWorldSignalSnapshot) {
+    let start=DispatchTime.now().uptimeNanoseconds;latestSignals=signals
+    state=AtlantisWorldConsequencePolicy.derive(signals:effectiveSignals,fixture:fixture)
+    for (site,presentation) in presentations {
+      guard isEnabled,let definition=state.definition(site:site),residents.contains(definition.district),presentation.root.parent != nil else{presentation.root.isEnabled=false;continue}
+      presentation.apply(definition,reduceMotion:reduceMotion)
+    }
+    let physical=presentations.values.filter{$0.root.parent != nil && $0.root.isEnabled}
+    let names=physical.map{$0.root.name};if names.count != Set(names).count{duplicateViolations += 1}
+    var groups:Set<String>=[];var conflicts=0
+    for definition in physical.compactMap(\.definition) {for group in definition.exclusiveGroups {if !groups.insert(group).inserted{conflicts += 1}}}
+    exclusiveGroupConflicts=conflicts
+    reconciliationCostMS=Double(DispatchTime.now().uptimeNanoseconds-start)/1_000_000
+  }
+}
+
 /// All living presentation is orchestrated here; this type never retains GameStore.
 @MainActor @Observable
 final class AtlantisLivingWorldDirector {
   let population = AtlantisLivingWorldDistrictPopulation()
+  let namedEncounters = AtlantisNamedEncounterDirector()
+  let consequences = AtlantisWorldConsequenceDirector()
   let root = Entity()
   private(set) var signals = AtlantisLivingWorldFixture.baseline.snapshot
   var fixture: AtlantisLivingWorldFixture? {didSet {if oldValue != fixture {encounterLine="";activeEncounters=0;encounterDistrict=nil;cooldowns=[:];encounterExpires=0}}}
@@ -419,7 +743,7 @@ final class AtlantisLivingWorldDirector {
   @ObservationIgnored private var encounterExpires = 0.0
   @ObservationIgnored private var encounterDistrict: AtlantisDistrict?
 
-  init() {root.name="AtlantisLivingWorldDirector";root.addChild(population.root)}
+  init() {root.name="AtlantisLivingWorldDirector";root.addChild(population.root);root.addChild(namedEncounters.root);root.addChild(consequences.root)}
   func receive(_ snapshot: AtlantisWorldSignalSnapshot) {signals=snapshot}
   var effectiveSignals: AtlantisWorldSignalSnapshot {fixture?.snapshot ?? signals}
   var entityCount: Int {
@@ -429,7 +753,7 @@ final class AtlantisLivingWorldDirector {
 
   func advance(delta:Double,residents:Set<AtlantisDistrict>,current:AtlantisDistrict,
                phase:FounderEnvironmentTimeState,position:SIMD3<Float>) {
-    elapsed += max(0,min(delta,0.25));population.update(delta:delta)
+    elapsed += max(0,min(delta,0.25));population.update(delta:delta);namedEncounters.advance(delta:delta)
     guard elapsed>=nextDecision else{return}
     nextDecision=elapsed+AtlantisLivingWorldTuning.decisionInterval
     reconcile(residents:residents,current:current,phase:phase,position:position)
@@ -438,11 +762,14 @@ final class AtlantisLivingWorldDirector {
   func reconcile(residents:Set<AtlantisDistrict>,current:AtlantisDistrict,
                  phase:FounderEnvironmentTimeState,position:SIMD3<Float>,immediate:Bool=false) {
     let start=DispatchTime.now().uptimeNanoseconds
+    consequences.reconcile(residents:residents,signals:effectiveSignals)
+    let presentationSignals=consequences.effectiveSignals
     reactions=Dictionary(uniqueKeysWithValues:AtlantisDistrict.allCases.map {
-      ($0,AtlantisWorldReactionAdapter.derive(effectiveSignals,district:$0,phase:phase))
+      ($0,AtlantisWorldReactionAdapter.derive(presentationSignals,district:$0,phase:phase))
     })
     population.reactions=reactions
     population.reconcile(residents:residents,current:current,phase:phase,playerPosition:position,immediate:immediate)
+    namedEncounters.reconcile(residents:residents,phase:phase,position:position,signals:presentationSignals,immediate:immediate)
     let encounterPosition=encounterDistrict.flatMap{displays[$0]?.root.position}
     let leftEncounter=encounterPosition.map{simd_distance(SIMD2(position.x,position.z),SIMD2($0.x,$0.z))>AtlantisLivingWorldTuning.encounterRadius} ?? false
     if elapsed>=encounterExpires || leftEncounter || !population.isEnabled || !residents.contains(encounterDistrict ?? current) {
@@ -470,7 +797,7 @@ final class AtlantisLivingWorldDirector {
     decisionCostMS=Double(DispatchTime.now().uptimeNanoseconds-start)/1_000_000
   }
   func districtDidUnload(_ district:AtlantisDistrict) {
-    population.districtDidUnload(district);displays[district]?.root.isEnabled=false
+    population.districtDidUnload(district);namedEncounters.districtDidUnload(district);consequences.districtDidUnload(district);displays[district]?.root.isEnabled=false
     if encounterDistrict==district {encounterDistrict=nil;encounterLine="";activeEncounters=0}
     activeDisplays=displays.values.filter{$0.root.isEnabled}.count
   }
@@ -613,6 +940,8 @@ final class AtlantisRealityWorld {
   private(set) var benchmarkStatus = "idle"
   private(set) var report = AtlantisBenchmarkReport()
   private(set) var activeInteractionID: String?
+  private(set) var activeNamedNPCID: String?
+  private(set) var activeNamedEncounterID: String?
   private(set) var interactionReturnContext: AtlantisInteractionReturnContext?
   private(set) var interactionStatus = "No nearby interaction"
   var selectedCamera = AtlantisBenchmarkCamera.founderStreet
@@ -636,6 +965,8 @@ final class AtlantisRealityWorld {
     root.name="AtlantisPresentation";playerRoot.name="AtlantisPlayerRoot";bodyHeadingRoot.name="BodyHeadingRoot";cameraRig.name="CameraRig";camera.name="Camera";collisionRoot.name="TraversalCollision"
     root.addChild(loader.root);root.addChild(livingDirector.root);root.addChild(playerRoot);playerRoot.addChild(bodyHeadingRoot);bodyHeadingRoot.addChild(cameraRig);cameraRig.addChild(camera);root.addChild(sun);root.addChild(environment);root.addChild(collisionRoot)
     livingWorld.isEnabled=ProcessInfo.processInfo.arguments.contains("--atlantis-living-world") || ProcessInfo.processInfo.arguments.contains("--atlantis-living-world-profile")
+    livingDirector.namedEncounters.isEnabled=livingWorld.isEnabled || ProcessInfo.processInfo.arguments.contains("--atlantis-named-encounters")
+    livingDirector.consequences.isEnabled=livingWorld.isEnabled || ProcessInfo.processInfo.arguments.contains("--atlantis-world-consequences")
     camera.camera.near=0.2;camera.camera.far=8000
     let image=UIGraphicsImageRenderer(size:CGSize(width:32,height:16)).image { c in UIColor.white.setFill();c.fill(CGRect(x:0,y:0,width:32,height:16)) }
     if let cg=image.cgImage {
@@ -649,6 +980,7 @@ final class AtlantisRealityWorld {
       if let district {
         self.semanticAnchors.register(district:district,root:entity,manifest:self.manifest)
         self.interactionRegistry.register(district:district,root:entity)
+        self.livingDirector.consequences.districtDidLoad(district,root:entity)
         self.livingDirector.reconcile(residents:self.streaming.residents,current:self.streaming.current,phase:self.phase,position:self.playerRoot.position,immediate:true)
       }
       if district == .unicornHeights {
@@ -658,10 +990,12 @@ final class AtlantisRealityWorld {
       self.syncSpireSwap()
     }
     loader.onWillUnload={ [weak self] district,_ in
-      guard let self else{return};let invalidatesActive=self.activeInteraction?.definition.district == district
+      guard let self else{return}
+      let invalidatesBuilding=self.activeInteraction?.definition.district == district
+      let invalidatesNamed=self.activeNamedNPCID.flatMap{id in AtlantisNamedNPCDefinition.all.first{$0.id==id}}?.homeDistrict == district
       self.semanticAnchors.invalidate(district:district);self.interactionRegistry.unregister(district:district)
       self.livingDirector.districtDidUnload(district)
-      if invalidatesActive {self.activeInteractionID=nil;self.interactionStatus="Interaction unavailable: district unloaded"}
+      if invalidatesBuilding || invalidatesNamed {self.activeInteractionID=nil;self.activeNamedNPCID=nil;self.activeNamedEncounterID=nil;self.interactionStatus="Interaction unavailable: district unloaded"}
       if district == .techCore {self.loader.supportEntity(named:"SpireFarProxy")?.isEnabled=true}
     }
     selectCamera(.founderStreet);applyLighting()
@@ -771,6 +1105,7 @@ final class AtlantisRealityWorld {
     }
     if collectingFrames {frameSamples.append(delta*1000)}
     if !isPresentingInteraction {livingDirector.advance(delta:delta,residents:streaming.residents,current:streaming.current,phase:phase,position:playerRoot.position)}
+    else if isPresentingNamedEncounter {livingDirector.namedEncounters.advance(delta:delta)}
     frameCounter += 1
     if frameCounter % 30 == 0 {let value=AtlantisMemory.footprintMB();if value>report.sampledPeakMemoryMB {report.sampledPeakMemoryMB=value};refreshInteractionCandidate()}
     if isWalking {move(input:walkInput,delta:delta)}
@@ -788,21 +1123,41 @@ final class AtlantisRealityWorld {
     report.collisionEntityCount=collisionRoot.children.count
   }
   func unload(_ district: AtlantisDistrict) {_=streaming.requestUnload(district);collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;syncSpireSwap()}
-  func unloadAll() {loader.unloadAll();for district in AtlantisDistrict.allCases{livingDirector.districtDidUnload(district)};collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;activeInteractionID=nil;interactionReturnContext=nil;streaming.setFrozen(false)}
+  func unloadAll() {loader.unloadAll();for district in AtlantisDistrict.allCases{livingDirector.districtDidUnload(district)};collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;activeInteractionID=nil;activeNamedNPCID=nil;activeNamedEncounterID=nil;interactionReturnContext=nil;streaming.setFrozen(false)}
 
   var activeInteraction: AtlantisInteractionTarget? {activeInteractionID.flatMap(interactionRegistry.target(id:))}
-  var interactionPrompt: String {activeInteraction?.definition.accessibilityLabel ?? interactionStatus}
+  var interactionPrompt: String {
+    if let id=activeNamedNPCID,let npc=AtlantisNamedNPCDefinition.all.first(where:{$0.id==id}) {return "Talk to \(npc.displayName)"}
+    return activeInteraction?.definition.accessibilityLabel ?? interactionStatus
+  }
   var isPresentingInteraction: Bool {interactionReturnContext != nil}
+  var isPresentingNamedEncounter: Bool {livingDirector.namedEncounters.activeSession != nil}
 
   func refreshInteractionCandidate() {
     guard interactionReturnContext == nil else{return}
     let forward=SIMD3<Float>(-sin(heading),0,-cos(heading))
-    activeInteractionID=interactionRegistry.candidate(position:playerRoot.position,forward:forward,residentDistricts:streaming.residents)?.definition.id
+    let building=interactionRegistry.candidate(position:playerRoot.position,forward:forward,residentDistricts:streaming.residents)
+    let named=livingDirector.namedEncounters.candidate(position:playerRoot.position,forward:forward)
+    var scores:[AtlantisInteractionCandidateScore]=[]
+    if let building {
+      let offset=building.definition.activationPosition-playerRoot.position
+      scores.append(.init(id:building.definition.id,priority:building.definition.priority,distance:simd_length(SIMD2<Float>(offset.x,offset.z))))
+    }
+    if let named {scores.append(.init(id:named.npc.interactionID,priority:named.encounter.priority,distance:named.distance))}
+    activeInteractionID=AtlantisInteractionSelectionPolicy.select(scores)
+    if activeInteractionID == named?.npc.interactionID {activeNamedNPCID=named?.npc.id;activeNamedEncounterID=named?.encounter.id}
+    else {activeNamedNPCID=nil;activeNamedEncounterID=nil}
     interactionStatus=activeInteractionID == nil ? "No nearby interaction" : "Ready"
   }
 
   func beginInteraction() -> AtlantisInteractionIntent? {
     refreshInteractionCandidate()
+    if let npcID=activeNamedNPCID,let encounterID=activeNamedEncounterID,
+       livingDirector.namedEncounters.begin(npcID:npcID,encounterID:encounterID,founderPosition:playerRoot.position) != nil {
+      interactionReturnContext = .init(targetID:"atlantis.namedNPC.\(npcID)",position:playerRoot.position,heading:heading,phase:phase,previous:streaming.previous,current:streaming.current,next:streaming.next,residents:streaming.residents)
+      locomotion = .standing;walkInput=0;streaming.setFrozen(true);interactionStatus="Talking with named NPC"
+      return .talkNamedNPC(npcID:npcID)
+    }
     guard let target=activeInteraction,target.entity != nil else {interactionStatus="Interaction unavailable";return nil}
     interactionReturnContext = .init(targetID:target.definition.id,position:playerRoot.position,heading:heading,phase:phase,previous:streaming.previous,current:streaming.current,next:streaming.next,residents:streaming.residents)
     locomotion = .standing;walkInput=0;streaming.setFrozen(true);interactionStatus="Opening \(target.definition.accessibilityLabel)"
@@ -825,7 +1180,29 @@ final class AtlantisRealityWorld {
   }
 
   func cancelInteraction(reason: String) {
+    if isPresentingNamedEncounter {_=livingDirector.namedEncounters.dismiss()}
     interactionReturnContext=nil;streaming.setFrozen(false);interactionStatus=reason;refreshInteractionCandidate()
+  }
+
+  @discardableResult func respondToNamedEncounter(_ responseID:String)->AtlantisNamedEncounterResponse? {
+    livingDirector.namedEncounters.respond(responseID:responseID)
+  }
+
+  @discardableResult func dismissNamedEncounter()->Bool {
+    guard livingDirector.namedEncounters.dismiss() else{return false}
+    interactionReturnContext=nil;streaming.setFrozen(false);interactionStatus="Returned to Atlantis";refreshInteractionCandidate();return true
+  }
+
+  func debugApproachNamedNPC(_ npcID:String,fixture:AtlantisNamedEncounterFixture?=nil) async -> Bool {
+    guard let definition=AtlantisNamedNPCDefinition.all.first(where:{$0.id==npcID}) else{return false}
+    livingDirector.namedEncounters.isEnabled=true
+    if let fixture {livingDirector.namedEncounters.fixture=fixture}
+    if loader.states[definition.homeDistrict] != .loaded {await loader.load(definition.homeDistrict)?.value}
+    livingDirector.reconcile(residents:streaming.residents,current:streaming.current,phase:phase,position:definition.position,immediate:true)
+    playerRoot.position=definition.position+[0,0,definition.interactionRadius-1]
+    let offset=definition.position-playerRoot.position;heading=atan2(-offset.x,-offset.z)
+    bodyHeadingRoot.orientation=simd_quatf(angle:heading,axis:[0,1,0]);refreshInteractionCandidate()
+    return activeNamedNPCID==npcID
   }
 
   func debugApproachInteraction(_ id: String) async -> Bool {

@@ -1044,7 +1044,7 @@ struct FounderFundingBoardPhysicalView: View {
         }
 
       VStack(spacing: 7) {
-        Text("FUNDING VISION BOARD")
+        Text("FOUNDER STRATEGY BOARD")
           .font(.system(size: 11, weight: .black, design: .rounded))
           .tracking(1.2)
           .foregroundStyle(.white.opacity(0.90))
@@ -1053,15 +1053,10 @@ struct FounderFundingBoardPhysicalView: View {
           .background(Color(red: 0.08, green: 0.16, blue: 0.18), in: .rect(cornerRadius: 3))
 
         LazyVGrid(columns: columns, spacing: 7) {
-          ForEach(Array(opportunities.prefix(4))) { presentation in
-            physicalCard(presentation)
-          }
-          if opportunities.isEmpty {
-            physicalPlaceholder("GRANTS", tone: SoloTheme.mint)
-            physicalPlaceholder("RAISE", tone: SoloTheme.cyan)
-            physicalPlaceholder("MILESTONES", tone: Color(red: 0.72, green: 0.35, blue: 0.55))
-            physicalPlaceholder("DEADLINES", tone: .white)
-          }
+          physicalPlaceholder("PRODUCT LAUNCH", tone: SoloTheme.mint)
+          physicalPlaceholder("MARKET · PRODUCT", tone: SoloTheme.cyan)
+          physicalPlaceholder("GROWTH · EVIDENCE", tone: Color(red: 0.72, green: 0.35, blue: 0.55))
+          physicalPlaceholder(opportunities.contains { $0.status == .eligible || $0.canResolve } ? "FUNDING READY" : "CAPITAL / RISK", tone: .white)
         }
       }
       .frame(width: 226)
@@ -1136,6 +1131,619 @@ struct FounderFundingBoardPhysicalView: View {
     case .funded: Color(red: 0.72, green: 0.35, blue: 0.55)
     case .declined: SoloTheme.coral
     case .expired: SoloTheme.coral
+    }
+  }
+}
+
+private enum FounderStrategyBoardMode: String, CaseIterable, Identifiable {
+  case overview = "Overview"
+  case preparation = "Preparation"
+  case risks = "Risks"
+  case commit = "Commit"
+  var id: String { rawValue }
+}
+
+struct FounderStrategyBoardViewer: View {
+  var store: GameStore
+  var presentation: PresentationCoordinator
+
+  @Environment(\.dismiss) private var dismiss
+  @Environment(\.colorSchemeContrast) private var contrast
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @State private var selectedInitiativeID = "product-launch"
+  @State private var mode = FounderStrategyBoardMode.overview
+  @State private var canonicalRoute: FounderComputerWorkspaceTarget?
+  @State private var showsFunding = false
+  @State private var commitGate = FounderStrategyCommitGate()
+  @State private var feedback: String?
+  #if DEBUG
+  @State private var fixture: FounderStrategyBoardFixture?
+  @State private var launchFixtureOperation: ProductLaunchOperation?
+  #endif
+
+  private var definition: FounderStrategicInitiativeDefinition {
+    FounderStrategicInitiativeDefinition.all.first { $0.id == selectedInitiativeID }
+      ?? FounderStrategicInitiativeDefinition.all[0]
+  }
+
+  private var snapshot: FounderStrategyBoardSnapshot {
+    #if DEBUG
+    if let fixture { return fixture.snapshot }
+    #endif
+    return .read(store)
+  }
+
+  private var projection: FounderInitiativeProjection {
+    FounderStrategyBoardPolicy.project(definition, snapshot: snapshot)
+  }
+
+  private var strategyReduceMotion: Bool {
+    #if DEBUG
+    reduceMotion || ProcessInfo.processInfo.arguments.contains("--strategy-board-reduce-motion")
+    #else
+    reduceMotion
+    #endif
+  }
+
+  var body: some View {
+    NavigationStack {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 16) {
+          if let operation = activeLaunchOperation {
+            ProductLaunchOperationSurface(
+              operation: operation,
+              reduceMotion: strategyReduceMotion,
+              advance: advanceLaunch,
+              selectRelease: selectRelease,
+              selectPublic: selectPublic,
+              execute: executeLaunch,
+              resolve: resolveLaunch,
+              close: closeLaunch
+            )
+            #if DEBUG
+            diagnostics
+            #endif
+          } else {
+            boardHeader
+            initiativePicker
+            modePicker
+            if let feedback {
+              Text(feedback)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(SoloTheme.cyan)
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(SoloTheme.cyan.opacity(0.09), in: .rect(cornerRadius: 12))
+                .accessibilityIdentifier("strategy-board-feedback")
+            }
+            modeContent
+            #if DEBUG
+            diagnostics
+            if ProcessInfo.processInfo.arguments.contains("--strategy-board-fixtures") { fixtureControls }
+            #endif
+          }
+        }
+        .padding(18)
+      }
+      .background(Color(red: 0.055, green: 0.060, blue: 0.065))
+      .navigationTitle("Founder Strategy Board")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .topBarTrailing) {
+          Button("Close", systemImage: "xmark") { activeLaunchOperation == nil ? dismiss() : closeLaunch() }
+            .accessibilityIdentifier("close-strategy-board-viewer")
+        }
+      }
+    }
+    .fullScreenCover(item: $canonicalRoute) { target in
+      FounderStrategyCanonicalWorkspace(store: store, presentation: presentation, target: target)
+    }
+    .sheet(isPresented: $showsFunding) { FounderFundingBoardViewer(store: store) }
+    .animation(strategyReduceMotion ? nil : .smooth(duration: 0.22), value: mode)
+  }
+
+  private var activeLaunchOperation: ProductLaunchOperation? {
+    #if DEBUG
+    launchFixtureOperation ?? store.productLaunchOperation
+    #else
+    store.productLaunchOperation
+    #endif
+  }
+
+  private var boardHeader: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      Text("PLAN → PREPARE → EXECUTE → CONSEQUENCE")
+        .font(.caption2.weight(.black)).tracking(1).foregroundStyle(SoloTheme.mint)
+        .accessibilityAddTraits(.isHeader)
+      Text(definition.title).font(.title2.weight(.black)).accessibilityAddTraits(.isHeader)
+      Text(definition.objective).font(.subheadline).foregroundStyle(.secondary)
+      HStack {
+        Label("Sprint \(snapshot.sprint)", systemImage: "calendar")
+        Spacer()
+        Label("\(snapshot.attentionRemaining) Attention", systemImage: "scope")
+      }.font(.caption.weight(.semibold))
+    }
+    .padding(15)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(Color(red: 0.31, green: 0.19, blue: 0.105), in: .rect(cornerRadius: 14))
+    .overlay { RoundedRectangle(cornerRadius: 14).stroke(contrast == .increased ? .white : .white.opacity(0.16), lineWidth: contrast == .increased ? 2 : 1) }
+    .accessibilityElement(children: .combine)
+    .accessibilityIdentifier("strategy-board-header")
+  }
+
+  private var initiativePicker: some View {
+    VStack(alignment: .leading, spacing: 7) {
+      Text("INITIATIVE").font(.caption.weight(.black)).tracking(1).foregroundStyle(.secondary).accessibilityAddTraits(.isHeader)
+      Picker("Initiative", selection: $selectedInitiativeID) {
+        ForEach(FounderStrategicInitiativeDefinition.all) { Text($0.title).tag($0.id) }
+      }
+      .pickerStyle(.menu)
+      .accessibilityIdentifier("strategy-board-initiative-picker")
+    }
+    .onChange(of: selectedInitiativeID) { _, _ in mode = .overview; feedback = nil }
+  }
+
+  private var modePicker: some View {
+    Picker("Board section", selection: $mode) {
+      ForEach(FounderStrategyBoardMode.allCases) { Text($0.rawValue).tag($0) }
+    }
+    .pickerStyle(.segmented)
+    .accessibilityIdentifier("strategy-board-mode")
+  }
+
+  @ViewBuilder private var modeContent: some View {
+    if definition.category != .productLaunch {
+      projectionOnlyContent
+    } else {
+      switch mode {
+      case .overview: overviewContent
+      case .preparation: preparationContent
+      case .risks: risksContent
+      case .commit: commitContent
+      }
+    }
+  }
+
+  private var overviewContent: some View {
+    VStack(alignment: .leading, spacing: 13) {
+      readinessCard
+      Text("Product Launch coordinates the current sprint. Aurora, Stacks, and Brio still perform their work through Company Command; Founder review and the Evidence Ledger remain canonical.")
+        .font(.subheadline).foregroundStyle(.secondary)
+      ForEach(FounderStrategyTrack.allCases.filter { $0 != .capital }) { track in
+        let items = projection.preparation.filter { $0.definition.track == track }
+        if !items.isEmpty {
+          HStack {
+            Text(track.title.uppercased()).font(.caption.weight(.black)).tracking(1)
+            Spacer()
+            Text(items.allSatisfy { $0.status == .complete } ? "✓ Complete" : "○ Open").font(.caption.weight(.semibold))
+          }
+          .padding(12).background(.white.opacity(0.045), in: .rect(cornerRadius: 10))
+        }
+      }
+      Text(projection.capitalSummary).font(.caption).foregroundStyle(.secondary)
+    }
+  }
+
+  private var preparationContent: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text("PREPARATION").font(.caption.weight(.black)).tracking(1).foregroundStyle(SoloTheme.cyan).accessibilityAddTraits(.isHeader)
+      ForEach(projection.preparation) { item in preparationCard(item) }
+    }
+  }
+
+  private var risksContent: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text("KNOWN RISKS").font(.caption.weight(.black)).tracking(1).foregroundStyle(SoloTheme.amber).accessibilityAddTraits(.isHeader)
+      if projection.risks.isEmpty { Label("No known launch risks in the current projection", systemImage: "checkmark.shield.fill").foregroundStyle(SoloTheme.mint) }
+      ForEach(Array(projection.risks.enumerated()), id: \.offset) { _, risk in
+        Label(risk, systemImage: "exclamationmark.triangle.fill").font(.subheadline).foregroundStyle(SoloTheme.amber)
+      }
+      if !snapshot.publicRivals.isEmpty {
+        Text("Competitive context uses published rival claims only.").font(.caption).foregroundStyle(.secondary)
+      }
+    }
+    .padding(15).frame(maxWidth: .infinity, alignment: .leading).background(.white.opacity(0.045), in: .rect(cornerRadius: 14))
+  }
+
+  private var commitContent: some View {
+    VStack(alignment: .leading, spacing: 14) {
+      readinessCard
+      if projection.blockers.isEmpty {
+        Label("Canonical sprint readiness confirmed", systemImage: "checkmark.seal.fill").foregroundStyle(SoloTheme.mint)
+      } else {
+        ForEach(Array(projection.blockers.enumerated()), id: \.offset) { _, blocker in
+          Label(blocker, systemImage: "exclamationmark.triangle.fill").font(.subheadline).foregroundStyle(SoloTheme.amber)
+        }
+      }
+      Button("Commit Initiative", systemImage: "flag.checkered") { commit() }
+        .buttonStyle(.borderedProminent).tint(SoloTheme.mint)
+        .frame(minHeight: 44)
+        .disabled(!projection.commitEligible || commitGate.committedSprint != nil)
+        .accessibilityValue(projection.commitEligible ? "Available" : "Blocked")
+        .accessibilityHint("Hands the current prepared work to the existing canonical Commit Sprint action.")
+        .accessibilityIdentifier("strategy-board-commit")
+      Text("Execution boundary: Commit Sprint owns outcomes. The Strategy Board awards no stats and never commands Atlantis presentation.")
+        .font(.caption).foregroundStyle(.secondary)
+    }
+  }
+
+  private var readinessCard: some View {
+    HStack(alignment: .top, spacing: 12) {
+      Image(systemName: projection.commitEligible ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
+        .font(.title2).foregroundStyle(projection.commitEligible ? SoloTheme.mint : SoloTheme.amber)
+      VStack(alignment: .leading, spacing: 3) {
+        Text("READINESS").font(.caption2.weight(.black)).tracking(1).foregroundStyle(.secondary)
+        Text(projection.readiness.title).font(.headline.weight(.black))
+        Text("\(projection.incompleteItemCount) incomplete · \(projection.blockers.count) blockers")
+          .font(.caption).foregroundStyle(.secondary)
+      }
+    }
+    .padding(14).frame(maxWidth: .infinity, alignment: .leading).background((projection.commitEligible ? SoloTheme.mint : SoloTheme.amber).opacity(0.10), in: .rect(cornerRadius: 13))
+    .accessibilityElement(children: .combine)
+    .accessibilityLabel("Product Launch readiness \(projection.readiness.title). \(projection.incompleteItemCount) incomplete items. \(projection.blockers.count) blockers.")
+    .accessibilityIdentifier("strategy-board-readiness")
+  }
+
+  private func preparationCard(_ item: FounderInitiativePreparationProjection) -> some View {
+    VStack(alignment: .leading, spacing: 9) {
+      HStack(alignment: .top) {
+        Image(systemName: item.status.symbol).foregroundStyle(item.status == .complete ? SoloTheme.mint : item.status == .unavailable ? .secondary : SoloTheme.amber)
+        VStack(alignment: .leading, spacing: 3) {
+          Text(item.definition.title).font(.headline.weight(.bold))
+          Text("\(item.definition.track.title) · \(item.definition.owner.rawValue) · \(item.status.label)").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+        }
+        Spacer()
+      }
+      Text(item.detail).font(.subheadline).foregroundStyle(.secondary)
+      Button(item.status == .complete ? "Review canonical source" : "Open canonical workflow") { route(item.definition.route) }
+        .buttonStyle(.bordered).frame(minHeight: 44)
+        .accessibilityIdentifier("strategy-board-route-\(item.id)")
+    }
+    .padding(14).background(.white.opacity(0.045), in: .rect(cornerRadius: 13))
+  }
+
+  private var projectionOnlyContent: some View {
+    VStack(alignment: .leading, spacing: 13) {
+      Label("Planning projection", systemImage: "map.fill").font(.headline).foregroundStyle(SoloTheme.cyan)
+      Text(projection.blockers.first ?? "Canonical execution is unavailable.").font(.subheadline).foregroundStyle(.secondary)
+      if definition.category == .fundraising {
+        Button("Open Funding Opportunities", systemImage: "banknote.fill") { showsFunding = true }
+          .buttonStyle(.borderedProminent).tint(SoloTheme.mint).accessibilityIdentifier("strategy-board-open-funding")
+      } else {
+        Button("Open Agent Operations", systemImage: "cpu") { canonicalRoute = .operations }
+          .buttonStyle(.borderedProminent).tint(SoloTheme.cyan).accessibilityIdentifier("strategy-board-open-operations")
+      }
+      ForEach(Array(projection.risks.enumerated()), id: \.offset) { _, risk in Label(risk, systemImage: "antenna.radiowaves.left.and.right") }
+    }
+    .padding(15).frame(maxWidth: .infinity, alignment: .leading).background(.white.opacity(0.045), in: .rect(cornerRadius: 14))
+  }
+
+  private func route(_ route: FounderStrategyCanonicalRoute) {
+    switch route {
+    case .agentOperations: canonicalRoute = .operations
+    case .evidenceLedger: canonicalRoute = .evidence
+    case .fundingOpportunities: showsFunding = true
+    case .commitSprint: commit()
+    }
+  }
+
+  private func commit() {
+    guard commitGate.claim(eligible: projection.commitEligible, sprint: snapshot.sprint) else { return }
+    #if DEBUG
+    if fixture != nil {
+      launchFixtureOperation = ProductLaunchFixture.strongPreparation.operation
+      return
+    }
+    #endif
+    if !store.beginProductLaunch() { feedback = store.alertMessage }
+  }
+
+  private func advanceLaunch() {
+    #if DEBUG
+    if launchFixtureOperation != nil { launchFixtureOperation?.state = .founderDecision; return }
+    #endif
+    _ = store.advanceProductLaunchToDecisions()
+  }
+
+  private func selectRelease(_ posture: ProductLaunchReleasePosture) {
+    #if DEBUG
+    if launchFixtureOperation != nil { launchFixtureOperation?.releasePosture = posture; launchFixtureOperation?.state = .founderDecision; return }
+    #endif
+    _ = store.selectProductLaunchReleasePosture(posture)
+  }
+
+  private func selectPublic(_ posture: ProductLaunchPublicPosture) {
+    #if DEBUG
+    if launchFixtureOperation != nil { launchFixtureOperation?.publicPosture = posture; launchFixtureOperation?.state = .founderDecision; return }
+    #endif
+    _ = store.selectProductLaunchPublicPosture(posture)
+  }
+
+  private func executeLaunch() {
+    #if DEBUG
+    if launchFixtureOperation != nil {
+      launchFixtureOperation?.executionInvocationCount += 1
+      if launchFixtureOperation?.decisionsComplete == true { launchFixtureOperation?.state = .executing }
+      return
+    }
+    #endif
+    _ = store.executeProductLaunch()
+  }
+
+  private func resolveLaunch() {
+    #if DEBUG
+    if var operation = launchFixtureOperation {
+      operation.resolutionInvocationCount += 1
+      if operation.state == .resolved {
+        operation.duplicateResolutionPreventionCount += 1
+      } else if operation.state == .executing, let result = ProductLaunchResolutionPolicy.resolve(operation) {
+        operation.state = .resolving
+        operation.result = result
+        operation.canonicalEffectApplicationCount += 1
+        operation.state = .resolved
+      }
+      launchFixtureOperation = operation
+      return
+    }
+    #endif
+    _ = store.resolveProductLaunch()
+  }
+
+  private func closeLaunch() {
+    #if DEBUG
+    if launchFixtureOperation != nil { launchFixtureOperation = nil; return }
+    #endif
+    _ = store.finishProductLaunchPresentation()
+    dismiss()
+  }
+
+  #if DEBUG
+  private var diagnostics: some View {
+    Text(verbatim: "Initiative \(definition.id) · category \(definition.category.rawValue) · readiness \(projection.readiness.rawValue) · incomplete \(projection.incompleteItemCount) · blockers \(projection.blockers.count) · evidence \(projection.evidenceBlockerCount) · routes \(projection.canonicalRouteCount) · eligible \(projection.commitEligible) · commit invocations \(commitGate.invocationCount) · canonical executions \(commitGate.canonicalExecutionCount) · duplicates prevented \(commitGate.duplicatePreventionCount) · hidden rejected \(snapshot.hiddenStateRejectionCount)")
+      .font(.caption2.monospaced()).foregroundStyle(.secondary)
+      .accessibilityIdentifier("strategy-board-diagnostics")
+  }
+
+  private var fixtureControls: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      Text("PRESENTATION FIXTURES").font(.caption2.weight(.black)).tracking(1)
+      LazyVGrid(columns: [GridItem(.adaptive(minimum: 126), alignment: .leading)], alignment: .leading) {
+        ForEach(FounderStrategyBoardFixture.allCases) { value in
+          Button(value.accessibilityID) { fixture = value; selectedInitiativeID = "product-launch"; commitGate = .init(); feedback = nil }
+            .buttonStyle(.bordered).accessibilityIdentifier("strategy-board-fixture-\(value.accessibilityID)")
+        }
+        Button("Commit twice") {
+          _ = commitGate.claim(eligible: projection.commitEligible, sprint: snapshot.sprint)
+          _ = commitGate.claim(eligible: projection.commitEligible, sprint: snapshot.sprint)
+        }
+          .buttonStyle(.bordered).accessibilityIdentifier("strategy-board-debug-double-commit")
+        ForEach(ProductLaunchFixture.allCases) { value in
+          Button("Launch \(value.rawValue)") { launchFixtureOperation = value.operation }
+            .buttonStyle(.bordered).accessibilityIdentifier("launch-fixture-\(value.rawValue)")
+        }
+      }
+    }
+  }
+  #endif
+}
+
+private struct ProductLaunchOperationSurface: View {
+  var operation: ProductLaunchOperation
+  var reduceMotion: Bool
+  var advance: () -> Void
+  var selectRelease: (ProductLaunchReleasePosture) -> Void
+  var selectPublic: (ProductLaunchPublicPosture) -> Void
+  var execute: () -> Void
+  var resolve: () -> Void
+  var close: () -> Void
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 16) {
+      VStack(alignment: .leading, spacing: 6) {
+        Text("PRODUCT LAUNCH").font(.caption.weight(.black)).tracking(1).foregroundStyle(SoloTheme.mint)
+        Text(operation.preparation.projectName).font(.title2.weight(.black)).accessibilityAddTraits(.isHeader)
+        Text(stageTitle).font(.headline).foregroundStyle(.secondary).accessibilityIdentifier("product-launch-stage")
+      }
+      .padding(15).frame(maxWidth: .infinity, alignment: .leading)
+      .background(Color(red: 0.31, green: 0.19, blue: 0.105), in: .rect(cornerRadius: 14))
+
+      switch operation.state {
+      case .notStarted, .committed, .launchCheck: launchCheck
+      case .founderDecision: decisions
+      case .executing, .resolving: executing
+      case .resolved: outcome
+      }
+
+      #if DEBUG
+      Text(verbatim: diagnostics)
+        .font(.caption2.monospaced()).foregroundStyle(.secondary)
+        .accessibilityIdentifier("product-launch-diagnostics")
+      #endif
+    }
+    .animation(reduceMotion ? nil : .smooth(duration: 0.22), value: operation.state)
+  }
+
+  private var stageTitle: String {
+    switch operation.state {
+    case .notStarted, .committed, .launchCheck: "Launch Check"
+    case .founderDecision: "Founder Decisions"
+    case .executing, .resolving: "Launch In Progress"
+    case .resolved: "Launch Outcome"
+    }
+  }
+
+  private var launchCheck: some View {
+    VStack(alignment: .leading, spacing: 14) {
+      sectionTitle("LAUNCH CHECK", symbol: "checklist")
+      launchRow("MARKET", owner: "Aurora", preparation: operation.preparation.aurora)
+      launchRow("PRODUCT", owner: "Stacks", preparation: operation.preparation.stacks)
+      launchRow("GROWTH", owner: "Brio", preparation: operation.preparation.brio)
+      HStack {
+        Label("Evidence \(operation.preparation.reviewedEvidenceCount)/\(operation.preparation.requiredEvidenceCount) reviewed", systemImage: "checkmark.shield.fill")
+        Spacer()
+        Text("Trust \(operation.preparation.trust) · Coverage \(operation.preparation.coverage)")
+      }.font(.caption.weight(.semibold))
+      if operation.preparation.knownRisks.isEmpty {
+        Label("No known launch blockers", systemImage: "checkmark.circle.fill").foregroundStyle(SoloTheme.mint)
+      } else {
+        ForEach(operation.preparation.knownRisks, id: \.self) { Label($0, systemImage: "exclamationmark.triangle.fill").foregroundStyle(SoloTheme.amber) }
+      }
+      Text("Launch cost unavailable · no dedicated canonical cost")
+        .font(.caption).foregroundStyle(.secondary)
+      Button("Continue to Founder Decisions", systemImage: "arrow.right.circle.fill", action: advance)
+        .buttonStyle(.borderedProminent).tint(SoloTheme.mint).frame(minHeight: 44)
+        .accessibilityIdentifier("product-launch-continue")
+      #if DEBUG
+      Button("Return to World", systemImage: "building.2.fill", action: close)
+        .buttonStyle(.bordered).frame(minHeight: 44)
+        .accessibilityIdentifier("product-launch-return-check")
+      #endif
+    }
+  }
+
+  private var decisions: some View {
+    VStack(alignment: .leading, spacing: 18) {
+      decisionGroup("RELEASE POSTURE") {
+        ForEach(ProductLaunchReleasePosture.allCases) { posture in
+          choiceButton(posture.title, detail: posture.detail, selected: operation.releasePosture == posture) { selectRelease(posture) }
+            .accessibilityIdentifier("product-launch-release-\(posture.rawValue)")
+        }
+      }
+      decisionGroup("PUBLIC POSTURE") {
+        ForEach(ProductLaunchPublicPosture.allCases) { posture in
+          choiceButton(posture.title, detail: posture.detail, selected: operation.publicPosture == posture) { selectPublic(posture) }
+            .accessibilityIdentifier("product-launch-public-\(posture.rawValue)")
+        }
+      }
+      Button("Execute Product Launch", systemImage: "paperplane.fill", action: execute)
+        .buttonStyle(.borderedProminent).tint(SoloTheme.mint).frame(minHeight: 44)
+        .disabled(!operation.decisionsComplete)
+        .accessibilityHint(operation.decisionsComplete ? "Begins the committed launch." : "Choose both launch decisions first.")
+        .accessibilityIdentifier("product-launch-execute")
+    }
+  }
+
+  private var executing: some View {
+    VStack(alignment: .leading, spacing: 14) {
+      sectionTitle("LAUNCH IN PROGRESS", symbol: "dot.radiowaves.left.and.right")
+      Label("Aurora · Market monitoring", systemImage: "sparkle.magnifyingglass")
+      Label("Stacks · Release stability", systemImage: "cpu.fill")
+      Label("Brio · Campaign live", systemImage: "megaphone.fill")
+      Label("Signal TV · Monitoring public response", systemImage: "tv.fill")
+      Text("The launch resolves from the committed snapshot and saved seed. No live network or frame-rate simulation is running.")
+        .font(.caption).foregroundStyle(.secondary)
+      Button("Reveal Launch Outcome", systemImage: "chart.bar.fill", action: resolve)
+        .buttonStyle(.borderedProminent).tint(SoloTheme.cyan).frame(minHeight: 44)
+        .accessibilityIdentifier("product-launch-resolve")
+    }
+  }
+
+  @ViewBuilder private var outcome: some View {
+    if let result = operation.result {
+      VStack(alignment: .leading, spacing: 14) {
+        sectionTitle("\(result.overall.title.uppercased()) LAUNCH", symbol: "flag.checkered")
+        dimension("PRODUCT", rating: result.technicalRating)
+        dimension("MARKET", rating: result.marketRating)
+        dimension("PUBLIC RESPONSE", rating: result.publicRating)
+        Text("Momentum \(signed(result.effects.momentum)) · Trust \(signed(result.effects.trust)) · Coverage \(signed(result.coverageDelta))")
+          .font(.headline.weight(.bold)).accessibilityIdentifier("product-launch-consequences")
+        Text("WHAT HAPPENED").font(.caption.weight(.black)).tracking(1).foregroundStyle(.secondary)
+        ForEach(result.explanation, id: \.self) { Text("• \($0)").font(.subheadline) }
+        Button("Return to World", systemImage: "building.2.fill", action: close)
+          .buttonStyle(.borderedProminent).tint(SoloTheme.mint).frame(minHeight: 44)
+          .accessibilityIdentifier("product-launch-return")
+        #if DEBUG
+        Button("Resolve Again", action: resolve).buttonStyle(.bordered)
+          .accessibilityIdentifier("product-launch-debug-resolve-again")
+        #endif
+      }
+      .accessibilityElement(children: .contain)
+      .accessibilityIdentifier("product-launch-outcome")
+    }
+  }
+
+  private func launchRow(_ label: String, owner: String, preparation: ProductLaunchAgentPreparation) -> some View {
+    HStack {
+      VStack(alignment: .leading) {
+        Text(label).font(.caption.weight(.black)).tracking(1)
+        Text("\(owner): Ready").font(.headline)
+      }
+      Spacer()
+      Text(preparation.founderVerified ? "Verified" : "Reported")
+        .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+    }
+    .padding(12).background(.white.opacity(0.045), in: .rect(cornerRadius: 11))
+    .accessibilityElement(children: .combine)
+  }
+
+  private func dimension(_ label: String, rating: ProductLaunchDimensionRating) -> some View {
+    HStack { Text(label).font(.caption.weight(.black)).tracking(1); Spacer(); Text(rating.title).font(.headline.weight(.bold)) }
+      .padding(12).background(.white.opacity(0.045), in: .rect(cornerRadius: 11))
+      .accessibilityElement(children: .combine)
+      .accessibilityLabel("\(label) \(rating.title)")
+  }
+
+  private func sectionTitle(_ title: String, symbol: String) -> some View {
+    Label(title, systemImage: symbol).font(.headline.weight(.black)).foregroundStyle(SoloTheme.cyan).accessibilityAddTraits(.isHeader)
+  }
+
+  private func decisionGroup<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+    VStack(alignment: .leading, spacing: 10) { Text(title).font(.caption.weight(.black)).tracking(1).accessibilityAddTraits(.isHeader); content() }
+      .accessibilityElement(children: .contain)
+  }
+
+  private func choiceButton(_ title: String, detail: String, selected: Bool, action: @escaping () -> Void) -> some View {
+    Button(action: action) {
+      HStack(alignment: .top, spacing: 10) {
+        Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+        VStack(alignment: .leading, spacing: 3) { Text(title).font(.headline); Text(detail).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.leading) }
+        Spacer()
+      }.padding(10).frame(maxWidth: .infinity, alignment: .leading)
+    }
+    .buttonStyle(.plain).background((selected ? SoloTheme.mint : .white).opacity(selected ? 0.12 : 0.045), in: .rect(cornerRadius: 11))
+    .accessibilityValue(selected ? "Selected" : "Not selected")
+  }
+
+  private func signed(_ value: Int) -> String { value > 0 ? "+\(value)" : "\(value)" }
+
+  #if DEBUG
+  private var diagnostics: String {
+    let result = operation.result
+    return "operation \(operation.id) · state \(operation.state.rawValue) · snapshot true · release \(operation.releasePosture?.rawValue ?? "none") · public \(operation.publicPosture?.rawValue ?? "none") · seed \(operation.deterministicSeed) · technical \(result?.technicalScore ?? -1) · market \(result?.marketScore ?? -1) · public dimension \(result?.publicScore ?? -1) · overall \(result?.overall.rawValue ?? "pending") · resolution invocations \(operation.resolutionInvocationCount) · canonical effects \(operation.canonicalEffectApplicationCount) · duplicates prevented \(operation.duplicateResolutionPreventionCount) · recovery \(operation.state == .resolved ? "resolved" : "resumable")"
+  }
+  #endif
+}
+
+#if DEBUG
+/// Deterministic visual-acceptance entry point. The production Strategy Board
+/// renders over a disposable store and DEBUG fixtures never mutate that store.
+struct FounderStrategyBoardQAHost: View {
+  @State private var store = GameStore()
+  @State private var presentation = PresentationCoordinator()
+
+  var body: some View {
+    FounderStrategyBoardViewer(store: store, presentation: presentation)
+  }
+}
+#endif
+
+private struct FounderStrategyCanonicalWorkspace: View {
+  var store: GameStore
+  var presentation: PresentationCoordinator
+  var target: FounderComputerWorkspaceTarget
+  @Environment(\.dismiss) private var dismiss
+
+  var body: some View {
+    NavigationStack {
+      FounderComputerScreen(store: store, presentation: presentation, workspaceRequest: .init(target: target))
+        .navigationTitle("Canonical \(target.accessibilityTitle)")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+          ToolbarItem(placement: .topBarLeading) {
+            Button("Return to Strategy Board", systemImage: "chevron.backward") { dismiss() }
+              .accessibilityIdentifier("strategy-board-return")
+          }
+        }
     }
   }
 }

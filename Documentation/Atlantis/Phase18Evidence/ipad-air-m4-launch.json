@@ -1,0 +1,62 @@
+{
+  "info" : {
+    "arguments" : [
+      "devicectl",
+      "device",
+      "process",
+      "launch",
+      "--device",
+      "69995909-0B57-58BC-AA74-0752E2F4A56D",
+      "--terminate-existing",
+      "--json-output",
+      "Documentation/Atlantis/Phase18Evidence/ipad-air-m4-launch.json",
+      "com.talonsight.solounicornrun",
+      "--strategy-board-qa",
+      "--strategy-board-fixtures",
+      "--product-launch-fixtures"
+    ],
+    "commandType" : "devicectl.device.process.launch",
+    "environment" : {
+      "TERM" : "dumb"
+    },
+    "jsonVersion" : 3,
+    "outcome" : "success",
+    "version" : "518.33"
+  },
+  "result" : {
+    "deviceIdentifier" : "69995909-0B57-58BC-AA74-0752E2F4A56D",
+    "launchOptions" : {
+      "activatedWhenStarted" : true,
+      "arguments" : [
+        "--strategy-board-qa",
+        "--strategy-board-fixtures",
+        "--product-launch-fixtures"
+      ],
+      "environmentVariables" : {
+        "TERM" : "dumb"
+      },
+      "platformSpecificOptions" : {
+
+      },
+      "startStopped" : false,
+      "terminateExistingInstances" : true,
+      "user" : {
+        "active" : true
+      }
+    },
+    "process" : {
+      "auditToken" : [
+        4294967295,
+        501,
+        501,
+        501,
+        501,
+        1797,
+        0,
+        4505
+      ],
+      "executable" : "file:///private/var/containers/Bundle/Application/249E7E01-4933-415C-B0E5-A7C636CC9E29/Solo%20Unicorn%20Run.app/Solo%20Unicorn%20Run",
+      "processIdentifier" : 1797
+    }
+  }
+}

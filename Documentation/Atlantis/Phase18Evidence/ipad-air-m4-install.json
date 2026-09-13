@@ -1,0 +1,37 @@
+{
+  "info" : {
+    "arguments" : [
+      "devicectl",
+      "device",
+      "install",
+      "app",
+      "--device",
+      "69995909-0B57-58BC-AA74-0752E2F4A56D",
+      "/tmp/SoloPhase18IPadDevice/Build/Products/Debug-iphoneos/Solo Unicorn Run.app",
+      "--json-output",
+      "Documentation/Atlantis/Phase18Evidence/ipad-air-m4-install.json"
+    ],
+    "commandType" : "devicectl.device.install.app",
+    "environment" : {
+      "TERM" : "dumb"
+    },
+    "jsonVersion" : 3,
+    "outcome" : "success",
+    "version" : "518.33"
+  },
+  "result" : {
+    "deviceIdentifier" : "69995909-0B57-58BC-AA74-0752E2F4A56D",
+    "installedApplications" : [
+      {
+        "bundleID" : "com.talonsight.solounicornrun",
+        "databaseSequenceNumber" : 1720,
+        "databaseUUID" : "E4009B7A-81F1-4517-A708-C02DAAF919AF",
+        "installationURL" : "file:///private/var/containers/Bundle/Application/249E7E01-4933-415C-B0E5-A7C636CC9E29/Solo%20Unicorn%20Run.app/",
+        "launchServicesIdentifier" : "unknown",
+        "options" : {
+
+        }
+      }
+    ]
+  }
+}

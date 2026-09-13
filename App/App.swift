@@ -55,6 +55,10 @@ struct SoloUnicornRunApp: App {
         #if DEBUG
         if AtlantisRendererConfiguration.active {
           AtlantisRealityView()
+        } else if ProcessInfo.processInfo.arguments.contains("--agent-operations-qa") {
+          AgentOperationsQAHost()
+        } else if ProcessInfo.processInfo.arguments.contains("--strategy-board-qa") {
+          FounderStrategyBoardQAHost()
         } else if let campaignCalibrationQAPhase {
           CampaignCalibrationQAHost(phase: campaignCalibrationQAPhase)
         } else if let systemsReviewQAPhase {
