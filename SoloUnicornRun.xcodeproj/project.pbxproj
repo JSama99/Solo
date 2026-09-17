@@ -103,6 +103,7 @@
 		E30000000000000000000007 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000017 /* SettingsScreen.swift */; };
 		E30000000000000000000009 /* HowToPlayContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000019 /* HowToPlayContentTests.swift */; };
 		E30000000000000000000010 /* GameStoreTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000020 /* GameStoreTestSupport.swift */; };
+		E300000000000000000000B1 /* BlueprintFixtureDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E100000000000000000000B1 /* BlueprintFixtureDriver.swift */; };
 		E30000000000000000000011 /* GameplayMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000021 /* GameplayMotion.swift */; };
 		E30000000000000000000012 /* GameplayMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000000000000000000022 /* GameplayMotionTests.swift */; };
 		E32000000000000000000001 /* TechComComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = E31000000000000000000001 /* TechComComponents.swift */; };
@@ -290,6 +291,7 @@
 		E10000000000000000000017 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
 		E10000000000000000000019 /* HowToPlayContentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HowToPlayContentTests.swift; sourceTree = "<group>"; };
 		E10000000000000000000020 /* GameStoreTestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStoreTestSupport.swift; sourceTree = "<group>"; };
+		E100000000000000000000B1 /* BlueprintFixtureDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueprintFixtureDriver.swift; sourceTree = "<group>"; };
 		E10000000000000000000021 /* GameplayMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameplayMotion.swift; sourceTree = "<group>"; };
 		E10000000000000000000022 /* GameplayMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameplayMotionTests.swift; sourceTree = "<group>"; };
 		E31000000000000000000001 /* TechComComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComComponents.swift; sourceTree = "<group>"; };
@@ -446,6 +448,7 @@
 				E10000000000000000000019 /* HowToPlayContentTests.swift */,
 				E10000000000000000000022 /* GameplayMotionTests.swift */,
 				E10000000000000000000020 /* GameStoreTestSupport.swift */,
+				E100000000000000000000B1 /* BlueprintFixtureDriver.swift */,
 				F26000000000000000000002 /* RevenueCatImportBoundaryTests.swift */,
 				B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */,
 				F31000000000000000000013 /* VentureScreenPresentationTests.swift */,
@@ -781,6 +784,7 @@
 				E30000000000000000000009 /* HowToPlayContentTests.swift in Sources */,
 				E30000000000000000000012 /* GameplayMotionTests.swift in Sources */,
 				E30000000000000000000010 /* GameStoreTestSupport.swift in Sources */,
+				E300000000000000000000B1 /* BlueprintFixtureDriver.swift in Sources */,
 				F26000000000000000000001 /* RevenueCatImportBoundaryTests.swift in Sources */,
 				B28000000000000000000001 /* OutcomeBackdropMotionTests.swift in Sources */,
 				F31000000000000000000003 /* VentureScreenPresentationTests.swift in Sources */,
