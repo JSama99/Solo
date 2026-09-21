@@ -1,0 +1,10 @@
+import json,math,ast
+from pathlib import Path
+R=Path(__file__).resolve().parent;P=json.loads((R/'site_plan.json').read_text());M=json.loads((R/'../../Phase0/masterplan_manifest.json').read_text())
+tr=ast.parse((R/'plan.py').read_text());exec(compile(ast.Module(body=[n for n in tr.body if isinstance(n,ast.FunctionDef)],type_ignores=[]),'geometry','exec'))
+roads=M['roads']+P['new_roads'];sites=P['sites'];clearances=[]
+for a in sites:
+ poly=corners(*a['position'][:2],a['width']+2,a['depth']+2,a['rotation_degrees']);near=min((polyseg(poly,p,q)-r['width_m']/2,r['id']) for r in roads for p,q in zip(r['points'],r['points'][1:]));clearances.append({'building':a['id'],'road_clearance_m':near[0],'road':near[1]})
+neighbor=min(polydist(a['clearance_polygon'],b['clearance_polygon']) for i,a in enumerate(sites) for b in sites[i+1:]);progress=[a for a in sites if a['progression']];core=P['core'];dist=lambda a,b:math.dist(a,b)
+a={'checks':{'all_buildings_clear_roads_at_least_4m':all(a['road_clearance_m']>=4 for a in clearances),'all_buildings_separated_at_least_6m':neighbor>=6,'11_kit_typologies':len({a['typology'] for a in sites})==11,'three_30_to_50m_anchors':sum(30<=a['height']<=50 for a in sites)==3},'building_road_clearances':clearances,'minimum_building_gap_m':neighbor,'mean_footprint_dimensions_m':[sum(a[k] for a in sites)/len(sites) for k in ['width','depth']],'founder_garage_to_core_direct_m':dist([-875,-1030,8],core),'core_to_tech_core_center_direct_m':dist(core,[30,330,14]),'core_to_tech_core_southwest_boundary_direct_m':dist(core,[-295,25,14]),'core_to_spire_direct_m':dist(core,[50,420,14]),'core_to_flashpoint_direct_m':dist(core,[430,-240,14]),'progression_pair_distances_m':{a['progression']:{b['progression']:dist(a['position'],b['position']) for b in progress if a is not b} for a in progress},'route_length_garage_to_tech_approach_m':sum(dist(a,b) for a,b in zip(P['route'],P['route'][1:])),'district_area_m2':520*400}
+(R/'spatial_audit.json').write_text(json.dumps(a,indent=2));print(json.dumps(a,indent=2));assert all(a['checks'].values()),a['checks']

@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "2026-09-09T18:50:58.457979Z",
+    "display_name": "Text to 3D",
+    "id": "14c27c17-bdc2-41ac-a5cd-84d0b1fea08e",
+    "job_type": "tripo_3d",
+    "min_result_url": null,
+    "params": {
+      "auto_size": false,
+      "face_limit": 20000,
+      "folder_id": null,
+      "geometry_quality": "standard",
+      "negative_prompt": "floating geometry, huge antenna, neon clutter, logos, text, trees, surrounding buildings, wide ground plane, fantasy cantilevers",
+      "pbr": true,
+      "prompt": "The Spire: standalone premium technology skyscraper, slender tapered blue glass tower with silver vertical structural fins, subtle asymmetric split crown, restrained teal accents, believable architecture. Tower height 330 metres relative to compact 60 metre square two-level stone podium. Height to full base width ratio 5.5 to 1. Refined front entrance. Elegant contemporary supertall and memorable skyline silhouette. Only one building, no surrounding city.",
+      "seed": null,
+      "texture": true,
+      "texture_quality": "standard"
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_34Zg75AIkEw6PIkZBBxVr9v7DE7/hf_20260909_185058_14c27c17-bdc2-41ac-a5cd-84d0b1fea08e.glb",
+    "status": "completed"
+  }
+]

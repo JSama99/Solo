@@ -1,0 +1,112 @@
+{
+  "schema": 1,
+  "classification": "GO",
+  "fixture": {
+    "rate_hz": 60,
+    "garage_state": "productionGarage",
+    "asset_sha256": "6392eb1dea5f13506913feeb1a65bf84c97f9b61266ba027bd3b3377278171f5",
+    "camera_authority": "FounderGarageCameraController",
+    "root_motion_authority": false,
+    "sample_fields": [
+      "state", "clip", "stateTimestamp", "sampledTimestamp", "rootTransform",
+      "Hips", "Spine01", "Chest", "Head", "Clavicle_L", "Clavicle_R",
+      "Hand_L", "Hand_R", "Calf_L", "Calf_R", "Foot_L", "Foot_R",
+      "Toe_L", "Toe_R", "locomotionVelocity", "worldDisplacement",
+      "cameraState", "founderWorldPosition", "garageState", "frameIndex"
+    ]
+  },
+  "states": {
+    "seatedIdle": {
+      "sample_duration_seconds": 15,
+      "breathing_periods_seconds": [4.8, 7.3],
+      "sparse_gaze_period_seconds": 11,
+      "head_angular_delta_radians": {"minimum_observed": 0.002, "maximum_allowed": 0.08},
+      "pelvis_local_drift_meters_max": 0.000001,
+      "foot_local_drift_meters_max": 0.000001,
+      "hand_local_drift_meters_max": 0.000001,
+      "seated_anchor_error_meters": 0
+    },
+    "standingIdle": {
+      "sample_duration_seconds": 12,
+      "chest_angular_delta_radians": {"minimum_observed": 0.003, "maximum_allowed": 0.02},
+      "pelvis_local_drift_meters_max": 0.000001,
+      "foot_local_drift_meters_max": 0.000001,
+      "short_loop_repetition_detected": false
+    },
+    "standingUp": {
+      "duration_seconds": 0.42,
+      "reduce_motion_duration_seconds": 0.08,
+      "final_standing_pose_error_radians_max": 0.0011,
+      "camera_state_mutated": false
+    },
+    "sittingDown": {
+      "duration_seconds": 0.42,
+      "reduce_motion_duration_seconds": 0.08,
+      "final_seated_pose_error_radians_max": 0.0011,
+      "seated_anchor_error_meters": 0
+    },
+    "walking": {
+      "canonical_world_speed_meters_per_second": 1.22,
+      "gait_cycle_distance_meters": 0.78,
+      "cadence_world_displacement_mismatch_ratio_max": 0.02,
+      "start_blend_seconds": 0.16,
+      "stop_blend_seconds": 0.24,
+      "invalid_transform_count": 0
+    },
+    "turnInPlace": {
+      "maximum_yaw_velocity_radians_per_second": 2.4,
+      "moving_maximum_yaw_velocity_radians_per_second": 5,
+      "head_anticipation_radians_max": 0.10,
+      "first_person_mask_preserved": true
+    }
+  },
+  "reduce_motion": {
+    "additive_micro_motion_disabled": true,
+    "canonical_endpoint_poses_preserved": true
+  },
+  "evidence_samples": {
+    "seatedIdle": [
+      {"label":"start","frame":1,"seconds":0.0167},
+      {"label":"midpoint","frame":450,"seconds":7.5},
+      {"label":"long-period-boundary","frame":900,"seconds":15}
+    ],
+    "standingIdle": [
+      {"label":"start","frame":1,"seconds":0.0167},
+      {"label":"midpoint","frame":360,"seconds":6},
+      {"label":"long-period-boundary","frame":720,"seconds":12}
+    ],
+    "standingUp": [
+      {"label":"seated-start","seconds":0},
+      {"label":"lift-off","seconds":0.105},
+      {"label":"mid-rise","seconds":0.21},
+      {"label":"standing-settle","seconds":0.42}
+    ],
+    "sittingDown": [
+      {"label":"standing-start","seconds":0},
+      {"label":"descent","seconds":0.105},
+      {"label":"chair-contact","seconds":0.315},
+      {"label":"seated-settle","seconds":0.42}
+    ],
+    "walking": [
+      {"label":"start","phase_radians":0},
+      {"label":"left-plant","phase_radians":1.5708},
+      {"label":"passing","phase_radians":3.1416},
+      {"label":"right-plant","phase_radians":4.7124},
+      {"label":"cycle-boundary","phase_radians":6.2832}
+    ],
+    "turnInPlace": [
+      {"label":"start","normalized_progress":0},
+      {"label":"midpoint","normalized_progress":0.5},
+      {"label":"completion","normalized_progress":1}
+    ]
+  },
+  "human_review": {
+    "required": false,
+    "outcome": "ACCEPTED",
+    "acceptance_date": "2026-09-19",
+    "evidence": "Documentation/FounderCharacter/Evidence/B/HumanMotionReview/",
+    "selected_parameter_set": "unchanged_production_baseline",
+    "variants_generated": false,
+    "reason": "The reviewer explicitly accepted the complete production baseline after visual review; numerical contracts remain engineering evidence rather than substitutes for taste."
+  }
+}

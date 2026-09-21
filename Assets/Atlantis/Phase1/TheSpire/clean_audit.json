@@ -1,0 +1,188 @@
+{
+  "objects": [
+    {
+      "name": "TheSpire_GeneratedShaft",
+      "triangles": 636,
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 2
+    },
+    {
+      "name": "TheSpire_PodiumLower",
+      "triangles": 12,
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 1
+    },
+    {
+      "name": "TheSpire_PodiumUpper",
+      "triangles": 12,
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 1
+    },
+    {
+      "name": "TheSpire_Entrance",
+      "triangles": 12,
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 1
+    },
+    {
+      "name": "TheSpire_EntranceCanopy",
+      "triangles": 12,
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 1
+    },
+    {
+      "name": "TheSpire_VerticalFin_0",
+      "triangles": 44,
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 1
+    },
+    {
+      "name": "TheSpire_VerticalFin_1",
+      "triangles": 44,
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 1
+    },
+    {
+      "name": "TheSpire_Accent_1",
+      "triangles": 44,
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 1
+    },
+    {
+      "name": "TheSpire_VerticalFin_2",
+      "triangles": 44,
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 1
+    },
+    {
+      "name": "TheSpire_Accent_2",
+      "triangles": 44,
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 1
+    },
+    {
+      "name": "TheSpire_VerticalFin_3",
+      "triangles": 44,
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 1
+    },
+    {
+      "name": "TheSpire_CrownAccent_0",
+      "triangles": 12,
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 1
+    },
+    {
+      "name": "TheSpire_CrownAccent_1",
+      "triangles": 12,
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "materials": 1
+    }
+  ],
+  "triangles": 972,
+  "bounds": [
+    [
+      16.0,
+      386.0,
+      14.0
+    ],
+    [
+      84.0,
+      453.0,
+      294.0
+    ]
+  ],
+  "dimensions": [
+    68.0,
+    67.0,
+    280.0
+  ],
+  "source_uniform_scale": 300,
+  "removed_source_below_z": -0.4,
+  "world_rotation": [
+    0,
+    0,
+    0
+  ],
+  "baseline_transform_or_geometry_changes": [],
+  "material_count": 4,
+  "texture_count": 0
+}

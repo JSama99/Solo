@@ -1,0 +1,73 @@
+{
+  "pass": "B.2 Round 1 — Support-Leg Loading & Kinetic Chain",
+  "status": "round_1_accepted_variant_b",
+  "production_founder_sha256": "6392eb1dea5f13506913feeb1a65bf84c97f9b61266ba027bd3b3377278171f5",
+  "frozen_round_one_phase_variant": "c",
+  "frozen_round_two_weight_transfer_variant": "baseline",
+  "production_kinetic_chain_default": "b",
+  "human_selection": {
+    "variant": "b",
+    "label": "Variant B",
+    "selected_on": "2026-09-20"
+  },
+  "b1_round2_disposition": "baseline_retained",
+  "gait_cycle_distance_meters": 0.78,
+  "variants": {
+    "baseline": {
+      "supportLoadingStrength": 0.0,
+      "torsoLagSeconds": 0.0,
+      "shoulderLagSeconds": 0.0,
+      "armFollowThroughSeconds": 0.0
+    },
+    "a": {
+      "supportLoadingStrength": 0.0035,
+      "torsoLagSeconds": 0.018,
+      "shoulderLagSeconds": 0.014,
+      "armFollowThroughSeconds": 0.024
+    },
+    "b": {
+      "supportLoadingStrength": 0.0055,
+      "torsoLagSeconds": 0.03,
+      "shoulderLagSeconds": 0.024,
+      "armFollowThroughSeconds": 0.04
+    },
+    "c": {
+      "supportLoadingStrength": 0.0075,
+      "torsoLagSeconds": 0.042,
+      "shoulderLagSeconds": 0.034,
+      "armFollowThroughSeconds": 0.056
+    }
+  },
+  "contracts": {
+    "focused": "29/29 passed",
+    "related_regression": "298/298 passed",
+    "golden_scenarios": ["GK01", "GK02", "GK03", "GK04", "GK05"],
+    "foot_slide_ratio_maximum": 0.02,
+    "root_motion_enabled": false,
+    "save_version": 20
+  },
+  "promotion_verification": {
+    "focused": "29/29 passed",
+    "related_regression": "298/298 passed",
+    "no_override_production_launch": "passed",
+    "focused_result_bundle": "/tmp/solo-pass-b2-promotion-derived/Logs/Test/Test-Solo Unicorn Run-2026.09.20_04-03-05--0400.xcresult",
+    "related_result_bundle": "/tmp/solo-pass-b2-promotion-derived/Logs/Test/Test-Solo Unicorn Run-2026.09.20_04-03-41--0400.xcresult",
+    "initial_failed_run": {
+      "result_bundle": "/tmp/solo-pass-b2-promotion-derived/Logs/Test/Test-Solo Unicorn Run-2026.09.20_04-00-48--0400.xcresult",
+      "result": "29 tests, 3 assertion failures",
+      "classification": "mis-targeted production-default edit",
+      "correction": "FounderWeightTransferVariant restored to baseline; FounderKineticChainVariant set to b; profile values unchanged"
+    }
+  },
+  "capture_sha256": {
+    "Baseline_Straight_iPhone17ProMax.mp4": "b909d63fc2b9799a868670f9ddff6adb28f7b1846f48c5e3a3d6904546dedbe0",
+    "Baseline_Straight_iPhone17ProMax.png": "020730d63822d95c49f0d76be093ff19c3465a9458b8a1308747a8dc84a5f024",
+    "Variant_A_Straight_iPhone17ProMax.mp4": "47941f0804a7e27483df0b7e91cc41cc7ee2c4cfbe86d8748e1c149a01588c61",
+    "Variant_A_Straight_iPhone17ProMax.png": "3ce3283d2427d01c38943ace90f7c116b4a171ecbb571a77598277e7c25cf47e",
+    "Variant_B_Straight_iPhone17ProMax.mp4": "df1d67117340f753e358081ec43b3a8dc3d139fdffb8cb67772a2445addb978e",
+    "Variant_B_Straight_iPhone17ProMax.png": "f360e246bab78680a7e0da09ee7534c25363ecab1e3546c7dcd2f215e4b53284",
+    "Variant_C_Straight_iPhone17ProMax.mp4": "3a6c165f09af82b641c7f43fc149229ff3ea1b7555761c8fc8a57efe877eb8ad",
+    "Variant_C_Straight_iPhone17ProMax.png": "b2e73240ffaaf178f5b547722285b9b9e01ac0b3ec32c0259f73df196ced2f73",
+    "Variant_C_Straight_iPadAir11M4.png": "2c739dd698c056c3e350792fbbf8bbbe779784d3a546ebc1f0fb9de81c7c4642"
+  }
+}

@@ -1,4 +1,3 @@
-#if DEBUG
 import RealityKit
 import Observation
 import Foundation
@@ -199,4 +198,3 @@ final class AtlantisDistrictLoader {
     for name in Array(supportEntities.keys) { unloadSupport(name) }
   }
 }
-#endif

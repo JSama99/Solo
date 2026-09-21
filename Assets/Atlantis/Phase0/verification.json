@@ -1,0 +1,16 @@
+{
+  "checks": {
+    "seven_district_collections": true,
+    "slot_transforms_match": true,
+    "single_collection_ownership": true,
+    "six_planning_cameras": true,
+    "three_bridges": true,
+    "all_road_routes_connected": true,
+    "spire_absolute_tallest": true,
+    "slot_massing_within_height_budget": true,
+    "founder_spire_sightline": true
+  },
+  "highest_object": "Landmark_TheSpire_Needle",
+  "highest_z": 362.0,
+  "unconnected_routes": []
+}

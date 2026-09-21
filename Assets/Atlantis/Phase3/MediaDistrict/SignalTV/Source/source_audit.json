@@ -1,0 +1,51 @@
+{
+  "filename": "SignalTV_Higgsfield_Raw.glb",
+  "bytes": 1602472,
+  "dimensions": [
+    1.0,
+    0.44162991642951965,
+    0.5812417268753052
+  ],
+  "bounds": [
+    [
+      -0.5,
+      -0.22081495821475983,
+      -0.2906208634376526
+    ],
+    [
+      0.5,
+      0.22081495821475983,
+      0.2906208634376526
+    ]
+  ],
+  "meshes": 1,
+  "triangles": 15686,
+  "materials": 1,
+  "textures": 3,
+  "objects": [
+    {
+      "name": "tripo_node_fbf024bb-3672-47ca-ae5b-37cc9845ea23",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parent": null,
+      "nonmanifold": 55,
+      "zero_area": 0,
+      "components": [
+        7552
+      ]
+    }
+  ]
+}

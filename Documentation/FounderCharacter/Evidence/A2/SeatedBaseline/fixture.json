@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "device_profile": "Blender deterministic authoring fixture",
+  "runtime": "5.2.1 LTS",
+  "resolution": [
+    800,
+    800
+  ],
+  "engine": "BLENDER_EEVEE",
+  "display_scale": 1,
+  "simulation_seed": null,
+  "garage_state": "authoring fixture; runtime Garage captures required separately",
+  "camera_state": "fixed transforms in render_acceptance_fixture.py",
+  "animation_state": "authored seated pose at t=0",
+  "lighting": "A2_Key/A2_Fill/A2_Rim fixed area lights",
+  "time_of_day": "fixed neutral world",
+  "door_state": "not present",
+  "reduce_motion": false,
+  "pose": "Intermediate/founder_validation_pose.json"
+}

@@ -1,0 +1,133 @@
+{
+  "status": "TECHNICAL_USD_AUDIT_PASS; appearance and RealityKit acceptance separate",
+  "sha256": "be19b55edf5663c837562a2fe737eb1352e17d395e8a9bb238526bb191f9638f",
+  "joints": [
+    "Root",
+    "Hips",
+    "Spine01",
+    "Spine02",
+    "Chest",
+    "Clavicle_L",
+    "UpperArm_L",
+    "LowerArm_L",
+    "Hand_L",
+    "Index01_L",
+    "Index02_L",
+    "Index03_L",
+    "Middle01_L",
+    "Middle02_L",
+    "Middle03_L",
+    "Pinky01_L",
+    "Pinky02_L",
+    "Pinky03_L",
+    "Ring01_L",
+    "Ring02_L",
+    "Ring03_L",
+    "Thumb01_L",
+    "Thumb02_L",
+    "Thumb03_L",
+    "Clavicle_R",
+    "UpperArm_R",
+    "LowerArm_R",
+    "Hand_R",
+    "Index01_R",
+    "Index02_R",
+    "Index03_R",
+    "Middle01_R",
+    "Middle02_R",
+    "Middle03_R",
+    "Pinky01_R",
+    "Pinky02_R",
+    "Pinky03_R",
+    "Ring01_R",
+    "Ring02_R",
+    "Ring03_R",
+    "Thumb01_R",
+    "Thumb02_R",
+    "Thumb03_R",
+    "Neck",
+    "Head",
+    "Eye_L",
+    "Eye_R",
+    "Thigh_L",
+    "Calf_L",
+    "Foot_L",
+    "Toe_L",
+    "Thigh_R",
+    "Calf_R",
+    "Foot_R",
+    "Toe_R"
+  ],
+  "world_height_m": 1.7920674923807383,
+  "world_bounds_min": [
+    -0.567679762840271,
+    0.0004999991506337509,
+    -0.11144545674324033
+  ],
+  "world_bounds_max": [
+    0.567679762840271,
+    1.792567491531372,
+    0.37006530165672336
+  ],
+  "conservative_skel_bounds_height_m": 1.9170435816049576,
+  "meshes": {
+    "/FounderRoot/Armature/ShoeMesh/Cube_001": {
+      "vertices": 608,
+      "triangles": 1200,
+      "max_influences": 1
+    },
+    "/FounderRoot/Armature/IrisMesh_R/Sphere_003": {
+      "vertices": 394,
+      "triangles": 750,
+      "max_influences": 1
+    },
+    "/FounderRoot/Armature/BodyMesh/BodyMesh_001": {
+      "vertices": 4771,
+      "triangles": 9232,
+      "max_influences": 4
+    },
+    "/FounderRoot/Armature/EyeMesh_L/Sphere": {
+      "vertices": 362,
+      "triangles": 720,
+      "max_influences": 1
+    },
+    "/FounderRoot/Armature/BottomMesh/BottomMesh": {
+      "vertices": 1354,
+      "triangles": 2624,
+      "max_influences": 4
+    },
+    "/FounderRoot/Armature/EyeMesh_R/Sphere_002": {
+      "vertices": 362,
+      "triangles": 720,
+      "max_influences": 1
+    },
+    "/FounderRoot/Armature/HairMesh/HairMesh": {
+      "vertices": 589,
+      "triangles": 1072,
+      "max_influences": 1
+    },
+    "/FounderRoot/Armature/HeadMesh/HeadMesh_001": {
+      "vertices": 4557,
+      "triangles": 9000,
+      "max_influences": 4
+    },
+    "/FounderRoot/Armature/TopMesh/TopMesh": {
+      "vertices": 1782,
+      "triangles": 3420,
+      "max_influences": 4
+    },
+    "/FounderRoot/Armature/IrisMesh_L/Sphere_001": {
+      "vertices": 394,
+      "triangles": 750,
+      "max_influences": 1
+    }
+  },
+  "total_triangles": 29488,
+  "materials": 7,
+  "facial_targets": 9,
+  "texture_files": [
+    "/Users/jermainenelson/Documents/Solo/Documentation/FounderCharacter/Intermediate/textures/FounderSkin_A1_1K.png"
+  ],
+  "texture_file_bytes": 881298,
+  "texture_rgba_base_level_estimate_bytes": 4194304
+}

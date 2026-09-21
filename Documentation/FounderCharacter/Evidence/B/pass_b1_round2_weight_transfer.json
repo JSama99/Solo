@@ -1,0 +1,51 @@
+{
+  "pass": "B.1 Round 2 — Lateral Weight Transfer & Inertia",
+  "status": "ready_for_human_selection",
+  "production_founder_sha256": "6392eb1dea5f13506913feeb1a65bf84c97f9b61266ba027bd3b3377278171f5",
+  "frozen_round_one_phase_variant": "c",
+  "production_weight_transfer_default": "baseline",
+  "gait_cycle_distance_meters": 0.78,
+  "variants": {
+    "baseline": {
+      "pelvisLateralAmplitude": 0.0,
+      "pelvisRollAmplitude": 0.0,
+      "torsoCounterbalanceFactor": 0.0,
+      "shoulderCompensationFactor": 0.0
+    },
+    "a": {
+      "pelvisLateralAmplitude": 0.01,
+      "pelvisRollAmplitude": 0.012,
+      "torsoCounterbalanceFactor": 0.45,
+      "shoulderCompensationFactor": 0.2
+    },
+    "b": {
+      "pelvisLateralAmplitude": 0.016,
+      "pelvisRollAmplitude": 0.018,
+      "torsoCounterbalanceFactor": 0.55,
+      "shoulderCompensationFactor": 0.26
+    },
+    "c": {
+      "pelvisLateralAmplitude": 0.022,
+      "pelvisRollAmplitude": 0.026,
+      "torsoCounterbalanceFactor": 0.65,
+      "shoulderCompensationFactor": 0.32
+    }
+  },
+  "contracts": {
+    "focused": "22/22 passed",
+    "related_regression": "291/291 passed",
+    "foot_slide_ratio_maximum": 0.02,
+    "root_motion_enabled": false,
+    "save_version": 20
+  },
+  "capture_sha256": {
+    "Baseline_MildTurn_iPhone17ProMax.mp4": "f88e956c2d43194163ae05edfbfd52b0cd3f3f666714cd1deb1b8b20b326efdf",
+    "Baseline_Straight_iPhone17ProMax.mp4": "5947528d77a603de0e8b4635ac0b0b8c641ea4019bec62510f987cd297f3cd62",
+    "Variant_A_MildTurn_iPhone17ProMax.mp4": "31e38af0786dee963f7feadc183356c032a041819af419f7572756e6829365d8",
+    "Variant_A_Straight_iPhone17ProMax.mp4": "2938ec1764b777a7babd40a665d05ac00da13955e4bbd46bd59045970152593e",
+    "Variant_B_MildTurn_iPhone17ProMax.mp4": "f3e3bd83a10f01ecf8f00501ae30738afb699593bd40a20f77d30f0df8a4f5ec",
+    "Variant_B_Straight_iPhone17ProMax.mp4": "2e7846b31fe07f7bc1ecff790d4c20d78536b2dde6711ef09be5d0b1da7fed69",
+    "Variant_C_MildTurn_iPhone17ProMax.mp4": "89d7cf0ba2e6ef6e858a6eb85c076608f805d1bf0b4abe4c1fb8f45c6202ec66",
+    "Variant_C_Straight_iPhone17ProMax.mp4": "aa11776400575f46c8ce759430a9abed7a7f9c695cbfa82d724d32f9dc265c0f"
+  }
+}

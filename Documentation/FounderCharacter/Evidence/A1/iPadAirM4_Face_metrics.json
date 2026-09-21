@@ -1,0 +1,37 @@
+{
+  "baseline_process_lifetime_peak_mb" : 170.95545959472656,
+  "before_mb" : 82.486663818359375,
+  "capture_completed_ms" : 261.66345831006765,
+  "capture_succeeded" : true,
+  "facial_weight_names" : 9,
+  "first_scene_update_ms" : 153.28545833472162,
+  "garage_baseline" : {
+    "ending_mb" : 82.471038818359375,
+    "frame_max_ms" : 64.032413065433502,
+    "frame_mean_ms" : 16.930106054577564,
+    "frame_p95_ms" : 17.195584252476692,
+    "frames" : 180,
+    "pose_assignment_mean_ms" : 8.6807671727405657e-05,
+    "sampled_peak_mb" : 82.517913818359375
+  },
+  "garage_plus_founder" : {
+    "ending_mb" : 90.596084594726562,
+    "frame_max_ms" : 33.308498561382294,
+    "frame_mean_ms" : 16.759313425670069,
+    "frame_p95_ms" : 17.167041078209877,
+    "frames" : 180,
+    "pose_assignment_mean_ms" : 0.0517168955411762,
+    "sampled_peak_mb" : 90.861709594726562
+  },
+  "import_frame_count" : 7,
+  "import_frame_max_ms" : 33.293500542640686,
+  "incremental_steady_mb" : 8.1250457763671875,
+  "joint_names" : 55,
+  "load_delta_mb" : 3.9687957763671875,
+  "load_ms" : 123.368208296597,
+  "loaded_mb" : 86.455459594726562,
+  "model_entities" : 10,
+  "note" : "Warmed production Garage architecture in the QA ARView. Process lifetime high-water includes baseline; snapshot completion is an upper bound on captured appearance, not display presentation latency. Pose cost measures assignment CPU only, not GPU skinning. Draw calls are not measured.",
+  "process_lifetime_peak_mb" : 179.14298248291016,
+  "run_id" : "--founder-character-run=fd378661-2bf7-4aab-b2cb-6d193137e21d"
+}

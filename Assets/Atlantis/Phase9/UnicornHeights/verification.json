@@ -1,0 +1,124 @@
+{
+  "phase8_metrics": {
+    "meshes": 1067,
+    "triangles": 117355,
+    "materials": 91,
+    "vegetation_objects": 120,
+    "unicorn_visible_meshes": 17,
+    "public_space_meshes": 154
+  },
+  "changed_original_objects": [],
+  "phase9_metrics": {
+    "meshes": 1318,
+    "triangles": 127315,
+    "materials": 101,
+    "vegetation_objects": 290,
+    "unicorn_visible_meshes": 271,
+    "public_space_meshes": 154
+  },
+  "measured_heights": {
+    "Unicorn_Campus_01": 112.23999633789063,
+    "Unicorn_Campus_02": 124.23999633789063,
+    "Unicorn_Campus_03": 76.23999633789063,
+    "Unicorn_Campus_04": 44.23999633789063,
+    "Unicorn_Campus_05": 48.23999633789063,
+    "Unicorn_Campus_06": 64.23999633789063,
+    "Unicorn_Campus_07": 40.23999633789063,
+    "Unicorn_Campus_08": 72.23999633789063
+  },
+  "player_position": [
+    970.0,
+    850.0,
+    85.0
+  ],
+  "path_building_conflicts": [],
+  "path_components": [
+    [
+      "Unicorn_BoulevardWalk",
+      "Unicorn_Frontage_Unicorn_Campus_04",
+      "Unicorn_CampusSpine",
+      "Unicorn_CampusCrosswalk",
+      "Unicorn_Frontage_Unicorn_Campus_07",
+      "Unicorn_Frontage_Unicorn_Campus_05",
+      "Unicorn_WestGardenWalk",
+      "Unicorn_OverlookLink",
+      "Unicorn_ScenicOverlook_Surface",
+      "Unicorn_BridgeWalk",
+      "Unicorn_Frontage_Unicorn_Campus_08",
+      "Unicorn_Frontage_Unicorn_Campus_03",
+      "Unicorn_PlazaArrival",
+      "Unicorn_FounderPlaza_Surface",
+      "Unicorn_PlayerArrival",
+      "Unicorn_Frontage_Unicorn_Campus_01",
+      "Unicorn_Frontage_Unicorn_Campus_02",
+      "Unicorn_Frontage_Unicorn_Campus_06",
+      "Unicorn_PlayerFrontage"
+    ]
+  ],
+  "path_prop_conflicts": [],
+  "campus_footprint_area_m2": 20328,
+  "campus_coverage_percent": 8.196774193548388,
+  "minimum_campus_gap_m": 43.829214001622255,
+  "original_object_count": 1987,
+  "bridge_walk_landing": [
+    591.2429809570312,
+    765.887451171875,
+    86.15858459472656
+  ],
+  "new_visible_meshes": 251,
+  "phase8_spire_samples": {
+    "Founder_To_City": 36,
+    "TheSpire_StartupSightline": 38,
+    "VentureHall_ToSpire": 43,
+    "MediaDistrict_ToSpire": 39,
+    "TechCore_Skyline": 39,
+    "UnicornHeights_View": 45
+  },
+  "phase8_flashpoint_samples": 10,
+  "phase9_spire_samples": {
+    "Founder_To_City": 36,
+    "TheSpire_StartupSightline": 38,
+    "VentureHall_ToSpire": 43,
+    "MediaDistrict_ToSpire": 39,
+    "TechCore_Skyline": 39,
+    "UnicornHeights_View": 45
+  },
+  "phase9_flashpoint_samples": 10,
+  "new_spire_views": {
+    "PlayerHQ_To_Spire": 41,
+    "Unicorn_ScenicOverlook": 43
+  },
+  "protected_file_count": 509,
+  "changed_protected_files": [],
+  "checks": {
+    "original_geometry_transforms_metadata_preserved": true,
+    "original_materials_preserved": true,
+    "only_unicorn_placeholder_and_internal_road_visibility_changes": true,
+    "flashpoint_all_objects_exact": true,
+    "eight_supporting_campuses": true,
+    "seven_reusable_types": true,
+    "supporting_heights_below_pallas": true,
+    "two_supporting_anchors": true,
+    "campuses_inside_district_and_land": true,
+    "campuses_separated": true,
+    "player_envelope_clear_of_supporting_buildings": true,
+    "player_contract_children": true,
+    "player_envelope_180m": true,
+    "dynamic_identity_reserved": true,
+    "walk_grades_at_most_5percent": true,
+    "walk_widths_at_least_4m": true,
+    "walks_clear_of_buildings": true,
+    "single_connected_pedestrian_network": true,
+    "all_campuses_have_frontages": true,
+    "all_review_cameras": true,
+    "generic_semantic_identity_per_campus": true,
+    "path_surfaces_inside_land_and_district": true,
+    "path_centers_clear_of_fixtures": true,
+    "future_player_roof_below_spire": true,
+    "pedestrian_landing_matches_bridge_deck": true,
+    "six_spire_views_preserved": true,
+    "startup_flashpoint_view_preserved": true,
+    "player_and_overlook_spire_visible": true,
+    "protected_files_unchanged": true
+  }
+}

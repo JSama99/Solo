@@ -1,0 +1,24 @@
+{
+  "automated_checks": {
+    "fits_initial_footprint": true,
+    "height160": true,
+    "ground_origin": true,
+    "clean_geometry": true,
+    "unit_scales": true,
+    "original_objects_preserved": true,
+    "Founder_To_City_preserved": true,
+    "TheSpire_StartupSightline_preserved": true,
+    "protected_files_unchanged": true
+  },
+  "day_night_visual_review": "passed after planar facade reconstruction and crown/base seam fixes",
+  "district_views_reviewed": [
+    "Founder_To_City",
+    "TheSpire_StartupSightline",
+    "Venture_Pallas",
+    "Media_RivalSkyline",
+    "TechCore_Rivals_Aerial",
+    "UnicornHeights_View"
+  ],
+  "method": "Source-informed reconstruction of candidate2; original generated surface not used in final export",
+  "sequence_gate": "Northwind may begin"
+}

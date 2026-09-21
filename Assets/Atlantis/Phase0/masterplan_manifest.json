@@ -1,0 +1,1335 @@
+{
+  "blender": "5.2.1 LTS",
+  "units": "meters; Blender Z-up; north +Y; glTF maps (x,y,z) to (x,z,-y)",
+  "object_count": 302,
+  "mesh_count": 276,
+  "triangles": 3376,
+  "world_bounds": [
+    [
+      -1500.0,
+      -1500.0,
+      -20.0
+    ],
+    [
+      1500.0,
+      1500.0,
+      362.0
+    ]
+  ],
+  "districts": {
+    "FounderDistrict": {
+      "center": [
+        -850,
+        -850,
+        8
+      ],
+      "bounds_xy": [
+        -1100.0,
+        -1065.0,
+        -600.0,
+        -635.0
+      ],
+      "size_m": [
+        500,
+        430
+      ],
+      "generic_building_count": 52,
+      "height_range_m": [
+        4,
+        12
+      ],
+      "role": "Low / residential start"
+    },
+    "StartupRow": {
+      "center": [
+        -460,
+        -340,
+        14
+      ],
+      "bounds_xy": [
+        -720.0,
+        -540.0,
+        -200.0,
+        -140.0
+      ],
+      "size_m": [
+        520,
+        400
+      ],
+      "generic_building_count": 8,
+      "height_range_m": [
+        12,
+        32
+      ],
+      "role": "Medium-low / early offices"
+    },
+    "VentureDistrict": {
+      "center": [
+        -490,
+        180,
+        14
+      ],
+      "bounds_xy": [
+        -685.0,
+        -55.0,
+        -295.0,
+        415.0
+      ],
+      "size_m": [
+        390,
+        470
+      ],
+      "generic_building_count": 14,
+      "height_range_m": [
+        45,
+        112
+      ],
+      "role": "Medium-high / investment"
+    },
+    "TechCore": {
+      "center": [
+        30,
+        330,
+        14
+      ],
+      "bounds_xy": [
+        -295.0,
+        25.0,
+        355.0,
+        635.0
+      ],
+      "size_m": [
+        650,
+        610
+      ],
+      "generic_building_count": 19,
+      "height_range_m": [
+        85,
+        190
+      ],
+      "role": "Highest / global technology"
+    },
+    "CommerceDistrict": {
+      "center": [
+        300,
+        -190,
+        14
+      ],
+      "bounds_xy": [
+        50.0,
+        -360.0,
+        550.0,
+        -20.0
+      ],
+      "size_m": [
+        500,
+        340
+      ],
+      "generic_building_count": 13,
+      "height_range_m": [
+        28,
+        85
+      ],
+      "role": "Medium-high / enterprise and services"
+    },
+    "MediaDistrict": {
+      "center": [
+        800,
+        325,
+        14
+      ],
+      "bounds_xy": [
+        615.0,
+        110.0,
+        985.0,
+        540.0
+      ],
+      "size_m": [
+        370,
+        430
+      ],
+      "generic_building_count": 10,
+      "height_range_m": [
+        36,
+        90
+      ],
+      "role": "Medium-high / waterfront media"
+    },
+    "UnicornHeights": {
+      "center": [
+        820,
+        960,
+        85
+      ],
+      "bounds_xy": [
+        510.0,
+        760.0,
+        1130.0,
+        1160.0
+      ],
+      "size_m": [
+        620,
+        400
+      ],
+      "generic_building_count": 4,
+      "height_range_m": [
+        60,
+        135
+      ],
+      "role": "Low count / elite headquarters"
+    }
+  },
+  "slots": [
+    {
+      "id": "FounderGarage_Slot",
+      "district": "FounderDistrict",
+      "origin": [
+        -875,
+        -1030,
+        8
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        32,
+        38
+      ],
+      "target_height_m": [
+        3,
+        12
+      ],
+      "max_bbox_m": [
+        32,
+        38,
+        12
+      ],
+      "placeholder_height_m": 0,
+      "kind": "hero",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "outside frame",
+        "TechCore_Skyline": "outside frame",
+        "Atlantis_Waterfront": "outside frame",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "Landmark_TheSpire",
+      "district": "TechCore",
+      "origin": [
+        50,
+        420,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        70,
+        70
+      ],
+      "target_height_m": [
+        280,
+        350
+      ],
+      "max_bbox_m": [
+        70,
+        70,
+        350
+      ],
+      "placeholder_height_m": 348,
+      "kind": "hero",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "visible upper-center sample",
+        "TechCore_Skyline": "visible upper-center sample",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "Landmark_VentureHall",
+      "district": "VentureDistrict",
+      "origin": [
+        -520,
+        110,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        90,
+        75
+      ],
+      "target_height_m": [
+        30,
+        65
+      ],
+      "max_bbox_m": [
+        90,
+        75,
+        65
+      ],
+      "placeholder_height_m": 40,
+      "kind": "hero",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "visible upper-center sample",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "Landmark_TechComTower",
+      "district": "MediaDistrict",
+      "origin": [
+        835,
+        220,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        75,
+        70
+      ],
+      "target_height_m": [
+        120,
+        180
+      ],
+      "max_bbox_m": [
+        75,
+        70,
+        180
+      ],
+      "placeholder_height_m": 160,
+      "kind": "hero",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "visible upper-center sample",
+        "TechCore_Skyline": "outside frame",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "Landmark_SignalTV",
+      "district": "MediaDistrict",
+      "origin": [
+        860,
+        460,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        95,
+        65
+      ],
+      "target_height_m": [
+        25,
+        60
+      ],
+      "max_bbox_m": [
+        95,
+        65,
+        60
+      ],
+      "placeholder_height_m": 38,
+      "kind": "hero",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "occluded upper-center sample",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "RivalHQ_Slot_01",
+      "district": "StartupRow",
+      "origin": [
+        -610,
+        -360,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        52,
+        60
+      ],
+      "target_height_m": [
+        15,
+        30
+      ],
+      "max_bbox_m": [
+        52,
+        60,
+        30
+      ],
+      "placeholder_height_m": 24,
+      "kind": "RivalHQ_Small",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "visible upper-center sample",
+        "Atlantis_Waterfront": "outside frame",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "RivalHQ_Slot_02",
+      "district": "VentureDistrict",
+      "origin": [
+        -350,
+        300,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        65,
+        60
+      ],
+      "target_height_m": [
+        40,
+        90
+      ],
+      "max_bbox_m": [
+        65,
+        60,
+        90
+      ],
+      "placeholder_height_m": 75,
+      "kind": "RivalHQ_Medium",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "occluded upper-center sample",
+        "Founder_To_City": "visible upper-center sample",
+        "TechCore_Skyline": "visible upper-center sample",
+        "Atlantis_Waterfront": "occluded upper-center sample",
+        "UnicornHeights_View": "occluded upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "RivalHQ_Slot_03",
+      "district": "TechCore",
+      "origin": [
+        -100,
+        520,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        65,
+        60
+      ],
+      "target_height_m": [
+        100,
+        180
+      ],
+      "max_bbox_m": [
+        65,
+        60,
+        180
+      ],
+      "placeholder_height_m": 155,
+      "kind": "RivalHQ_Major",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "occluded upper-center sample",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "RivalHQ_Slot_04",
+      "district": "TechCore",
+      "origin": [
+        220,
+        300,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        65,
+        60
+      ],
+      "target_height_m": [
+        100,
+        180
+      ],
+      "max_bbox_m": [
+        65,
+        60,
+        180
+      ],
+      "placeholder_height_m": 175,
+      "kind": "RivalHQ_Major",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "visible upper-center sample",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "RivalHQ_Slot_05",
+      "district": "CommerceDistrict",
+      "origin": [
+        430,
+        -240,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        75,
+        60
+      ],
+      "target_height_m": [
+        40,
+        90
+      ],
+      "max_bbox_m": [
+        75,
+        60,
+        90
+      ],
+      "placeholder_height_m": 70,
+      "kind": "RivalHQ_Medium",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "outside frame",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "UnicornHQ_Slot_01",
+      "district": "UnicornHeights",
+      "origin": [
+        620,
+        990,
+        85
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        110,
+        95
+      ],
+      "target_height_m": [
+        80,
+        150
+      ],
+      "max_bbox_m": [
+        110,
+        95,
+        150
+      ],
+      "placeholder_height_m": 117,
+      "kind": "hero",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "visible upper-center sample",
+        "TechCore_Skyline": "visible upper-center sample",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "UnicornHQ_Slot_02",
+      "district": "UnicornHeights",
+      "origin": [
+        810,
+        1070,
+        85
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        110,
+        95
+      ],
+      "target_height_m": [
+        80,
+        150
+      ],
+      "max_bbox_m": [
+        110,
+        95,
+        150
+      ],
+      "placeholder_height_m": 124,
+      "kind": "hero",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "visible upper-center sample",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "UnicornHQ_Slot_03",
+      "district": "UnicornHeights",
+      "origin": [
+        1030,
+        1040,
+        85
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        110,
+        95
+      ],
+      "target_height_m": [
+        80,
+        150
+      ],
+      "max_bbox_m": [
+        110,
+        95,
+        150
+      ],
+      "placeholder_height_m": 131,
+      "kind": "hero",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "occluded upper-center sample",
+        "Atlantis_Waterfront": "outside frame",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "Player_UnicornHQ_Slot",
+      "district": "UnicornHeights",
+      "origin": [
+        970,
+        850,
+        85
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        140,
+        115
+      ],
+      "target_height_m": [
+        100,
+        180
+      ],
+      "max_bbox_m": [
+        140,
+        115,
+        180
+      ],
+      "placeholder_height_m": 155,
+      "kind": "hero",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "visible upper-center sample",
+        "TechCore_Skyline": "visible upper-center sample",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "Startup_Block_A",
+      "district": "StartupRow",
+      "origin": [
+        -650,
+        -220,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        55,
+        45
+      ],
+      "target_height_m": [
+        12,
+        48
+      ],
+      "max_bbox_m": [
+        55,
+        45,
+        48
+      ],
+      "placeholder_height_m": 22,
+      "kind": "module",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "outside frame",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "occluded upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "Startup_Block_B",
+      "district": "StartupRow",
+      "origin": [
+        -500,
+        -220,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        55,
+        45
+      ],
+      "target_height_m": [
+        12,
+        48
+      ],
+      "max_bbox_m": [
+        55,
+        45,
+        48
+      ],
+      "placeholder_height_m": 27,
+      "kind": "module",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "visible upper-center sample",
+        "TechCore_Skyline": "visible upper-center sample",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "Startup_Block_C",
+      "district": "StartupRow",
+      "origin": [
+        -350,
+        -220,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        55,
+        45
+      ],
+      "target_height_m": [
+        12,
+        48
+      ],
+      "max_bbox_m": [
+        55,
+        45,
+        48
+      ],
+      "placeholder_height_m": 32,
+      "kind": "module",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "visible upper-center sample",
+        "TechCore_Skyline": "visible upper-center sample",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "Startup_Block_D",
+      "district": "StartupRow",
+      "origin": [
+        -290,
+        -430,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        55,
+        45
+      ],
+      "target_height_m": [
+        12,
+        48
+      ],
+      "max_bbox_m": [
+        55,
+        45,
+        48
+      ],
+      "placeholder_height_m": 37,
+      "kind": "module",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "visible upper-center sample",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    }
+  ],
+  "roads": [
+    {
+      "id": "Founder_Local_Spine",
+      "width_m": 10,
+      "length_m": 524.7,
+      "points": [
+        [
+          -875,
+          -1060,
+          8.7
+        ],
+        [
+          -875,
+          -850,
+          8.7
+        ],
+        [
+          -790,
+          -660,
+          9
+        ],
+        [
+          -710,
+          -590,
+          16
+        ]
+      ],
+      "collection": "LocalRoads"
+    },
+    {
+      "id": "AtlantisBridge_Main",
+      "width_m": 26,
+      "length_m": 141.4,
+      "points": [
+        [
+          -710,
+          -590,
+          16
+        ],
+        [
+          -610,
+          -490,
+          16
+        ]
+      ],
+      "collection": "Bridges"
+    },
+    {
+      "id": "Progression_Startup",
+      "width_m": 26,
+      "length_m": 1119.4,
+      "points": [
+        [
+          -610,
+          -490,
+          16
+        ],
+        [
+          -460,
+          -400,
+          15
+        ],
+        [
+          -190,
+          -270,
+          15
+        ],
+        [
+          -170,
+          -80,
+          15
+        ],
+        [
+          0,
+          100,
+          15
+        ],
+        [
+          50,
+          300,
+          15
+        ]
+      ],
+      "collection": "PrimaryRoads"
+    },
+    {
+      "id": "Venture_Boulevard",
+      "width_m": 24,
+      "length_m": 1154.2,
+      "points": [
+        [
+          -190,
+          -270,
+          15
+        ],
+        [
+          -460,
+          -50,
+          15
+        ],
+        [
+          -430,
+          180,
+          15
+        ],
+        [
+          -250,
+          330,
+          15
+        ],
+        [
+          0,
+          100,
+          15
+        ]
+      ],
+      "collection": "PrimaryRoads"
+    },
+    {
+      "id": "Commerce_Boulevard",
+      "width_m": 24,
+      "length_m": 1381.8,
+      "points": [
+        [
+          -190,
+          -270,
+          15
+        ],
+        [
+          200,
+          -340,
+          15
+        ],
+        [
+          500,
+          -150,
+          15
+        ],
+        [
+          420,
+          40,
+          15
+        ],
+        [
+          0,
+          100,
+          15
+        ]
+      ],
+      "collection": "PrimaryRoads"
+    },
+    {
+      "id": "Tech_Ring",
+      "width_m": 26,
+      "length_m": 1814.3,
+      "points": [
+        [
+          50,
+          300,
+          15
+        ],
+        [
+          320,
+          190,
+          15
+        ],
+        [
+          360,
+          470,
+          15
+        ],
+        [
+          100,
+          650,
+          15
+        ],
+        [
+          -250,
+          550,
+          15
+        ],
+        [
+          -250,
+          330,
+          15
+        ],
+        [
+          0,
+          100,
+          15
+        ]
+      ],
+      "collection": "PrimaryRoads"
+    },
+    {
+      "id": "Bridge_Media",
+      "width_m": 24,
+      "length_m": 230.9,
+      "points": [
+        [
+          420,
+          40,
+          15
+        ],
+        [
+          640,
+          110,
+          15
+        ]
+      ],
+      "collection": "Bridges"
+    },
+    {
+      "id": "Media_Boulevard",
+      "width_m": 24,
+      "length_m": 511.4,
+      "points": [
+        [
+          640,
+          110,
+          15
+        ],
+        [
+          730,
+          260,
+          15
+        ],
+        [
+          740,
+          490,
+          15
+        ],
+        [
+          660,
+          560,
+          15
+        ]
+      ],
+      "collection": "PrimaryRoads"
+    },
+    {
+      "id": "Bridge_TechCore",
+      "width_m": 26,
+      "length_m": 383.1,
+      "points": [
+        [
+          360,
+          470,
+          15
+        ],
+        [
+          600,
+          760,
+          86
+        ]
+      ],
+      "collection": "Bridges"
+    },
+    {
+      "id": "Heights_Boulevard",
+      "width_m": 24,
+      "length_m": 580.5,
+      "points": [
+        [
+          600,
+          760,
+          86
+        ],
+        [
+          710,
+          850,
+          86
+        ],
+        [
+          820,
+          960,
+          86
+        ],
+        [
+          1100,
+          920,
+          86
+        ]
+      ],
+      "collection": "PrimaryRoads"
+    },
+    {
+      "id": "FounderDistrict_CrossStreet",
+      "width_m": 8,
+      "length_m": 450.0,
+      "points": [
+        [
+          -1075.0,
+          -850,
+          8.8
+        ],
+        [
+          -625.0,
+          -850,
+          8.8
+        ]
+      ],
+      "collection": "LocalRoads"
+    },
+    {
+      "id": "StartupRow_CrossStreet",
+      "width_m": 14,
+      "length_m": 468.0,
+      "points": [
+        [
+          -694.0,
+          -340,
+          14.8
+        ],
+        [
+          -226.0,
+          -340,
+          14.8
+        ]
+      ],
+      "collection": "SecondaryRoads"
+    },
+    {
+      "id": "VentureDistrict_CrossStreet",
+      "width_m": 14,
+      "length_m": 351.0,
+      "points": [
+        [
+          -665.5,
+          180,
+          14.8
+        ],
+        [
+          -314.5,
+          180,
+          14.8
+        ]
+      ],
+      "collection": "SecondaryRoads"
+    },
+    {
+      "id": "TechCore_CrossStreet",
+      "width_m": 14,
+      "length_m": 585.0,
+      "points": [
+        [
+          -262.5,
+          330,
+          14.8
+        ],
+        [
+          322.5,
+          330,
+          14.8
+        ]
+      ],
+      "collection": "SecondaryRoads"
+    },
+    {
+      "id": "CommerceDistrict_CrossStreet",
+      "width_m": 14,
+      "length_m": 450.0,
+      "points": [
+        [
+          75.0,
+          -190,
+          14.8
+        ],
+        [
+          525.0,
+          -190,
+          14.8
+        ]
+      ],
+      "collection": "SecondaryRoads"
+    },
+    {
+      "id": "MediaDistrict_CrossStreet",
+      "width_m": 14,
+      "length_m": 333.0,
+      "points": [
+        [
+          633.5,
+          325,
+          14.8
+        ],
+        [
+          966.5,
+          325,
+          14.8
+        ]
+      ],
+      "collection": "SecondaryRoads"
+    },
+    {
+      "id": "Startup_Link",
+      "width_m": 14,
+      "length_m": 60.0,
+      "points": [
+        [
+          -460,
+          -340,
+          15
+        ],
+        [
+          -460,
+          -400,
+          15
+        ]
+      ],
+      "collection": "SecondaryRoads"
+    },
+    {
+      "id": "Commerce_Link",
+      "width_m": 14,
+      "length_m": 259.4,
+      "points": [
+        [
+          300,
+          -190,
+          15
+        ],
+        [
+          420,
+          40,
+          15
+        ]
+      ],
+      "collection": "SecondaryRoads"
+    },
+    {
+      "id": "Tech_Link",
+      "width_m": 14,
+      "length_m": 36.1,
+      "points": [
+        [
+          30,
+          330,
+          15
+        ],
+        [
+          50,
+          300,
+          15
+        ]
+      ],
+      "collection": "SecondaryRoads"
+    },
+    {
+      "id": "Media_Link",
+      "width_m": 14,
+      "length_m": 60.0,
+      "points": [
+        [
+          800,
+          325,
+          15
+        ],
+        [
+          740,
+          325,
+          15
+        ]
+      ],
+      "collection": "SecondaryRoads"
+    }
+  ]
+}

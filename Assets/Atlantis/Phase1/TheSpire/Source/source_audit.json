@@ -1,0 +1,89 @@
+{
+  "dimensions": [
+    0.3771393895149231,
+    0.3807657063007355,
+    1.0
+  ],
+  "bounds": [
+    [
+      -0.18856969475746155,
+      -0.19038285315036774,
+      -0.5
+    ],
+    [
+      0.18856969475746155,
+      0.19038285315036774,
+      0.5
+    ]
+  ],
+  "meshes": 1,
+  "triangles": 16164,
+  "materials": 3,
+  "textures": [
+    {
+      "name": "Color_d5c567b6-9ab4-47fd-876e-ca29edc3c62a",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "sRGB",
+      "alpha": "CHANNEL_PACKED",
+      "packed": true
+    },
+    {
+      "name": "NormalGL_d5c567b6-9ab4-47fd-876e-ca29edc3c62a",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "Non-Color",
+      "alpha": "CHANNEL_PACKED",
+      "packed": true
+    },
+    {
+      "name": "ORM_d5c567b6-9ab4-47fd-876e-ca29edc3c62a",
+      "size": [
+        2048,
+        2048
+      ],
+      "colorspace": "Non-Color",
+      "alpha": "CHANNEL_PACKED",
+      "packed": true
+    },
+    {
+      "name": "Render Result",
+      "size": [
+        0,
+        0
+      ],
+      "colorspace": "",
+      "alpha": "STRAIGHT",
+      "packed": false
+    },
+    {
+      "name": "Viewer Node",
+      "size": [
+        256,
+        256
+      ],
+      "colorspace": "",
+      "alpha": "STRAIGHT",
+      "packed": false
+    }
+  ],
+  "objects": [
+    {
+      "name": "tripo_node_d5c567b6-9ab4-47fd-876e-ca29edc3c62a",
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

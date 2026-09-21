@@ -1,0 +1,479 @@
+{
+  "hidden_original_objects": [
+    "Heights_Boulevard_00",
+    "Heights_Boulevard_01",
+    "Heights_Boulevard_02",
+    "UnicornHeights_Block_000",
+    "UnicornHeights_Block_001",
+    "UnicornHeights_Block_002",
+    "UnicornHeights_Block_003",
+    "UnicornHQ_Slot_01_Parcel",
+    "UnicornHQ_Slot_01_Massing",
+    "UnicornHQ_Slot_02_Parcel",
+    "UnicornHQ_Slot_02_Massing",
+    "UnicornHQ_Slot_03_Parcel",
+    "UnicornHQ_Slot_03_Massing",
+    "Player_UnicornHQ_Slot_Parcel",
+    "Player_UnicornHQ_Slot_Massing"
+  ],
+  "paths": [
+    {
+      "name": "Unicorn_BoulevardWalk",
+      "points": [
+        [
+          585,
+          790,
+          85.6
+        ],
+        [
+          1105,
+          790,
+          85.6
+        ]
+      ],
+      "width": 5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_BridgeWalk",
+      "points": [
+        [
+          591.2429809570312,
+          765.887451171875,
+          86.15858459472656
+        ],
+        [
+          587,
+          790,
+          85.6
+        ]
+      ],
+      "width": 5,
+      "max_grade": 0.022815190572544195
+    },
+    {
+      "name": "Unicorn_CampusSpine",
+      "points": [
+        [
+          710,
+          790,
+          85.6
+        ],
+        [
+          710,
+          1150,
+          85.6
+        ],
+        [
+          1108,
+          1150,
+          85.6
+        ]
+      ],
+      "width": 6,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_CampusCrosswalk",
+      "points": [
+        [
+          520,
+          920,
+          85.6
+        ],
+        [
+          1110,
+          920,
+          85.6
+        ]
+      ],
+      "width": 5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_WestGardenWalk",
+      "points": [
+        [
+          520,
+          790,
+          85.6
+        ],
+        [
+          520,
+          1110,
+          85.6
+        ],
+        [
+          550,
+          1150,
+          85.6
+        ],
+        [
+          710,
+          1150,
+          85.6
+        ]
+      ],
+      "width": 5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_OverlookLink",
+      "points": [
+        [
+          520,
+          825,
+          85.6
+        ],
+        [
+          585,
+          825,
+          85.6
+        ],
+        [
+          585,
+          790,
+          85.6
+        ]
+      ],
+      "width": 5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_PlazaArrival",
+      "points": [
+        [
+          850,
+          790,
+          85.6
+        ],
+        [
+          850,
+          920,
+          85.6
+        ]
+      ],
+      "width": 6,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_PlayerArrival",
+      "points": [
+        [
+          890,
+          850,
+          85.6
+        ],
+        [
+          900,
+          850,
+          85.6
+        ]
+      ],
+      "width": 6,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_PlayerFrontage",
+      "points": [
+        [
+          970,
+          790,
+          85.6
+        ],
+        [
+          970,
+          792.5,
+          85.6
+        ]
+      ],
+      "width": 6,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_Frontage_Unicorn_Campus_01",
+      "points": [
+        [
+          620,
+          965.0,
+          85.6
+        ],
+        [
+          620,
+          920,
+          85.6
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_Frontage_Unicorn_Campus_02",
+      "points": [
+        [
+          810,
+          1045.0,
+          85.6
+        ],
+        [
+          710,
+          1045.0,
+          85.6
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_Frontage_Unicorn_Campus_03",
+      "points": [
+        [
+          1030,
+          1013.0,
+          85.6
+        ],
+        [
+          1030,
+          920,
+          85.6
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_Frontage_Unicorn_Campus_04",
+      "points": [
+        [
+          650,
+          835.0,
+          85.6
+        ],
+        [
+          650,
+          790,
+          85.6
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_Frontage_Unicorn_Campus_05",
+      "points": [
+        [
+          760,
+          926.0,
+          85.6
+        ],
+        [
+          760,
+          920,
+          85.6
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_Frontage_Unicorn_Campus_06",
+      "points": [
+        [
+          940,
+          1098.0,
+          85.6
+        ],
+        [
+          894.0,
+          1098.0,
+          85.6
+        ],
+        [
+          894.0,
+          1150,
+          85.6
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_Frontage_Unicorn_Campus_07",
+      "points": [
+        [
+          1090,
+          927.0,
+          85.6
+        ],
+        [
+          1090,
+          920,
+          85.6
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Unicorn_Frontage_Unicorn_Campus_08",
+      "points": [
+        [
+          560,
+          1075.0,
+          85.6
+        ],
+        [
+          520,
+          1075.0,
+          85.6
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    }
+  ],
+  "frontages": [
+    {
+      "building": "Unicorn_Campus_01",
+      "points": [
+        [
+          620,
+          965.0,
+          85.6
+        ],
+        [
+          620,
+          920,
+          85.6
+        ]
+      ]
+    },
+    {
+      "building": "Unicorn_Campus_02",
+      "points": [
+        [
+          810,
+          1045.0,
+          85.6
+        ],
+        [
+          710,
+          1045.0,
+          85.6
+        ]
+      ]
+    },
+    {
+      "building": "Unicorn_Campus_03",
+      "points": [
+        [
+          1030,
+          1013.0,
+          85.6
+        ],
+        [
+          1030,
+          920,
+          85.6
+        ]
+      ]
+    },
+    {
+      "building": "Unicorn_Campus_04",
+      "points": [
+        [
+          650,
+          835.0,
+          85.6
+        ],
+        [
+          650,
+          790,
+          85.6
+        ]
+      ]
+    },
+    {
+      "building": "Unicorn_Campus_05",
+      "points": [
+        [
+          760,
+          926.0,
+          85.6
+        ],
+        [
+          760,
+          920,
+          85.6
+        ]
+      ]
+    },
+    {
+      "building": "Unicorn_Campus_06",
+      "points": [
+        [
+          940,
+          1098.0,
+          85.6
+        ],
+        [
+          894.0,
+          1098.0,
+          85.6
+        ],
+        [
+          894.0,
+          1150,
+          85.6
+        ]
+      ]
+    },
+    {
+      "building": "Unicorn_Campus_07",
+      "points": [
+        [
+          1090,
+          927.0,
+          85.6
+        ],
+        [
+          1090,
+          920,
+          85.6
+        ]
+      ]
+    },
+    {
+      "building": "Unicorn_Campus_08",
+      "points": [
+        [
+          560,
+          1075.0,
+          85.6
+        ],
+        [
+          520,
+          1075.0,
+          85.6
+        ]
+      ]
+    }
+  ],
+  "authored_components": 536,
+  "shared_box_modules": 84,
+  "vegetation_count": 85,
+  "review_cameras": [
+    "UnicornHeights_Aerial",
+    "UnicornHeights_Entry",
+    "UnicornHeights_MainBoulevard",
+    "PlayerHQ_Slot_Hero",
+    "PlayerHQ_To_Spire",
+    "Unicorn_FounderPlaza",
+    "Unicorn_ScenicOverlook",
+    "Unicorn_NightPreview",
+    "Unicorn_Approach",
+    "Unicorn_CampusReview",
+    "Unicorn_To_TechCore",
+    "Unicorn_WalkingRoute"
+  ]
+}

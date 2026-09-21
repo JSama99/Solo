@@ -1,0 +1,73 @@
+{
+  "checks": {
+    "fits_initial_footprint": true,
+    "height160": true,
+    "ground_origin": true,
+    "clean_geometry": true,
+    "unit_scales": true
+  },
+  "bounds": [
+    [
+      -29.0,
+      -20.0,
+      0.0
+    ],
+    [
+      29.0,
+      20.0,
+      160.0
+    ]
+  ],
+  "geometry": [
+    {
+      "name": "PallasAI_ArchitecturalGlow",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 0.480000991818087
+    },
+    {
+      "name": "PallasAI_Bronze",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 9920.589883956993
+    },
+    {
+      "name": "PallasAI_CrownMark",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 2.7000001072883606
+    },
+    {
+      "name": "PallasAI_LobbyDisplay",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 3.75
+    },
+    {
+      "name": "PallasAI_PodiumGlass",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 27216.0
+    },
+    {
+      "name": "PallasAI_PodiumStone",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 12608.000000000005
+    },
+    {
+      "name": "PallasAI_Signage_Main",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 6.0
+    },
+    {
+      "name": "PallasAI_TowerRetopology",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 162989.33333333337
+    }
+  ],
+  "triangles": 572,
+  "meshes": 8
+}

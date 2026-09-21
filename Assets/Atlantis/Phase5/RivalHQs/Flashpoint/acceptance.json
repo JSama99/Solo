@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "method": "Source-informed reconstruction of candidate 2",
+  "day_night_reviewed": true,
+  "context_views_reviewed": [
+    "StartupRow_Flashpoint",
+    "Founder_To_City",
+    "Flashpoint_CommerceApproach",
+    "Flashpoint_TechApproach",
+    "UnicornHeights_View"
+  ],
+  "visual_note": "Strong from Startup approach; partial in Commerce/Tech approach due preserved neighboring blocks. Architecture and nighttime accent distinct."
+}

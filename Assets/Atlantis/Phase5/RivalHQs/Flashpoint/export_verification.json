@@ -1,0 +1,67 @@
+{
+  "checks": {
+    "fits_initial_footprint": true,
+    "target_height": true,
+    "ground_origin": true,
+    "clean_geometry": true,
+    "unit_scales": true
+  },
+  "bounds": [
+    [
+      -19.0,
+      -15.0,
+      0.0
+    ],
+    [
+      19.0,
+      15.0,
+      75.0
+    ]
+  ],
+  "geometry": [
+    {
+      "name": "Flashpoint_DarkGlazing",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 36821.9006576538
+    },
+    {
+      "name": "Flashpoint_LaunchDisplay",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 9.0
+    },
+    {
+      "name": "Flashpoint_MomentumAccent",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 10.440002176759437
+    },
+    {
+      "name": "Flashpoint_PodiumConcrete",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 2280.0
+    },
+    {
+      "name": "Flashpoint_Signage_Main.001",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 2.625
+    },
+    {
+      "name": "Flashpoint_StructuralSilver",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 4581.597207376859
+    },
+    {
+      "name": "Flashpoint_Ticker",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 3.000000119209288
+    }
+  ],
+  "triangles": 420,
+  "meshes": 7
+}

@@ -1,0 +1,145 @@
+{
+  "checks": {
+    "export_height_280m": true,
+    "export_base_at_zero": true,
+    "within_centered_70m_parcel": true,
+    "unit_scale": true,
+    "closed_meshes_after_export_seam_weld": true,
+    "nonzero_faces": true,
+    "outward_winding": true,
+    "founder_sightline": true,
+    "startup_sightline": true,
+    "spire_tallest_visible_mass": true,
+    "app_and_phase0_bytes_unchanged": true
+  },
+  "export_geometry": [
+    {
+      "name": "TheSpire_Accent_1",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "signed_volume": 13.60806425290108
+    },
+    {
+      "name": "TheSpire_Accent_2",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "signed_volume": 13.60806782919309
+    },
+    {
+      "name": "TheSpire_CrownAccent_0",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "signed_volume": 7.085151672363285
+    },
+    {
+      "name": "TheSpire_CrownAccent_1",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "signed_volume": 7.13780212402343
+    },
+    {
+      "name": "TheSpire_Entrance",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "signed_volume": 540.0
+    },
+    {
+      "name": "TheSpire_EntranceCanopy",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "signed_volume": 154.0
+    },
+    {
+      "name": "TheSpire_GeneratedShaft",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "signed_volume": 537181.2652447699
+    },
+    {
+      "name": "TheSpire_PodiumLower",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "signed_volume": 17952.0
+    },
+    {
+      "name": "TheSpire_PodiumUpper",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "signed_volume": 21576.0
+    },
+    {
+      "name": "TheSpire_VerticalFin_0",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "signed_volume": 427.6796260070477
+    },
+    {
+      "name": "TheSpire_VerticalFin_1",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "signed_volume": 427.67969238271723
+    },
+    {
+      "name": "TheSpire_VerticalFin_2",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "signed_volume": 427.6797038267978
+    },
+    {
+      "name": "TheSpire_VerticalFin_3",
+      "nonmanifold_edges": 0,
+      "zero_area_faces": 0,
+      "signed_volume": 427.6796260070478
+    }
+  ],
+  "export_bounds": [
+    [
+      -34.0,
+      -34.0,
+      0.0
+    ],
+    [
+      34.0,
+      33.0,
+      280.0
+    ]
+  ],
+  "sightline_samples": {
+    "Founder_To_City": [
+      true,
+      true,
+      true
+    ],
+    "TheSpire_StartupSightline": [
+      true,
+      true,
+      true
+    ],
+    "TheSpire_TechCoreApproach": [
+      true,
+      true,
+      true
+    ],
+    "TheSpire_VentureSightline": [
+      true,
+      true,
+      true
+    ],
+    "TheSpire_MediaSightline": [
+      true,
+      true,
+      true
+    ],
+    "UnicornHeights_View": [
+      true,
+      true,
+      true
+    ]
+  },
+  "founder_angular_height_degrees": 9.287526472072994,
+  "nearest_neighbor_planar_center_m": [
+    71.14885843182856,
+    "TechCore_Block_011"
+  ],
+  "changed_protected_files": []
+}

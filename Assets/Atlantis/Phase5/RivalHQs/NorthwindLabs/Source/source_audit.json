@@ -1,0 +1,95 @@
+{
+  "filename": "NorthwindLabs_Higgsfield_Raw.glb",
+  "bytes": 3958344,
+  "dimensions": [
+    0.6884226202964783,
+    0.9809495210647583,
+    0.707832396030426
+  ],
+  "bounds": [
+    [
+      -0.35377803444862366,
+      -0.49043503403663635,
+      -0.35322967171669006
+    ],
+    [
+      0.3346445858478546,
+      0.49051445722579956,
+      0.35460272431373596
+    ]
+  ],
+  "meshes": 1,
+  "triangles": 20579,
+  "materials": 1,
+  "textures": 3,
+  "objects": [
+    {
+      "name": "tripo_node_347a71d0-1713-4fc1-b8ac-2216aefab784",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parent": null,
+      "nonmanifold": 44,
+      "zero_area": 0,
+      "components": [
+        10161
+      ]
+    }
+  ],
+  "texture_details": [
+    {
+      "name": "Color_347a71d0-1713-4fc1-b8ac-2216aefab784",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "decoded_bytes": 67108864,
+      "packed": true
+    },
+    {
+      "name": "NormalGL_347a71d0-1713-4fc1-b8ac-2216aefab784",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "decoded_bytes": 67108864,
+      "packed": true
+    },
+    {
+      "name": "ORM_347a71d0-1713-4fc1-b8ac-2216aefab784",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "decoded_bytes": 67108864,
+      "packed": true
+    }
+  ],
+  "hierarchy": [
+    {
+      "name": "tripo_node_347a71d0-1713-4fc1-b8ac-2216aefab784",
+      "type": "MESH",
+      "parent": null,
+      "origin": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

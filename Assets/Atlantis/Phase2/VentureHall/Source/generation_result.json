@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "2026-09-09T21:02:47.025784Z",
+    "display_name": "Text to 3D",
+    "id": "05a5d1ae-bd7e-4381-b885-1d9b88b93473",
+    "job_type": "tripo_3d",
+    "min_result_url": null,
+    "params": {
+      "auto_size": false,
+      "face_limit": 16000,
+      "folder_id": null,
+      "geometry_quality": "standard",
+      "negative_prompt": "skyscraper, generic glass box, sci-fi arena, dome, government classical temple, neon, logos, text, floating geometry, surrounding buildings, large ground plane, vegetation",
+      "pbr": true,
+      "prompt": "Venture Hall, standalone prestigious global startup capital institution for Atlantis. Broad horizontal modern civic business landmark, width 84 metres depth 65 metres height 45 metres, eight stories. Strong symmetrical stone wings stepping back into terraces flank a tall transparent central glass atrium. Monumental welcoming south-facing ceremonial entrance, rhythmic slender bronze columns, elegant pale limestone, dark blue glazing, brushed bronze metal, memorable layered roofline and generous overhang. Global investor summits and accelerator showcases, refined and credible premium contemporary architecture. Entire building visible, only building and compact integral podium, no surrounding district.",
+      "seed": null,
+      "texture": true,
+      "texture_quality": "standard"
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_34Zg75AIkEw6PIkZBBxVr9v7DE7/hf_20260909_210247_05a5d1ae-bd7e-4381-b885-1d9b88b93473.glb",
+    "status": "completed"
+  }
+]

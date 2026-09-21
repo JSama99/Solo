@@ -1,0 +1,918 @@
+[
+  {
+    "contract": {
+      "id": "RivalHQ_Slot_01",
+      "district": "StartupRow",
+      "origin": [
+        -610,
+        -360,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        52,
+        60
+      ],
+      "target_height_m": [
+        15,
+        30
+      ],
+      "max_bbox_m": [
+        52,
+        60,
+        30
+      ],
+      "placeholder_height_m": 24,
+      "kind": "RivalHQ_Small",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "visible upper-center sample",
+        "Atlantis_Waterfront": "outside frame",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    "actual_position": [
+      -610.0,
+      -360.0,
+      14.0
+    ],
+    "actual_rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "associated_objects": [
+      "RivalHQ_Slot_01_Parcel",
+      "RivalHQ_Slot_01_Massing",
+      "RivalHQ_Slot_01"
+    ],
+    "roads": [
+      {
+        "name": "StartupRow_CrossStreet",
+        "center_distance": 20.0,
+        "edge_distance": 13.0,
+        "class": "SecondaryRoads"
+      },
+      {
+        "name": "Progression_Startup",
+        "center_distance": 111.47407976289544,
+        "edge_distance": 98.47407976289544,
+        "class": "PrimaryRoads"
+      },
+      {
+        "name": "AtlantisBridge_Main",
+        "center_distance": 130.0,
+        "edge_distance": 117.0,
+        "class": "Bridges"
+      },
+      {
+        "name": "Startup_Link",
+        "center_distance": 150.0,
+        "edge_distance": 143.0,
+        "class": "SecondaryRoads"
+      }
+    ],
+    "nearby_buildings": [],
+    "landmark_distances": {
+      "Spire": 1021.7631819555841,
+      "VentureHall": 478.53944456021594,
+      "TechCom": 1557.0565179209134,
+      "SignalTV": 1683.2409215557943
+    },
+    "current_phase3_visibility": {
+      "Founder_To_City": 3,
+      "TheSpire_StartupSightline": 0,
+      "VentureHall_ToSpire": 9,
+      "MediaDistrict_ToSpire": 0,
+      "TechCore_Skyline": 9,
+      "UnicornHeights_View": 9
+    }
+  },
+  {
+    "contract": {
+      "id": "RivalHQ_Slot_02",
+      "district": "VentureDistrict",
+      "origin": [
+        -350,
+        300,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        65,
+        60
+      ],
+      "target_height_m": [
+        40,
+        90
+      ],
+      "max_bbox_m": [
+        65,
+        60,
+        90
+      ],
+      "placeholder_height_m": 75,
+      "kind": "RivalHQ_Medium",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "occluded upper-center sample",
+        "Founder_To_City": "visible upper-center sample",
+        "TechCore_Skyline": "visible upper-center sample",
+        "Atlantis_Waterfront": "occluded upper-center sample",
+        "UnicornHeights_View": "occluded upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    "actual_position": [
+      -350.0,
+      300.0,
+      14.0
+    ],
+    "actual_rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "associated_objects": [
+      "RivalHQ_Slot_02_Parcel",
+      "RivalHQ_Slot_02_Massing",
+      "RivalHQ_Slot_02"
+    ],
+    "roads": [
+      {
+        "name": "Venture_Boulevard",
+        "center_distance": 40.97180173726384,
+        "edge_distance": 28.97180173726384,
+        "class": "PrimaryRoads"
+      },
+      {
+        "name": "TechCore_CrossStreet",
+        "center_distance": 92.5,
+        "edge_distance": 85.5,
+        "class": "SecondaryRoads"
+      },
+      {
+        "name": "Tech_Ring",
+        "center_distance": 104.4030650891055,
+        "edge_distance": 91.4030650891055,
+        "class": "PrimaryRoads"
+      },
+      {
+        "name": "VentureDistrict_CrossStreet",
+        "center_distance": 120.0,
+        "edge_distance": 113.0,
+        "class": "SecondaryRoads"
+      }
+    ],
+    "nearby_buildings": [
+      {
+        "name": "VentureDistrict_Block_013",
+        "bounds": [
+          [
+            -342.20001220703125,
+            363.79998779296875,
+            13.999996185302734
+          ],
+          [
+            -310.20001220703125,
+            391.0,
+            120.75457763671875
+          ]
+        ],
+        "distance": 64.27502043526259
+      },
+      {
+        "name": "VentureDistrict_Block_010",
+        "bounds": [
+          [
+            -424.1000061035156,
+            363.79998779296875,
+            14.0
+          ],
+          [
+            -392.1000061035156,
+            391.0,
+            97.36508178710938
+          ]
+        ],
+        "distance": 76.43853057391289
+      },
+      {
+        "name": "TechCore_Podium_003",
+        "bounds": [
+          [
+            -263.0,
+            227.0,
+            14.0
+          ],
+          [
+            -223.0,
+            262.20001220703125,
+            24.0
+          ]
+        ],
+        "distance": 94.85694005790292
+      },
+      {
+        "name": "TechCore_Block_002",
+        "bounds": [
+          [
+            -259.0,
+            231.0,
+            13.999996185302734
+          ],
+          [
+            -227.0,
+            258.20001220703125,
+            118.79234313964844
+          ]
+        ],
+        "distance": 100.14109535796149
+      }
+    ],
+    "landmark_distances": {
+      "Spire": 417.612260356422,
+      "VentureHall": 254.95097567963924,
+      "TechCom": 1187.6973520219703,
+      "SignalTV": 1220.5326705991938
+    },
+    "current_phase3_visibility": {
+      "Founder_To_City": 6,
+      "TheSpire_StartupSightline": 0,
+      "VentureHall_ToSpire": 9,
+      "MediaDistrict_ToSpire": 0,
+      "TechCore_Skyline": 9,
+      "UnicornHeights_View": 3
+    }
+  },
+  {
+    "contract": {
+      "id": "RivalHQ_Slot_03",
+      "district": "TechCore",
+      "origin": [
+        -100,
+        520,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        65,
+        60
+      ],
+      "target_height_m": [
+        100,
+        180
+      ],
+      "max_bbox_m": [
+        65,
+        60,
+        180
+      ],
+      "placeholder_height_m": 155,
+      "kind": "RivalHQ_Major",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "occluded upper-center sample",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    "actual_position": [
+      -100.0,
+      520.0,
+      14.0
+    ],
+    "actual_rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "associated_objects": [
+      "RivalHQ_Slot_03_Parcel",
+      "RivalHQ_Slot_03_Massing",
+      "RivalHQ_Slot_03"
+    ],
+    "roads": [
+      {
+        "name": "Tech_Ring",
+        "center_distance": 70.05388224243056,
+        "edge_distance": 57.05388224243056,
+        "class": "PrimaryRoads"
+      },
+      {
+        "name": "TechCore_CrossStreet",
+        "center_distance": 190.00000000000063,
+        "edge_distance": 183.00000000000063,
+        "class": "SecondaryRoads"
+      },
+      {
+        "name": "Tech_Link",
+        "center_distance": 230.21728866442677,
+        "edge_distance": 223.21728866442677,
+        "class": "SecondaryRoads"
+      },
+      {
+        "name": "Venture_Boulevard",
+        "center_distance": 242.0743687382041,
+        "edge_distance": 230.0743687382041,
+        "class": "PrimaryRoads"
+      }
+    ],
+    "nearby_buildings": [
+      {
+        "name": "TechCore_Podium_008",
+        "bounds": [
+          [
+            -81.0,
+            397.79998779296875,
+            14.0
+          ],
+          [
+            -41.0,
+            433.0,
+            24.0
+          ]
+        ],
+        "distance": 89.05054744357274
+      },
+      {
+        "name": "TechCore_Podium_006",
+        "bounds": [
+          [
+            -172.0,
+            397.79998779296875,
+            14.0
+          ],
+          [
+            -132.0,
+            433.0,
+            24.0
+          ]
+        ],
+        "distance": 92.69843580125827
+      },
+      {
+        "name": "TechCore_Block_007",
+        "bounds": [
+          [
+            -77.0,
+            401.79998779296875,
+            14.0
+          ],
+          [
+            -45.0,
+            429.0,
+            170.76011657714844
+          ]
+        ],
+        "distance": 93.86160024205851
+      },
+      {
+        "name": "TechCore_Block_005",
+        "bounds": [
+          [
+            -168.0,
+            401.79998779296875,
+            14.0
+          ],
+          [
+            -136.0,
+            429.0,
+            153.5614471435547
+          ]
+        ],
+        "distance": 97.86214794290998
+      },
+      {
+        "name": "TechCore_Podium_009",
+        "bounds": [
+          [
+            10.0,
+            483.1999816894531,
+            14.0
+          ],
+          [
+            50.0,
+            518.3999633789062,
+            24.0
+          ]
+        ],
+        "distance": 110.01163628084458
+      },
+      {
+        "name": "TechCore_Block_008",
+        "bounds": [
+          [
+            14.0,
+            487.1999816894531,
+            14.0
+          ],
+          [
+            46.0,
+            514.3999633789062,
+            202.16526794433594
+          ]
+        ],
+        "distance": 114.13746278132167
+      },
+      {
+        "name": "TechCore_Podium_010",
+        "bounds": [
+          [
+            10.0,
+            568.6000366210938,
+            14.0
+          ],
+          [
+            50.0,
+            603.7999877929688,
+            24.0
+          ]
+        ],
+        "distance": 120.2579043538164
+      },
+      {
+        "name": "TechCore_Block_009",
+        "bounds": [
+          [
+            14.0,
+            572.6000366210938,
+            13.999996185302734
+          ],
+          [
+            46.0,
+            599.7999877929688,
+            135.38082885742188
+          ]
+        ],
+        "distance": 125.54984608728282
+      }
+    ],
+    "landmark_distances": {
+      "Spire": 180.27756377319946,
+      "VentureHall": 586.9412236331675,
+      "TechCom": 981.9495913742212,
+      "SignalTV": 961.8731725128838
+    },
+    "current_phase3_visibility": {
+      "Founder_To_City": 0,
+      "TheSpire_StartupSightline": 0,
+      "VentureHall_ToSpire": 9,
+      "MediaDistrict_ToSpire": 0,
+      "TechCore_Skyline": 0,
+      "UnicornHeights_View": 9
+    }
+  },
+  {
+    "contract": {
+      "id": "RivalHQ_Slot_04",
+      "district": "TechCore",
+      "origin": [
+        220,
+        300,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        65,
+        60
+      ],
+      "target_height_m": [
+        100,
+        180
+      ],
+      "max_bbox_m": [
+        65,
+        60,
+        180
+      ],
+      "placeholder_height_m": 175,
+      "kind": "RivalHQ_Major",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "visible upper-center sample",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    "actual_position": [
+      220.0,
+      300.0,
+      14.0
+    ],
+    "actual_rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "associated_objects": [
+      "RivalHQ_Slot_04_Parcel",
+      "RivalHQ_Slot_04_Massing",
+      "RivalHQ_Slot_04"
+    ],
+    "roads": [
+      {
+        "name": "TechCore_CrossStreet",
+        "center_distance": 30.0,
+        "edge_distance": 23.0,
+        "class": "SecondaryRoads"
+      },
+      {
+        "name": "Tech_Ring",
+        "center_distance": 64.14047036750544,
+        "edge_distance": 51.14047036750544,
+        "class": "PrimaryRoads"
+      },
+      {
+        "name": "Progression_Startup",
+        "center_distance": 170.0,
+        "edge_distance": 157.0,
+        "class": "PrimaryRoads"
+      },
+      {
+        "name": "Tech_Link",
+        "center_distance": 170.0,
+        "edge_distance": 163.0,
+        "class": "SecondaryRoads"
+      }
+    ],
+    "nearby_buildings": [
+      {
+        "name": "TechCore_Podium_016",
+        "bounds": [
+          [
+            192.0,
+            397.79998779296875,
+            14.0
+          ],
+          [
+            232.0,
+            433.0,
+            24.0
+          ]
+        ],
+        "distance": 97.79998779296875
+      },
+      {
+        "name": "TechCore_Block_015",
+        "bounds": [
+          [
+            196.0,
+            401.79998779296875,
+            14.0
+          ],
+          [
+            228.0,
+            429.0,
+            123.93301391601562
+          ]
+        ],
+        "distance": 101.79998779296875
+      },
+      {
+        "name": "TechCore_Podium_018",
+        "bounds": [
+          [
+            283.0,
+            397.79998779296875,
+            14.0
+          ],
+          [
+            323.0,
+            433.0,
+            24.0
+          ]
+        ],
+        "distance": 116.33502315427128
+      },
+      {
+        "name": "TechCore_Block_017",
+        "bounds": [
+          [
+            287.0,
+            401.79998779296875,
+            13.999996185302734
+          ],
+          [
+            319.0,
+            429.0,
+            125.17314147949219
+          ]
+        ],
+        "distance": 121.86975635754995
+      },
+      {
+        "name": "TechCore_Podium_015",
+        "bounds": [
+          [
+            192.0,
+            141.59999084472656,
+            14.0
+          ],
+          [
+            232.0,
+            176.8000030517578,
+            24.0
+          ]
+        ],
+        "distance": 123.19999694824219
+      },
+      {
+        "name": "TechCore_Podium_012",
+        "bounds": [
+          [
+            101.0,
+            397.79998779296875,
+            14.0
+          ],
+          [
+            141.0,
+            433.0,
+            24.0
+          ]
+        ],
+        "distance": 125.72126953027812
+      },
+      {
+        "name": "TechCore_Block_014",
+        "bounds": [
+          [
+            196.0,
+            145.59999084472656,
+            14.0
+          ],
+          [
+            228.0,
+            172.8000030517578,
+            100.80616760253906
+          ]
+        ],
+        "distance": 127.19999694824219
+      }
+    ],
+    "landmark_distances": {
+      "Spire": 208.08652046684813,
+      "VentureHall": 764.0026177965623,
+      "TechCom": 620.1814250685037,
+      "SignalTV": 659.6969000988257
+    },
+    "current_phase3_visibility": {
+      "Founder_To_City": 3,
+      "TheSpire_StartupSightline": 9,
+      "VentureHall_ToSpire": 9,
+      "MediaDistrict_ToSpire": 9,
+      "TechCore_Skyline": 3,
+      "UnicornHeights_View": 9
+    }
+  },
+  {
+    "contract": {
+      "id": "RivalHQ_Slot_05",
+      "district": "CommerceDistrict",
+      "origin": [
+        430,
+        -240,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        75,
+        60
+      ],
+      "target_height_m": [
+        40,
+        90
+      ],
+      "max_bbox_m": [
+        75,
+        60,
+        90
+      ],
+      "placeholder_height_m": 70,
+      "kind": "RivalHQ_Medium",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "outside frame",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    "actual_position": [
+      430.0,
+      -240.0,
+      14.0
+    ],
+    "actual_rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "associated_objects": [
+      "RivalHQ_Slot_05_Parcel",
+      "RivalHQ_Slot_05_Massing",
+      "RivalHQ_Slot_05"
+    ],
+    "roads": [
+      {
+        "name": "Commerce_Boulevard",
+        "center_distance": 38.58006937435037,
+        "edge_distance": 26.580069374350373,
+        "class": "PrimaryRoads"
+      },
+      {
+        "name": "CommerceDistrict_CrossStreet",
+        "center_distance": 50.0,
+        "edge_distance": 43.0,
+        "class": "SecondaryRoads"
+      },
+      {
+        "name": "Commerce_Link",
+        "center_distance": 138.3843330468175,
+        "edge_distance": 131.3843330468175,
+        "class": "SecondaryRoads"
+      },
+      {
+        "name": "Bridge_Media",
+        "center_distance": 280.178514522438,
+        "edge_distance": 268.178514522438,
+        "class": "Bridges"
+      }
+    ],
+    "nearby_buildings": [
+      {
+        "name": "CommerceDistrict_Podium_012",
+        "bounds": [
+          [
+            490.0,
+            -279.0,
+            14.0
+          ],
+          [
+            530.0,
+            -243.79998779296875,
+            24.0
+          ]
+        ],
+        "distance": 60.12021213557643
+      },
+      {
+        "name": "CommerceDistrict_Block_011",
+        "bounds": [
+          [
+            494.0,
+            -275.0,
+            14.0
+          ],
+          [
+            526.0,
+            -247.79998779296875,
+            49.40697479248047
+          ]
+        ],
+        "distance": 64.47355899568801
+      },
+      {
+        "name": "CommerceDistrict_Podium_009",
+        "bounds": [
+          [
+            385.0,
+            -350.3999938964844,
+            14.0
+          ],
+          [
+            425.0,
+            -315.1999816894531,
+            24.0
+          ]
+        ],
+        "distance": 75.36602182743948
+      },
+      {
+        "name": "CommerceDistrict_Block_008",
+        "bounds": [
+          [
+            389.0,
+            -346.3999938964844,
+            14.0
+          ],
+          [
+            421.0,
+            -319.1999816894531,
+            74.25350189208984
+          ]
+        ],
+        "distance": 79.70970517828874
+      },
+      {
+        "name": "CommerceDistrict_Podium_011",
+        "bounds": [
+          [
+            490.0,
+            -350.3999938964844,
+            14.0
+          ],
+          [
+            530.0,
+            -315.1999816894531,
+            24.0
+          ]
+        ],
+        "distance": 96.20310413959669
+      },
+      {
+        "name": "CommerceDistrict_Block_010",
+        "bounds": [
+          [
+            494.0,
+            -346.3999938964844,
+            14.0
+          ],
+          [
+            526.0,
+            -319.1999816894531,
+            75.92636108398438
+          ]
+        ],
+        "distance": 101.82650489734836
+      },
+      {
+        "name": "CommerceDistrict_Podium_010",
+        "bounds": [
+          [
+            385.0,
+            -136.1999969482422,
+            14.0
+          ],
+          [
+            425.0,
+            -101.0,
+            24.0
+          ]
+        ],
+        "distance": 103.92035716617285
+      },
+      {
+        "name": "CommerceDistrict_Block_009",
+        "bounds": [
+          [
+            389.0,
+            -132.1999969482422,
+            14.0
+          ],
+          [
+            421.0,
+            -105.0,
+            70.84322357177734
+          ]
+        ],
+        "distance": 108.17504637373165
+      }
+    ],
+    "landmark_distances": {
+      "Spire": 761.5773105863908,
+      "VentureHall": 1012.4228365658294,
+      "TechCom": 612.8825336065631,
+      "SignalTV": 821.5229759416349
+    },
+    "current_phase3_visibility": {
+      "Founder_To_City": 0,
+      "TheSpire_StartupSightline": 0,
+      "VentureHall_ToSpire": 0,
+      "MediaDistrict_ToSpire": 9,
+      "TechCore_Skyline": 0,
+      "UnicornHeights_View": 9
+    }
+  }
+]

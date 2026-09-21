@@ -1,0 +1,38 @@
+{
+  "canonicalCompanyID": "pallas",
+  "displayName": "Pallas AI",
+  "slotID": "RivalHQ_Slot_04",
+  "semanticLocator": "RivalHQ_PallasAI",
+  "district": "TechCore",
+  "worldPosition": [
+    220,
+    300,
+    14
+  ],
+  "worldRotationDegrees": [
+    0,
+    0,
+    0
+  ],
+  "forward": "-Y Blender / +Z glTF",
+  "units": "metres; 1 Blender unit = 1 metre",
+  "origin": "footprint centre at ground/base; local (0,0,0)",
+  "targetHeight": 160,
+  "finalHeightRange": [
+    120,
+    170
+  ],
+  "initialMaximumFootprint": [
+    60,
+    42
+  ],
+  "absoluteUpgradeEnvelope": [
+    64,
+    44,
+    180
+  ],
+  "signageObject": "PallasAI_Signage_Main",
+  "prompt": "Create a standalone Pallas AI headquarters for Atlantis, approximately 160 metres tall, fitting a 60 by 42 metre footprint including podium, projections and roof elements. Monumental composed taper, paired crown blades, formal compact podium. Materials: Deep neutral glass, pale bronze metal, restrained stone. Accents: Warm restrained premium edges. Integrated understated podium mark, reserve a blank architectural signage surface. Night identity: Warm crown bars and lobby glow. Main public facade faces south (-Y in Blender). Foundation-centred ground pivot. Credible contemporary architecture with clean mobile-friendly silhouette. No surrounding city, terrain, streets, unrelated structures, giant billboards, permanent text, floating parts, or fantasy crown. Keep the building subordinate to the 280 metre Spire.",
+  "delivery": "Standalone raw GLB retained; normalize uniformly; clean/reconstruct in Blender as required; independently export and reimport; validate original slot, roads and established sightlines; do not change runtime.",
+  "lodPlan": "Keep hero root independent for future LOD0/LOD1/LOD2. LOD assets and runtime switching are not authored in Phase4."
+}

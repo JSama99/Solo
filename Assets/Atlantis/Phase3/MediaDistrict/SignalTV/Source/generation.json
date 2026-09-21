@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "2026-09-09T21:53:17.679099Z",
+    "display_name": "Text to 3D",
+    "id": "85bc729c-cecf-4c08-b3ad-c4c3b8a59b21",
+    "job_type": "tripo_3d",
+    "min_result_url": null,
+    "params": {
+      "auto_size": false,
+      "face_limit": 18000,
+      "folder_id": null,
+      "geometry_quality": "standard",
+      "negative_prompt": null,
+      "pbr": true,
+      "prompt": "Standalone flagship technology broadcast center Signal TV for Atlantis. Broad horizontal 90 by 60 metre connected studio campus around 35 metres tall, not a skyscraper. Three stepped rectangular production studio volumes with expressive folded metal roof planes, a faceted glass public lobby along the south front and east waterfront side, architecturally recessed blank large format screen panels and a slim blank ticker fascia. One restrained rooftop broadcast mast with a small receiver array. Silver metal, warm white concrete, blue glass, subtle amber accents. Premium contemporary broadcasting architecture, strong public plaza frontage, clean foundation, isolated building without surrounding city or landscape. No text, no logos, no stadium, no arena, no mall, no casino, no giant TV shaped building, no excessive satellite dishes, no floating geometry. Clean mobile game friendly geometry and recognizable roof silhouette.",
+      "seed": null,
+      "texture": true,
+      "texture_quality": "standard"
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_34Zg75AIkEw6PIkZBBxVr9v7DE7/hf_20260909_215317_85bc729c-cecf-4c08-b3ad-c4c3b8a59b21.glb",
+    "status": "completed"
+  }
+]

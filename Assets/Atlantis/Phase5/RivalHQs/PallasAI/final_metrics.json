@@ -1,0 +1,105 @@
+{
+  "checks": {
+    "fits_initial_footprint": true,
+    "target_height": true,
+    "ground_origin": true,
+    "clean_geometry": true,
+    "clean_transforms": true,
+    "semantic_main_exact": true,
+    "semantic_uvs": true,
+    "metres": true
+  },
+  "bounds": [
+    [
+      -29.0,
+      -20.0,
+      0.0
+    ],
+    [
+      29.0,
+      20.0,
+      160.0
+    ]
+  ],
+  "dimensions": [
+    58.0,
+    40.0,
+    160.0
+  ],
+  "triangles": 572,
+  "meshes": 8,
+  "materials": 8,
+  "textures": 0,
+  "bytes": 47440,
+  "semantic_targets": [
+    "PallasAI_CrownMark",
+    "PallasAI_LobbyDisplay",
+    "PallasAI_Signage_Main"
+  ],
+  "geometry": [
+    {
+      "name": "PallasAI_ArchitecturalGlow",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 0.480000991818087
+    },
+    {
+      "name": "PallasAI_Bronze",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 9920.589883956993
+    },
+    {
+      "name": "PallasAI_CrownMark",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 2.7000001072883606
+    },
+    {
+      "name": "PallasAI_LobbyDisplay",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 3.75
+    },
+    {
+      "name": "PallasAI_PodiumGlass",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 27216.0
+    },
+    {
+      "name": "PallasAI_PodiumStone",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 12608.000000000005
+    },
+    {
+      "name": "PallasAI_Signage_Main",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 6.0
+    },
+    {
+      "name": "PallasAI_TowerRetopology",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 162989.33333333337
+    }
+  ],
+  "remaining_growth_dimensions": [
+    6.0,
+    4.0,
+    20.0
+  ],
+  "remaining_growth_plan_area_m2": 496.0,
+  "material_names": [
+    "PallasAI_ArchitecturalGlow",
+    "PallasAI_Bronze",
+    "PallasAI_CrownMark",
+    "PallasAI_LobbyDisplay",
+    "PallasAI_PodiumGlass",
+    "PallasAI_PodiumStone",
+    "PallasAI_Signage_Main",
+    "PallasAI_RefinedTowerGlass"
+  ]
+}

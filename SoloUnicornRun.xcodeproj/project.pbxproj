@@ -7,10 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0193AF627ED8FC68EA552A5E /* RealityKit/Atlantis/media_district.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 6DC69315C74D4212576685B0 /* RealityKit/Atlantis/media_district.usdz */; };
+		06501CF6503A40F532F9732C /* AtlantisWorldPresentationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24B6048AF96C255824BFD84D /* AtlantisWorldPresentationModel.swift */; };
+		0CA80CD2498001065D32D217 /* RealityKit/Atlantis/venture_district.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 0A8A478F9D2797B6041D0489 /* RealityKit/Atlantis/venture_district.usdz */; };
 		28C211C9462EF7C2C17DC4C2 /* SimulationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CB9F64447826C8051328902 /* SimulationModels.swift */; };
+		2CD20EBFEFA39219C29D6D89 /* AtlantisRuntimeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5203A824B352EB66DD5B6C4A /* AtlantisRuntimeUITests.swift */; };
 		326100000000000000000001 /* Build32_6_1ProductionContinuityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 326100000000000000000002 /* Build32_6_1ProductionContinuityUITests.swift */; };
+		3977CAE71F1ACD186BC7F742 /* RealityKit/Atlantis/unicorn_heights.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 93E38D6F680617E0A241D203 /* RealityKit/Atlantis/unicorn_heights.usdz */; };
+		3CB10B38F18C24716CF842AB /* RealityKit/Atlantis/startup_row.usdz in Resources */ = {isa = PBXBuildFile; fileRef = B745020E2276418CFF2C353D /* RealityKit/Atlantis/startup_row.usdz */; };
+		3FFDB1A752077DF06EB9A10C /* AtlantisRealityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52DC80EBBC1FDC96FB99C09 /* AtlantisRealityView.swift */; };
+		466402B70C12D8D329D619EA /* RealityKit/Atlantis/commerce_district.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A04CCE6D5AE47A888C2FA2B8 /* RealityKit/Atlantis/commerce_district.usdz */; };
 		73B35D04E243BD45B291E271 /* GameModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E7E924208E29B28AFAA264 /* GameModels.swift */; };
+		8B4BC4FB4B2E11ABF5F0BC68 /* AtlantisRealityScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33F63C7037788FB68E97F470 /* AtlantisRealityScene.swift */; };
+		A11000000000000000000002 /* RealityKit/Atlantis/founder_district_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11000000000000000000001 /* RealityKit/Atlantis/founder_district_batched.usdz */; };
+		A11100000000000000000002 /* RealityKit/Atlantis/startup_row_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11100000000000000000001 /* RealityKit/Atlantis/startup_row_batched.usdz */; };
+		A11200000000000000000002 /* RealityKit/Atlantis/commerce_district_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11200000000000000000001 /* RealityKit/Atlantis/commerce_district_batched.usdz */; };
+		A11300000000000000000002 /* RealityKit/Atlantis/tech_core_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11300000000000000000001 /* RealityKit/Atlantis/tech_core_batched.usdz */; };
+		A11400000000000000000002 /* RealityKit/Atlantis/unicorn_heights_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11400000000000000000001 /* RealityKit/Atlantis/unicorn_heights_batched.usdz */; };
+		A11500000000000000000002 /* RealityKit/Atlantis/venture_district_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11500000000000000000001 /* RealityKit/Atlantis/venture_district_batched.usdz */; };
+		A11600000000000000000002 /* RealityKit/Atlantis/media_district_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11600000000000000000001 /* RealityKit/Atlantis/media_district_batched.usdz */; };
+		A12000000000000000000002 /* RealityKit/Atlantis/tech_unicorn_bridge_repaired.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A12000000000000000000001 /* RealityKit/Atlantis/tech_unicorn_bridge_repaired.usdz */; };
+		A12100000000000000000002 /* RealityKit/Atlantis/spire_far_proxy.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A12100000000000000000001 /* RealityKit/Atlantis/spire_far_proxy.usdz */; };
 		A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2513145C1504A166E8177382 /* GameStoreTests.swift */; };
+		A2C2E52CAB4B3D4FB22505FE /* AtlantisDistrictLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA44EBA9C58588064E85F9D /* AtlantisDistrictLoader.swift */; };
 		A30000000000000000000001 /* SprintOutcomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31000000000000000000001 /* SprintOutcomeScreen.swift */; };
 		A30000000000000000000002 /* HindsightArchiveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31000000000000000000002 /* HindsightArchiveCard.swift */; };
 		A5A100000000000000000001 /* SignalTVModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A100000000000000000011 /* SignalTVModels.swift */; };
@@ -57,6 +76,8 @@
 		B33000000000000000000003 /* CompanyFinanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000013 /* CompanyFinanceTests.swift */; };
 		B33000000000000000000004 /* AIOperationsFloorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B33000000000000000000014 /* AIOperationsFloorTests.swift */; };
 		B7879B5278335CFBFDA7FCD0 /* SeededRandomNumberGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE09C90DB6AC97A8F2FAA9FC /* SeededRandomNumberGenerator.swift */; };
+		C0ABE533359C7059C8CF83CD /* RealityKit/Atlantis/atlantis_manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 2BCCB6F92A46ACB05330AE9B /* RealityKit/Atlantis/atlantis_manifest.json */; };
+		C18ED78F7C3C14DC5FC8701F /* RealityKit/Atlantis/tech_core.usdz in Resources */ = {isa = PBXBuildFile; fileRef = DA9511FDBB4B0DB7C6B09106 /* RealityKit/Atlantis/tech_core.usdz */; };
 		C20000000000000000000001 /* AgentVisualState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000001 /* AgentVisualState.swift */; };
 		C20000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift */; };
 		C20000000000000000000003 /* EnvironmentPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000003 /* EnvironmentPresentation.swift */; };
@@ -77,6 +98,7 @@
 		C20000000000000000000014 /* AchievementStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000014 /* AchievementStore.swift */; };
 		C20000000000000000000015 /* EmpireTaskExpansion.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000015 /* EmpireTaskExpansion.swift */; };
 		C20000000000000000000016 /* ContentLibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000016 /* ContentLibraryTests.swift */; };
+		C2E0680A0168829B1D9C4877 /* RealityKit/Atlantis/world_context.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 1B0B8BA0257A2FDE8488F12C /* RealityKit/Atlantis/world_context.usdz */; };
 		D20000000000000000000001 /* DoctrineProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000001 /* DoctrineProfile.swift */; };
 		D20000000000000000000002 /* ContentLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000002 /* ContentLibrary.swift */; };
 		D20000000000000000000003 /* SimulationEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000003 /* SimulationEngine.swift */; };
@@ -126,16 +148,6 @@
 		F31000000000000000000003 /* VentureScreenPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F31000000000000000000013 /* VentureScreenPresentationTests.swift */; };
 		F32000000000000000000001 /* FounderGarageMotionPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32000000000000000000011 /* FounderGarageMotionPresentation.swift */; };
 		F32500000000000000000001 /* FounderGaragePhysicalComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32500000000000000000011 /* FounderGaragePhysicalComponents.swift */; };
-		F40000000000000000000001 /* FounderGarageRendererConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000011 /* FounderGarageRendererConfiguration.swift */; };
-		F40000000000000000000002 /* FounderWorldPresentationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000012 /* FounderWorldPresentationModel.swift */; };
-		F40000000000000000000003 /* FounderGarageRealityScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000013 /* FounderGarageRealityScene.swift */; };
-		F40000000000000000000004 /* FounderGarageRealityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000014 /* FounderGarageRealityView.swift */; };
-		F40000000000000000000005 /* FounderGarageRealityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000015 /* FounderGarageRealityTests.swift */; };
-		F40000000000000000000006 /* founder_garage.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000016 /* founder_garage.usdz */; };
-		F40000000000000000000007 /* founder_garage_v3.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000017 /* founder_garage_v3.usdz */; };
-		F40000000000000000000008 /* founder_garage_v4.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000018 /* founder_garage_v4.usdz */; };
-		F40000000000000000000009 /* founder_garage_v6.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000019 /* founder_garage_v6.usdz */; };
-		F4000000000000000000000A /* founder_garage_v7.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F4100000000000000000001A /* founder_garage_v7.usdz */; };
 		F32700000000000000000001 /* WorkSessionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000011 /* WorkSessionEngine.swift */; };
 		F32700000000000000000002 /* EvidenceTriageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000012 /* EvidenceTriageView.swift */; };
 		F32700000000000000000003 /* WorkSessionEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32700000000000000000013 /* WorkSessionEngineTests.swift */; };
@@ -145,35 +157,28 @@
 		F32800000000000000000001 /* CampaignCalibrationChallenge.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32800000000000000000011 /* CampaignCalibrationChallenge.swift */; };
 		F32800000000000000000002 /* CampaignCalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32800000000000000000012 /* CampaignCalibrationView.swift */; };
 		F32800000000000000000003 /* CampaignCalibrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32800000000000000000013 /* CampaignCalibrationTests.swift */; };
+		F40000000000000000000001 /* FounderGarageRendererConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000011 /* FounderGarageRendererConfiguration.swift */; };
+		F40000000000000000000002 /* FounderWorldPresentationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000012 /* FounderWorldPresentationModel.swift */; };
+		F40000000000000000000003 /* FounderGarageRealityScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000013 /* FounderGarageRealityScene.swift */; };
+		F40000000000000000000004 /* FounderGarageRealityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000014 /* FounderGarageRealityView.swift */; };
+		F40000000000000000000005 /* FounderGarageRealityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000015 /* FounderGarageRealityTests.swift */; };
+		F40000000000000000000006 /* RealityKit/FounderGarage/founder_garage.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000016 /* RealityKit/FounderGarage/founder_garage.usdz */; };
+		F40000000000000000000007 /* RealityKit/FounderGarage/founder_garage_v3.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000017 /* RealityKit/FounderGarage/founder_garage_v3.usdz */; };
+		F40000000000000000000008 /* RealityKit/FounderGarage/founder_garage_v4.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000018 /* RealityKit/FounderGarage/founder_garage_v4.usdz */; };
+		F40000000000000000000009 /* RealityKit/FounderGarage/founder_garage_v6.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F41000000000000000000019 /* RealityKit/FounderGarage/founder_garage_v6.usdz */; };
+		F4000000000000000000000A /* RealityKit/FounderGarage/founder_garage_v7.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F4100000000000000000001A /* RealityKit/FounderGarage/founder_garage_v7.usdz */; };
+		F4000000000000000000000B /* RealityKit/FounderGarage/founder_garage_v8.usdz in Resources */ = {isa = PBXBuildFile; fileRef = F4100000000000000000001B /* RealityKit/FounderGarage/founder_garage_v8.usdz */; };
+		F878FAA6A216A9E396C26CFC /* AtlantisRuntimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 207E2115321660B4EE667E49 /* AtlantisRuntimeTests.swift */; };
+		F9B22E3E18C9ABBB564D5F61 /* RealityKit/Atlantis/founder_district.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 4A82CDCF9534DE7B7D7747DD /* RealityKit/Atlantis/founder_district.usdz */; };
 		FB6CDD52B76B96B369913C6B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */; };
+		FC1900000000000000000001 /* FounderCharacterContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1900000000000000000011 /* FounderCharacterContract.swift */; };
+		FC1900000000000000000002 /* FounderCharacterContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1900000000000000000012 /* FounderCharacterContractTests.swift */; };
+		FC1900000000000000000003 /* RealityKit/FounderCharacter/founder_candidate_a.usdz in Resources */ = {isa = PBXBuildFile; fileRef = FC1900000000000000000013 /* RealityKit/FounderCharacter/founder_candidate_a.usdz */; };
+		FC1900000000000000000004 /* founder_validation_pose.json in Resources */ = {isa = PBXBuildFile; fileRef = FC1900000000000000000014 /* founder_validation_pose.json */; };
 		FD3270000000000000000001 /* FounderDeskWorkspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000011 /* FounderDeskWorkspace.swift */; };
 		FD3270000000000000000002 /* FounderDeskWorkspaceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */; };
 		FD3270000000000000000003 /* FounderDeskWorkspaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3270000000000000000013 /* FounderDeskWorkspaceTests.swift */; };
 		FD3275000000000000000001 /* FounderDevicePresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD3275000000000000000011 /* FounderDevicePresentation.swift */; };
-		06501CF6503A40F532F9732C /* AtlantisWorldPresentationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24B6048AF96C255824BFD84D /* AtlantisWorldPresentationModel.swift */; };
-		A2C2E52CAB4B3D4FB22505FE /* AtlantisDistrictLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA44EBA9C58588064E85F9D /* AtlantisDistrictLoader.swift */; };
-		8B4BC4FB4B2E11ABF5F0BC68 /* AtlantisRealityScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33F63C7037788FB68E97F470 /* AtlantisRealityScene.swift */; };
-		3FFDB1A752077DF06EB9A10C /* AtlantisRealityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52DC80EBBC1FDC96FB99C09 /* AtlantisRealityView.swift */; };
-		F878FAA6A216A9E396C26CFC /* AtlantisRuntimeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 207E2115321660B4EE667E49 /* AtlantisRuntimeTests.swift */; };
-		2CD20EBFEFA39219C29D6D89 /* AtlantisRuntimeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5203A824B352EB66DD5B6C4A /* AtlantisRuntimeUITests.swift */; };
-		F9B22E3E18C9ABBB564D5F61 /* founder_district.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 4A82CDCF9534DE7B7D7747DD /* founder_district.usdz */; };
-		3CB10B38F18C24716CF842AB /* startup_row.usdz in Resources */ = {isa = PBXBuildFile; fileRef = B745020E2276418CFF2C353D /* startup_row.usdz */; };
-		466402B70C12D8D329D619EA /* commerce_district.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A04CCE6D5AE47A888C2FA2B8 /* commerce_district.usdz */; };
-		0CA80CD2498001065D32D217 /* venture_district.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 0A8A478F9D2797B6041D0489 /* venture_district.usdz */; };
-		0193AF627ED8FC68EA552A5E /* media_district.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 6DC69315C74D4212576685B0 /* media_district.usdz */; };
-		C18ED78F7C3C14DC5FC8701F /* tech_core.usdz in Resources */ = {isa = PBXBuildFile; fileRef = DA9511FDBB4B0DB7C6B09106 /* tech_core.usdz */; };
-		3977CAE71F1ACD186BC7F742 /* unicorn_heights.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 93E38D6F680617E0A241D203 /* unicorn_heights.usdz */; };
-		C2E0680A0168829B1D9C4877 /* world_context.usdz in Resources */ = {isa = PBXBuildFile; fileRef = 1B0B8BA0257A2FDE8488F12C /* world_context.usdz */; };
-		C0ABE533359C7059C8CF83CD /* atlantis_manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 2BCCB6F92A46ACB05330AE9B /* atlantis_manifest.json */; };
-		A11000000000000000000002 /* founder_district_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11000000000000000000001 /* founder_district_batched.usdz */; };
-		A11100000000000000000002 /* startup_row_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11100000000000000000001 /* startup_row_batched.usdz */; };
-		A11200000000000000000002 /* commerce_district_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11200000000000000000001 /* commerce_district_batched.usdz */; };
-		A11300000000000000000002 /* tech_core_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11300000000000000000001 /* tech_core_batched.usdz */; };
-		A11400000000000000000002 /* unicorn_heights_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11400000000000000000001 /* unicorn_heights_batched.usdz */; };
-		A11500000000000000000002 /* venture_district_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11500000000000000000001 /* venture_district_batched.usdz */; };
-		A11600000000000000000002 /* media_district_batched.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A11600000000000000000001 /* media_district_batched.usdz */; };
-		A12000000000000000000002 /* tech_unicorn_bridge_repaired.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A12000000000000000000001 /* tech_unicorn_bridge_repaired.usdz */; };
-		A12100000000000000000002 /* spire_far_proxy.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A12100000000000000000001 /* spire_far_proxy.usdz */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -194,13 +199,33 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0A8A478F9D2797B6041D0489 /* RealityKit/Atlantis/venture_district.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/venture_district.usdz; sourceTree = "<group>"; };
 		17558F294800127BE04C0EBD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1B0B8BA0257A2FDE8488F12C /* RealityKit/Atlantis/world_context.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/world_context.usdz; sourceTree = "<group>"; };
+		207E2115321660B4EE667E49 /* AtlantisRuntimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisRuntimeTests.swift; sourceTree = "<group>"; };
+		24B6048AF96C255824BFD84D /* AtlantisWorldPresentationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisWorldPresentationModel.swift; sourceTree = "<group>"; };
 		2513145C1504A166E8177382 /* GameStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStoreTests.swift; sourceTree = "<group>"; };
+		2BCCB6F92A46ACB05330AE9B /* RealityKit/Atlantis/atlantis_manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = RealityKit/Atlantis/atlantis_manifest.json; sourceTree = "<group>"; };
 		326100000000000000000002 /* Build32_6_1ProductionContinuityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_6_1ProductionContinuityUITests.swift; sourceTree = "<group>"; };
 		326100000000000000000003 /* Solo Unicorn Run UI Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Solo Unicorn Run UI Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		33F63C7037788FB68E97F470 /* AtlantisRealityScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisRealityScene.swift; sourceTree = "<group>"; };
+		4A82CDCF9534DE7B7D7747DD /* RealityKit/Atlantis/founder_district.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/founder_district.usdz; sourceTree = "<group>"; };
 		4FB3F3A34C09C15574734B61 /* Solo Unicorn Run Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Solo Unicorn Run Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5203A824B352EB66DD5B6C4A /* AtlantisRuntimeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisRuntimeUITests.swift; sourceTree = "<group>"; };
+		6DC69315C74D4212576685B0 /* RealityKit/Atlantis/media_district.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/media_district.usdz; sourceTree = "<group>"; };
 		7CB9F64447826C8051328902 /* SimulationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationModels.swift; sourceTree = "<group>"; };
+		93E38D6F680617E0A241D203 /* RealityKit/Atlantis/unicorn_heights.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/unicorn_heights.usdz; sourceTree = "<group>"; };
 		94AA2809B6198CB8955EEFAC /* GameStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStore.swift; sourceTree = "<group>"; };
+		A04CCE6D5AE47A888C2FA2B8 /* RealityKit/Atlantis/commerce_district.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/commerce_district.usdz; sourceTree = "<group>"; };
+		A11000000000000000000001 /* RealityKit/Atlantis/founder_district_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/founder_district_batched.usdz; sourceTree = "<group>"; };
+		A11100000000000000000001 /* RealityKit/Atlantis/startup_row_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/startup_row_batched.usdz; sourceTree = "<group>"; };
+		A11200000000000000000001 /* RealityKit/Atlantis/commerce_district_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/commerce_district_batched.usdz; sourceTree = "<group>"; };
+		A11300000000000000000001 /* RealityKit/Atlantis/tech_core_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/tech_core_batched.usdz; sourceTree = "<group>"; };
+		A11400000000000000000001 /* RealityKit/Atlantis/unicorn_heights_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/unicorn_heights_batched.usdz; sourceTree = "<group>"; };
+		A11500000000000000000001 /* RealityKit/Atlantis/venture_district_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/venture_district_batched.usdz; sourceTree = "<group>"; };
+		A11600000000000000000001 /* RealityKit/Atlantis/media_district_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/media_district_batched.usdz; sourceTree = "<group>"; };
+		A12000000000000000000001 /* RealityKit/Atlantis/tech_unicorn_bridge_repaired.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/tech_unicorn_bridge_repaired.usdz; sourceTree = "<group>"; };
+		A12100000000000000000001 /* RealityKit/Atlantis/spire_far_proxy.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/spire_far_proxy.usdz; sourceTree = "<group>"; };
 		A31000000000000000000001 /* SprintOutcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SprintOutcomeScreen.swift; sourceTree = "<group>"; };
 		A31000000000000000000002 /* HindsightArchiveCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HindsightArchiveCard.swift; sourceTree = "<group>"; };
 		A5A100000000000000000011 /* SignalTVModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalTVModels.swift; sourceTree = "<group>"; };
@@ -242,6 +267,8 @@
 		B33000000000000000000012 /* AIOperationsFloor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIOperationsFloor.swift; sourceTree = "<group>"; };
 		B33000000000000000000013 /* CompanyFinanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyFinanceTests.swift; sourceTree = "<group>"; };
 		B33000000000000000000014 /* AIOperationsFloorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIOperationsFloorTests.swift; sourceTree = "<group>"; };
+		B52DC80EBBC1FDC96FB99C09 /* AtlantisRealityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisRealityView.swift; sourceTree = "<group>"; };
+		B745020E2276418CFF2C353D /* RealityKit/Atlantis/startup_row.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/startup_row.usdz; sourceTree = "<group>"; };
 		C10000000000000000000001 /* AgentVisualState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentVisualState.swift; sourceTree = "<group>"; };
 		C10000000000000000000002 /* CareerOutcomeEnvironmentBackdrop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CareerOutcomeEnvironmentBackdrop.swift; sourceTree = "<group>"; };
 		C10000000000000000000003 /* EnvironmentPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentPresentation.swift; sourceTree = "<group>"; };
@@ -263,6 +290,7 @@
 		C10000000000000000000015 /* EmpireTaskExpansion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmpireTaskExpansion.swift; sourceTree = "<group>"; };
 		C10000000000000000000016 /* ContentLibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentLibraryTests.swift; sourceTree = "<group>"; };
 		CE09C90DB6AC97A8F2FAA9FC /* SeededRandomNumberGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeededRandomNumberGenerator.swift; sourceTree = "<group>"; };
+		CFA44EBA9C58588064E85F9D /* AtlantisDistrictLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisDistrictLoader.swift; sourceTree = "<group>"; };
 		D10000000000000000000001 /* DoctrineProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoctrineProfile.swift; sourceTree = "<group>"; };
 		D10000000000000000000002 /* ContentLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentLibrary.swift; sourceTree = "<group>"; };
 		D10000000000000000000003 /* SimulationEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationEngine.swift; sourceTree = "<group>"; };
@@ -280,6 +308,7 @@
 		D1000000000000000000002D /* PrecedentRecordsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrecedentRecordsTests.swift; sourceTree = "<group>"; };
 		D3E7E924208E29B28AFAA264 /* GameModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameModels.swift; sourceTree = "<group>"; };
 		D4A03B7B05268ED7B62BC8D1 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		DA9511FDBB4B0DB7C6B09106 /* RealityKit/Atlantis/tech_core.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/tech_core.usdz; sourceTree = "<group>"; };
 		E10000000000000000000001 /* ContinuousModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinuousModeTests.swift; sourceTree = "<group>"; };
 		E10000000000000000000002 /* SimulationEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationEngineTests.swift; sourceTree = "<group>"; };
 		E10000000000000000000011 /* TechComEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TechComEngine.swift; sourceTree = "<group>"; };
@@ -315,16 +344,6 @@
 		F31000000000000000000013 /* VentureScreenPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VentureScreenPresentationTests.swift; sourceTree = "<group>"; };
 		F32000000000000000000011 /* FounderGarageMotionPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageMotionPresentation.swift; sourceTree = "<group>"; };
 		F32500000000000000000011 /* FounderGaragePhysicalComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGaragePhysicalComponents.swift; sourceTree = "<group>"; };
-		F41000000000000000000011 /* FounderGarageRendererConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageRendererConfiguration.swift; sourceTree = "<group>"; };
-		F41000000000000000000012 /* FounderWorldPresentationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderWorldPresentationModel.swift; sourceTree = "<group>"; };
-		F41000000000000000000013 /* FounderGarageRealityScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageRealityScene.swift; sourceTree = "<group>"; };
-		F41000000000000000000014 /* FounderGarageRealityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageRealityView.swift; sourceTree = "<group>"; };
-		F41000000000000000000015 /* FounderGarageRealityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageRealityTests.swift; sourceTree = "<group>"; };
-		F41000000000000000000016 /* founder_garage.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage.usdz; sourceTree = "<group>"; };
-		F41000000000000000000017 /* founder_garage_v3.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage_v3.usdz; sourceTree = "<group>"; };
-		F41000000000000000000018 /* founder_garage_v4.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage_v4.usdz; sourceTree = "<group>"; };
-		F41000000000000000000019 /* founder_garage_v6.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage_v6.usdz; sourceTree = "<group>"; };
-		F4100000000000000000001A /* founder_garage_v7.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage_v7.usdz; sourceTree = "<group>"; };
 		F32700000000000000000011 /* WorkSessionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionEngine.swift; sourceTree = "<group>"; };
 		F32700000000000000000012 /* EvidenceTriageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvidenceTriageView.swift; sourceTree = "<group>"; };
 		F32700000000000000000013 /* WorkSessionEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkSessionEngineTests.swift; sourceTree = "<group>"; };
@@ -334,35 +353,26 @@
 		F32800000000000000000011 /* CampaignCalibrationChallenge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignCalibrationChallenge.swift; sourceTree = "<group>"; };
 		F32800000000000000000012 /* CampaignCalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignCalibrationView.swift; sourceTree = "<group>"; };
 		F32800000000000000000013 /* CampaignCalibrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CampaignCalibrationTests.swift; sourceTree = "<group>"; };
+		F41000000000000000000011 /* FounderGarageRendererConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageRendererConfiguration.swift; sourceTree = "<group>"; };
+		F41000000000000000000012 /* FounderWorldPresentationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderWorldPresentationModel.swift; sourceTree = "<group>"; };
+		F41000000000000000000013 /* FounderGarageRealityScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageRealityScene.swift; sourceTree = "<group>"; };
+		F41000000000000000000014 /* FounderGarageRealityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageRealityView.swift; sourceTree = "<group>"; };
+		F41000000000000000000015 /* FounderGarageRealityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderGarageRealityTests.swift; sourceTree = "<group>"; };
+		F41000000000000000000016 /* RealityKit/FounderGarage/founder_garage.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage.usdz; sourceTree = "<group>"; };
+		F41000000000000000000017 /* RealityKit/FounderGarage/founder_garage_v3.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage_v3.usdz; sourceTree = "<group>"; };
+		F41000000000000000000018 /* RealityKit/FounderGarage/founder_garage_v4.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage_v4.usdz; sourceTree = "<group>"; };
+		F41000000000000000000019 /* RealityKit/FounderGarage/founder_garage_v6.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage_v6.usdz; sourceTree = "<group>"; };
+		F4100000000000000000001A /* RealityKit/FounderGarage/founder_garage_v7.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage_v7.usdz; sourceTree = "<group>"; };
+		F4100000000000000000001B /* RealityKit/FounderGarage/founder_garage_v8.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderGarage/founder_garage_v8.usdz; sourceTree = "<group>"; };
 		FB05034A23E5A13D7BBCBDF0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		FC1900000000000000000011 /* FounderCharacterContract.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderCharacterContract.swift; sourceTree = "<group>"; };
+		FC1900000000000000000012 /* FounderCharacterContractTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderCharacterContractTests.swift; sourceTree = "<group>"; };
+		FC1900000000000000000013 /* RealityKit/FounderCharacter/founder_candidate_a.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/FounderCharacter/founder_candidate_a.usdz; sourceTree = "<group>"; };
+		FC1900000000000000000014 /* founder_validation_pose.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = RealityKit/FounderCharacter/founder_validation_pose.json; sourceTree = "<group>"; };
 		FD3270000000000000000011 /* FounderDeskWorkspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspace.swift; sourceTree = "<group>"; };
 		FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspaceModel.swift; sourceTree = "<group>"; };
 		FD3270000000000000000013 /* FounderDeskWorkspaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDeskWorkspaceTests.swift; sourceTree = "<group>"; };
 		FD3275000000000000000011 /* FounderDevicePresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FounderDevicePresentation.swift; sourceTree = "<group>"; };
-		24B6048AF96C255824BFD84D /* AtlantisWorldPresentationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisWorldPresentationModel.swift; sourceTree = "<group>"; };
-		CFA44EBA9C58588064E85F9D /* AtlantisDistrictLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisDistrictLoader.swift; sourceTree = "<group>"; };
-		33F63C7037788FB68E97F470 /* AtlantisRealityScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisRealityScene.swift; sourceTree = "<group>"; };
-		B52DC80EBBC1FDC96FB99C09 /* AtlantisRealityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisRealityView.swift; sourceTree = "<group>"; };
-		207E2115321660B4EE667E49 /* AtlantisRuntimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisRuntimeTests.swift; sourceTree = "<group>"; };
-		5203A824B352EB66DD5B6C4A /* AtlantisRuntimeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisRuntimeUITests.swift; sourceTree = "<group>"; };
-		4A82CDCF9534DE7B7D7747DD /* founder_district.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/founder_district.usdz; sourceTree = "<group>"; };
-		B745020E2276418CFF2C353D /* startup_row.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/startup_row.usdz; sourceTree = "<group>"; };
-		A04CCE6D5AE47A888C2FA2B8 /* commerce_district.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/commerce_district.usdz; sourceTree = "<group>"; };
-		0A8A478F9D2797B6041D0489 /* venture_district.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/venture_district.usdz; sourceTree = "<group>"; };
-		6DC69315C74D4212576685B0 /* media_district.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/media_district.usdz; sourceTree = "<group>"; };
-		DA9511FDBB4B0DB7C6B09106 /* tech_core.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/tech_core.usdz; sourceTree = "<group>"; };
-		93E38D6F680617E0A241D203 /* unicorn_heights.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/unicorn_heights.usdz; sourceTree = "<group>"; };
-		1B0B8BA0257A2FDE8488F12C /* world_context.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/world_context.usdz; sourceTree = "<group>"; };
-		2BCCB6F92A46ACB05330AE9B /* atlantis_manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = RealityKit/Atlantis/atlantis_manifest.json; sourceTree = "<group>"; };
-		A11000000000000000000001 /* founder_district_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/founder_district_batched.usdz; sourceTree = "<group>"; };
-		A11100000000000000000001 /* startup_row_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/startup_row_batched.usdz; sourceTree = "<group>"; };
-		A11200000000000000000001 /* commerce_district_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/commerce_district_batched.usdz; sourceTree = "<group>"; };
-		A11300000000000000000001 /* tech_core_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/tech_core_batched.usdz; sourceTree = "<group>"; };
-		A11400000000000000000001 /* unicorn_heights_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/unicorn_heights_batched.usdz; sourceTree = "<group>"; };
-		A11500000000000000000001 /* venture_district_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/venture_district_batched.usdz; sourceTree = "<group>"; };
-		A11600000000000000000001 /* media_district_batched.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/media_district_batched.usdz; sourceTree = "<group>"; };
-		A12000000000000000000001 /* tech_unicorn_bridge_repaired.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/tech_unicorn_bridge_repaired.usdz; sourceTree = "<group>"; };
-		A12100000000000000000001 /* spire_far_proxy.usdz */ = {isa = PBXFileReference; lastKnownFileType = file.usdz; path = RealityKit/Atlantis/spire_far_proxy.usdz; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -415,6 +425,7 @@
 				A5A100000000000000000013 /* SignalTVTests.swift */,
 				FD3270000000000000000013 /* FounderDeskWorkspaceTests.swift */,
 				F41000000000000000000015 /* FounderGarageRealityTests.swift */,
+				FC1900000000000000000012 /* FounderCharacterContractTests.swift */,
 				207E2115321660B4EE667E49 /* AtlantisRuntimeTests.swift */,
 				B32100000000000000000003 /* Build32LivingCompanyTests.swift */,
 				B32300000000000000000001 /* Build32_1ViewportInteractionTests.swift */,
@@ -453,6 +464,7 @@
 				B28000000000000000000011 /* OutcomeBackdropMotionTests.swift */,
 				F31000000000000000000013 /* VentureScreenPresentationTests.swift */,
 				F28000000000000000000012 /* AgentWorkstationTests.swift */,
+				EA6B7C193059E8C800B3933E /* Fixtures */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -474,36 +486,40 @@
 				FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */,
 				FD3275000000000000000011 /* FounderDevicePresentation.swift */,
 				F41000000000000000000011 /* FounderGarageRendererConfiguration.swift */,
+				FC1900000000000000000011 /* FounderCharacterContract.swift */,
 				F41000000000000000000012 /* FounderWorldPresentationModel.swift */,
 				F41000000000000000000013 /* FounderGarageRealityScene.swift */,
-				2BCCB6F92A46ACB05330AE9B /* atlantis_manifest.json */,
-				1B0B8BA0257A2FDE8488F12C /* world_context.usdz */,
-				93E38D6F680617E0A241D203 /* unicorn_heights.usdz */,
-				DA9511FDBB4B0DB7C6B09106 /* tech_core.usdz */,
-				6DC69315C74D4212576685B0 /* media_district.usdz */,
-				0A8A478F9D2797B6041D0489 /* venture_district.usdz */,
-				A04CCE6D5AE47A888C2FA2B8 /* commerce_district.usdz */,
-				B745020E2276418CFF2C353D /* startup_row.usdz */,
-				4A82CDCF9534DE7B7D7747DD /* founder_district.usdz */,
-				A11000000000000000000001 /* founder_district_batched.usdz */,
-				A11100000000000000000001 /* startup_row_batched.usdz */,
-				A11200000000000000000001 /* commerce_district_batched.usdz */,
-				A11300000000000000000001 /* tech_core_batched.usdz */,
-				A11400000000000000000001 /* unicorn_heights_batched.usdz */,
-				A11500000000000000000001 /* venture_district_batched.usdz */,
-				A11600000000000000000001 /* media_district_batched.usdz */,
-				A12000000000000000000001 /* tech_unicorn_bridge_repaired.usdz */,
-				A12100000000000000000001 /* spire_far_proxy.usdz */,
+				2BCCB6F92A46ACB05330AE9B /* RealityKit/Atlantis/atlantis_manifest.json */,
+				1B0B8BA0257A2FDE8488F12C /* RealityKit/Atlantis/world_context.usdz */,
+				93E38D6F680617E0A241D203 /* RealityKit/Atlantis/unicorn_heights.usdz */,
+				DA9511FDBB4B0DB7C6B09106 /* RealityKit/Atlantis/tech_core.usdz */,
+				6DC69315C74D4212576685B0 /* RealityKit/Atlantis/media_district.usdz */,
+				0A8A478F9D2797B6041D0489 /* RealityKit/Atlantis/venture_district.usdz */,
+				A04CCE6D5AE47A888C2FA2B8 /* RealityKit/Atlantis/commerce_district.usdz */,
+				B745020E2276418CFF2C353D /* RealityKit/Atlantis/startup_row.usdz */,
+				4A82CDCF9534DE7B7D7747DD /* RealityKit/Atlantis/founder_district.usdz */,
+				A11000000000000000000001 /* RealityKit/Atlantis/founder_district_batched.usdz */,
+				A11100000000000000000001 /* RealityKit/Atlantis/startup_row_batched.usdz */,
+				A11200000000000000000001 /* RealityKit/Atlantis/commerce_district_batched.usdz */,
+				A11300000000000000000001 /* RealityKit/Atlantis/tech_core_batched.usdz */,
+				A11400000000000000000001 /* RealityKit/Atlantis/unicorn_heights_batched.usdz */,
+				A11500000000000000000001 /* RealityKit/Atlantis/venture_district_batched.usdz */,
+				A11600000000000000000001 /* RealityKit/Atlantis/media_district_batched.usdz */,
+				A12000000000000000000001 /* RealityKit/Atlantis/tech_unicorn_bridge_repaired.usdz */,
+				A12100000000000000000001 /* RealityKit/Atlantis/spire_far_proxy.usdz */,
 				B52DC80EBBC1FDC96FB99C09 /* AtlantisRealityView.swift */,
 				33F63C7037788FB68E97F470 /* AtlantisRealityScene.swift */,
 				CFA44EBA9C58588064E85F9D /* AtlantisDistrictLoader.swift */,
 				24B6048AF96C255824BFD84D /* AtlantisWorldPresentationModel.swift */,
 				F41000000000000000000014 /* FounderGarageRealityView.swift */,
-				F41000000000000000000016 /* founder_garage.usdz */,
-				F41000000000000000000017 /* founder_garage_v3.usdz */,
-				F41000000000000000000018 /* founder_garage_v4.usdz */,
-				F41000000000000000000019 /* founder_garage_v6.usdz */,
-				F4100000000000000000001A /* founder_garage_v7.usdz */,
+				F41000000000000000000016 /* RealityKit/FounderGarage/founder_garage.usdz */,
+				F41000000000000000000017 /* RealityKit/FounderGarage/founder_garage_v3.usdz */,
+				F41000000000000000000018 /* RealityKit/FounderGarage/founder_garage_v4.usdz */,
+				F41000000000000000000019 /* RealityKit/FounderGarage/founder_garage_v6.usdz */,
+				F4100000000000000000001A /* RealityKit/FounderGarage/founder_garage_v7.usdz */,
+				F4100000000000000000001B /* RealityKit/FounderGarage/founder_garage_v8.usdz */,
+				FC1900000000000000000013 /* RealityKit/FounderCharacter/founder_candidate_a.usdz */,
+				FC1900000000000000000014 /* founder_validation_pose.json */,
 				B32900000000000000000001 /* CompanyCommandScene.swift */,
 				B32100000000000000000001 /* CompanyCommandViewport.swift */,
 				B32100000000000000000002 /* LivingCompanyPresentation.swift */,
@@ -592,6 +608,21 @@
 			);
 			sourceTree = "<group>";
 		};
+		EA6B7C193059E8C800B3933E /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				EA6B7C1A3059E8CD00B3933E /* Blueprint */,
+			);
+			path = Fixtures;
+			sourceTree = "<group>";
+		};
+		EA6B7C1A3059E8CD00B3933E /* Blueprint */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Blueprint;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -660,7 +691,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2660;
+				LastUpgradeCheck = 2700;
 				TargetAttributes = {
 					574DB10F4C1A7535A2094038 = {
 						SystemCapabilities = {
@@ -701,29 +732,32 @@
 			buildActionMask = 2147483647;
 			files = (
 				ABDFC492407A05E2BC397A8D /* Assets.xcassets in Resources */,
-				F40000000000000000000006 /* founder_garage.usdz in Resources */,
-				F40000000000000000000007 /* founder_garage_v3.usdz in Resources */,
-				F40000000000000000000008 /* founder_garage_v4.usdz in Resources */,
-				F40000000000000000000009 /* founder_garage_v6.usdz in Resources */,
-				F4000000000000000000000A /* founder_garage_v7.usdz in Resources */,
-				C0ABE533359C7059C8CF83CD /* atlantis_manifest.json in Resources */,
-				C2E0680A0168829B1D9C4877 /* world_context.usdz in Resources */,
-				3977CAE71F1ACD186BC7F742 /* unicorn_heights.usdz in Resources */,
-				C18ED78F7C3C14DC5FC8701F /* tech_core.usdz in Resources */,
-				0193AF627ED8FC68EA552A5E /* media_district.usdz in Resources */,
-				0CA80CD2498001065D32D217 /* venture_district.usdz in Resources */,
-				466402B70C12D8D329D619EA /* commerce_district.usdz in Resources */,
-				3CB10B38F18C24716CF842AB /* startup_row.usdz in Resources */,
-				F9B22E3E18C9ABBB564D5F61 /* founder_district.usdz in Resources */,
-				A11000000000000000000002 /* founder_district_batched.usdz in Resources */,
-				A11100000000000000000002 /* startup_row_batched.usdz in Resources */,
-				A11200000000000000000002 /* commerce_district_batched.usdz in Resources */,
-				A11300000000000000000002 /* tech_core_batched.usdz in Resources */,
-				A11400000000000000000002 /* unicorn_heights_batched.usdz in Resources */,
-				A11500000000000000000002 /* venture_district_batched.usdz in Resources */,
-				A11600000000000000000002 /* media_district_batched.usdz in Resources */,
-				A12000000000000000000002 /* tech_unicorn_bridge_repaired.usdz in Resources */,
-				A12100000000000000000002 /* spire_far_proxy.usdz in Resources */,
+				F40000000000000000000006 /* RealityKit/FounderGarage/founder_garage.usdz in Resources */,
+				F40000000000000000000007 /* RealityKit/FounderGarage/founder_garage_v3.usdz in Resources */,
+				F40000000000000000000008 /* RealityKit/FounderGarage/founder_garage_v4.usdz in Resources */,
+				F40000000000000000000009 /* RealityKit/FounderGarage/founder_garage_v6.usdz in Resources */,
+				F4000000000000000000000A /* RealityKit/FounderGarage/founder_garage_v7.usdz in Resources */,
+				F4000000000000000000000B /* RealityKit/FounderGarage/founder_garage_v8.usdz in Resources */,
+				FC1900000000000000000003 /* RealityKit/FounderCharacter/founder_candidate_a.usdz in Resources */,
+				FC1900000000000000000004 /* founder_validation_pose.json in Resources */,
+				C0ABE533359C7059C8CF83CD /* RealityKit/Atlantis/atlantis_manifest.json in Resources */,
+				C2E0680A0168829B1D9C4877 /* RealityKit/Atlantis/world_context.usdz in Resources */,
+				3977CAE71F1ACD186BC7F742 /* RealityKit/Atlantis/unicorn_heights.usdz in Resources */,
+				C18ED78F7C3C14DC5FC8701F /* RealityKit/Atlantis/tech_core.usdz in Resources */,
+				0193AF627ED8FC68EA552A5E /* RealityKit/Atlantis/media_district.usdz in Resources */,
+				0CA80CD2498001065D32D217 /* RealityKit/Atlantis/venture_district.usdz in Resources */,
+				466402B70C12D8D329D619EA /* RealityKit/Atlantis/commerce_district.usdz in Resources */,
+				3CB10B38F18C24716CF842AB /* RealityKit/Atlantis/startup_row.usdz in Resources */,
+				F9B22E3E18C9ABBB564D5F61 /* RealityKit/Atlantis/founder_district.usdz in Resources */,
+				A11000000000000000000002 /* RealityKit/Atlantis/founder_district_batched.usdz in Resources */,
+				A11100000000000000000002 /* RealityKit/Atlantis/startup_row_batched.usdz in Resources */,
+				A11200000000000000000002 /* RealityKit/Atlantis/commerce_district_batched.usdz in Resources */,
+				A11300000000000000000002 /* RealityKit/Atlantis/tech_core_batched.usdz in Resources */,
+				A11400000000000000000002 /* RealityKit/Atlantis/unicorn_heights_batched.usdz in Resources */,
+				A11500000000000000000002 /* RealityKit/Atlantis/venture_district_batched.usdz in Resources */,
+				A11600000000000000000002 /* RealityKit/Atlantis/media_district_batched.usdz in Resources */,
+				A12000000000000000000002 /* RealityKit/Atlantis/tech_unicorn_bridge_repaired.usdz in Resources */,
+				A12100000000000000000002 /* RealityKit/Atlantis/spire_far_proxy.usdz in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -751,6 +785,7 @@
 				A5A100000000000000000003 /* SignalTVTests.swift in Sources */,
 				FD3270000000000000000003 /* FounderDeskWorkspaceTests.swift in Sources */,
 				F40000000000000000000005 /* FounderGarageRealityTests.swift in Sources */,
+				FC1900000000000000000002 /* FounderCharacterContractTests.swift in Sources */,
 				F878FAA6A216A9E396C26CFC /* AtlantisRuntimeTests.swift in Sources */,
 				B32000000000000000000003 /* Build32LivingCompanyTests.swift in Sources */,
 				B32200000000000000000001 /* Build32_1ViewportInteractionTests.swift in Sources */,
@@ -810,6 +845,7 @@
 				FD3270000000000000000002 /* FounderDeskWorkspaceModel.swift in Sources */,
 				FD3275000000000000000001 /* FounderDevicePresentation.swift in Sources */,
 				F40000000000000000000001 /* FounderGarageRendererConfiguration.swift in Sources */,
+				FC1900000000000000000001 /* FounderCharacterContract.swift in Sources */,
 				F40000000000000000000002 /* FounderWorldPresentationModel.swift in Sources */,
 				F40000000000000000000003 /* FounderGarageRealityScene.swift in Sources */,
 				3FFDB1A752077DF06EB9A10C /* AtlantisRealityView.swift in Sources */,
@@ -916,7 +952,6 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 32707;
-				DEVELOPMENT_TEAM = 45J3S2R2DK;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -941,7 +976,6 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 32707;
-				DEVELOPMENT_TEAM = 45J3S2R2DK;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1051,6 +1085,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 45J3S2R2DK;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1116,6 +1151,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 45J3S2R2DK;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;

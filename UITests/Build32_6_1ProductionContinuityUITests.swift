@@ -186,7 +186,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
 
   func testCommandCenterPortraitProductionAssignmentsAndReturn() throws {
     let app = XCUIApplication()
-    app.launchArguments = ["--founder-desk-production-proof"]
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-legacy"]
     app.launch()
     enterFreshProductionCareer(in: app)
     focusDevice(.computer, expectedTitle: "Founder Computer", in: app)
@@ -289,7 +289,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
 
   func testPortraitFramingNativeAcceptanceHold() throws {
     let app = XCUIApplication()
-    app.launchArguments = ["--founder-desk-production-proof"]
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-legacy"]
     app.launch()
     enterFreshProductionCareer(in: app)
     focusDevice(.computer, expectedTitle: "Founder Computer", in: app)
@@ -423,7 +423,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
   /// skipped; the hold is for the visible working/completion/awaiting sequence.
   private func exercisePortraitNativeAcceptance(name: String, taskIndex: Int) throws {
     let app = XCUIApplication()
-    app.launchArguments = ["--founder-desk-production-proof"]
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-legacy"]
     app.launch()
     enterFreshProductionCareer(in: app)
     focusDevice(.computer, expectedTitle: "Founder Computer", in: app)
@@ -629,7 +629,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
 
   func testIdleGarageAmbientLifeHold() throws {
     let app = XCUIApplication()
-    app.launchArguments = ["--founder-desk-production-proof"]
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-legacy"]
     app.launch()
 
     let continueCareer = app.buttons["Continue Career"]
@@ -660,7 +660,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
 
   func testCompanyServerCanonicalOperationsRoundTrip() throws {
     let app = XCUIApplication()
-    app.launchArguments = ["--founder-desk-production-proof"]
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-legacy"]
     app.launch()
     enterFreshProductionCareer(in: app)
 
@@ -704,10 +704,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
 
   func testRealityKitGarageFounderComputerRoundTrip() throws {
     let app = XCUIApplication()
-    app.launchArguments = [
-      "--founder-desk-production-proof",
-      "--founder-garage-realitykit"
-    ]
+    app.launchArguments = ["--founder-desk-production-proof"]
     app.launch()
     enterFreshProductionCareer(in: app)
 
@@ -750,6 +747,41 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     computerClose.tap()
     assertHittable(computer, message: "Founder Computer control did not survive a second round trip")
     XCTAssertEqual(app.buttons.matching(identifier: "founderGarage.realityKit.founderComputer").count, 1)
+    app.terminate()
+  }
+
+  func testProductionGarageWalksThroughOpenDoorIntoAtlantis() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-traversal-diagnostics"]
+    app.launch()
+    enterFreshProductionCareer(in: app)
+
+    let garage = app.otherElements["founder-garage-realitykit"]
+    let explore = app.buttons["founderGarage.camera.toggleWalking"]
+    XCTAssertTrue(garage.waitForExistence(timeout: 8))
+    XCTAssertTrue(explore.waitForExistence(timeout: 8))
+    explore.tap()
+
+    let door = app.buttons["founderGarage.realityKit.garageDoor.toggle"]
+    XCTAssertTrue(door.waitForExistence(timeout: 5))
+    door.tap()
+
+    let atlantis = app.descendants(matching: .any)["atlantis.traversal.root"]
+    let movement = app.descendants(matching: .any)["founderGarage.camera.movementPad"]
+    XCTAssertTrue(movement.waitForExistence(timeout: 5))
+    let start = movement.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+    let forward = movement.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02))
+    start.press(
+      forDuration: 0.1,
+      thenDragTo: forward,
+      withVelocity: .fast,
+      thenHoldForDuration: 5
+    )
+
+    XCTAssertTrue(atlantis.waitForExistence(timeout: 12), "Open-door traversal never entered Atlantis")
+    XCTAssertTrue(garage.exists, "Garage and Atlantis must remain in one composed RealityView during traversal")
+    XCTAssertTrue(app.descendants(matching: .any)["atlantis.traversal.movementPad"].exists)
+    capture("GARAGE_TO_ATLANTIS_PRODUCTION", in: app)
     app.terminate()
   }
 
@@ -929,6 +961,20 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     capture("FREE_LOOK_YAW_LIMIT", in: app)
     recenter.tap()
 
+    for _ in 0..<3 {
+      yawStart.press(forDuration: 0.08, thenDragTo: yawEnd)
+    }
+    capture("FREE_LOOK_REAR_LEFT_A1", in: app)
+    recenter.tap()
+
+    let reverseYawStart = app.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.54))
+    let reverseYawEnd = app.coordinate(withNormalizedOffset: CGVector(dx: 0.02, dy: 0.54))
+    for _ in 0..<3 {
+      reverseYawStart.press(forDuration: 0.08, thenDragTo: reverseYawEnd)
+    }
+    capture("FREE_LOOK_REAR_RIGHT_A1", in: app)
+    recenter.tap()
+
     let pitchUpStart = app.coordinate(withNormalizedOffset: CGVector(dx: 0.62, dy: 0.66))
     let pitchUpEnd = app.coordinate(withNormalizedOffset: CGVector(dx: 0.62, dy: 0.24))
     pitchUpStart.press(forDuration: 0.08, thenDragTo: pitchUpEnd)
@@ -978,6 +1024,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     XCTAssertTrue(toggle.waitForExistence(timeout: 8))
     XCTAssertEqual(toggle.value as? String, "Seated")
     assertAccessibleTouchTarget(toggle)
+    assertHittable(toggle, message: "Explore control must own its visible HUD hit target")
     toggle.tap()
     XCTAssertEqual(toggle.value as? String, "Walking")
     XCTAssertFalse(computer.exists)
@@ -1002,9 +1049,40 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     app.terminate()
   }
 
-  func testLegacySwiftUIGarageRemainsDefaultAndInteractive() throws {
+  func testFounderFirstPersonWorkstationAccessAndComputerButton() throws {
     let app = XCUIApplication()
-    app.launchArguments = ["--founder-desk-production-proof"]
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-realitykit"]
+    app.launch()
+    enterFreshProductionCareer(in: app)
+
+    let openComputer = app.buttons["founderGarage.openComputer"]
+    let workstation = app.buttons["founderGarage.workstationMenu"]
+    XCTAssertTrue(openComputer.waitForExistence(timeout: 8))
+    XCTAssertTrue(openComputer.isHittable)
+    XCTAssertTrue(workstation.exists)
+    let currentView = app.descendants(matching: .any)["founderGarage.currentView"]
+    XCTAssertEqual(
+      XCTWaiter.wait(
+        for: [XCTNSPredicateExpectation(
+          predicate: NSPredicate(format: "value == %@", "Founder View"),
+          object: currentView
+        )],
+        timeout: 15
+      ),
+      .completed
+    )
+
+    openComputer.tap()
+    let returnToFounder = app.buttons["founder-computer-look-out"]
+    XCTAssertTrue(returnToFounder.waitForExistence(timeout: 6))
+    returnToFounder.tap()
+    XCTAssertTrue(openComputer.waitForExistence(timeout: 6))
+    capture("FOUNDER_FIRST_PERSON_WORKSTATION", in: app)
+  }
+
+  func testLegacySwiftUIGarageRemainsAvailableAndInteractive() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-legacy"]
     app.launch()
     enterFreshProductionCareer(in: app)
 
@@ -1018,7 +1096,7 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
 
   func testProductionFounderDeskDeviceContinuity() throws {
     let app = XCUIApplication()
-    app.launchArguments = ["--founder-desk-production-proof"]
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-legacy"]
     app.launch()
 
     enterFreshProductionCareer(in: app)

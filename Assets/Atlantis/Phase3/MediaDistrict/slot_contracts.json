@@ -1,0 +1,78 @@
+[
+  {
+    "id": "Landmark_TechComTower",
+    "district": "MediaDistrict",
+    "origin": [
+      835,
+      220,
+      14
+    ],
+    "rotation_degrees": [
+      0,
+      0,
+      0
+    ],
+    "forward": "-Y (Blender); +Z after glTF conversion",
+    "footprint_m": [
+      75,
+      70
+    ],
+    "target_height_m": [
+      120,
+      180
+    ],
+    "max_bbox_m": [
+      75,
+      70,
+      180
+    ],
+    "placeholder_height_m": 160,
+    "kind": "hero",
+    "view_visibility": {
+      "Atlantis_Master_Aerial": "visible upper-center sample",
+      "Founder_To_City": "visible upper-center sample",
+      "TechCore_Skyline": "outside frame",
+      "Atlantis_Waterfront": "visible upper-center sample",
+      "UnicornHeights_View": "visible upper-center sample",
+      "Atlantis_Top_Down": "visible upper-center sample"
+    }
+  },
+  {
+    "id": "Landmark_SignalTV",
+    "district": "MediaDistrict",
+    "origin": [
+      860,
+      460,
+      14
+    ],
+    "rotation_degrees": [
+      0,
+      0,
+      0
+    ],
+    "forward": "-Y (Blender); +Z after glTF conversion",
+    "footprint_m": [
+      95,
+      65
+    ],
+    "target_height_m": [
+      25,
+      60
+    ],
+    "max_bbox_m": [
+      95,
+      65,
+      60
+    ],
+    "placeholder_height_m": 38,
+    "kind": "hero",
+    "view_visibility": {
+      "Atlantis_Master_Aerial": "visible upper-center sample",
+      "Founder_To_City": "occluded upper-center sample",
+      "TechCore_Skyline": "occluded upper-center sample",
+      "Atlantis_Waterfront": "visible upper-center sample",
+      "UnicornHeights_View": "visible upper-center sample",
+      "Atlantis_Top_Down": "visible upper-center sample"
+    }
+  }
+]

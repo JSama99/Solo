@@ -1,0 +1,22 @@
+{
+  "phase5_complete": true,
+  "six_visual_acceptance_answers": [
+    "yes",
+    "yes",
+    "yes",
+    "yes",
+    "yes",
+    "yes"
+  ],
+  "label_free_day_night_reviewed": true,
+  "visual_visibility_notes": {
+    "Pallas_from_Founder": "Partial crown/edge visible despite zero centerline ray samples",
+    "Pallas_from_Venture": "Strong",
+    "Northwind_research_edge": "Strong",
+    "Northwind_from_Startup_and_Media": "Hidden by established massing",
+    "Flashpoint_from_Startup_route": "Strong",
+    "Flashpoint_Commerce_approach": "Partial",
+    "Flashpoint_Tech_approach": "Partial"
+  },
+  "runtime_acceptance": "Not performed; Blender-only production pass"
+}

@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "2026-09-10T08:13:29.582817Z",
+    "display_name": "Text to 3D",
+    "id": "ceb55f6a-f8fa-46a2-8314-67267e2571d0",
+    "job_type": "tripo_3d",
+    "min_result_url": null,
+    "params": {
+      "auto_size": false,
+      "face_limit": 24000,
+      "folder_id": null,
+      "geometry_quality": "detailed",
+      "negative_prompt": null,
+      "pbr": true,
+      "prompt": "Standalone Flashpoint technology headquarters in Atlantis. Energetic 75 metre mid-rise within a compact 40 by 32 metre footprint. Sharp but believable asymmetrical silhouette with a sloping roofline and stepped upper floors, dark cool glass, refined silver structure and a few controlled warm orange accents. Strong compact street-facing podium with integrated blank launch panel, thin ticker and modest entrance sign facing south. Communicate rapid growth, product launches, ambition and market pressure. Architectural credibility, clean mobile-friendly mesh and strong silhouette. Single building only, no surrounding city, ground plane, roads, cars or trees. Avoid giant advertisements, casinos, stadiums, nightclubs, cyberpunk clutter, neon-covered facades, floating parts and fantasy geometry.",
+      "seed": null,
+      "texture": true,
+      "texture_quality": "detailed"
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_34Zg75AIkEw6PIkZBBxVr9v7DE7/hf_20260910_081329_ceb55f6a-f8fa-46a2-8314-67267e2571d0.glb",
+    "status": "completed"
+  }
+]

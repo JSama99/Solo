@@ -1,0 +1,186 @@
+{
+  "changed_original_objects": [],
+  "Phase4_spire_crown_samples": {
+    "Founder_To_City": 36,
+    "TheSpire_StartupSightline": 38,
+    "VentureHall_ToSpire": 43,
+    "MediaDistrict_ToSpire": 39,
+    "TechCore_Skyline": 39,
+    "UnicornHeights_View": 45
+  },
+  "Phase5_spire_crown_samples": {
+    "Founder_To_City": 36,
+    "TheSpire_StartupSightline": 38,
+    "VentureHall_ToSpire": 43,
+    "MediaDistrict_ToSpire": 39,
+    "TechCore_Skyline": 39,
+    "UnicornHeights_View": 45
+  },
+  "sampled_visibility": {
+    "PallasAI": {
+      "Founder_To_City": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "TheSpire_StartupSightline": {
+        "hits_of_12": 12,
+        "rating": "Strong"
+      },
+      "VentureHall_ToSpire": {
+        "hits_of_12": 12,
+        "rating": "Strong"
+      },
+      "MediaDistrict_ToSpire": {
+        "hits_of_12": 12,
+        "rating": "Strong"
+      },
+      "TechCore_Skyline": {
+        "hits_of_12": 3,
+        "rating": "Partial"
+      },
+      "UnicornHeights_View": {
+        "hits_of_12": 9,
+        "rating": "Strong"
+      },
+      "Venture_Pallas": {
+        "hits_of_12": 12,
+        "rating": "Strong"
+      },
+      "Northwind_TechApproach": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "StartupRow_Flashpoint": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "Media_RivalSkyline": {
+        "hits_of_12": 12,
+        "rating": "Strong"
+      },
+      "TechCore_Rivals_Aerial": {
+        "hits_of_12": 12,
+        "rating": "Strong"
+      }
+    },
+    "NorthwindLabs": {
+      "Founder_To_City": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "TheSpire_StartupSightline": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "VentureHall_ToSpire": {
+        "hits_of_12": 12,
+        "rating": "Strong"
+      },
+      "MediaDistrict_ToSpire": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "TechCore_Skyline": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "UnicornHeights_View": {
+        "hits_of_12": 12,
+        "rating": "Strong"
+      },
+      "Venture_Pallas": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "Northwind_TechApproach": {
+        "hits_of_12": 12,
+        "rating": "Strong"
+      },
+      "StartupRow_Flashpoint": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "Media_RivalSkyline": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "TechCore_Rivals_Aerial": {
+        "hits_of_12": 12,
+        "rating": "Strong"
+      }
+    },
+    "Flashpoint": {
+      "Founder_To_City": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "TheSpire_StartupSightline": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "VentureHall_ToSpire": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "MediaDistrict_ToSpire": {
+        "hits_of_12": 11,
+        "rating": "Strong"
+      },
+      "TechCore_Skyline": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "UnicornHeights_View": {
+        "hits_of_12": 10,
+        "rating": "Strong"
+      },
+      "Venture_Pallas": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "Northwind_TechApproach": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "StartupRow_Flashpoint": {
+        "hits_of_12": 10,
+        "rating": "Strong"
+      },
+      "Media_RivalSkyline": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      },
+      "TechCore_Rivals_Aerial": {
+        "hits_of_12": 0,
+        "rating": "Hidden"
+      }
+    }
+  },
+  "protected_file_count": 258,
+  "changed_protected_files": [],
+  "source_file_count": 5,
+  "checks": {
+    "all_phase4_object_geometry_transforms_metadata_preserved": true,
+    "PallasAI_slot_preserved": true,
+    "PallasAI_blockout_disabled": true,
+    "PallasAI_independent_export_pass": true,
+    "PallasAI_below_spire": true,
+    "PallasAI_within_height_limit": true,
+    "PallasAI_growth_capacity": true,
+    "NorthwindLabs_slot_preserved": true,
+    "NorthwindLabs_blockout_disabled": true,
+    "NorthwindLabs_independent_export_pass": true,
+    "NorthwindLabs_below_spire": true,
+    "NorthwindLabs_within_height_limit": true,
+    "NorthwindLabs_growth_capacity": true,
+    "Flashpoint_slot_preserved": true,
+    "Flashpoint_blockout_disabled": true,
+    "Flashpoint_independent_export_pass": true,
+    "Flashpoint_below_spire": true,
+    "Flashpoint_within_height_limit": true,
+    "Flashpoint_growth_capacity": true,
+    "all_six_spire_views_preserved": true,
+    "protected_files_unchanged": true,
+    "raw_sources_preserved": true
+  }
+}

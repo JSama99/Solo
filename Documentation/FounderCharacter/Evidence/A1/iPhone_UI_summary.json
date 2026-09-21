@@ -1,0 +1,10 @@
+{
+  "result": "Passed",
+  "passedTests": 2,
+  "failedTests": 0,
+  "evidence": "iPhone_UI.log; Xcode rotated the original xcresult bundle",
+  "tests": [
+    "testProductionGarageWalksThroughOpenDoorIntoAtlantis",
+    "testRealityKitCameraPhysicsExploreAndExactDeskReturn"
+  ]
+}

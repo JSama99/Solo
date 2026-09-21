@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "2026-09-10T00:25:36.010646Z",
+    "display_name": "Text to 3D",
+    "id": "1e8e753b-ee3f-46b4-8c83-9090f8ac674e",
+    "job_type": "tripo_3d",
+    "min_result_url": null,
+    "params": {
+      "auto_size": false,
+      "face_limit": 24000,
+      "folder_id": null,
+      "geometry_quality": "detailed",
+      "negative_prompt": null,
+      "pbr": true,
+      "prompt": "Architectural scale model of Pallas AI corporate headquarters: a VERY SLENDER 160 metre skyscraper on a tiny compact 50 metre wide by 35 metre deep rectangular podium. Height is more than four times the entire building depth. One straight elegant tower with a slight taper, flat restrained stepped crown, three-storey compact rectangular lobby base. Contemporary real-world premium office architecture, pale silver vertical fins, bronze trim, deep blue glass. Composed institutional confidence. Simple clean geometry and orderly facade bays. Main entrance on front south side. Blank small integrated entrance sign. Entire asset including base must stay within the narrow rectangle. Isolated building only. No ground plane, landscape, freestanding signs, external objects, spires, needles, ornate crown, fantasy shapes, dramatic flares or wide campus.",
+      "seed": null,
+      "texture": true,
+      "texture_quality": "detailed"
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_34Zg75AIkEw6PIkZBBxVr9v7DE7/hf_20260910_002536_1e8e753b-ee3f-46b4-8c83-9090f8ac674e.glb",
+    "status": "completed"
+  }
+]

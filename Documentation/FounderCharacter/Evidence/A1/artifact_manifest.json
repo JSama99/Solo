@@ -1,0 +1,750 @@
+{
+  "scope": "Retained Founder Character artifacts; includes Pass A baseline and A.1 repair. Manifest excludes itself.",
+  "files": [
+    {
+      "path": "App/FounderCharacterContract.swift",
+      "bytes": 16345,
+      "sha256": "fcf1f2da7e6ae21b8e38f4868f61f358ca70da3aecb32b96fa56bc28d5accc69"
+    },
+    {
+      "path": "App/RealityKit/FounderCharacter/founder_candidate_a.usdz",
+      "bytes": 2657448,
+      "sha256": "dc4b61bbea22a8a4470cc88deaefeb5ae7458c82cbee8c9644ba76b5b1a90a36"
+    },
+    {
+      "path": "App/RealityKit/FounderCharacter/founder_validation_pose.json",
+      "bytes": 27591,
+      "sha256": "dbb44d1f403c1de16c48e50a4a317cc0d642a39a47275e65ad543e37421bff0b"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/A_Neutral.png",
+      "bytes": 874193,
+      "sha256": "957967fcf590717a0481f08b63479a59262c408b78a9ed16dc95481373ed7081"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/B_ArmsRaised.png",
+      "bytes": 863567,
+      "sha256": "6765261c86234fdcacb4b9dff537f81c037aedd0462f1f7757573eaf40277cd2"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/C_Seated.png",
+      "bytes": 873303,
+      "sha256": "a8ea166845a97d5e49eaf641613d873ff9bc1b68e733bb9eba04fdc64aee700f"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/D_Stride.png",
+      "bytes": 864628,
+      "sha256": "e275db48ced74cd1f38bbb630f536892f2d4561e70806a81ff8fb7c770f3f8b8"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/E_HeadTurn.png",
+      "bytes": 873529,
+      "sha256": "77128aff531dd851ae1f6727a7e633ef840670f6976e6881ea5f2571df31e361"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/F_Elbow.png",
+      "bytes": 863499,
+      "sha256": "3aacbcc787784d8e55c0d06a6c407207d45f87b5ce45cc274b41e4d59e3589df"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/G_FingerCurl.png",
+      "bytes": 871393,
+      "sha256": "cd30a27a971ce2860884bd84b2bc3849408f4705f9a9944a89d4a5c4c8614d2b"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/blender_contract.json",
+      "bytes": 20346,
+      "sha256": "0b289e8600032417203656a2fe0695391994b6684f61976aaabd856fa6a38bf0"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/founder_candidate_a.blend",
+      "bytes": 903222,
+      "sha256": "fdc23193ee660c7b98b50ae4418bfca0de47f400febeced698dd90ffbba9e391"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/founder_candidate_a.usdz",
+      "bytes": 1891885,
+      "sha256": "b07ddd8438d09abe0277fda10a8302ca7f17c189bdff8c5d1b7d5d9ef13fbe77"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/iPadAirM4_CloseUp.png",
+      "bytes": 1564408,
+      "sha256": "eedd2013b13a7a246d3cdecc268603e7b3179d838a0767e34767e2ba66e8b5d6"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/iPadAirM4_Seated.png",
+      "bytes": 1172799,
+      "sha256": "06245e74fc2168b070bee95faa1b8e53b39c829f449188c5ebb1cadb690cd020"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/iPadAirM4_Standing.png",
+      "bytes": 1381814,
+      "sha256": "712d903c99c063123f1acf0688296252c6b75af5a5850fcb03961ec42151f442"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/iPhone17ProMax_CloseUp.png",
+      "bytes": 1577709,
+      "sha256": "ea2f914a847a4fd9e5cd5d7d54831ab085c71d410586405cfce77a13365e1889"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/iPhone17ProMax_HeadHidden.png",
+      "bytes": 1192315,
+      "sha256": "75d42bac61ca2355e66c049aea86d63f0741ad7d26172c25e17af5446719a02d"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/iPhone17ProMax_Seated.png",
+      "bytes": 1104843,
+      "sha256": "4fcb61f55f4331014e421969ac4976d58de31ad0e91925c9cbfe33847334d2c4"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/iPhone17ProMax_Standing.png",
+      "bytes": 1198199,
+      "sha256": "72b7e66100765bb62a6302c5cf8072b13bf9fee6162b3a86e1b071b87feaa823"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/runtime_audit.json",
+      "bytes": 896,
+      "sha256": "f64101f35aa69ec315f83337377267f07d37192115f6d1cc009e063ed8a83bae"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Before/usd_audit.json",
+      "bytes": 2787,
+      "sha256": "5672190d494e8541b0fdd68efe79b53e8096ed7cc66bdcc6c86de1e7480c00aa"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Blink.png",
+      "bytes": 905724,
+      "sha256": "8e1a5908d5fe8969aa9b9a42de3729be311c6a38158646a934dd87d052c73ae8"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Face.png",
+      "bytes": 909433,
+      "sha256": "7853051d64c54464adfe7b94dc249d90019f034047a7cef53ffa007399b5d472"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/HeadDown.png",
+      "bytes": 906049,
+      "sha256": "622c9d7938bbb1463442aa470d36fddd52e2a10373ad4d805720984de0689892"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/HeadLeft.png",
+      "bytes": 907849,
+      "sha256": "78aff0978662be460d5756278884d1190e49515c70fb5c8ff0835f106cd87950"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/HeadRight.png",
+      "bytes": 910756,
+      "sha256": "8c7f65abb4a68736aec1807e12ca3df41dd06456cb8e90399717689d951380ea"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/HeadUp.png",
+      "bytes": 910685,
+      "sha256": "6397394cb0320486182f8a312b7d37c4c39c99ff7f99290369d938267779c749"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/JawOpen.png",
+      "bytes": 915910,
+      "sha256": "b582afe67ab7d1f707a98a7bb98ce7ed1327863f907737679dbb1302ab460a56"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPadAirM4_Face.png",
+      "bytes": 962433,
+      "sha256": "94caa3f7fd41ad8cfd3b3e3224e3a321c38971a0409bacf989d464e1d90c4c71"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPadAirM4_Face_metrics.json",
+      "bytes": 1580,
+      "sha256": "d35596bcf8d6b32bb5e7190698b6ceb20bfee20d2f507efea36f4eb932497b73"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPadAirM4_GarageBaseline.png",
+      "bytes": 792946,
+      "sha256": "13096e13cf2598f376f1c1ee216107923da161a9f489c96b4f1d54c7e3104de9"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPadAirM4_POV.png",
+      "bytes": 474139,
+      "sha256": "ed5e3086e1db05528feb5ca82e6352aa35031523fc60d38683222697ecba0310"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPadAirM4_POV_metrics.json",
+      "bytes": 1572,
+      "sha256": "1864d2480e69812db51688fecf25fc07aec725be45d85508252fa87e47160918"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPadAirM4_Seated.png",
+      "bytes": 961565,
+      "sha256": "e950864a7b7e0e7dc3d18cb1af8e2b333bb6bb8f0e7ba87db79f150450bbc2dd"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPadAirM4_Seated_metrics.json",
+      "bytes": 1559,
+      "sha256": "a8a8e678ae2181d6f5ef20d0a6c557c029d151aefbe17bb60f238e38c8689c39"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPadAirM4_Standing.png",
+      "bytes": 1004144,
+      "sha256": "fa3bc0fc5f3d1714478b5ff8282436e3bb30c36f291db1eb439e35fb76fe2692"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPadAirM4_Standing_metrics.json",
+      "bytes": 1578,
+      "sha256": "bfe1a5ae220f64bc73e4afdcbe9edfb61bcb273b39dd7ce0d4ec425aa686e5d8"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPadAirM4_TraversalFailure.png",
+      "bytes": 918695,
+      "sha256": "74d89702fbe07ffbfdca693e9b48a2daf8fd54e151a0a4fb824534036f65663e"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPadAirM4_TraversalFailure_UI.txt",
+      "bytes": 55299,
+      "sha256": "cf7d7816f4e9a6e85e736aca6e7969a561294053cd95598587066e96baa64cc7"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPadAirM4_metrics.json",
+      "bytes": 1411,
+      "sha256": "dbd0563162c7d5849d45e42517faea6dee10cbe151ad715eb0dc0a21498943df"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPhone16Pro_Face.png",
+      "bytes": 830062,
+      "sha256": "46a005a539788c97e6fe720079d5cf633e324e99937a25635929896dffa0fde6"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPhone16Pro_Face_metrics.json",
+      "bytes": 1556,
+      "sha256": "5872cfd83f1061b162e54151f1b81234cd640f5f1da58cae5e5ab627b78cafc4"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPhone16Pro_GarageBaseline.png",
+      "bytes": 473121,
+      "sha256": "e7e5346d4298a7c6bc5173cd863678976f30470e64350a6badf62aef5994a4a9"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPhone16Pro_POV.png",
+      "bytes": 396216,
+      "sha256": "69ebaa2b7e09ee5ba58187049c0889e927b97f144ef891e96ed3ca2d4f84ad28"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPhone16Pro_POV_metrics.json",
+      "bytes": 1561,
+      "sha256": "5a5c071af1af940dd4824c76856f422d9ec3331d9d1a39585edf488aeabd1cff"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPhone16Pro_Seated.png",
+      "bytes": 745241,
+      "sha256": "21bb05cbd621086c98b25a84f46c201da3e10d5b5ce7bb7bd8dbeb9e9632f6f4"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPhone16Pro_Seated_metrics.json",
+      "bytes": 1557,
+      "sha256": "ca5f6d48baa5fa588ba843596fd7d5a6d03ef9f017c93e2514d20bdf47bc5e9f"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPhone16Pro_Standing.png",
+      "bytes": 782826,
+      "sha256": "c29aaed8c0ec61638cbce17ed09706ca7c5e770c40733d7ed2732076f1fe7855"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPhone16Pro_Standing_metrics.json",
+      "bytes": 1582,
+      "sha256": "56d0d9e065d14550e6a4e166c39e3238389b4dc429ad5027370a29df4e402891"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Physical_iPhone16Pro_metrics.json",
+      "bytes": 1411,
+      "sha256": "d60025344a81bd807e7dfbd0c29a0c71d2e2ca39be71b314f7ae56b48c22cd09"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Seated.png",
+      "bytes": 854780,
+      "sha256": "8549e04eebc7e53f40dfe251389d20cae2feaf2d8ed1131c1e63048f9a9be54a"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/Standing.png",
+      "bytes": 871225,
+      "sha256": "ca3a51be08ee3f71bc74be669bf59b8efb2f44753be3299ba4f5ea684f657ab7"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_Face.png",
+      "bytes": 1125164,
+      "sha256": "98bd9e3c904a9f35c763e0efa0b91484d44f218d260f78529b547d22299de995"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_Face_metrics.json",
+      "bytes": 1577,
+      "sha256": "8735a1df39429152a4173d2b74533814ec9b48080d23ea7e7be762f1aefc8f13"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_GarageBaseline.png",
+      "bytes": 668882,
+      "sha256": "158702e07d47ea704c866c48a39146e5c37d342f7303ebc80079c1fe37f7ddb3"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_HeadDown.png",
+      "bytes": 1107934,
+      "sha256": "27ed11c7ed86002e22b65ef029cdba5d37b785f6aac1e421028e4b43b42f8536"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_HeadDown_metrics.json",
+      "bytes": 1561,
+      "sha256": "323422451ea9003b6df43a94f69eea5c2f5397e9b22438a7a5dd7ebae661253b"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_HeadHidden.png",
+      "bytes": 1012153,
+      "sha256": "06af331b33940025ea3f7491ddeae06ce708ea09d945ef84589d12afa269e600"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_HeadHidden_metrics.json",
+      "bytes": 1560,
+      "sha256": "14e0e3b4e94ef25eeef47e6a5a9a2044f2bb6ac5223fcb7fbcac8080525bc0b4"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_HeadLeft.png",
+      "bytes": 1116438,
+      "sha256": "d776be09fd1591516628a174badad1eeb3fa98cae77f4aa3a370f3f03e3318bd"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_HeadLeft_metrics.json",
+      "bytes": 1581,
+      "sha256": "250af31470f940bc498e3db7234f46ba2608ac583c01b515837885bf574fca61"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_HeadRight.png",
+      "bytes": 1100250,
+      "sha256": "347a5256a5e7a86d5380d285f6989db24d33053cdbc0e73a53f3dc117e09a255"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_HeadRight_metrics.json",
+      "bytes": 1578,
+      "sha256": "47e60e0ab73a60654da2dd0a50546d4eb929dd8720916834f9b41b312f0f7bdd"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_HeadUp.png",
+      "bytes": 1134736,
+      "sha256": "87fb36ea729654c2c63235b166c6b1e28ec9183c736c4c003854c9daf50a5b0a"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_HeadUp_metrics.json",
+      "bytes": 1561,
+      "sha256": "d81e9c5605284b2e3b8723e6d36127d26d2ed36099d33545b36f658a8fdb05a1"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_POV.png",
+      "bytes": 550991,
+      "sha256": "5f8508d41870edb1953802d398a1dbde52844f922e54512ec0dfbc5c641370f2"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_POV_metrics.json",
+      "bytes": 1559,
+      "sha256": "362b498bf8205d02ead3feb63e557f058daae68c41812201ae94ee46553c1a8a"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_Seated.png",
+      "bytes": 977719,
+      "sha256": "7b7f1d5fb0ca87294447d6a791194e0920cf39b87a99513163ce9b8dddc65172"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_Seated_metrics.json",
+      "bytes": 1560,
+      "sha256": "8caa71a11735200b7a159b4736474d2d15bca1a7fc9a94e755257549138b1f0b"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_Standing.png",
+      "bytes": 1069957,
+      "sha256": "4e302980644cce17f430f74d6923e174c6c21ecb56bec4dd911dc34cd0b122e4"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPadAirM4_Standing_metrics.json",
+      "bytes": 1557,
+      "sha256": "b9ae0f8e89f455443bc1f177cb72c62df21346872af11402099b0e85a088e08d"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPad_UI_retry_summary.json",
+      "bytes": 1577,
+      "sha256": "5f015c509756ad93df36ce5063d150328ce9a148b02dc38e466863e168ce8f44"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPad_UI_summary.json",
+      "bytes": 1577,
+      "sha256": "646d8ed177f9b190bab522a272404b538abd7379ffe552c77749349e5682ac43"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_Face.png",
+      "bytes": 995753,
+      "sha256": "e02206b5b7883525d1b249344c1d1aee346651ee4a5de68d49e8cc86f527b4be"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_Face_metrics.json",
+      "bytes": 1558,
+      "sha256": "af4d30bf3b337c6f3c1602bde53113fc45b8360ee5785b47642471dfccf38474"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_GarageBaseline.png",
+      "bytes": 587065,
+      "sha256": "ee3d53b9c4ed819c2fa6624f6c11645b4f3f9f17bbb4d7a6896a1faf0c04c9f9"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_HeadDown.png",
+      "bytes": 976332,
+      "sha256": "27e5c416a3f10586fa38d26e7bb3d4b4cb7fa5bcdaa576a5b96c0dd8f8f52163"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_HeadDown_metrics.json",
+      "bytes": 1582,
+      "sha256": "8d200996470222bc6497a7e7a120e83097ccf207a1614e8b212450cb59c339ff"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_HeadHidden.png",
+      "bytes": 856847,
+      "sha256": "15ffbc7d11bb4eca0236d09dc7404ad74862c1fc4938802eefdea40deb02b8bc"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_HeadHidden_metrics.json",
+      "bytes": 1555,
+      "sha256": "b40aa21457ceea14e077c62bd6a74917990f952d5d652496202f36c394e5ded1"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_HeadLeft.png",
+      "bytes": 986387,
+      "sha256": "069bd594e7cfb299b8032c3e39489d9f902d11e6d15d0644106cab8133d35c87"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_HeadLeft_metrics.json",
+      "bytes": 1558,
+      "sha256": "8a16207f04ab1b4e1611a5e2553e9ff737d5b1c836b0020dda4afc8dd80b2d79"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_HeadRight.png",
+      "bytes": 972449,
+      "sha256": "9a90704caa03eb17200e807d1cca199d6bb613663d9688e76ca87fa7e5cca216"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_HeadRight_metrics.json",
+      "bytes": 1554,
+      "sha256": "8031f55cd64f9e911142b0175e525bccf24eba772e65796ab15e155e7be96de9"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_HeadUp.png",
+      "bytes": 1005429,
+      "sha256": "80854b285d023b1282f5430e232ac7add2194fa7046ca5af76a5d7ae94012929"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_HeadUp_metrics.json",
+      "bytes": 1562,
+      "sha256": "ef6928e98641dfef1c1d57d9acfff690610062e22f4da4abb43e8b1b7be5a1d0"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_POV.png",
+      "bytes": 462924,
+      "sha256": "9376f9a2c73dfd2ce1dc2767d8ad4d86c26ddd9683bd36f8896038394d06f34f"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_POV_metrics.json",
+      "bytes": 1559,
+      "sha256": "58eb18f824b8fb18310d7119a6cb827fdee91d5dd6e4b5086bfa34d6f3c1e9e4"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_Seated.png",
+      "bytes": 900036,
+      "sha256": "1154c5b8320b8d72b7dd9abfc8411b162ed8aa4f345fbdc3dd2bf8e004c517dc"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_Seated_metrics.json",
+      "bytes": 1558,
+      "sha256": "33439d6cc4cdc6f0e62c78c6b1d3cc37405294413a55521fa0689922293582ee"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_Standing.png",
+      "bytes": 917939,
+      "sha256": "f4b3280731ae4de349407198bce0774ec913d48509b14851adc3b9b642cdb25b"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_Standing_metrics.json",
+      "bytes": 1559,
+      "sha256": "4a4d99f73180915fb5247b7dfbd40c118d77837da93fe812f1583e79cb532fba"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone17ProMax_metrics.json",
+      "bytes": 1409,
+      "sha256": "8dbef98bdbc0899346f06678e475cf572d1e9dd54ab9ad8860b10db994c46bd1"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone_UI.log",
+      "bytes": 211408,
+      "sha256": "455e30a84c4916e760c4160383e521dde4c67e1a06b19da6f87df8d174ad58ed"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/iPhone_UI_summary.json",
+      "bytes": 277,
+      "sha256": "510d0f0c8ab37659376dc039244fad73886752a9bcf11fedbd365b851c484c5c"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/root_cause.json",
+      "bytes": 20054,
+      "sha256": "420faff41fbe9832ebee24616d2773d981701af4866b4625560f248514971a77"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/seated_source_measurements.json",
+      "bytes": 27591,
+      "sha256": "dbb44d1f403c1de16c48e50a4a317cc0d642a39a47275e65ad543e37421bff0b"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/source_repair_audit.json",
+      "bytes": 1638,
+      "sha256": "0fa3eaaf61cdafa31015e855ec1628f440b9eb446bace2c3710d4a2318bb0e72"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/unit_summary.json",
+      "bytes": 1219,
+      "sha256": "60954e29598fa4ca78809e87f8feb6e00c57b69762dade24ef9f622b9b6926f8"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A1/verification_record.json",
+      "bytes": 1586,
+      "sha256": "d652a8d3c3163b71f709372baed25f8fd9e60595fb1ccf65ad61cdf305107a30"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/A_Neutral.png",
+      "bytes": 874193,
+      "sha256": "957967fcf590717a0481f08b63479a59262c408b78a9ed16dc95481373ed7081"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/B_ArmsRaised.png",
+      "bytes": 863567,
+      "sha256": "6765261c86234fdcacb4b9dff537f81c037aedd0462f1f7757573eaf40277cd2"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/C_Seated.png",
+      "bytes": 873303,
+      "sha256": "a8ea166845a97d5e49eaf641613d873ff9bc1b68e733bb9eba04fdc64aee700f"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/D_Stride.png",
+      "bytes": 864628,
+      "sha256": "e275db48ced74cd1f38bbb630f536892f2d4561e70806a81ff8fb7c770f3f8b8"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/E_HeadTurn.png",
+      "bytes": 873529,
+      "sha256": "77128aff531dd851ae1f6727a7e633ef840670f6976e6881ea5f2571df31e361"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/F_Elbow.png",
+      "bytes": 863499,
+      "sha256": "3aacbcc787784d8e55c0d06a6c407207d45f87b5ce45cc274b41e4d59e3589df"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/G_FingerCurl.png",
+      "bytes": 871393,
+      "sha256": "cd30a27a971ce2860884bd84b2bc3849408f4705f9a9944a89d4a5c4c8614d2b"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/Physical_iPadAirM4_metrics.json",
+      "bytes": 425,
+      "sha256": "75d0f5d9ec2d8ed988a2e19022b72c4f67a06cc2f8f41de47dc818a67db820f4"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/Physical_iPhone16Pro_metrics.json",
+      "bytes": 425,
+      "sha256": "61dcbcafd840b49851396b90a770a6fba53ea7afef8cd3ef8472ae2f6923e2cf"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/full_unit_summary.json",
+      "bytes": 1219,
+      "sha256": "c743e616732f5abfc84f60e516193e55b00fb4a2b042d59130788a7f1c8cff72"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/iPadAirM4_CloseUp.png",
+      "bytes": 1564408,
+      "sha256": "eedd2013b13a7a246d3cdecc268603e7b3179d838a0767e34767e2ba66e8b5d6"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/iPadAirM4_Seated.png",
+      "bytes": 1172799,
+      "sha256": "06245e74fc2168b070bee95faa1b8e53b39c829f449188c5ebb1cadb690cd020"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/iPadAirM4_Standing.png",
+      "bytes": 1381814,
+      "sha256": "712d903c99c063123f1acf0688296252c6b75af5a5850fcb03961ec42151f442"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/iPadAirM4_metrics.json",
+      "bytes": 425,
+      "sha256": "5d89f560d84d06d1796c150c04850af0105471bbdaca4426af1b7ef46d1f87dc"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/iPhone17ProMax_CloseUp.png",
+      "bytes": 1577709,
+      "sha256": "ea2f914a847a4fd9e5cd5d7d54831ab085c71d410586405cfce77a13365e1889"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/iPhone17ProMax_HeadHidden.png",
+      "bytes": 1192315,
+      "sha256": "75d42bac61ca2355e66c049aea86d63f0741ad7d26172c25e17af5446719a02d"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/iPhone17ProMax_Seated.png",
+      "bytes": 1104843,
+      "sha256": "4fcb61f55f4331014e421969ac4976d58de31ad0e91925c9cbfe33847334d2c4"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/iPhone17ProMax_Standing.png",
+      "bytes": 1198199,
+      "sha256": "72b7e66100765bb62a6302c5cf8072b13bf9fee6162b3a86e1b071b87feaa823"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Evidence/iPhone17ProMax_metrics.json",
+      "bytes": 425,
+      "sha256": "8a402d5b693ac8f075ce9e817d8f132b0c0e97c7ab8522bbd82bc7e8bfb76bfe"
+    },
+    {
+      "path": "Documentation/FounderCharacter/FOUNDER_CHARACTER_PASS_A1_REPAIR_REPORT.md",
+      "bytes": 19005,
+      "sha256": "0f381158a6bb94ab3edd09b38dbf9a8a6da4171d6ec1881fe812b6bfd9a34bd7"
+    },
+    {
+      "path": "Documentation/FounderCharacter/FOUNDER_CHARACTER_PASS_A_RIG_SKELETON_BASE_APPEARANCE_REPORT.md",
+      "bytes": 19888,
+      "sha256": "d791bd5388ed747d04384095580c6cf205758741b468ec680b3cd559ce529d64"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Intermediate/blender_contract.json",
+      "bytes": 20588,
+      "sha256": "200a0aecc112a0d4c4c55c4fb23db3481ea033361bbfc3726c8056efa3878705"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Intermediate/founder_candidate_a.usdc",
+      "bytes": 1775060,
+      "sha256": "a6a4c0d9d64c80cd8a631545a40282e7182eed4ef0c07311c8999967ddaa37cb"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Intermediate/founder_candidate_a.usdz",
+      "bytes": 2656756,
+      "sha256": "fa72218cda116d5064c93691d44d5579fdebfa6a770a0999932d7fb8e9cbe268"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Intermediate/founder_runtime_a.usdc",
+      "bytes": 1775776,
+      "sha256": "8ff294d6660734d16471108c30627ef823079b07c1b70f31e88af9f6059f142c"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Intermediate/founder_runtime_a.usdz",
+      "bytes": 2657448,
+      "sha256": "dc4b61bbea22a8a4470cc88deaefeb5ae7458c82cbee8c9644ba76b5b1a90a36"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Intermediate/founder_validation_pose.json",
+      "bytes": 27591,
+      "sha256": "dbb44d1f403c1de16c48e50a4a317cc0d642a39a47275e65ad543e37421bff0b"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Intermediate/runtime_audit.json",
+      "bytes": 900,
+      "sha256": "e24e35ade8cd4b03fe8d4b61ff0f75ba396949e2cc06582045461f0e807ccab8"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Intermediate/textures/FounderSkin_A1_1K.png",
+      "bytes": 881298,
+      "sha256": "2a2827d7154ac7b7565b13901be55603b7687902db9e2013eaa58d3cb1b15020"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Intermediate/textures/color_0C0C0C.exr",
+      "bytes": 465,
+      "sha256": "a17a0a25c46ed4e7b5826d1b19e832da0560500d8a2c1a58a45b0fc6336165a9"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Intermediate/usd_audit.json",
+      "bytes": 3001,
+      "sha256": "542954913d2c55f84400d5d963c538a0a435f8d18aef35d84a079fc7405909a0"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/FounderSkin_A1_1K.png",
+      "bytes": 881014,
+      "sha256": "64680f28e79176c39df6ff382229d4b0c82985da3d9cc684a810daa001dbbcdf"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/MPFB_LICENSE.md",
+      "bytes": 3188,
+      "sha256": "5cefb60680cb9efd4550a2e65d719021cfbec9dad3658481d11d48ae863ce04d"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/MPFB_LICENSE_ASSETS.md",
+      "bytes": 6962,
+      "sha256": "f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/audit_founder.py",
+      "bytes": 5509,
+      "sha256": "a8baa1c13fb95207c217e2f6abb79eddad07b571f277bd6b0388cbbf6110355e"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/audit_repair.py",
+      "bytes": 3372,
+      "sha256": "a41fe024954a7159a476be739332e91f0a21c0c1bb29aa2be3f81d3b895b6a06"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/audit_runtime.py",
+      "bytes": 3732,
+      "sha256": "25c9eb57f2975a4ff35a6a4ffb26294ad84dc584c512028d5271c71868e011ae"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/build_founder.py",
+      "bytes": 17398,
+      "sha256": "78c6c9f091dcf1508d70447142eadaea725888646e545c3bed53ebf29eef8d7a"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/capture_runtime.py",
+      "bytes": 2678,
+      "sha256": "32e252e4a917151ec955c0abe0adfe535688cf1fa141e9791cb8f3f0ab8514d2"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/facial_target_a1.json",
+      "bytes": 243641,
+      "sha256": "34c714f8f18028dc2a9a15a18a05e2bf7bf6a1936b728447dc4a3055f07fd94e"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/founder_candidate_a.blend",
+      "bytes": 1707880,
+      "sha256": "24727139e04a2c645ed8af07f03d7c3e8e62d8777a4214838161a5ff884f8fc9"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/founder_candidate_a.blend1",
+      "bytes": 1708229,
+      "sha256": "bf2c8d65c33bdedc5caf16a2cefb831f10ea410b1b172f5154aaa898f93cafa3"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/inspect_repair.py",
+      "bytes": 2466,
+      "sha256": "bcfb57f9d9e295bd6c47c9159d473e22cc184c3828b27021bd9304b96b34cc0f"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/map_facial_target.py",
+      "bytes": 2729,
+      "sha256": "caa32e8512075de6fec61da739c88253911c6c6304e6f70ad90e4fc9f77a74c5"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/package_runtime.py",
+      "bytes": 1672,
+      "sha256": "0c9a17690fbb5285c017b56a6626c50930d97c850d48ffaddef3a8c693c2d181"
+    },
+    {
+      "path": "Documentation/FounderCharacter/Source/repair_founder.py",
+      "bytes": 15421,
+      "sha256": "636cc3843e21357d5c4f7eeed07dd1a9f43b58263aa597a3007187beb32f4133"
+    },
+    {
+      "path": "SoloUnicornRun.xcodeproj/project.pbxproj",
+      "bytes": 106017,
+      "sha256": "f779ce4089c2fb8c3ef1c144451b81dfa9c6cb1e63be8f5a51bc207d12bac4b8"
+    },
+    {
+      "path": "Tests/FounderCharacterContractTests.swift",
+      "bytes": 6045,
+      "sha256": "c24cd86c9bb0de2b39f31bec747de0e5322d4831438e9411dcc053da64e5fb6f"
+    }
+  ]
+}

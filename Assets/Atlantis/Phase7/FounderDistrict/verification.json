@@ -1,0 +1,59 @@
+{
+  "phase6_metrics": {
+    "visible_meshes": 493,
+    "visible_triangles": 40580,
+    "used_materials": 67,
+    "vegetation_objects": 44
+  },
+  "changed_original_objects": [],
+  "phase7_metrics": {
+    "visible_meshes": 895,
+    "visible_triangles": 85860,
+    "used_materials": 79,
+    "vegetation_objects": 182
+  },
+  "steep_paths": [],
+  "walk_building_conflicts": [],
+  "walk_prop_conflicts": [],
+  "phase6_spire_samples": {
+    "Founder_To_City": 36,
+    "TheSpire_StartupSightline": 38,
+    "VentureHall_ToSpire": 43,
+    "MediaDistrict_ToSpire": 39,
+    "TechCore_Skyline": 39,
+    "UnicornHeights_View": 45
+  },
+  "phase6_flashpoint_hits": 10,
+  "phase7_spire_samples": {
+    "Founder_To_City": 36,
+    "TheSpire_StartupSightline": 38,
+    "VentureHall_ToSpire": 43,
+    "MediaDistrict_ToSpire": 39,
+    "TechCore_Skyline": 39,
+    "UnicornHeights_View": 45
+  },
+  "phase7_flashpoint_hits": 10,
+  "changed_protected_files": [],
+  "protected_file_count": 460,
+  "checks": {
+    "original_geometry_transforms_metadata_preserved": true,
+    "old_cameras_preserved": true,
+    "only_authorized_visibility_changes": true,
+    "seven_building_types": true,
+    "buildings_within_founder_bounds": true,
+    "heights_1_to_4_floors": true,
+    "all_walk_grades_below_5_percent": true,
+    "walk_widths_at_least_2m": true,
+    "one_frontage_per_building": true,
+    "walking_lanes_clear_of_buildings": true,
+    "garage_envelope_clear_of_buildings": true,
+    "startup_endpoint_matches_existing_walk": true,
+    "walks_clear_of_solid_props": true,
+    "slot_unchanged": true,
+    "services_one_to_three": true,
+    "eight_review_cameras": true,
+    "six_spire_views_preserved": true,
+    "flashpoint_view_preserved": true,
+    "protected_files_unchanged": true
+  }
+}

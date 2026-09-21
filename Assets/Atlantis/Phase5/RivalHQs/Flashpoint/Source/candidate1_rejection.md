@@ -1,0 +1,1 @@
+Candidate 1 rejected: generated an oversized two-building streetscape with road, trees, car and dominant billboard panels. The desired compact asymmetric standalone HQ concept is not achieved. Source preserved; 20,950 triangles, 83 non-manifold edges after seam welding, no zero-area faces, three 4K RGBA textures.

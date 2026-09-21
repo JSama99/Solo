@@ -1,0 +1,95 @@
+{
+  "filename": "PallasAI_Higgsfield_Raw.glb",
+  "bytes": 4876700,
+  "dimensions": [
+    0.7590970396995544,
+    0.8538452386856079,
+    0.9850407242774963
+  ],
+  "bounds": [
+    [
+      -0.3801267743110657,
+      -0.42687922716140747,
+      -0.49014803767204285
+    ],
+    [
+      0.37897026538848877,
+      0.42696598172187805,
+      0.4948926866054535
+    ]
+  ],
+  "meshes": 1,
+  "triangles": 21204,
+  "materials": 1,
+  "textures": 3,
+  "objects": [
+    {
+      "name": "tripo_node_bf1a1ded-46b5-43a5-9ec6-59fd8aa52fb6",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parent": null,
+      "nonmanifold": 29,
+      "zero_area": 0,
+      "components": [
+        10553
+      ]
+    }
+  ],
+  "texture_details": [
+    {
+      "name": "Color_bf1a1ded-46b5-43a5-9ec6-59fd8aa52fb6",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "decoded_bytes": 67108864,
+      "packed": true
+    },
+    {
+      "name": "NormalGL_bf1a1ded-46b5-43a5-9ec6-59fd8aa52fb6",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "decoded_bytes": 67108864,
+      "packed": true
+    },
+    {
+      "name": "ORM_bf1a1ded-46b5-43a5-9ec6-59fd8aa52fb6",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "decoded_bytes": 67108864,
+      "packed": true
+    }
+  ],
+  "hierarchy": [
+    {
+      "name": "tripo_node_bf1a1ded-46b5-43a5-9ec6-59fd8aa52fb6",
+      "type": "MESH",
+      "parent": null,
+      "origin": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

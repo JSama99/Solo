@@ -1,0 +1,244 @@
+{
+  "checks": {
+    "all_buildings_clear_roads_at_least_4m": true,
+    "all_buildings_separated_at_least_6m": true,
+    "11_kit_typologies": true,
+    "three_30_to_50m_anchors": true
+  },
+  "building_road_clearances": [
+    {
+      "building": "LoftContext",
+      "road_clearance_m": 10.318589855321658,
+      "road": "Progression_Startup"
+    },
+    {
+      "building": "SmallOfficeContext",
+      "road_clearance_m": 14.0,
+      "road": "StartupRow_CrossStreet"
+    },
+    {
+      "building": "OfficeContext",
+      "road_clearance_m": 12.0,
+      "road": "StartupRow_CrossStreet"
+    },
+    {
+      "building": "SmallBuildingContext",
+      "road_clearance_m": 28.0,
+      "road": "Startup_ResearchLane"
+    },
+    {
+      "building": "BigBuildingContext",
+      "road_clearance_m": 25.26870411857191,
+      "road": "Venture_Boulevard"
+    },
+    {
+      "building": "IncubatorAnchor",
+      "road_clearance_m": 27.0,
+      "road": "Startup_ResearchLane"
+    },
+    {
+      "building": "ArrivalCafe",
+      "road_clearance_m": 26.73220725671699,
+      "road": "AtlantisBridge_Main"
+    },
+    {
+      "building": "CoreCafe",
+      "road_clearance_m": 18.0,
+      "road": "StartupRow_CrossStreet"
+    },
+    {
+      "building": "LaunchCafe",
+      "road_clearance_m": 27.0,
+      "road": "StartupRow_CrossStreet"
+    },
+    {
+      "building": "Building_00",
+      "road_clearance_m": 15.663405137860046,
+      "road": "Progression_Startup"
+    },
+    {
+      "building": "Building_02",
+      "road_clearance_m": 15.463547409596924,
+      "road": "Progression_Startup"
+    },
+    {
+      "building": "Building_03",
+      "road_clearance_m": 17.52153043130706,
+      "road": "Progression_Startup"
+    },
+    {
+      "building": "Building_04",
+      "road_clearance_m": 4.931957440727501,
+      "road": "Startup_SouthLane"
+    },
+    {
+      "building": "Building_05",
+      "road_clearance_m": 14.0,
+      "road": "StartupRow_CrossStreet"
+    },
+    {
+      "building": "Building_06",
+      "road_clearance_m": 7.0,
+      "road": "Startup_NorthAccess"
+    },
+    {
+      "building": "Building_07",
+      "road_clearance_m": 13.0,
+      "road": "StartupRow_CrossStreet"
+    },
+    {
+      "building": "Building_08",
+      "road_clearance_m": 14.0,
+      "road": "StartupRow_CrossStreet"
+    },
+    {
+      "building": "Building_09",
+      "road_clearance_m": 5.320367285101696,
+      "road": "Progression_Startup"
+    },
+    {
+      "building": "Building_10",
+      "road_clearance_m": 29.0,
+      "road": "Startup_ResearchLane"
+    },
+    {
+      "building": "Building_12",
+      "road_clearance_m": 31.0,
+      "road": "Startup_ResearchLane"
+    },
+    {
+      "building": "Building_13",
+      "road_clearance_m": 31.0,
+      "road": "Startup_ResearchLane"
+    },
+    {
+      "building": "Building_14",
+      "road_clearance_m": 82.0,
+      "road": "Startup_ResearchLane"
+    },
+    {
+      "building": "Building_15",
+      "road_clearance_m": 82.0,
+      "road": "Startup_ResearchLane"
+    },
+    {
+      "building": "Building_16",
+      "road_clearance_m": 82.0,
+      "road": "Startup_NorthAccess"
+    },
+    {
+      "building": "Building_17",
+      "road_clearance_m": 82.0,
+      "road": "Startup_ResearchLane"
+    },
+    {
+      "building": "Building_18",
+      "road_clearance_m": 50.24849809635123,
+      "road": "Venture_Boulevard"
+    },
+    {
+      "building": "Building_19",
+      "road_clearance_m": 19.78463440620885,
+      "road": "Venture_Boulevard"
+    },
+    {
+      "building": "Building_21",
+      "road_clearance_m": 29.0,
+      "road": "StartupRow_CrossStreet"
+    },
+    {
+      "building": "Building_22",
+      "road_clearance_m": 30.840620433565945,
+      "road": "AtlantisBridge_Main"
+    },
+    {
+      "building": "Building_23",
+      "road_clearance_m": 13.0,
+      "road": "Startup_SouthLane"
+    },
+    {
+      "building": "Building_24",
+      "road_clearance_m": 12.0,
+      "road": "Startup_SouthLane"
+    },
+    {
+      "building": "Building_25",
+      "road_clearance_m": 13.0,
+      "road": "Startup_SouthLane"
+    },
+    {
+      "building": "Building_26",
+      "road_clearance_m": 13.0,
+      "road": "Startup_SouthLane"
+    },
+    {
+      "building": "Building_27",
+      "road_clearance_m": 10.0,
+      "road": "Startup_SouthLane"
+    },
+    {
+      "building": "Building_28",
+      "road_clearance_m": 17.0,
+      "road": "Startup_SouthLane"
+    },
+    {
+      "building": "Building_29",
+      "road_clearance_m": 9.0,
+      "road": "Startup_SouthLane"
+    },
+    {
+      "building": "Building_30",
+      "road_clearance_m": 22.0,
+      "road": "Startup_SouthLane"
+    },
+    {
+      "building": "Building_31",
+      "road_clearance_m": 11.0,
+      "road": "StartupRow_CrossStreet"
+    }
+  ],
+  "minimum_building_gap_m": 11.0,
+  "mean_footprint_dimensions_m": [
+    30.0,
+    22.68421052631579
+  ],
+  "founder_garage_to_core_direct_m": 763.4819971682371,
+  "core_to_tech_core_center_direct_m": 874.0291528318721,
+  "core_to_tech_core_southwest_boundary_direct_m": 440.5984112545119,
+  "core_to_spire_direct_m": 958.5024569608572,
+  "core_to_flashpoint_direct_m": 938.3639805533885,
+  "progression_pair_distances_m": {
+    "Progression_Loft": {
+      "Progression_SmallOffice": 138.1774221788784,
+      "Progression_Office": 204.62893246068603,
+      "Progression_SmallBuilding": 246.13004692641653,
+      "Progression_BigBuilding": 337.16464820618427
+    },
+    "Progression_SmallOffice": {
+      "Progression_Loft": 138.1774221788784,
+      "Progression_Office": 170.0,
+      "Progression_SmallBuilding": 148.2194319244275,
+      "Progression_BigBuilding": 283.6705836000624
+    },
+    "Progression_Office": {
+      "Progression_Loft": 204.62893246068603,
+      "Progression_SmallOffice": 170.0,
+      "Progression_SmallBuilding": 100.34440691936945,
+      "Progression_BigBuilding": 132.5481044753187
+    },
+    "Progression_SmallBuilding": {
+      "Progression_Loft": 246.13004692641653,
+      "Progression_SmallOffice": 148.2194319244275,
+      "Progression_Office": 100.34440691936945,
+      "Progression_BigBuilding": 150.0
+    },
+    "Progression_BigBuilding": {
+      "Progression_Loft": 337.16464820618427,
+      "Progression_SmallOffice": 283.6705836000624,
+      "Progression_Office": 132.5481044753187,
+      "Progression_SmallBuilding": 150.0
+    }
+  },
+  "route_length_garage_to_tech_approach_m": 1755.492479425637,
+  "district_area_m2": 208000
+}

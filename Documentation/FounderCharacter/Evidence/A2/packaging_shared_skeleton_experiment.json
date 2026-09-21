@@ -1,0 +1,15 @@
+{
+  "status": "REJECTED; RealityKit collapsed ten renderable modules to one",
+  "candidate": "founder_runtime_shared_skeleton_experiment.usdz",
+  "package_bytes": 2656750,
+  "sha256": "8fab9c33fdbad9f00df080494c682c03f1c6ee042de8e11735ee7f2a5112df61",
+  "skeleton_instances": 1,
+  "mesh_count": 10,
+  "facial_targets": 9,
+  "realitykit_model_entities": 1,
+  "expected_model_entities": 10,
+  "head_modules_found": 0,
+  "contract_result": "2 passed, 3 failed; independent visibility and head masking lost",
+  "package_delta_bytes": -785,
+  "decision": "Restore modular current candidate; no Pareto improvement"
+}

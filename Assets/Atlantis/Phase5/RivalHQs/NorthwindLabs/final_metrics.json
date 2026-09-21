@@ -1,0 +1,97 @@
+{
+  "checks": {
+    "fits_initial_footprint": true,
+    "target_height": true,
+    "ground_origin": true,
+    "clean_geometry": true,
+    "clean_transforms": true,
+    "semantic_main_exact": true,
+    "semantic_uvs": true,
+    "metres": true
+  },
+  "bounds": [
+    [
+      -28.0,
+      -25.0,
+      0.0
+    ],
+    [
+      28.0,
+      25.0,
+      115.0
+    ]
+  ],
+  "dimensions": [
+    56.0,
+    50.0,
+    115.0
+  ],
+  "triangles": 708,
+  "meshes": 7,
+  "materials": 7,
+  "textures": 0,
+  "bytes": 57152,
+  "semantic_targets": [
+    "NorthwindLabs_LabDisplay",
+    "NorthwindLabs_Signage_Main"
+  ],
+  "geometry": [
+    {
+      "name": "NorthwindLabs_LabDisplay",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 6.0
+    },
+    {
+      "name": "NorthwindLabs_LabGlow",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 1.2000091552908974
+    },
+    {
+      "name": "NorthwindLabs_PaleStructure",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 22179.478904506264
+    },
+    {
+      "name": "NorthwindLabs_ResearchGlazing",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 121630.0
+    },
+    {
+      "name": "NorthwindLabs_RoofLouvers",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 7.199993133544922
+    },
+    {
+      "name": "NorthwindLabs_Signage_Main",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 5.0
+    },
+    {
+      "name": "NorthwindLabs_Silver",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 212.76038726841216
+    }
+  ],
+  "remaining_growth_dimensions": [
+    9.0,
+    10.0,
+    35.0
+  ],
+  "remaining_growth_plan_area_m2": 1100.0,
+  "material_names": [
+    "NorthwindLabs_LabDisplay",
+    "NorthwindLabs_LabGlow",
+    "NorthwindLabs_PaleStructure",
+    "NorthwindLabs_ResearchGlazing",
+    "NorthwindLabs_RoofLouvers",
+    "NorthwindLabs_Signage_Main",
+    "NorthwindLabs_Silver"
+  ]
+}

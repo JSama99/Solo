@@ -96,6 +96,7 @@ struct FounderGarageSpatialBounds: Equatable {
 /// These zones never own simulation state or make an object interactive by themselves.
 struct FacilityTier0InteractionZone: Equatable, Identifiable {
   enum SemanticObject: String, CaseIterable, Hashable {
+    case chair
     case founderComputer
     case whiteboard
     case garageDoor
@@ -111,7 +112,384 @@ struct FacilityTier0InteractionZone: Equatable, Identifiable {
   let approach: FounderGarageSpatialPose
   let interactionDistance: FounderGarageInteractionDistance
   let activationBounds: FounderGarageSpatialBounds
+  let founderInteractionTarget: FounderInteractionTargetContract?
   let isEnabled: Bool
+
+  init(
+    id: String,
+    semanticObject: SemanticObject,
+    anchorName: String,
+    object: FounderGarageSpatialPose,
+    approach: FounderGarageSpatialPose,
+    interactionDistance: FounderGarageInteractionDistance,
+    activationBounds: FounderGarageSpatialBounds,
+    founderInteractionTarget: FounderInteractionTargetContract? = nil,
+    isEnabled: Bool
+  ) {
+    self.id = id
+    self.semanticObject = semanticObject
+    self.anchorName = anchorName
+    self.object = object
+    self.approach = approach
+    self.interactionDistance = interactionDistance
+    self.activationBounds = activationBounds
+    self.founderInteractionTarget = founderInteractionTarget
+    self.isEnabled = isEnabled
+  }
+}
+
+enum FounderInteractionType: String, CaseIterable, Equatable, Sendable {
+  case seat
+  case seatedWorkstation
+  case standingObservation
+}
+
+enum FounderInteractionPreferredHand: String, CaseIterable, Equatable, Sendable {
+  case left
+  case right
+}
+
+/// Immutable presentation input for a future interaction coordinator. It describes
+/// authored endpoints only; it does not select targets, move the Founder, or drive animation.
+struct FounderInteractionTargetContract: Equatable, Identifiable {
+  let id: String
+  let semanticObject: FacilityTier0InteractionZone.SemanticObject
+  let interactionType: FounderInteractionType
+  let approach: FounderGarageSpatialPose
+  let interaction: FounderGarageSpatialPose
+  let gazeTarget: SIMD3<Float>?
+  let preferredHand: FounderInteractionPreferredHand?
+  let handTarget: FounderGarageSpatialPose?
+  let positionToleranceMeters: Float
+  let facingToleranceRadians: Float
+
+  var hasFiniteValues: Bool {
+    let poses = [approach, interaction] + (handTarget.map { [$0] } ?? [])
+    let poseValues = poses.flatMap { pose in
+      [
+        pose.position.x, pose.position.y, pose.position.z,
+        pose.facingDirection.x, pose.facingDirection.y, pose.facingDirection.z
+      ]
+    }
+    let gazeValues = gazeTarget.map { [$0.x, $0.y, $0.z] } ?? []
+    return (poseValues + gazeValues + [positionToleranceMeters, facingToleranceRadians])
+      .allSatisfy(\.isFinite)
+  }
+}
+
+enum FounderInteractionPhase: String, CaseIterable, Equatable, Sendable {
+  case idle
+  case approaching
+  case stopping
+  case aligning
+  case sitting
+  case seated
+  case standing
+  case departing
+  case recovering
+}
+
+struct FounderInteractionDiagnostics: Equatable, Sendable {
+  fileprivate(set) var approachDistance: Float = 0
+  fileprivate(set) var approachPositionError: Float = 0
+  fileprivate(set) var approachYawError: Float = 0
+  fileprivate(set) var stopVelocity: Float = 0
+  fileprivate(set) var alignmentTranslation: Float = 0
+  fileprivate(set) var alignmentRotation: Float = 0
+  fileprivate(set) var sitDuration: Float = 0
+  fileprivate(set) var seatEndpointError: Float = 0
+  fileprivate(set) var standDuration: Float = 0
+  fileprivate(set) var standingEndpointError: Float = 0
+  fileprivate(set) var departTransitionTime: Float = 0
+  fileprivate(set) var interruptRecoveryTime: Float = 0
+  fileprivate(set) var cyclePositionDrift: Float = 0
+  fileprivate(set) var cycleYawDrift: Float = 0
+  fileprivate(set) var invalidTransformCount = 0
+  fileprivate(set) var completedCycleCount = 0
+
+  var deterministicSignature: String {
+    String(
+      format: "chair|d=%.4f|p=%.4f|y=%.4f|v=%.4f|at=%.4f|ar=%.4f|sit=%.4f|seat=%.4f|stand=%.4f|standing=%.4f|depart=%.4f|recover=%.4f|drift=%.4f,%.4f|invalid=%d|cycles=%d",
+      approachDistance, approachPositionError, approachYawError, stopVelocity,
+      alignmentTranslation, alignmentRotation, sitDuration, seatEndpointError,
+      standDuration, standingEndpointError, departTransitionTime,
+      interruptRecoveryTime, cyclePositionDrift, cycleYawDrift,
+      invalidTransformCount, completedCycleCount
+    )
+  }
+}
+
+/// Session-only choreography for the first Pass C interaction. Navigation remains
+/// camera-owned and visible motion remains locomotion-owned; this object only
+/// sequences intent and checks the immutable chair contract at phase boundaries.
+@MainActor
+@Observable
+final class FounderInteractionCoordinator {
+  private(set) var phase = FounderInteractionPhase.idle
+  private(set) var diagnostics = FounderInteractionDiagnostics()
+  let chairTarget: FounderInteractionTargetContract?
+
+  private var phaseElapsed: Float = 0
+  private var pendingCancellation = false
+  private var interruptionActive = false
+  private var interruptionElapsed: Float = 0
+  private var reduceMotion = false
+
+  init(chairTarget: FounderInteractionTargetContract?) {
+    precondition(chairTarget == nil || (
+      chairTarget?.semanticObject == .chair
+        && chairTarget?.interactionType == .seat
+        && chairTarget?.hasFiniteValues == true
+    ))
+    self.chairTarget = chairTarget
+  }
+
+  @discardableResult
+  func requestChairInteraction(
+    camera: FounderGarageCameraController,
+    reduceMotion: Bool
+  ) -> Bool {
+    guard let chairTarget,
+          phase == .idle,
+          camera.playerSpatialState.navigationMode == .walking
+    else { return false }
+    self.reduceMotion = reduceMotion
+    pendingCancellation = false
+    diagnostics.approachDistance = planarDistance(
+      camera.playerSpatialState.playerPose.position,
+      chairTarget.approach.position
+    )
+    diagnostics.alignmentTranslation = 0
+    diagnostics.alignmentRotation = 0
+    enter(.approaching)
+    return true
+  }
+
+  @discardableResult
+  func requestChairExit(
+    camera: FounderGarageCameraController,
+    reduceMotion: Bool
+  ) -> Bool {
+    guard let chairTarget, phase == .seated else { return false }
+    self.reduceMotion = reduceMotion
+    pendingCancellation = false
+    guard camera.beginInteractionStanding(
+      at: chairTarget.approach,
+      reduceMotion: reduceMotion
+    ) else {
+      diagnostics.invalidTransformCount += 1
+      enter(.recovering)
+      return false
+    }
+    enter(.standing)
+    return true
+  }
+
+  func cancel(camera: FounderGarageCameraController) {
+    guard let chairTarget, phase != .idle && phase != .recovering else { return }
+    interruptionActive = true
+    interruptionElapsed = 0
+    switch phase {
+    case .sitting:
+      pendingCancellation = true
+    case .seated:
+      pendingCancellation = true
+      if camera.beginInteractionStanding(at: chairTarget.approach, reduceMotion: reduceMotion) {
+        enter(.standing)
+      } else {
+        diagnostics.invalidTransformCount += 1
+        enter(.recovering)
+      }
+    case .standing:
+      pendingCancellation = true
+    case .idle, .recovering:
+      break
+    default:
+      camera.setMovementIntent(.idle)
+      enter(.recovering)
+    }
+  }
+
+  func prepareFrame(camera: FounderGarageCameraController, deltaTime rawDelta: TimeInterval) {
+    guard let chairTarget else { return }
+    let dt = boundedDelta(rawDelta)
+    phaseElapsed += dt
+    if interruptionActive { interruptionElapsed += dt }
+    guard valuesAreFinite(camera.snapshot) else {
+      diagnostics.invalidTransformCount += 1
+      camera.setMovementIntent(.idle)
+      enter(.recovering)
+      return
+    }
+    switch phase {
+    case .approaching:
+      let snapshot = camera.snapshot
+      let offset = planarOffset(from: snapshot.playerPosition, to: chairTarget.approach.position)
+      let distance = simd_length(offset)
+      let speed = simd_length(SIMD2<Float>(snapshot.velocity.x, snapshot.velocity.z))
+      let brakingDistance = speed * speed / (2 * FounderGarageCameraConfiguration.linearDeceleration) + 0.012
+      if distance <= max(brakingDistance, 0.018) {
+        camera.setMovementIntent(.idle)
+        enter(.stopping)
+      } else {
+        camera.setMovementIntent(localIntent(for: offset, heading: snapshot.bodyHeading))
+      }
+      if phaseElapsed > 12 {
+        camera.setMovementIntent(.idle)
+        enter(.recovering)
+      }
+    case .stopping, .sitting, .seated, .standing, .departing, .recovering:
+      camera.setMovementIntent(.idle)
+    case .aligning:
+      camera.setMovementIntent(.idle)
+      let result = camera.alignStandingPlayer(
+        toward: chairTarget.approach,
+        maximumTranslation: 0.42 * dt,
+        maximumRotation: 2.4 * dt
+      )
+      diagnostics.alignmentTranslation += result.translation
+      diagnostics.alignmentRotation += result.rotation
+      if !result.valid {
+        diagnostics.invalidTransformCount += 1
+        enter(.recovering)
+      }
+    case .idle:
+      break
+    }
+  }
+
+  func completeFrame(
+    camera: FounderGarageCameraController,
+    locomotion: FounderLocomotionController
+  ) {
+    guard let chairTarget else { return }
+    let snapshot = camera.snapshot
+    let positionError = planarDistance(snapshot.playerPosition, chairTarget.approach.position)
+    let targetHeading = heading(for: chairTarget.approach.facingDirection)
+    let yawError = abs(shortestAngle(targetHeading - snapshot.bodyHeading))
+    if phase == .approaching || phase == .stopping || phase == .aligning {
+      diagnostics.approachPositionError = positionError
+      diagnostics.approachYawError = yawError
+    }
+
+    switch phase {
+    case .stopping:
+      let speed = simd_length(SIMD2<Float>(snapshot.velocity.x, snapshot.velocity.z))
+      if speed <= 0.01 {
+        diagnostics.stopVelocity = speed
+        if positionError <= chairTarget.positionToleranceMeters + 0.025 {
+          enter(.aligning)
+        } else {
+          enter(.approaching)
+        }
+      }
+    case .aligning:
+      if positionError <= 0.0025,
+         yawError <= 0.0025,
+         locomotion.state == .standingIdle {
+        camera.endWalking(reduceMotion: reduceMotion, keepFounderVisible: true)
+        enter(.sitting)
+      }
+    case .sitting:
+      if locomotion.state == .seatedIdle {
+        camera.completeSeatingTransition()
+        locomotion.enterFirstPersonSeatedPresentation()
+        diagnostics.sitDuration = phaseElapsed
+        diagnostics.seatEndpointError = planarDistance(
+          camera.playerSpatialState.playerPose.position,
+          chairTarget.interaction.position
+        )
+        if pendingCancellation {
+          if camera.beginInteractionStanding(at: chairTarget.approach, reduceMotion: reduceMotion) {
+            enter(.standing)
+          } else {
+            diagnostics.invalidTransformCount += 1
+            enter(.recovering)
+          }
+        } else {
+          enter(.seated)
+        }
+      }
+    case .standing:
+      if locomotion.state == .standingIdle {
+        diagnostics.standDuration = phaseElapsed
+        diagnostics.standingEndpointError = positionError
+        if pendingCancellation {
+          enter(.recovering)
+        } else {
+          enter(.departing)
+        }
+      }
+    case .departing:
+      if phaseElapsed >= FounderAnimationTiming.transitionBlend {
+        diagnostics.departTransitionTime = phaseElapsed
+        diagnostics.completedCycleCount += 1
+        diagnostics.cyclePositionDrift = diagnostics.seatEndpointError
+        diagnostics.cycleYawDrift = abs(shortestAngle(
+          heading(for: chairTarget.interaction.facingDirection)
+            - FounderGarageCameraConfiguration(spatial: camera.spatial).seatedPlayerState.playerPose.heading
+        ))
+        enter(.idle)
+      }
+    case .recovering:
+      let speed = simd_length(SIMD2<Float>(snapshot.velocity.x, snapshot.velocity.z))
+      if speed <= 0.01 && locomotion.state == .standingIdle {
+        finishRecovery()
+      }
+    case .idle, .approaching, .seated:
+      break
+    }
+  }
+
+  private func finishRecovery() {
+    pendingCancellation = false
+    if interruptionActive { diagnostics.interruptRecoveryTime = interruptionElapsed }
+    interruptionActive = false
+    enter(.idle)
+  }
+
+  private func enter(_ next: FounderInteractionPhase) {
+    phase = next
+    phaseElapsed = 0
+  }
+
+  private func boundedDelta(_ raw: TimeInterval) -> Float {
+    min(max(Float(raw), 0), FounderGarageCameraConfiguration.maximumDeltaTime)
+  }
+
+  private func planarOffset(from start: SIMD3<Float>, to end: SIMD3<Float>) -> SIMD2<Float> {
+    [end.x - start.x, end.z - start.z]
+  }
+
+  private func planarDistance(_ first: SIMD3<Float>, _ second: SIMD3<Float>) -> Float {
+    simd_length(planarOffset(from: first, to: second))
+  }
+
+  private func localIntent(for worldOffset: SIMD2<Float>, heading: Float) -> FounderGarageMovementIntent {
+    guard simd_length_squared(worldOffset) > 0.000001 else { return .idle }
+    let direction = simd_normalize(worldOffset)
+    let right = SIMD2<Float>(cos(heading), sin(heading))
+    let forward = SIMD2<Float>(sin(heading), -cos(heading))
+    return FounderGarageMovementIntent(
+      lateral: simd_dot(direction, right),
+      forward: simd_dot(direction, forward)
+    )
+  }
+
+  private func heading(for facing: SIMD3<Float>) -> Float {
+    atan2(facing.x, -facing.z)
+  }
+
+  private func shortestAngle(_ angle: Float) -> Float {
+    atan2(sin(angle), cos(angle))
+  }
+
+  private func valuesAreFinite(_ snapshot: FounderGarageCameraController.Snapshot) -> Bool {
+    [
+      snapshot.playerPosition.x, snapshot.playerPosition.y, snapshot.playerPosition.z,
+      snapshot.bodyHeading, snapshot.velocity.x, snapshot.velocity.y, snapshot.velocity.z
+    ].allSatisfy(\.isFinite)
+  }
 }
 
 struct FacilityTier0OccupancyAnchor: Equatable, Identifiable {
@@ -128,10 +506,20 @@ struct FacilityTier0InteractionSpace: Equatable {
     zones.values.filter(\.isEnabled)
   }
 
+  var founderInteractionTargets: [FounderInteractionTargetContract] {
+    zones.values.compactMap(\.founderInteractionTarget).sorted { $0.id < $1.id }
+  }
+
   func zone(
     for semanticObject: FacilityTier0InteractionZone.SemanticObject
   ) -> FacilityTier0InteractionZone? {
     zones[semanticObject]
+  }
+
+  func founderInteractionTarget(
+    for semanticObject: FacilityTier0InteractionZone.SemanticObject
+  ) -> FounderInteractionTargetContract? {
+    zones[semanticObject]?.founderInteractionTarget
   }
 }
 
@@ -460,6 +848,10 @@ struct FounderGarageSpatialSpecification {
     let founderToMonitor = authored.monitorFace - authored.founderSeat
     let founderFacing = simd_normalize(SIMD3<Float>(founderToMonitor.x, 0, founderToMonitor.z))
     let founder = FounderGarageSpatialPose(position: authored.founderSeat, facingDirection: founderFacing)
+    let founderStandingApproach = FounderGarageSpatialPose(
+      position: authored.founderSeat - founderFacing * 0.82,
+      facingDirection: founderFacing
+    )
     let desk = FounderGarageSpatialPose(
       position: [authored.deskSurface.x, 0, authored.deskSurface.z],
       facingDirection: [0, 0, 1]
@@ -487,16 +879,53 @@ struct FounderGarageSpatialSpecification {
     )
     let interactionSpace = FacilityTier0InteractionSpace(
       zones: [
+        .chair: FacilityTier0InteractionZone(
+          id: "facilityTier0.chair",
+          semanticObject: .chair,
+          anchorName: "Anchor_Founder_Seat",
+          object: chair,
+          approach: founderStandingApproach,
+          interactionDistance: .closePhysical,
+          activationBounds: FounderGarageSpatialBounds(
+            center: [authored.founderSeat.x, 0.455 / 2, authored.founderSeat.z],
+            size: [0.72, 0.455, 0.72]
+          ),
+          founderInteractionTarget: FounderInteractionTargetContract(
+            id: "facilityTier0.chair",
+            semanticObject: .chair,
+            interactionType: .seat,
+            approach: founderStandingApproach,
+            interaction: founder,
+            gazeTarget: [authored.founderSeat.x, 0.455, authored.founderSeat.z],
+            preferredHand: nil,
+            handTarget: nil,
+            positionToleranceMeters: 0.08,
+            facingToleranceRadians: 0.14
+          ),
+          isEnabled: false
+        ),
         .founderComputer: FacilityTier0InteractionZone(
           id: "facilityTier0.founderComputer",
           semanticObject: .founderComputer,
           anchorName: "Anchor_Monitor_Face",
           object: monitor,
-          approach: founder,
+          approach: founderStandingApproach,
           interactionDistance: .desk,
           activationBounds: FounderGarageSpatialBounds(
             center: authored.monitorFace,
             size: [0.59, 0.34, 0.04]
+          ),
+          founderInteractionTarget: FounderInteractionTargetContract(
+            id: "facilityTier0.founderComputer",
+            semanticObject: .founderComputer,
+            interactionType: .seatedWorkstation,
+            approach: founderStandingApproach,
+            interaction: founder,
+            gazeTarget: authored.monitorFace,
+            preferredHand: nil,
+            handTarget: nil,
+            positionToleranceMeters: 0.08,
+            facingToleranceRadians: 0.14
           ),
           isEnabled: true
         ),
@@ -508,6 +937,18 @@ struct FounderGarageSpatialSpecification {
           approach: FounderGarageSpatialPose(position: [-1.15, 0, -0.40], facingDirection: [-1, 0, 0]),
           interactionDistance: .wallObject,
           activationBounds: FounderGarageSpatialBounds(center: authored.whiteboardFace, size: [0.08, 1.30, 1.55]),
+          founderInteractionTarget: FounderInteractionTargetContract(
+            id: "facilityTier0.whiteboard",
+            semanticObject: .whiteboard,
+            interactionType: .standingObservation,
+            approach: FounderGarageSpatialPose(position: [-1.15, 0, -0.40], facingDirection: [-1, 0, 0]),
+            interaction: FounderGarageSpatialPose(position: [-1.15, 0, -0.40], facingDirection: [-1, 0, 0]),
+            gazeTarget: authored.whiteboardFace,
+            preferredHand: nil,
+            handTarget: nil,
+            positionToleranceMeters: 0.18,
+            facingToleranceRadians: 0.21
+          ),
           isEnabled: false
         ),
         .garageDoor: FacilityTier0InteractionZone(
@@ -594,8 +1035,8 @@ struct FounderGarageSpatialSpecification {
         chair: chair,
         founder: founder,
         founderComputer: monitor,
-        iPhone: FounderGarageSpatialPose(position: [0.35, authored.deskSurface.y + 0.009, -1.00], facingDirection: [0, 1, 0]),
-        iPad: FounderGarageSpatialPose(position: [0.63, authored.deskSurface.y + 0.012, -0.87], facingDirection: [0, 1, 0]),
+        iPhone: FounderGarageSpatialPose(position: [0.35, authored.deskSurface.y + 0.009, -0.83], facingDirection: [0, 1, 0]),
+        iPad: FounderGarageSpatialPose(position: [0.64, authored.deskSurface.y + 0.012, -1.18], facingDirection: [0, 1, 0]),
         signalTV: signalTV,
         fundingBoard: fundingBoard,
         camera: FounderGarageSpatialPose(position: authored.cameraIso, facingDirection: simd_normalize(authored.cameraLook - authored.cameraIso)),
@@ -617,7 +1058,11 @@ struct FounderGarageSpatialSpecification {
         exclusions: [deskZone, chairZone, frontBayZone, shelvingZone]
       ),
       interactionApproaches: InteractionApproaches(
-        founderComputer: FounderGarageInteractionApproach(object: monitor, approach: founder, distance: .desk),
+        founderComputer: FounderGarageInteractionApproach(
+          object: monitor,
+          approach: founderStandingApproach,
+          distance: .desk
+        ),
         signalTV: FounderGarageInteractionApproach(
           object: signalTV,
           approach: FounderGarageSpatialPose(position: [-1.45, 0, -1.85], facingDirection: [0, 0, -1]),
@@ -822,6 +1267,32 @@ struct FounderGarageArchitectureAssetDescriptor {
         "Curb_L", "Curb_R", "Street", "Facade_Fascia", "FrontYard_L",
         "FrontYard_R", "Mailbox", "Tree_L", "Tree_R", "FrontLawn_L", "FrontLawn_R",
         "Threshold_Apron", "ExteriorFacade", "ExteriorLight_01", "ExteriorLight_01_Lens"
+      ],
+      usesModernHierarchy: true,
+      isV7: true
+    )
+  }
+
+  static var facilityTier0V8: FounderGarageArchitectureAssetDescriptor {
+    FounderGarageArchitectureAssetDescriptor(
+      orientationCorrection: simd_quatf(angle: 0, axis: [0, 1, 0]),
+      maximumProportionVariance: 0.025,
+      boundsTolerance: 0.025,
+      scalePolicy: .requireNativeBounds(.init(
+        minimum: [-40.0, -0.24, -30.0],
+        maximum: [40.0, 7.9, 26.0]
+      )),
+      requiredEntityNames: [
+        "FounderGarage", "Shell", "Door", "Furniture", "Tech", "Clutter",
+        "FrontBay", "WallDressing", "Lighting", "Anchors", "Exterior", "Floor",
+        "RearWall", "Garage_RightWall", "RightSideAccessDoor", "Ceiling",
+        "GarageDoor_Panel", "GarageDoor_Header", "GarageDoor_Track_L",
+        "GarageDoor_Track_R", "FounderChair", "FounderDesk", "FounderMonitor",
+        "Monitor_Display", "Driveway", "LotGround", "Sidewalk",
+        "DrivewayApron_CurbCut", "Curb_L", "Curb_R", "Street", "Facade_Fascia",
+        "FrontYard_L", "FrontYard_R", "Mailbox", "Tree_L", "Tree_R",
+        "FrontLawn_L", "FrontLawn_R", "Threshold_Apron", "ExteriorFacade",
+        "ExteriorLight_01", "ExteriorLight_01_Lens"
       ],
       usesModernHierarchy: true,
       isV7: true
@@ -1367,6 +1838,19 @@ enum FounderGarageV7AssetContract {
   }
 }
 
+enum FounderGarageV8AssetContract {
+  static let resourceName = "founder_garage_v8"
+  static let packageSHA256 = "d297d7a144ab3fc8e5b917226d492c4b2d6de3d05f4e46c3419895e3712450a4"
+  static let rightSideDoorEntityName = "RightSideAccessDoor"
+
+  enum ValidationError: Error { case missingPackage, integrityMismatch }
+
+  static func validatePackage(_ data: Data) throws {
+    let digest = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+    guard digest == packageSHA256 else { throw ValidationError.integrityMismatch }
+  }
+}
+
 @MainActor
 struct RealityKitFounderGarageArchitectureLoader: FounderGarageArchitectureLoading {
   let bundle: Bundle
@@ -1379,7 +1863,12 @@ struct RealityKitFounderGarageArchitectureLoader: FounderGarageArchitectureLoadi
     guard case .bundledProductionAsset(let name) = source else {
       throw FounderGarageArchitectureAdapterError.unsupportedSource
     }
-    if name == FounderGarageV7AssetContract.resourceName {
+    if name == FounderGarageV8AssetContract.resourceName {
+      guard let url = bundle.url(forResource: name, withExtension: "usdz") else {
+        throw FounderGarageV8AssetContract.ValidationError.missingPackage
+      }
+      try FounderGarageV8AssetContract.validatePackage(Data(contentsOf: url))
+    } else if name == FounderGarageV7AssetContract.resourceName {
       guard let url = bundle.url(forResource: name, withExtension: "usdz") else {
         throw FounderGarageV7AssetContract.ValidationError.missingPackage
       }
@@ -1709,6 +2198,22 @@ struct FounderAssetRigDescriptor {
   let bodyPath: [String]
   let headPath: [String]?
   let normalization: FounderVisualNormalization
+  let authoredPose: FounderCharacterValidationPose?
+  let standingNormalization: FounderVisualNormalization?
+
+  init(
+    bodyPath: [String],
+    headPath: [String]?,
+    normalization: FounderVisualNormalization,
+    authoredPose: FounderCharacterValidationPose? = nil,
+    standingNormalization: FounderVisualNormalization? = nil
+  ) {
+    self.bodyPath = bodyPath
+    self.headPath = headPath
+    self.normalization = normalization
+    self.authoredPose = authoredPose
+    self.standingNormalization = standingNormalization
+  }
 }
 
 struct FounderVisualCapabilities: Equatable {
@@ -1723,6 +2228,7 @@ struct FounderPresentationRig {
   let visualRoot: Entity
   let bodyTarget: Entity
   let headTarget: Entity?
+  let authoredPose: FounderAuthoredPoseRig?
 
   var identitySnapshot: FounderPresentationTargetIdentitySnapshot {
     FounderPresentationTargetIdentitySnapshot(
@@ -1731,6 +2237,180 @@ struct FounderPresentationRig {
       visualRoot: visualRoot.id,
       body: bodyTarget.id,
       head: headTarget?.id
+    )
+  }
+}
+
+@MainActor
+final class FounderAuthoredPoseRig {
+  private struct ModelPose {
+    let model: ModelEntity
+    let names: [String]
+    let rest: [Transform]
+    let seated: [Transform]
+  }
+
+  private let models: [ModelPose]
+  private let normalizationRoot: Entity
+  private let seatedNormalization: Transform
+  private let standingNormalization: Transform
+
+  init(
+    root: Entity,
+    pose: FounderCharacterValidationPose,
+    normalizationRoot: Entity,
+    seatedNormalization: Transform,
+    standingNormalization: Transform
+  ) {
+    models = FounderCharacterContract.models(root).map { model in
+      let rest = model.jointTransforms
+      let seated = model.jointNames.enumerated().map { index, path in
+        pose.transform(for: String(path.split(separator: "/").last ?? "")) ?? rest[index]
+      }
+      return ModelPose(
+        model: model,
+        names: model.jointNames.map { String($0.split(separator: "/").last ?? "") },
+        rest: rest,
+        seated: seated
+      )
+    }
+    self.normalizationRoot = normalizationRoot
+    self.seatedNormalization = seatedNormalization
+    self.standingNormalization = standingNormalization
+    apply(standingAmount: 0)
+  }
+
+  func apply(standingAmount amount: Float, motion: FounderMotionFrame = .neutral) {
+    let t = min(max(amount, 0), 1)
+    for item in models {
+      var transforms = zip(item.seated, item.rest).map { blend($0, $1, amount: t) }
+      applyMotion(motion, names: item.names, transforms: &transforms)
+      item.model.jointTransforms = transforms
+    }
+    normalizationRoot.transform = blend(seatedNormalization, standingNormalization, amount: t)
+  }
+
+  func sampledTransforms(names requested: Set<String>) -> [String: Transform] {
+    guard let item = models.first else { return [:] }
+    return Dictionary(uniqueKeysWithValues: zip(item.names, item.model.jointTransforms).compactMap { name, transform in
+      requested.contains(name) ? (name, transform) : nil
+    })
+  }
+
+  func baselineTransform(named name: String, standing: Bool) -> Transform? {
+    guard let item = models.first, let index = item.names.firstIndex(of: name) else { return nil }
+    return standing ? item.rest[index] : item.seated[index]
+  }
+
+  private func applyMotion(_ motion: FounderMotionFrame, names: [String], transforms: inout [Transform]) {
+    guard !motion.reduceMotion else { return }
+    let breath = sin(motion.clock * 2 * .pi / 4.8) * 0.010
+      + sin(motion.clock * 2 * .pi / 7.3 + 0.8) * 0.003
+    let gazeEnvelope = pow(max(0, sin(motion.clock * 2 * .pi / 11.0 - 1.1)), 6)
+    let gazeYaw = gazeEnvelope * sin(motion.clock * 0.73) * 0.055
+    let gazePitch = -gazeEnvelope * 0.018
+
+    switch motion.state {
+    case .seatedIdle:
+      rotate("Spine02", angle: breath * 0.55, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Chest", angle: breath, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Clavicle_L", angle: breath * 0.20, axis: [0, 0, 1], names: names, transforms: &transforms)
+      rotate("Clavicle_R", angle: -breath * 0.20, axis: [0, 0, 1], names: names, transforms: &transforms)
+      rotate("Head", angle: gazeYaw, axis: [0, 1, 0], names: names, transforms: &transforms)
+      rotate("Head", angle: gazePitch - breath * 0.18, axis: [1, 0, 0], names: names, transforms: &transforms)
+    case .standingIdle:
+      let weightShift = sin(motion.clock * 2 * .pi / 8.9 + 0.4) * 0.009
+      rotate("Spine01", angle: weightShift, axis: [0, 0, 1], names: names, transforms: &transforms)
+      rotate("Chest", angle: breath * 0.85, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Head", angle: gazeYaw - weightShift * 0.6, axis: [0, 1, 0], names: names, transforms: &transforms)
+      rotate("Head", angle: gazePitch - breath * 0.12, axis: [1, 0, 0], names: names, transforms: &transforms)
+    case .standingUp, .sittingDown:
+      let direction: Float = motion.state == .standingUp ? 1 : -1
+      let lift = sin(motion.progress * .pi)
+      rotate("Spine01", angle: -lift * 0.11 * direction, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Chest", angle: lift * 0.045 * direction, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("UpperArm_L", angle: lift * 0.06, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("UpperArm_R", angle: lift * 0.06, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Head", angle: lift * 0.04 * direction, axis: [1, 0, 0], names: names, transforms: &transforms)
+    case .walkStart, .walking, .walkStop:
+      let gait = motion.gaitWeight
+      let phase = motion.locomotion.gaitPhase
+      let profile = motion.locomotion.phaseVariant.profile
+      let weightTransfer = motion.weightTransfer
+      let kineticChain = motion.kineticChain
+      let pelvisWave = sin(phase + profile.pelvis) * gait
+      let stride = sin(phase + profile.thigh) * gait
+      let opposite = sin(phase + .pi + profile.thigh) * gait
+      let leftKnee = max(0, -sin(phase + 0.35 + profile.knee)) * gait
+      let rightKnee = max(0, -sin(phase + .pi + 0.35 + profile.knee)) * gait
+      let leftFoot = sin(phase + profile.foot) * gait
+      let rightFoot = sin(phase + .pi + profile.foot) * gait
+      let torso = sin(phase + profile.torso - kineticChain.torsoPhaseOffset) * gait
+      let rightArm = kineticChain.armPresentedAngle / 0.25
+      let leftArm = -rightArm
+      let verticalCOM = abs(sin(phase + profile.verticalCOM)) * gait
+      rotate("Thigh_L", angle: stride * 0.34, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Thigh_R", angle: opposite * 0.34, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Calf_L", angle: leftKnee * 0.48, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Calf_R", angle: rightKnee * 0.48, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Foot_L", angle: (-leftFoot * 0.13) - leftKnee * 0.12, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Foot_R", angle: (-rightFoot * 0.13) - rightKnee * 0.12, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("UpperArm_L", angle: leftArm * 0.25, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("UpperArm_R", angle: rightArm * 0.25, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("LowerArm_L", angle: 0.10 + max(0, rightArm) * 0.10, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("LowerArm_R", angle: 0.10 + max(0, leftArm) * 0.10, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Chest", angle: -torso * 0.030, axis: [0, 1, 0], names: names, transforms: &transforms)
+      rotate("Clavicle_L", angle: kineticChain.shoulderResponse, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Clavicle_R", angle: -kineticChain.shoulderResponse, axis: [1, 0, 0], names: names, transforms: &transforms)
+      translate(
+        "Hips",
+        by: [
+          pelvisWave * 0.006 + weightTransfer.pelvisLateral,
+          verticalCOM * 0.011 + kineticChain.pelvisVerticalLoadOffset,
+          0
+        ],
+        names: names,
+        transforms: &transforms
+      )
+      rotate("Hips", angle: weightTransfer.pelvisRoll, axis: [0, 0, 1], names: names, transforms: &transforms)
+      rotate("Spine01", angle: weightTransfer.torsoCounterbalance * 0.55, axis: [0, 0, 1], names: names, transforms: &transforms)
+      rotate("Chest", angle: weightTransfer.torsoCounterbalance * 0.45, axis: [0, 0, 1], names: names, transforms: &transforms)
+      rotate("Clavicle_L", angle: weightTransfer.shoulderCompensation, axis: [0, 0, 1], names: names, transforms: &transforms)
+      rotate("Clavicle_R", angle: weightTransfer.shoulderCompensation, axis: [0, 0, 1], names: names, transforms: &transforms)
+    case .turnInPlace, .seatedTurn:
+      let anticipation = min(max(motion.turnDelta * 0.24, -0.16), 0.16)
+      rotate("Spine01", angle: anticipation * 0.45, axis: [0, 1, 0], names: names, transforms: &transforms)
+      rotate("Chest", angle: anticipation * 0.35, axis: [0, 1, 0], names: names, transforms: &transforms)
+      rotate("Head", angle: anticipation * 0.55, axis: [0, 1, 0], names: names, transforms: &transforms)
+    }
+  }
+
+  private func rotate(
+    _ name: String,
+    angle: Float,
+    axis: SIMD3<Float>,
+    names: [String],
+    transforms: inout [Transform]
+  ) {
+    guard let index = names.firstIndex(of: name) else { return }
+    transforms[index].rotation = simd_normalize(transforms[index].rotation * simd_quatf(angle: angle, axis: axis))
+  }
+
+  private func translate(
+    _ name: String,
+    by offset: SIMD3<Float>,
+    names: [String],
+    transforms: inout [Transform]
+  ) {
+    guard let index = names.firstIndex(of: name) else { return }
+    transforms[index].translation += offset
+  }
+
+  private func blend(_ seated: Transform, _ standing: Transform, amount: Float) -> Transform {
+    Transform(
+      scale: seated.scale + (standing.scale - seated.scale) * amount,
+      rotation: simd_slerp(seated.rotation, standing.rotation, amount),
+      translation: seated.translation + (standing.translation - seated.translation) * amount
     )
   }
 }
@@ -1783,7 +2463,8 @@ final class ProceduralFounderVisualAdapter: FounderVisualAdapter {
       normalizationRoot: normalizationRoot,
       visualRoot: visualRoot,
       bodyTarget: torso,
-      headTarget: head
+      headTarget: head,
+      authoredPose: nil
     )
     materials = [
       .jacket: Self.material(.founderJacket),
@@ -1899,13 +2580,24 @@ final class USDZFounderVisualAdapter: FounderVisualAdapter {
     normalizationRoot.transform = descriptor.normalization.transform
     normalizationRoot.addChild(loadedRoot)
 
+    let authoredPose = descriptor.authoredPose.map { pose in
+      FounderAuthoredPoseRig(
+        root: loadedRoot,
+        pose: pose,
+        normalizationRoot: normalizationRoot,
+        seatedNormalization: descriptor.normalization.transform,
+        standingNormalization: descriptor.standingNormalization?.transform ?? descriptor.normalization.transform
+      )
+    }
+
     self.source = source
     rig = FounderPresentationRig(
       anchor: anchor,
       normalizationRoot: normalizationRoot,
       visualRoot: loadedRoot,
       bodyTarget: body,
-      headTarget: head
+      headTarget: head,
+      authoredPose: authoredPose
     )
     capabilities = FounderVisualCapabilities(
       hasBodyTarget: true,
@@ -1924,7 +2616,8 @@ final class USDZFounderVisualAdapter: FounderVisualAdapter {
   func cancelActivePresentation() {}
 
   private static func resolve(path: [String], from root: Entity) -> Entity? {
-    path.reduce(Optional(root)) { current, component in
+    let components = path.first == root.name ? Array(path.dropFirst()) : path
+    return components.reduce(Optional(root)) { current, component in
       current?.children.first { $0.name == component }
     }
   }
@@ -2068,6 +2761,760 @@ struct FounderPresentationTargetIdentitySnapshot: Equatable {
   let head: Entity.ID?
 }
 
+enum FounderLocomotionState: String, CaseIterable, Equatable, Sendable {
+  case seatedIdle, seatedTurn, standingUp, standingIdle
+  case walkStart, walking, walkStop, turnInPlace, sittingDown
+}
+
+enum FounderFootPhase: String, CaseIterable, Equatable, Sendable {
+  case swing, approachingGround, plant, pushOff
+
+  static func resolve(gaitPhase: Float, offset: Float = 0) -> Self {
+    let fullCycle = 2 * Float.pi
+    let wrapped = (gaitPhase + offset).truncatingRemainder(dividingBy: fullCycle)
+    let normalized = (wrapped < 0 ? wrapped + fullCycle : wrapped) / fullCycle
+    return switch normalized {
+    case 0..<0.25: .plant
+    case 0.25..<0.50: .pushOff
+    case 0.50..<0.75: .swing
+    default: .approachingGround
+    }
+  }
+}
+
+enum FounderLocomotionPhaseVariant: String, CaseIterable, Equatable, Sendable {
+  case baseline, a, b, c
+
+  static let productionDefault: Self = .c
+
+  static var requested: Self {
+    #if DEBUG
+    let prefix = "--founder-locomotion-phase="
+    guard let value = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix(prefix) })?
+      .dropFirst(prefix.count) else { return productionDefault }
+    return Self(rawValue: String(value)) ?? productionDefault
+    #else
+    return productionDefault
+    #endif
+  }
+
+  var reviewLabel: String {
+    switch self {
+    case .baseline: "Baseline"
+    case .a: "Variant A"
+    case .b: "Variant B"
+    case .c: "Variant C"
+    }
+  }
+
+  var profile: FounderGaitPhaseProfile {
+    switch self {
+    case .baseline:
+      .init(pelvis: 0, thigh: 0, knee: 0, foot: 0, torso: 0, arm: 0, verticalCOM: 0)
+    case .a:
+      .init(pelvis: 0, thigh: 0.10, knee: 0.12, foot: 0.18, torso: 0.16, arm: 0.22, verticalCOM: 0.08)
+    case .b:
+      .init(pelvis: 0.06, thigh: 0.14, knee: 0.22, foot: 0.34, torso: 0.24, arm: 0.38, verticalCOM: 0.14)
+    case .c:
+      .init(pelvis: -0.06, thigh: 0.18, knee: 0.30, foot: 0.48, torso: 0.32, arm: 0.52, verticalCOM: 0.20)
+    }
+  }
+}
+
+struct FounderGaitPhaseProfile: Equatable, Sendable {
+  let pelvis: Float
+  let thigh: Float
+  let knee: Float
+  let foot: Float
+  let torso: Float
+  let arm: Float
+  let verticalCOM: Float
+
+  var offsets: [Float] { [pelvis, thigh, knee, foot, torso, arm, verticalCOM] }
+}
+
+enum FounderWeightTransferVariant: String, CaseIterable, Equatable, Sendable {
+  case baseline, a, b, c
+
+  static let productionDefault: Self = .baseline
+
+  static var reviewRequested: Self? {
+    #if DEBUG
+    let prefix = "--founder-weight-transfer="
+    guard let value = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix(prefix) })?
+      .dropFirst(prefix.count) else { return nil }
+    return Self(rawValue: String(value))
+    #else
+    return nil
+    #endif
+  }
+
+  static var requested: Self { reviewRequested ?? productionDefault }
+
+  var reviewLabel: String {
+    switch self {
+    case .baseline: "Baseline"
+    case .a: "Variant A"
+    case .b: "Variant B"
+    case .c: "Variant C"
+    }
+  }
+
+  var profile: FounderWeightTransferProfile {
+    switch self {
+    case .baseline:
+      .init(pelvisLateralAmplitude: 0, pelvisRollAmplitude: 0, torsoCounterbalanceFactor: 0, shoulderCompensationFactor: 0)
+    case .a:
+      .init(pelvisLateralAmplitude: 0.010, pelvisRollAmplitude: 0.012, torsoCounterbalanceFactor: 0.45, shoulderCompensationFactor: 0.20)
+    case .b:
+      .init(pelvisLateralAmplitude: 0.016, pelvisRollAmplitude: 0.018, torsoCounterbalanceFactor: 0.55, shoulderCompensationFactor: 0.26)
+    case .c:
+      .init(pelvisLateralAmplitude: 0.022, pelvisRollAmplitude: 0.026, torsoCounterbalanceFactor: 0.65, shoulderCompensationFactor: 0.32)
+    }
+  }
+}
+
+struct FounderWeightTransferProfile: Equatable, Sendable {
+  let pelvisLateralAmplitude: Float
+  let pelvisRollAmplitude: Float
+  let torsoCounterbalanceFactor: Float
+  let shoulderCompensationFactor: Float
+
+  var values: [Float] {
+    [pelvisLateralAmplitude, pelvisRollAmplitude, torsoCounterbalanceFactor, shoulderCompensationFactor]
+  }
+}
+
+struct FounderWeightTransferFrame: Equatable, Sendable {
+  let variant: FounderWeightTransferVariant
+  let leftSupportWeight: Float
+  let rightSupportWeight: Float
+  let supportBias: Float
+  let pelvisLateral: Float
+  let pelvisRoll: Float
+  let torsoCounterbalance: Float
+  let shoulderCompensation: Float
+
+  static let neutral = resolve(gaitPhase: 0, gaitWeight: 0, variant: .baseline)
+
+  static func supportWeight(gaitPhase: Float, offset: Float = 0) -> Float {
+    0.5 + 0.5 * cos(gaitPhase + offset)
+  }
+
+  static func resolve(
+    gaitPhase: Float,
+    gaitWeight: Float,
+    variant: FounderWeightTransferVariant
+  ) -> Self {
+    let left = supportWeight(gaitPhase: gaitPhase)
+    let right = supportWeight(gaitPhase: gaitPhase, offset: .pi)
+    let bias = left - right
+    let envelope = min(max(gaitWeight, 0), 1)
+    let transfer = bias * envelope
+    let profile = variant.profile
+    let pelvisRoll = transfer * profile.pelvisRollAmplitude
+    return Self(
+      variant: variant,
+      leftSupportWeight: left,
+      rightSupportWeight: right,
+      supportBias: bias,
+      pelvisLateral: transfer * profile.pelvisLateralAmplitude,
+      pelvisRoll: pelvisRoll,
+      torsoCounterbalance: -pelvisRoll * profile.torsoCounterbalanceFactor,
+      shoulderCompensation: -pelvisRoll * profile.shoulderCompensationFactor
+    )
+  }
+}
+
+enum FounderKineticChainVariant: String, CaseIterable, Equatable, Sendable {
+  case baseline, a, b, c
+
+  static let productionDefault: Self = .b
+
+  static var reviewRequested: Self? {
+    #if DEBUG
+    let prefix = "--founder-kinetic-chain="
+    guard let value = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix(prefix) })?
+      .dropFirst(prefix.count) else { return nil }
+    return Self(rawValue: String(value))
+    #else
+    return nil
+    #endif
+  }
+
+  static var requested: Self { reviewRequested ?? productionDefault }
+
+  var reviewLabel: String {
+    switch self {
+    case .baseline: "Baseline"
+    case .a: "Variant A"
+    case .b: "Variant B"
+    case .c: "Variant C"
+    }
+  }
+
+  var profile: FounderKineticChainProfile {
+    switch self {
+    case .baseline:
+      .init(supportLoadingStrength: 0, torsoLag: 0, shoulderLag: 0, armFollowThrough: 0)
+    case .a:
+      .init(supportLoadingStrength: 0.0035, torsoLag: 0.018, shoulderLag: 0.014, armFollowThrough: 0.024)
+    case .b:
+      .init(supportLoadingStrength: 0.0055, torsoLag: 0.030, shoulderLag: 0.024, armFollowThrough: 0.040)
+    case .c:
+      .init(supportLoadingStrength: 0.0075, torsoLag: 0.042, shoulderLag: 0.034, armFollowThrough: 0.056)
+    }
+  }
+}
+
+struct FounderKineticChainProfile: Equatable, Sendable {
+  let supportLoadingStrength: Float
+  let torsoLag: Float
+  let shoulderLag: Float
+  let armFollowThrough: Float
+
+  var values: [Float] { [supportLoadingStrength, torsoLag, shoulderLag, armFollowThrough] }
+}
+
+struct FounderKineticChainFrame: Equatable, Sendable {
+  let variant: FounderKineticChainVariant
+  let leftSupportWeight: Float
+  let rightSupportWeight: Float
+  let totalSupport: Float
+  let supportBias: Float
+  let supportTransitionRate: Float
+  let pelvisLoadResponse: Float
+  let pelvisVerticalLoadOffset: Float
+  let torsoLag: Float
+  let torsoResponseTime: Float
+  let torsoSettleTime: Float
+  let torsoPhaseOffset: Float
+  let shoulderLag: Float
+  let shoulderPhaseOffset: Float
+  let shoulderResponse: Float
+  let armTargetAngle: Float
+  let armPresentedAngle: Float
+  let armLag: Float
+  let armSettleTime: Float
+
+  static let neutral = resolve(
+    gaitPhase: 0,
+    gaitWeight: 0,
+    phaseRate: 0,
+    armPhase: 0,
+    variant: .baseline
+  )
+
+  static func resolve(
+    gaitPhase: Float,
+    gaitWeight: Float,
+    phaseRate: Float,
+    armPhase: Float,
+    variant: FounderKineticChainVariant
+  ) -> Self {
+    let envelope = min(max(gaitWeight, 0), 1)
+    let left = FounderWeightTransferFrame.supportWeight(gaitPhase: gaitPhase)
+    let right = FounderWeightTransferFrame.supportWeight(gaitPhase: gaitPhase, offset: .pi)
+    let bias = left - right
+    let transitionRate = -sin(gaitPhase) * max(phaseRate, 0) * envelope
+    let loadResponse = (1 - min(abs(bias), 1)) * envelope
+    let profile = variant.profile
+    let torsoPhaseOffset = profile.torsoLag * max(phaseRate, 0)
+    let shoulderPhaseOffset = profile.shoulderLag * max(phaseRate, 0)
+    let armPhaseOffset = profile.armFollowThrough * max(phaseRate, 0)
+    let targetArmAngle = sin(gaitPhase + armPhase) * 0.25 * envelope
+    let presentedArmAngle = sin(gaitPhase + armPhase - armPhaseOffset) * 0.25 * envelope
+    let shoulderResponse = (
+      sin(gaitPhase + armPhase - shoulderPhaseOffset)
+        - sin(gaitPhase + armPhase)
+    ) * 0.018 * envelope
+    return Self(
+      variant: variant,
+      leftSupportWeight: left,
+      rightSupportWeight: right,
+      totalSupport: left + right,
+      supportBias: bias,
+      supportTransitionRate: transitionRate,
+      pelvisLoadResponse: loadResponse,
+      pelvisVerticalLoadOffset: -profile.supportLoadingStrength * loadResponse,
+      torsoLag: profile.torsoLag,
+      torsoResponseTime: profile.torsoLag,
+      torsoSettleTime: profile.torsoLag * 2,
+      torsoPhaseOffset: torsoPhaseOffset,
+      shoulderLag: profile.shoulderLag,
+      shoulderPhaseOffset: shoulderPhaseOffset,
+      shoulderResponse: shoulderResponse,
+      armTargetAngle: targetArmAngle,
+      armPresentedAngle: presentedArmAngle,
+      armLag: presentedArmAngle - targetArmAngle,
+      armSettleTime: profile.armFollowThrough * 2
+    )
+  }
+}
+
+struct FounderLocomotionBlackboard: Equatable, Sendable {
+  let speed: Float
+  let normalizedSpeed: Float
+  let gaitPhase: Float
+  let leftFootPhase: FounderFootPhase
+  let rightFootPhase: FounderFootPhase
+  let phaseVariant: FounderLocomotionPhaseVariant
+
+  static let neutral = FounderLocomotionBlackboard(
+    speed: 0,
+    normalizedSpeed: 0,
+    gaitPhase: 0,
+    leftFootPhase: .plant,
+    rightFootPhase: .swing,
+    phaseVariant: .baseline
+  )
+}
+
+struct FounderMotionFrame {
+  let state: FounderLocomotionState
+  let clock: Float
+  let progress: Float
+  let locomotion: FounderLocomotionBlackboard
+  let weightTransfer: FounderWeightTransferFrame
+  let kineticChain: FounderKineticChainFrame
+  let gaitWeight: Float
+  let turnDelta: Float
+  let reduceMotion: Bool
+
+  static let neutral = FounderMotionFrame(
+    state: .seatedIdle,
+    clock: 0,
+    progress: 0,
+    locomotion: .neutral,
+    weightTransfer: .neutral,
+    kineticChain: .neutral,
+    gaitWeight: 0,
+    turnDelta: 0,
+    reduceMotion: true
+  )
+}
+
+struct FounderMotionCaptureSample: Equatable {
+  let state: FounderLocomotionState
+  let clip: String
+  let stateTimestamp: Float
+  let sampledTimestamp: Float
+  let rootTransform: Transform
+  let jointTransforms: [String: Transform]
+  let locomotionVelocity: SIMD2<Float>
+  let worldDisplacement: SIMD3<Float>
+  let cameraState: String
+  let founderWorldPosition: SIMD3<Float>
+  let garageState: String
+  let frameIndex: Int
+}
+
+struct FounderAnimationTiming {
+  static let shortBlend: Float = 0.16
+  static let transitionBlend: Float = 0.24
+  static let seatedTransition: Float = 0.42
+  static let standingTransition: Float = 0.68
+  static let reducedTransition: Float = 0.08
+}
+
+struct FounderLocomotionDiagnostics: Equatable {
+  var state: FounderLocomotionState = .seatedIdle
+  var previousState: FounderLocomotionState = .seatedIdle
+  var navigationMode: FounderGarageNavigationMode = .seated
+  var movementMagnitude: Float = 0
+  var horizontalVelocity = SIMD2<Float>.zero
+  var targetFacing: Float = 0
+  var avatarFacing: Float = 0
+  var activeAnimation = "seatedIdle.procedural"
+  var playbackSpeed: Float = 0
+  var blendProgress: Float = 1
+  var seatedAnchorError: Float = 0
+  var positionalError: Float = 0
+  var firstPersonHeadHidden = false
+  var gaitWeight: Float = 0
+  var gaitCycleDistance: Float = 0
+  var footSlideRatio: Float = 0
+  var phaseVariant: FounderLocomotionPhaseVariant = .baseline
+  var gaitPhase: Float = 0
+  var leftFootPhase: FounderFootPhase = .plant
+  var rightFootPhase: FounderFootPhase = .swing
+  var weightTransfer: FounderWeightTransferFrame = .neutral
+  var kineticChain: FounderKineticChainFrame = .neutral
+}
+
+/// Deterministic visual graph. It follows camera-owned spatial state and never
+/// feeds root motion, collision, or position back into navigation or GameStore.
+@MainActor
+final class FounderLocomotionController {
+  private(set) var state: FounderLocomotionState = .seatedIdle
+  private(set) var previousState: FounderLocomotionState = .seatedIdle
+  private(set) var diagnostics = FounderLocomotionDiagnostics()
+  private var rig: FounderPresentationRig
+  private let seatedPose: FounderPlayerPose
+  private var elapsed: Float = 0
+  private var avatarFacing: Float
+  private var lastTargetFacing: Float
+  private var seatedBodyTransform: Transform
+  private var seatedHeadTransform: Transform?
+  private var sitStartPosition: SIMD3<Float>
+  private var standStartPosition: SIMD3<Float>
+  private var walkPhase: Float = 0
+  private var animatedGaitDistance: Float = 0
+  private var motionClock: Float = 0
+  private var frameIndex = 0
+  private var previousAnchorPosition: SIMD3<Float>
+  private var phaseVariant: FounderLocomotionPhaseVariant
+  private var weightTransferVariant: FounderWeightTransferVariant
+  private var kineticChainVariant: FounderKineticChainVariant
+  private(set) var latestMotionSample: FounderMotionCaptureSample?
+
+  private static let gaitCycleDistance: Float = 0.78
+  private static let sampledJoints: Set<String> = [
+    "Hips", "Spine01", "Spine02", "Chest", "Head", "Clavicle_L", "Clavicle_R",
+    "UpperArm_L", "UpperArm_R", "Hand_L", "Hand_R",
+    "Calf_L", "Calf_R", "Foot_L", "Foot_R", "Toe_L", "Toe_R"
+  ]
+
+  init(
+    rig: FounderPresentationRig,
+    seatedPose: FounderPlayerPose,
+    phaseVariant: FounderLocomotionPhaseVariant = .requested,
+    weightTransferVariant: FounderWeightTransferVariant = .requested,
+    kineticChainVariant: FounderKineticChainVariant = .requested
+  ) {
+    self.rig = rig
+    self.seatedPose = seatedPose
+    avatarFacing = seatedPose.heading
+    lastTargetFacing = seatedPose.heading
+    seatedBodyTransform = rig.bodyTarget.transform
+    seatedHeadTransform = rig.headTarget?.transform
+    sitStartPosition = seatedPose.position
+    standStartPosition = seatedPose.position
+    previousAnchorPosition = rig.anchor.position
+    self.phaseVariant = phaseVariant
+    self.weightTransferVariant = weightTransferVariant
+    self.kineticChainVariant = kineticChainVariant
+  }
+
+  func configurePhaseVariantForReview(_ variant: FounderLocomotionPhaseVariant) {
+    phaseVariant = variant
+  }
+
+  func configureWeightTransferVariantForReview(_ variant: FounderWeightTransferVariant) {
+    weightTransferVariant = variant
+  }
+
+  func configureKineticChainVariantForReview(_ variant: FounderKineticChainVariant) {
+    kineticChainVariant = variant
+  }
+
+  func enterFirstPersonSeatedPresentation() {
+    forceSeatedState()
+    applyFirstPersonVisibility(true)
+    diagnostics.state = .seatedIdle
+    diagnostics.firstPersonHeadHidden = true
+  }
+
+  func install(rig: FounderPresentationRig, firstPerson: Bool) {
+    self.rig = rig
+    seatedBodyTransform = rig.bodyTarget.transform
+    seatedHeadTransform = rig.headTarget?.transform
+    elapsed = 0
+    if firstPerson { forceSeatedState() }
+    applyFirstPersonVisibility(firstPerson)
+  }
+
+  func update(
+    spatial: FounderCameraSpatialState,
+    collisionBlocked: Bool,
+    firstPerson: Bool,
+    reduceMotion: Bool,
+    deltaTime rawDelta: TimeInterval
+  ) {
+    let dt = min(max(Float(rawDelta), 0), FounderGarageCameraConfiguration.maximumDeltaTime)
+    guard dt > 0 else { return }
+    motionClock += dt
+    frameIndex += 1
+    let speed = firstPerson || collisionBlocked ? 0 : spatial.movementMagnitude
+    let moving = speed > 0.045
+    let seated = firstPerson || (spatial.stance == .seated && isNearSeat(spatial.position))
+    let targetFacing = moving
+      ? atan2(spatial.horizontalVelocity.x, -spatial.horizontalVelocity.y)
+      : atan2(spatial.facingDirection.x, -spatial.facingDirection.z)
+    let facingDelta = abs(shortestAngle(targetFacing - avatarFacing))
+
+    if firstPerson { forceSeatedState() }
+    advanceGraph(seated: seated, moving: moving, facingDelta: facingDelta, reduceMotion: reduceMotion, dt: dt)
+    if (state == .walkStart || state == .walking || state == .walkStop) && !reduceMotion {
+      let phaseAdvance = dt * max(speed, 0.08) / Self.gaitCycleDistance * 2 * .pi
+      animatedGaitDistance = phaseAdvance / (2 * .pi) * Self.gaitCycleDistance
+      walkPhase = (walkPhase + phaseAdvance)
+        .truncatingRemainder(dividingBy: 2 * .pi)
+    } else {
+      animatedGaitDistance = 0
+    }
+    let facingGoal = seated ? seatedPose.heading : targetFacing
+    let facingRate: Float = reduceMotion ? 18 : (state == .turnInPlace ? 4.8 : 7.2)
+    let desiredFacingStep = shortestAngle(facingGoal - avatarFacing) * min(facingRate * dt, 1)
+    let maximumFacingStep = (reduceMotion ? 18 : (state == .turnInPlace ? 2.4 : 5.0)) * dt
+    avatarFacing += min(max(desiredFacingStep, -maximumFacingStep), maximumFacingStep)
+    lastTargetFacing = targetFacing
+    applyVisual(spatial: spatial, speed: speed, firstPerson: firstPerson, reduceMotion: reduceMotion, deltaTime: dt)
+  }
+
+  private func advanceGraph(seated: Bool, moving: Bool, facingDelta: Float, reduceMotion: Bool, dt: Float) {
+    elapsed += dt
+    let short = reduceMotion ? FounderAnimationTiming.reducedTransition : FounderAnimationTiming.shortBlend
+    let transition = reduceMotion ? FounderAnimationTiming.reducedTransition : FounderAnimationTiming.transitionBlend
+    let seatedDuration = reduceMotion ? FounderAnimationTiming.reducedTransition : FounderAnimationTiming.seatedTransition
+    let standingDuration = reduceMotion ? FounderAnimationTiming.reducedTransition : FounderAnimationTiming.standingTransition
+    switch state {
+    case .seatedIdle:
+      if !seated { enter(.standingUp) }
+      else if abs(shortestAngle(lastTargetFacing - seatedPose.heading)) > 0.22 { enter(.seatedTurn) }
+    case .seatedTurn:
+      if !seated { enter(.standingUp) }
+      else if facingDelta < 0.08 { enter(.seatedIdle) }
+    case .standingUp:
+      if elapsed >= standingDuration { enter(moving ? .walkStart : .standingIdle) }
+    case .standingIdle:
+      if seated { enter(.sittingDown) }
+      else if moving { enter(.walkStart) }
+      else if facingDelta > 0.30 { enter(.turnInPlace) }
+    case .walkStart:
+      if seated { enter(.sittingDown) }
+      else if !moving { enter(.walkStop) }
+      else if elapsed >= short { enter(.walking) }
+    case .walking:
+      if seated { enter(.sittingDown) }
+      else if !moving { enter(.walkStop) }
+    case .walkStop:
+      if moving { enter(.walkStart) }
+      else if seated { enter(.sittingDown) }
+      else if elapsed >= transition { enter(.standingIdle) }
+    case .turnInPlace:
+      if moving { enter(.walkStart) }
+      else if seated { enter(.sittingDown) }
+      else if facingDelta < 0.08 || elapsed >= seatedDuration { enter(.standingIdle) }
+    case .sittingDown:
+      if !seated { enter(.standingIdle) }
+      else if elapsed >= seatedDuration { enter(.seatedIdle); avatarFacing = seatedPose.heading }
+    }
+  }
+
+  private func enter(_ next: FounderLocomotionState) {
+    guard next != state else { return }
+    if next == .standingUp && (state == .seatedIdle || state == .seatedTurn) {
+      seatedBodyTransform = rig.bodyTarget.transform
+      seatedHeadTransform = rig.headTarget?.transform
+      standStartPosition = seatedPose.position
+    }
+    if next == .sittingDown { sitStartPosition = rig.anchor.position }
+    previousState = state
+    state = next
+    elapsed = 0
+    if next == .seatedIdle {
+      rig.bodyTarget.transform = seatedBodyTransform
+      if let seatedHeadTransform { rig.headTarget?.transform = seatedHeadTransform }
+    }
+  }
+
+  /// First-person is the seated Founder viewpoint. Resolve the visual graph
+  /// synchronously so a standing or sit-down frame can never occupy that camera.
+  private func forceSeatedState() {
+    if state != .seatedIdle {
+      previousState = state
+      state = .seatedIdle
+      elapsed = 0
+    }
+    avatarFacing = seatedPose.heading
+    lastTargetFacing = seatedPose.heading
+    rig.bodyTarget.transform = seatedBodyTransform
+    if let seatedHeadTransform { rig.headTarget?.transform = seatedHeadTransform }
+  }
+
+  private func applyVisual(
+    spatial: FounderCameraSpatialState,
+    speed: Float,
+    firstPerson: Bool,
+    reduceMotion: Bool,
+    deltaTime: Float
+  ) {
+    let seated = state == .seatedIdle || state == .seatedTurn
+    let transitionDuration: Float
+    if reduceMotion && (state == .standingUp || state == .sittingDown) {
+      transitionDuration = FounderAnimationTiming.reducedTransition
+    } else if state == .standingUp {
+      transitionDuration = FounderAnimationTiming.standingTransition
+    } else if state == .sittingDown {
+      transitionDuration = FounderAnimationTiming.seatedTransition
+    } else {
+      transitionDuration = FounderAnimationTiming.transitionBlend
+    }
+    let progress = min(elapsed / max(transitionDuration, 0.001), 1)
+    let eased = progress * progress * (3 - 2 * progress)
+    let authoritativePosition: SIMD3<Float>
+    if seated { authoritativePosition = seatedPose.position }
+    else if state == .standingUp { authoritativePosition = standStartPosition + (spatial.position - standStartPosition) * eased }
+    else if state == .sittingDown { authoritativePosition = sitStartPosition + (seatedPose.position - sitStartPosition) * eased }
+    else { authoritativePosition = spatial.position }
+    rig.anchor.isEnabled = true
+    applyFirstPersonVisibility(firstPerson)
+    rig.anchor.position = authoritativePosition
+    rig.anchor.orientation = simd_quatf(angle: seated ? seatedPose.heading : avatarFacing, axis: [0, 1, 0])
+
+    let standingAmount: Float
+    switch state {
+    case .seatedIdle, .seatedTurn: standingAmount = 0
+    case .standingUp: standingAmount = eased
+    case .sittingDown: standingAmount = 1 - eased
+    default: standingAmount = 1
+    }
+    let gaitWeight: Float
+    switch state {
+    case .walkStart: gaitWeight = eased
+    case .walking: gaitWeight = 1
+    case .walkStop: gaitWeight = 1 - eased
+    default: gaitWeight = 0
+    }
+    let turnDelta = shortestAngle(lastTargetFacing - avatarFacing)
+    let locomotionBlackboard = FounderLocomotionBlackboard(
+      speed: speed,
+      normalizedSpeed: min(max(speed / FounderGarageCameraConfiguration.walkingSpeed, 0), 1),
+      gaitPhase: walkPhase,
+      leftFootPhase: FounderFootPhase.resolve(gaitPhase: walkPhase),
+      rightFootPhase: FounderFootPhase.resolve(gaitPhase: walkPhase, offset: .pi),
+      phaseVariant: phaseVariant
+    )
+    let weightTransfer = FounderWeightTransferFrame.resolve(
+      gaitPhase: walkPhase,
+      gaitWeight: reduceMotion ? 0 : gaitWeight,
+      variant: weightTransferVariant
+    )
+    let phaseRate = speed > 0
+      ? speed / Self.gaitCycleDistance * 2 * .pi
+      : 0
+    let kineticChain = FounderKineticChainFrame.resolve(
+      gaitPhase: walkPhase,
+      gaitWeight: reduceMotion ? 0 : gaitWeight,
+      phaseRate: phaseRate,
+      armPhase: phaseVariant.profile.arm,
+      variant: kineticChainVariant
+    )
+    let centerShift = reduceMotion ? 0 : sin(standingAmount * .pi) * 0.035
+    let walkingWeightShift: Float = state == .walking && !reduceMotion ? sin(walkPhase) : 0
+    if let authoredPose = rig.authoredPose {
+      authoredPose.apply(
+        standingAmount: standingAmount,
+        motion: FounderMotionFrame(
+          state: state,
+          clock: motionClock,
+          progress: eased,
+          locomotion: locomotionBlackboard,
+          weightTransfer: weightTransfer,
+          kineticChain: kineticChain,
+          gaitWeight: gaitWeight,
+          turnDelta: turnDelta,
+          reduceMotion: reduceMotion
+        )
+      )
+    } else if state != .seatedIdle && state != .seatedTurn {
+      rig.bodyTarget.transform = Transform(
+        scale: .one,
+        rotation: simd_normalize(
+          simd_quatf(angle: -centerShift * 1.6, axis: [1, 0, 0])
+            * simd_quatf(angle: walkingWeightShift * 0.012, axis: [0, 0, 1])
+        ),
+        translation: [walkingWeightShift * 0.008, 1.12 + standingAmount * 0.06 + abs(walkingWeightShift) * 0.006, -centerShift]
+      )
+      if let head = rig.headTarget {
+        head.transform = Transform(translation: [0, 1.68 + standingAmount * 0.04, -centerShift * 0.6])
+        head.isEnabled = true
+      }
+    }
+
+    let positionError = simd_distance(rig.anchor.position, authoritativePosition)
+    let worldDisplacement = rig.anchor.position - previousAnchorPosition
+    previousAnchorPosition = rig.anchor.position
+    let horizontalDisplacement = simd_length(SIMD2<Float>(worldDisplacement.x, worldDisplacement.z))
+    let slideRatio = state == .walking && horizontalDisplacement > 0.0001 && !reduceMotion
+      ? abs(horizontalDisplacement - animatedGaitDistance) / horizontalDisplacement
+      : 0
+    diagnostics = FounderLocomotionDiagnostics(
+      state: state,
+      previousState: previousState,
+      navigationMode: spatial.navigationMode,
+      movementMagnitude: speed,
+      horizontalVelocity: spatial.horizontalVelocity,
+      targetFacing: lastTargetFacing,
+      avatarFacing: avatarFacing,
+      activeAnimation: state.rawValue,
+      playbackSpeed: state == .walking ? min(max(speed / FounderGarageCameraConfiguration.walkingSpeed, 0.35), 1.25) : 0,
+      blendProgress: eased,
+      seatedAnchorError: seated || state == .sittingDown ? simd_distance(rig.anchor.position, seatedPose.position) : 0,
+      positionalError: positionError,
+      firstPersonHeadHidden: firstPerson,
+      gaitWeight: gaitWeight,
+      gaitCycleDistance: state == .walking ? Self.gaitCycleDistance : 0,
+      footSlideRatio: slideRatio,
+      phaseVariant: phaseVariant,
+      gaitPhase: walkPhase,
+      leftFootPhase: locomotionBlackboard.leftFootPhase,
+      rightFootPhase: locomotionBlackboard.rightFootPhase,
+      weightTransfer: weightTransfer,
+      kineticChain: kineticChain
+    )
+    latestMotionSample = FounderMotionCaptureSample(
+      state: state,
+      clip: FounderAnimationClipCatalog.clipName(for: state) ?? state.rawValue + ".procedural",
+      stateTimestamp: elapsed,
+      sampledTimestamp: motionClock,
+      rootTransform: rig.anchor.transform,
+      jointTransforms: rig.authoredPose?.sampledTransforms(names: Self.sampledJoints) ?? [:],
+      locomotionVelocity: spatial.horizontalVelocity,
+      worldDisplacement: worldDisplacement,
+      cameraState: String(describing: spatial.navigationMode),
+      founderWorldPosition: rig.anchor.position,
+      garageState: "productionGarage",
+      frameIndex: frameIndex
+    )
+  }
+
+  private func applyFirstPersonVisibility(_ firstPerson: Bool) {
+    // The eye camera is inside the local Founder rig. Hiding only head modules
+    // leaves the torso and transition pose in front of the lens, so the complete
+    // local visual must be suppressed until third-person Explore resumes.
+    rig.visualRoot.isEnabled = !firstPerson
+    if !firstPerson {
+      FounderCharacterContract.headParts.compactMap {
+        rig.visualRoot.findEntity(named: $0 + "Module")
+      }.forEach { $0.isEnabled = true }
+    }
+  }
+
+  private func isNearSeat(_ position: SIMD3<Float>) -> Bool {
+    simd_distance(SIMD2<Float>(position.x, position.z), SIMD2<Float>(seatedPose.position.x, seatedPose.position.z)) <= 0.45
+  }
+
+  private func shortestAngle(_ angle: Float) -> Float {
+    atan2(sin(angle), cos(angle))
+  }
+}
+
+/// Avatar-level indirection keeps one locomotion graph for future selectable rigs.
+@MainActor
+final class FounderAvatarController {
+  let locomotion: FounderLocomotionController
+
+  init(rig: FounderPresentationRig, seatedPose: FounderPlayerPose) {
+    locomotion = FounderLocomotionController(rig: rig, seatedPose: seatedPose)
+  }
+
+  func install(rig: FounderPresentationRig, firstPerson: Bool) {
+    locomotion.install(rig: rig, firstPerson: firstPerson)
+  }
+}
+
 struct FounderGarageRealityDiagnostics: Equatable {
   fileprivate(set) var constructionCount = 1
   fileprivate(set) var attachmentCount = 0
@@ -2091,6 +3538,8 @@ final class FounderGarageRealityWorld {
   let spatialSpecification: FounderGarageSpatialSpecification
   let cameraController: FounderGarageCameraController
   let founderPresentationController: FounderPresentationController
+  let founderAvatarController: FounderAvatarController
+  let interactionCoordinator: FounderInteractionCoordinator
   let proceduralFounderVisualAdapter: ProceduralFounderVisualAdapter
   let proceduralGarageArchitectureAdapter: ProceduralGarageArchitectureAdapter
   let facilityTier0LightingContract: FacilityTier0LightingRigContract?
@@ -2110,7 +3559,16 @@ final class FounderGarageRealityWorld {
   private let quality: FounderGarageRealityQuality
   @ObservationIgnored private var lastPresentation: FounderWorldPresentationModel?
   @ObservationIgnored private var lastReduceMotion = false
+  @ObservationIgnored private(set) var computerInteractionFeedbackState = GarageInteractionFeedbackState.unavailable
+  @ObservationIgnored private(set) var chairInteractionFeedbackState = GarageInteractionFeedbackState.unavailable
+  @ObservationIgnored private(set) var whiteboardInteractionFeedbackState = GarageInteractionFeedbackState.unavailable
+  @ObservationIgnored private var chairActivationFeedbackPermitted = false
+  @ObservationIgnored private var whiteboardActivationFeedbackPermitted = false
+  @ObservationIgnored private var importedMonitorBaseline: (entity: Entity, material: PhysicallyBasedMaterial)?
+  @ObservationIgnored private var importedChairBaseline: (entity: Entity, model: ModelComponent)?
+  @ObservationIgnored private var importedWhiteboardBaseline: (entity: Entity, model: ModelComponent)?
   @ObservationIgnored private var accessibilityActivationSubscription: EventSubscription?
+  @ObservationIgnored private var cameraUpdateSubscription: EventSubscription?
   @ObservationIgnored private var requestedVisualSource = FounderVisualSource.procedural
   @ObservationIgnored private var assetLoadGeneration = 0
   @ObservationIgnored private var assetLoadTask: Task<Void, Never>?
@@ -2119,6 +3577,14 @@ final class FounderGarageRealityWorld {
   @ObservationIgnored private var architectureLoadTask: Task<Void, Never>?
   @ObservationIgnored private var garageDoorAnimationElements: [FounderGarageDoorAnimationElement] = []
   @ObservationIgnored private var garageDoorAnimationPlaybacks: [AnimationPlaybackController] = []
+  @ObservationIgnored private var onAtlantisBoundaryCrossing: ((FounderAtlantisTraversalHandoff) -> Void)?
+  @ObservationIgnored private var didRequestAtlantisTraversal = false
+  @ObservationIgnored private(set) var isFounderPresentedInAtlantis = false
+  @ObservationIgnored private var traversalDiagnosticsElapsed: TimeInterval = 0
+  @ObservationIgnored private var traversalDiagnosticsSignature = ""
+  // Swap into the authored Atlantis driveway just beyond the sectional door,
+  // before the local Garage presentation runs out of exterior geometry.
+  static let atlantisHandoffThresholdZ: Float = 3.85
 
   init(
     quality: FounderGarageRealityQuality = .medium,
@@ -2142,13 +3608,23 @@ final class FounderGarageRealityWorld {
     proceduralFounderVisualAdapter = built.proceduralFounder
     activeFounderVisualAdapter = built.proceduralFounder
     founderPresentationController = FounderPresentationController(visualAdapter: built.proceduralFounder)
+    founderAvatarController = FounderAvatarController(
+      rig: built.proceduralFounder.rig,
+      seatedPose: cameraController.playerSpatialState.playerPose
+    )
+    interactionCoordinator = FounderInteractionCoordinator(
+      chairTarget: spatialSpecification.facilityTier0InteractionSpace?
+        .founderInteractionTarget(for: .chair)
+    )
     precondition(built.entities.validateIntegrity(), "Founder Garage entity registry is incomplete")
+    cameraController.configureWalkability { [weak self] point in self?.isCameraPointWalkable(point) ?? false }
   }
 
   deinit {
     assetLoadTask?.cancel()
     architectureLoadTask?.cancel()
     accessibilityActivationSubscription?.cancel()
+    cameraUpdateSubscription?.cancel()
   }
 
   func attachRoot(using add: (Entity) -> Void) {
@@ -2156,26 +3632,54 @@ final class FounderGarageRealityWorld {
     diagnostics.attachmentCount += 1
   }
 
-  func apply(_ presentation: FounderWorldPresentationModel, reduceMotion: Bool = false) {
-    guard presentation != lastPresentation || reduceMotion != lastReduceMotion else { return }
+  func apply(
+    _ presentation: FounderWorldPresentationModel,
+    interactionFeedback: GarageInteractionFeedbackState = .unavailable,
+    chairInteractionFeedback: GarageInteractionFeedbackState = .unavailable,
+    whiteboardInteractionFeedback: GarageInteractionFeedbackState = .unavailable,
+    reduceMotion: Bool = false
+  ) {
+    let computerEnabled = presentation.founderComputerAvailable && presentation.cameraState.allowsComputer
+    let effectiveFeedback = computerEnabled ? interactionFeedback : .unavailable
+    let chairActivationIsValid = chairInteractionFeedback == .activated
+      && chairActivationFeedbackPermitted
+    let effectiveChairFeedback = chairInteractionAvailable || chairActivationIsValid
+      ? chairInteractionFeedback
+      : .unavailable
+    let whiteboardActivationIsValid = whiteboardInteractionFeedback == .activated
+      && whiteboardActivationFeedbackPermitted
+    let effectiveWhiteboardFeedback = whiteboardObservationAvailable || whiteboardActivationIsValid
+      ? whiteboardInteractionFeedback
+      : .unavailable
+    guard presentation != lastPresentation
+            || reduceMotion != lastReduceMotion
+            || effectiveFeedback != computerInteractionFeedbackState
+            || effectiveChairFeedback != chairInteractionFeedbackState
+            || effectiveWhiteboardFeedback != whiteboardInteractionFeedbackState
+    else { return }
     diagnostics.presentationApplicationCount += 1
     cameraController.transition(to: presentation.cameraState, reduceMotion: reduceMotion)
     applyRuntimeEnclosureVisibility(for: presentation.cameraState)
-    entities.founderComputerInteractionTarget.isEnabled = presentation.founderComputerAvailable && presentation.cameraState.allowsComputer
+    entities.founderComputerInteractionTarget.isEnabled = computerEnabled
 
-    if lastPresentation?.computerGlowIntensity != presentation.computerGlowIntensity {
-      let glow = Float(presentation.computerGlowIntensity)
-      let isImportedWorkstation = activeGarageArchitectureAdapter.source != .procedural
-      entities.founderComputerInteractionTarget.model?.materials = [Self.material(
-        UIColor(
-          red: 0.04,
-          green: 0.38 + CGFloat(glow) * 0.24,
-          blue: 0.56 + CGFloat(glow) * 0.24,
-          alpha: isImportedWorkstation ? 0.001 : 1
-        ),
-        roughness: 0.16,
-        metallic: true
-      )]
+    if lastPresentation?.computerGlowIntensity != presentation.computerGlowIntensity
+        || effectiveFeedback != computerInteractionFeedbackState
+        || reduceMotion != lastReduceMotion {
+      updateFounderComputerEmphasis(
+        glow: Float(presentation.computerGlowIntensity),
+        state: effectiveFeedback,
+        reduceMotion: reduceMotion
+      )
+    }
+
+    if effectiveChairFeedback != chairInteractionFeedbackState
+        || reduceMotion != lastReduceMotion {
+      updateChairEmphasis(state: effectiveChairFeedback, reduceMotion: reduceMotion)
+    }
+
+    if effectiveWhiteboardFeedback != whiteboardInteractionFeedbackState
+        || reduceMotion != lastReduceMotion {
+      updateWhiteboardEmphasis(state: effectiveWhiteboardFeedback, reduceMotion: reduceMotion)
     }
 
     if lastPresentation?.founderState != presentation.founderState || reduceMotion != lastReduceMotion {
@@ -2191,14 +3695,74 @@ final class FounderGarageRealityWorld {
 
     lastPresentation = presentation
     lastReduceMotion = reduceMotion
+    computerInteractionFeedbackState = effectiveFeedback
+    chairInteractionFeedbackState = effectiveChairFeedback
+    whiteboardInteractionFeedbackState = effectiveWhiteboardFeedback
+    if chairInteractionFeedback != .activated {
+      chairActivationFeedbackPermitted = false
+    }
+    if whiteboardInteractionFeedback != .activated {
+      whiteboardActivationFeedbackPermitted = false
+    }
+  }
+
+  var founderComputerInteractionAvailable: Bool {
+    cameraController.state.allowsComputer
+      && cameraController.playerSpatialState.navigationMode == .seated
+      && entities.founderComputerInteractionTarget.isEnabled
+  }
+
+  var chairInteractionAvailable: Bool {
+    interactionCoordinator.chairTarget != nil
+      && interactionCoordinator.phase == .idle
+      && cameraController.playerSpatialState.navigationMode == .walking
+  }
+
+  var whiteboardObservationAvailable: Bool {
+    whiteboardInteractionTarget != nil
+      && interactionCoordinator.phase == .idle
+      && cameraController.state == .founderPOV
+      && cameraController.playerSpatialState.navigationMode == .walking
+  }
+
+  var whiteboardInteractionFocused: Bool {
+    guard whiteboardObservationAvailable,
+          let target = whiteboardInteractionTarget
+    else { return false }
+    let pose = cameraController.playerSpatialState.playerPose
+    let delta = SIMD2<Float>(
+      pose.position.x - target.interaction.position.x,
+      pose.position.z - target.interaction.position.z
+    )
+    let targetHeading = atan2(
+      target.interaction.facingDirection.x,
+      -target.interaction.facingDirection.z
+    )
+    let yawError = abs(atan2(sin(targetHeading - pose.heading), cos(targetHeading - pose.heading)))
+    return simd_length(delta) <= target.positionToleranceMeters
+      && yawError <= target.facingToleranceRadians
+  }
+
+  private var whiteboardInteractionTarget: FounderInteractionTargetContract? {
+    spatialSpecification.facilityTier0InteractionSpace?
+      .founderInteractionTarget(for: .whiteboard)
   }
 
   func interaction(for entity: Entity) -> FounderWorldInteraction? {
-    guard cameraController.state.allowsComputer, entities.founderComputerInteractionTarget.isEnabled else { return nil }
+    guard cameraController.state.allowsComputer,
+          cameraController.playerSpatialState.navigationMode == .seated
+    else { return nil }
     var candidate: Entity? = entity
     while let current = candidate {
-      if current.id == entities.founderComputerInteractionTarget.id {
+      if current.id == entities.founderComputerInteractionTarget.id,
+         entities.founderComputerInteractionTarget.isEnabled {
         return .openFounderComputer
+      }
+      if current.id == entities.iPhone.id, entities.iPhone.isEnabled {
+        return .openFounderPhone
+      }
+      if current.id == entities.iPad.id, entities.iPad.isEnabled {
+        return .openFounderTablet
       }
       candidate = current.parent
     }
@@ -2209,6 +3773,135 @@ final class FounderGarageRealityWorld {
     accessibilityActivationSubscription?.cancel()
     accessibilityActivationSubscription = subscription
     diagnostics.subscriptionInstallationCount += 1
+  }
+
+  func subscribeToCameraUpdates(_ install: (@escaping (SceneEvents.Update) -> Void) -> EventSubscription) {
+    guard cameraUpdateSubscription == nil else { return }
+    cameraUpdateSubscription = install { [weak self] event in
+      guard let self else { return }
+      advanceSession(deltaTime: event.deltaTime)
+      requestAtlantisTraversalIfNeeded()
+    }
+  }
+
+  func advanceSession(deltaTime: TimeInterval) {
+    interactionCoordinator.prepareFrame(camera: cameraController, deltaTime: deltaTime)
+    cameraController.advance(deltaTime: deltaTime)
+    let snapshot = cameraController.snapshot
+    recordTraversalDiagnostics(snapshot, deltaTime: deltaTime)
+    if !isFounderPresentedInAtlantis {
+      founderAvatarController.locomotion.update(
+        spatial: cameraController.spatialState,
+        collisionBlocked: snapshot.collision == "blocked",
+        firstPerson: cameraController.usesFirstPersonPresentation,
+        reduceMotion: snapshot.reduceMotion,
+        deltaTime: deltaTime
+      )
+    }
+    interactionCoordinator.completeFrame(
+      camera: cameraController,
+      locomotion: founderAvatarController.locomotion
+    )
+  }
+
+  @discardableResult
+  func requestChairInteraction(reduceMotion: Bool = false) -> Bool {
+    let succeeded = interactionCoordinator.requestChairInteraction(
+      camera: cameraController,
+      reduceMotion: reduceMotion
+    )
+    if succeeded { chairActivationFeedbackPermitted = true }
+    return succeeded
+  }
+
+  @discardableResult
+  func requestWhiteboardObservation() -> Bool {
+    guard whiteboardInteractionFocused else { return false }
+    whiteboardActivationFeedbackPermitted = true
+    return true
+  }
+
+  @discardableResult
+  func requestChairExit(reduceMotion: Bool = false) -> Bool {
+    interactionCoordinator.requestChairExit(
+      camera: cameraController,
+      reduceMotion: reduceMotion
+    )
+  }
+
+  func cancelChairInteraction() {
+    interactionCoordinator.cancel(camera: cameraController)
+  }
+
+  func configureAtlantisTraversal(
+    _ handler: @escaping (FounderAtlantisTraversalHandoff) -> Void
+  ) {
+    onAtlantisBoundaryCrossing = handler
+  }
+
+  func transferFounderPresentation(
+    to atlantis: AtlantisRealityWorld,
+    reduceMotion: Bool
+  ) {
+    guard !isFounderPresentedInAtlantis else { return }
+    isFounderPresentedInAtlantis = true
+    atlantis.installFounderPresentation(
+      rig: activeFounderVisualAdapter.rig,
+      locomotion: founderAvatarController.locomotion,
+      reduceMotion: reduceMotion
+    )
+  }
+
+  func restoreFounderPresentation(from atlantis: AtlantisRealityWorld) {
+    guard isFounderPresentedInAtlantis else { return }
+    atlantis.removeFounderPresentation()
+    entities.root.addChild(activeFounderVisualAdapter.rig.anchor)
+    isFounderPresentedInAtlantis = false
+    restoreFromAtlantis()
+    founderAvatarController.locomotion.update(
+      spatial: cameraController.spatialState,
+      collisionBlocked: false,
+      firstPerson: false,
+      reduceMotion: false,
+      deltaTime: TimeInterval(FounderGarageCameraConfiguration.fixedStep)
+    )
+  }
+
+  func restoreFromAtlantis() {
+    didRequestAtlantisTraversal = false
+    let approach = spatialSpecification.interactionApproaches.garageDoor.approach
+    cameraController.consume(.init(
+      bodyPosition: approach.position,
+      bodyHeading: atan2(approach.facingDirection.x, -approach.facingDirection.z),
+      locomotionVelocity: .zero,
+      stepPhase: nil,
+      stance: .standing
+    ))
+  }
+
+  func requestAtlantisTraversalIfNeeded() {
+    guard !didRequestAtlantisTraversal,
+          garageDoorState.isOpen,
+          cameraController.playerSpatialState.navigationMode == .walking,
+          cameraController.playerSpatialState.playerPose.position.z >= Self.atlantisHandoffThresholdZ,
+          let onAtlantisBoundaryCrossing
+    else { return }
+    didRequestAtlantisTraversal = true
+    if ProcessInfo.processInfo.arguments.contains("--founder-traversal-diagnostics") {
+      print("TRAVERSAL_DIAG event=handoff-requested")
+    }
+    onAtlantisBoundaryCrossing(.init(
+      garagePosition: cameraController.playerSpatialState.playerPose.position,
+      facingDirection: cameraController.spatialState.facingDirection
+    ))
+    // The covered Garage remains alive. Park its session-only player at the
+    // authored interior approach so dismissal resumes a coherent return path.
+    restoreFromAtlantis()
+  }
+
+  func stopCameraUpdates() {
+    cameraUpdateSubscription?.cancel()
+    cameraUpdateSubscription = nil
   }
 
   var activeAccessibilitySubscriptionCount: Int {
@@ -2232,6 +3925,54 @@ final class FounderGarageRealityWorld {
 
   func isPointWalkable(_ point: SIMD2<Float>) -> Bool {
     isPointInsideFacility(point) && !isPointInsideOccupiedZone(point)
+  }
+
+  private func isCameraPointWalkable(_ point: SIMD2<Float>) -> Bool {
+    let radius = FounderGarageCameraConfiguration.playerRadius
+    let offsets: [SIMD2<Float>] = [.zero, [radius, 0], [-radius, 0], [0, radius], [0, -radius]]
+    if offsets.allSatisfy({ isPointWalkable(point + $0) }) { return true }
+    guard garageDoorState.isOpen, let door = spatialSpecification.productionAnchors?.doorMouth else { return false }
+    let corridorHalfWidth: Float = 1.35
+    let exteriorLimit = Self.atlantisHandoffThresholdZ + radius
+    // Overlap the corridor with the radius-inset interior boundary. Without the
+    // overlap, small fixed-step movement can stop in the gap at the threshold.
+    let corridorStart = door.z - radius * 2
+    return abs(point.x - door.x) <= corridorHalfWidth && point.y >= corridorStart && point.y <= exteriorLimit
+  }
+
+  private func recordTraversalDiagnostics(
+    _ snapshot: FounderGarageCameraController.Snapshot,
+    deltaTime: TimeInterval
+  ) {
+    guard ProcessInfo.processInfo.arguments.contains("--founder-traversal-diagnostics") else { return }
+    traversalDiagnosticsElapsed += deltaTime
+    let crossing = snapshot.playerPosition.z >= Self.atlantisHandoffThresholdZ
+    let eligible = garageDoorState.isOpen && snapshot.mode == "walking" && crossing
+    let signature = String(
+      format: "%@|%.2f|%.2f|%@|%@|%@",
+      snapshot.mode,
+      snapshot.movementIntent.x,
+      snapshot.movementIntent.y,
+      snapshot.collision,
+      garageDoorState.accessibilityValue,
+      String(crossing)
+    )
+    guard traversalDiagnosticsElapsed >= 0.25 || signature != traversalDiagnosticsSignature else { return }
+    traversalDiagnosticsElapsed = 0
+    traversalDiagnosticsSignature = signature
+    print(String(
+      format: "TRAVERSAL_DIAG mode=%@ player=%.3f,%.3f,%.3f camera=%.3f,%.3f,%.3f yaw=%.4f lookYaw=%.4f input=%.3f,%.3f world=%.3f,%.3f velocity=%.3f,%.3f collision=%@ door=%@ crossing=%@ eligible=%@ garageLoad=%@",
+      snapshot.mode,
+      snapshot.playerPosition.x, snapshot.playerPosition.y, snapshot.playerPosition.z,
+      snapshot.position.x, snapshot.position.y, snapshot.position.z,
+      snapshot.bodyHeading, snapshot.lookYaw,
+      snapshot.movementIntent.x, snapshot.movementIntent.y,
+      snapshot.worldMovementVector.x, snapshot.worldMovementVector.y,
+      snapshot.velocity.x, snapshot.velocity.z,
+      snapshot.collision,
+      garageDoorState.accessibilityValue,
+      String(crossing), String(eligible), String(describing: architectureLoadState)
+    ))
   }
 
   @discardableResult
@@ -2323,7 +4064,11 @@ final class FounderGarageRealityWorld {
     activeGarageArchitectureAdapter.rig.normalizationRoot.removeFromParent()
     entities.environment.addChild(adapter.rig.normalizationRoot)
     activeGarageArchitectureAdapter = adapter
+    cacheImportedMonitorBaseline()
+    cacheImportedChairBaseline()
+    cacheImportedWhiteboardBaseline()
     cameraController.usesV7ExteriorViews = adapter.source == .bundledProductionAsset(name: FounderGarageV7AssetContract.resourceName)
+      || adapter.source == .bundledProductionAsset(name: FounderGarageV8AssetContract.resourceName)
     configureGarageDoorAnimation()
     configureExteriorPracticalLight()
     try configureEnvironmentLight()
@@ -2332,6 +4077,19 @@ final class FounderGarageRealityWorld {
     applyRuntimeEnclosureVisibility(for: cameraController.state)
     setProceduralEnvironmentVisible(adapter.source == .procedural)
     updateRoomLighting(for: lastPresentation?.roomLightIntensity ?? 1)
+    updateFounderComputerEmphasis(
+      glow: Float(lastPresentation?.computerGlowIntensity ?? 0.52),
+      state: computerInteractionFeedbackState,
+      reduceMotion: lastReduceMotion
+    )
+    updateChairEmphasis(
+      state: chairInteractionFeedbackState,
+      reduceMotion: lastReduceMotion
+    )
+    updateWhiteboardEmphasis(
+      state: whiteboardInteractionFeedbackState,
+      reduceMotion: lastReduceMotion
+    )
   }
 
   func restoreProceduralGarageArchitecture() {
@@ -2355,7 +4113,8 @@ final class FounderGarageRealityWorld {
     switch activeGarageArchitectureAdapter.source {
     case .bundledProductionAsset(name: "founder_garage_v4"),
          .bundledProductionAsset(name: "founder_garage_v6"),
-         .bundledProductionAsset(name: "founder_garage_v7"):
+         .bundledProductionAsset(name: "founder_garage_v7"),
+         .bundledProductionAsset(name: "founder_garage_v8"):
       true
     default:
       false
@@ -2412,8 +4171,13 @@ final class FounderGarageRealityWorld {
 
   private func setProceduralEnvironmentVisible(_ isVisible: Bool) {
     entities.furniture.isEnabled = isVisible
-    entities.iPhone.isEnabled = isVisible
-    entities.iPad.isEnabled = isVisible
+    // The production V8 scene has no canonical phone or tablet. Its side device is
+    // an authored hinged laptop, so keep the stable interactive desk devices live
+    // in both procedural and imported architectures and suppress only that laptop.
+    entities.iPhone.isEnabled = true
+    entities.iPad.isEnabled = true
+    activeGarageArchitectureAdapter.rig.visualRoot
+      .findEntity(named: "FounderLaptop")?.isEnabled = isVisible
     entities.signalTV.isEnabled = isVisible
     entities.fundingBoard.isEnabled = isVisible
     for child in entities.founderComputer.children
@@ -2426,6 +4190,143 @@ final class FounderGarageRealityWorld {
       roughness: 0.18,
       metallic: true
     )]
+  }
+
+  private func cacheImportedMonitorBaseline() {
+    importedMonitorBaseline = nil
+    guard activeGarageArchitectureAdapter.source != .procedural,
+          let screen = activeGarageArchitectureAdapter.rig.visualRoot.findEntity(named: "Monitor_Screen"),
+          let model = screen.components[ModelComponent.self],
+          let material = model.materials.first as? PhysicallyBasedMaterial
+    else { return }
+    importedMonitorBaseline = (screen, material)
+  }
+
+  private func cacheImportedChairBaseline() {
+    importedChairBaseline = nil
+    guard activeGarageArchitectureAdapter.source != .procedural,
+          let seat = activeGarageArchitectureAdapter.rig.visualRoot.findEntity(named: "Chair_Seat"),
+          let model = seat.components[ModelComponent.self]
+    else { return }
+    importedChairBaseline = (seat, model)
+  }
+
+  private func cacheImportedWhiteboardBaseline() {
+    importedWhiteboardBaseline = nil
+    guard activeGarageArchitectureAdapter.source != .procedural,
+          let face = activeGarageArchitectureAdapter.rig.visualRoot.findEntity(named: "Whiteboard_Surface"),
+          let model = face.components[ModelComponent.self]
+    else { return }
+    importedWhiteboardBaseline = (face, model)
+  }
+
+  private func updateChairEmphasis(
+    state: GarageInteractionFeedbackState,
+    reduceMotion: Bool
+  ) {
+    let emphasis = GarageInteractionVisualEmphasis.resolve(state: state, reduceMotion: reduceMotion)
+    let lift = max(emphasis.targetIntensityScale - 0.82, 0)
+    if activeGarageArchitectureAdapter.source == .procedural {
+      let color = UIColor(
+        red: 0.08 + CGFloat(lift) * 0.05,
+        green: 0.09 + CGFloat(lift) * 0.18,
+        blue: 0.11 + CGFloat(lift) * 0.28,
+        alpha: 1
+      )
+      for child in entities.chair.children {
+        guard var model = child.components[ModelComponent.self] else { continue }
+        model.materials = [Self.material(color, roughness: 0.72)]
+        child.components.set(model)
+      }
+      return
+    }
+
+    guard let baseline = importedChairBaseline else { return }
+    var model = baseline.model
+    for index in model.materials.indices {
+      guard var material = model.materials[index] as? PhysicallyBasedMaterial else { continue }
+      var emissive = material.emissiveColor
+      emissive.color = UIColor(
+        red: 0.02,
+        green: 0.10 + CGFloat(lift) * 0.20,
+        blue: 0.13 + CGFloat(lift) * 0.34,
+        alpha: 1
+      )
+      material.emissiveColor = emissive
+      let baselineIntensity = (baseline.model.materials[index] as? PhysicallyBasedMaterial)?
+        .emissiveIntensity ?? 0
+      material.emissiveIntensity = baselineIntensity + lift * 0.22
+      model.materials[index] = material
+    }
+    baseline.entity.components.set(model)
+  }
+
+  private func updateWhiteboardEmphasis(
+    state: GarageInteractionFeedbackState,
+    reduceMotion: Bool
+  ) {
+    let emphasis = GarageInteractionVisualEmphasis.resolve(state: state, reduceMotion: reduceMotion)
+    let lift = max(emphasis.targetIntensityScale - 0.82, 0)
+    if activeGarageArchitectureAdapter.source == .procedural {
+      // The simplified fallback has no C1 Whiteboard mesh. Do not repurpose the
+      // semantically distinct FundingBoard merely to manufacture an emphasis.
+      return
+    }
+
+    guard let baseline = importedWhiteboardBaseline else { return }
+    var model = baseline.model
+    for index in model.materials.indices {
+      guard var material = model.materials[index] as? PhysicallyBasedMaterial else { continue }
+      var emissive = material.emissiveColor
+      emissive.color = UIColor(
+        red: 0.72,
+        green: 0.88,
+        blue: 0.92,
+        alpha: 1
+      )
+      material.emissiveColor = emissive
+      let baselineIntensity = (baseline.model.materials[index] as? PhysicallyBasedMaterial)?
+        .emissiveIntensity ?? 0
+      material.emissiveIntensity = baselineIntensity + lift * 0.12
+      model.materials[index] = material
+    }
+    baseline.entity.components.set(model)
+  }
+
+  private func updateFounderComputerEmphasis(
+    glow: Float,
+    state: GarageInteractionFeedbackState,
+    reduceMotion: Bool
+  ) {
+    let emphasis = GarageInteractionVisualEmphasis.resolve(state: state, reduceMotion: reduceMotion)
+    if activeGarageArchitectureAdapter.source == .procedural {
+      let scaledGlow = min(max(glow * emphasis.screenIntensityScale, 0), 1.35)
+      entities.founderComputerInteractionTarget.model?.materials = [Self.material(
+        UIColor(
+          red: 0.04,
+          green: 0.38 + CGFloat(scaledGlow) * 0.24,
+          blue: 0.56 + CGFloat(scaledGlow) * 0.24,
+          alpha: 1
+        ),
+        roughness: 0.16,
+        metallic: true
+      )]
+      return
+    }
+
+    entities.founderComputerInteractionTarget.model?.materials = [Self.material(
+      UIColor(red: 0.04, green: 0.62, blue: 0.82, alpha: 0.001),
+      roughness: 0.16,
+      metallic: true
+    )]
+    guard let baseline = importedMonitorBaseline,
+          var model = baseline.entity.components[ModelComponent.self]
+    else { return }
+    var material = baseline.material
+    material.emissiveIntensity = baseline.material.emissiveIntensity * emphasis.screenIntensityScale
+    guard !model.materials.isEmpty else { return }
+    model.materials[0] = material
+    baseline.entity.components.set(model)
   }
 
   private func configureGarageDoorAnimation() {
@@ -2481,12 +4382,15 @@ final class FounderGarageRealityWorld {
     let root = activeGarageArchitectureAdapter.rig.visualRoot
     let usesOverviewCutaway = cameraState == .garageOverview
     root.findEntity(named: "Garage_RightWall")?.isEnabled = !usesOverviewCutaway
+    root.findEntity(named: FounderGarageV8AssetContract.rightSideDoorEntityName)?.isEnabled = !usesOverviewCutaway
     root.findEntity(named: "Ceiling")?.isEnabled = !usesOverviewCutaway
   }
 
   private func configureEnvironmentLight() throws {
     environmentLight.removeFromParent()
-    guard activeGarageArchitectureAdapter.source == .bundledProductionAsset(name: FounderGarageV7AssetContract.resourceName) else { return }
+    guard activeGarageArchitectureAdapter.source == .bundledProductionAsset(name: FounderGarageV7AssetContract.resourceName)
+      || activeGarageArchitectureAdapter.source == .bundledProductionAsset(name: FounderGarageV8AssetContract.resourceName)
+    else { return }
     if environmentResource == nil {
       // A neutral, uniform source keeps the engine's default IBL from overriding
       // the authored time preset. Generate once per world, never per frame/state.
@@ -2510,7 +4414,8 @@ final class FounderGarageRealityWorld {
   private func configureExteriorPracticalLight() {
     exteriorPracticalLight.removeFromParent()
     exteriorPracticalLight.isEnabled = false
-    guard activeGarageArchitectureAdapter.source == .bundledProductionAsset(name: FounderGarageV7AssetContract.resourceName),
+    guard activeGarageArchitectureAdapter.source == .bundledProductionAsset(name: FounderGarageV7AssetContract.resourceName)
+            || activeGarageArchitectureAdapter.source == .bundledProductionAsset(name: FounderGarageV8AssetContract.resourceName),
           let lens = activeGarageArchitectureAdapter.rig.visualRoot.findEntity(
             named: FounderEnvironmentLightingConfiguration.exteriorFixtureLensName
           ) else { return }
@@ -2526,6 +4431,7 @@ final class FounderGarageRealityWorld {
     let usesEnvironmentPresets = activeGarageArchitectureAdapter.source
       == .bundledProductionAsset(name: "founder_garage_v6")
       || activeGarageArchitectureAdapter.source == .bundledProductionAsset(name: "founder_garage_v7")
+      || activeGarageArchitectureAdapter.source == .bundledProductionAsset(name: "founder_garage_v8")
     let preset = FounderEnvironmentLightingConfiguration.preset(for: environmentTimeState)
     let keyBase = usesEnvironmentPresets
       ? Double(preset.directionalIntensity)
@@ -2581,6 +4487,15 @@ final class FounderGarageRealityWorld {
       source,
       descriptor: descriptor,
       loader: RealityKitFounderAssetLoader()
+    )
+  }
+
+  @discardableResult
+  func requestProductionFounder() throws -> Task<Void, Never>? {
+    try FounderCharacterContract.validateAcceptedRuntimeAsset()
+    return requestFounderVisual(
+      .bundledUSDZ(name: FounderCharacterContract.candidateResource),
+      descriptor: try FounderCharacterContract.productionDescriptor(spatial: spatialSpecification)
     )
   }
 
@@ -2661,6 +4576,10 @@ final class FounderGarageRealityWorld {
     activeFounderVisualAdapter.rig.normalizationRoot.removeFromParent()
     entities.founderAnchor.addChild(adapter.rig.normalizationRoot)
     try founderPresentationController.install(visualAdapter: adapter)
+    founderAvatarController.install(
+      rig: adapter.rig,
+      firstPerson: cameraController.usesFirstPersonPresentation
+    )
     activeFounderVisualAdapter = adapter
   }
 
@@ -2971,8 +4890,22 @@ final class FounderGarageRealityWorld {
       : spatial.workstation.desktopSurfaceHeight + spatial.workstation.monitorBaseSize.y / 2
     addBox(name: "FounderComputer.Stand", size: spatial.workstation.monitorStandSize, position: [0, baseCenterY + spatial.workstation.monitorStandSize.y / 2, 0], color: .computerFrame, roughness: 0.28, metallic: true, to: founderComputer)
     addBox(name: "FounderComputer.Base", size: spatial.workstation.monitorBaseSize, position: [0, baseCenterY, spatial.workstation.monitorBaseSize.z / 4], color: .computerFrame, roughness: 0.28, metallic: true, to: founderComputer)
-    let iPhone = addBox(name: "iPhone", size: spatial.workstation.iPhoneSize, position: spatial.anchors.iPhone.position, color: .deviceGlass, roughness: 0.12, metallic: true, to: devices)
-    let iPad = addBox(name: "iPad", size: spatial.workstation.iPadSize, position: spatial.anchors.iPad.position, color: .deviceGlass, roughness: 0.12, metallic: true, to: devices)
+    let iPhone = addBox(name: FounderWorldInteractionAdapter.founderPhoneEntityName, size: spatial.workstation.iPhoneSize, position: spatial.anchors.iPhone.position, color: .deviceGlass, roughness: 0.12, metallic: true, to: devices)
+    configureDeskDevice(
+      iPhone,
+      size: spatial.workstation.iPhoneSize,
+      screenName: "FounderPhone.Screen",
+      screenColor: UIColor(red: 0.07, green: 0.52, blue: 0.68, alpha: 1),
+      accessibilityLabel: FounderWorldInteractionAdapter.founderPhoneAccessibilityLabel
+    )
+    let iPad = addBox(name: FounderWorldInteractionAdapter.founderTabletEntityName, size: spatial.workstation.iPadSize, position: spatial.anchors.iPad.position, color: .deviceGlass, roughness: 0.12, metallic: true, to: devices)
+    configureDeskDevice(
+      iPad,
+      size: spatial.workstation.iPadSize,
+      screenName: "FounderTablet.Screen",
+      screenColor: UIColor(red: 0.11, green: 0.39, blue: 0.62, alpha: 1),
+      accessibilityLabel: FounderWorldInteractionAdapter.founderTabletAccessibilityLabel
+    )
     let signalTV = addBox(name: "SignalTV", size: spatial.media.signalTV, position: spatial.anchors.signalTV.position, color: .signalTV, roughness: 0.20, metallic: true, to: devices)
     let fundingBoard = addBox(name: "FundingBoard", size: spatial.media.fundingBoard, position: spatial.anchors.fundingBoard.position, color: .fundingBoard, roughness: 0.86, to: devices)
 
@@ -3068,6 +5001,32 @@ final class FounderGarageRealityWorld {
     return entity
   }
 
+  private static func configureDeskDevice(
+    _ device: ModelEntity,
+    size: SIMD3<Float>,
+    screenName: String,
+    screenColor: UIColor,
+    accessibilityLabel: String
+  ) {
+    device.components.set(InputTargetComponent())
+    device.generateCollisionShapes(recursive: false)
+
+    var accessibility = AccessibilityComponent()
+    accessibility.isAccessibilityElement = true
+    accessibility.label = LocalizedStringResource(stringLiteral: accessibilityLabel)
+    accessibility.traits = [.button]
+    accessibility.systemActions = [.activate]
+    device.components.set(accessibility)
+
+    let screen = ModelEntity(
+      mesh: .generateBox(size: [size.x - 0.018, 0.0025, size.z - 0.018]),
+      materials: [UnlitMaterial(color: screenColor)]
+    )
+    screen.name = screenName
+    screen.position = [0, size.y / 2 + 0.00125, 0]
+    device.addChild(screen)
+  }
+
   private static func material(
     _ color: UIColor,
     roughness: Float,
@@ -3119,17 +5078,45 @@ struct FounderGarageCameraRecipe {
 }
 
 /// All offsets are relative to semantic anchors in the unchanged metre/Y-up contract.
+enum FounderGarageCameraTransitionClass: String, Equatable, Sendable {
+  case shortPhysical, mediumPhysical, largeFade
+}
+
+struct FounderGarageMovementIntent: Equatable, Sendable {
+  var lateral: Float = 0
+  var forward: Float = 0
+  static let idle = Self()
+}
+
 struct FounderGarageCameraConfiguration {
   let spatial: FounderGarageSpatialSpecification
   var usesV7ExteriorViews = false
   static let transitionDuration: TimeInterval = 0.30
   static let seatedEyeOffset = SIMD3<Float>(0, 1.18, 0)
   static let seatedEyeHeight = seatedEyeOffset.y
-  static let yawLimits: ClosedRange<Float> = (-80 * .pi / 180)...(80 * .pi / 180)
+  static let yawLimits: ClosedRange<Float> = (-175 * .pi / 180)...(175 * .pi / 180)
   // V3 is an open-ceiling cutaway; tighter vertical bounds keep authored
   // Garage context visible instead of filling the viewport with void or floor.
   static let pitchLimits: ClosedRange<Float> = (-18 * .pi / 180)...(12 * .pi / 180)
-  static let dragSensitivityRadiansPerPoint: Float = .pi / 900
+  // Express drag response as a fraction of the active viewport so the same
+  // gesture covers the same angle on iPhone and iPad.
+  static let dragYawRadiansPerViewport: Float = .pi * 0.85
+
+  static func dragSensitivityRadiansPerPoint(viewportWidth: Float) -> Float {
+    dragYawRadiansPerViewport / max(viewportWidth, 1)
+  }
+  static let standingEyeHeight: Float = 1.66
+  static let walkingSpeed: Float = 1.22
+  static let linearAcceleration: Float = 4.8
+  static let linearDeceleration: Float = 6.4
+  static let lookResponse: Float = 10
+  static let maximumAngularSpeed: Float = 2.2
+  static let angularAcceleration: Float = 9.5
+  static let maximumDeltaTime: Float = 0.10
+  static let fixedStep: Float = 1 / 120
+  static let shortTransitionDuration: TimeInterval = 0.28
+  static let mediumTransitionDuration: TimeInterval = 0.42
+  static let playerRadius: Float = 0.23
 
   var seatedPlayerState: FounderGaragePlayerSpatialState {
     let anchor = spatial.productionAnchors?.founderSeat ?? spatial.anchors.founder.position
@@ -3146,6 +5133,35 @@ struct FounderGarageCameraConfiguration {
       yaw: min(max(orientation.yaw, Self.yawLimits.lowerBound), Self.yawLimits.upperBound),
       pitch: min(max(orientation.pitch, Self.pitchLimits.lowerBound), Self.pitchLimits.upperBound)
     )
+  }
+
+  func transitionClass(from: FounderGarageCameraState, to: FounderGarageCameraState) -> FounderGarageCameraTransitionClass {
+    guard from != to else { return .shortPhysical }
+    if from == .garageOverview || to == .garageOverview || from == .garageDoor || to == .garageDoor || from == .front || to == .front { return .largeFade }
+    if from == .frontBay || to == .frontBay { return .mediumPhysical }
+    return .shortPhysical
+  }
+
+  func interactionRecipe(for target: FounderGarageInteractionFocusTarget) -> FounderGarageCameraRecipe {
+    let eye = seatedPlayerState.eyePosition
+    let lookTarget: SIMD3<Float>
+    let position: SIMD3<Float>
+    let fov: Float
+    switch target {
+    case .computer:
+      position = eye; lookTarget = spatial.anchors.founderComputer.position; fov = 54
+    case .phone:
+      position = eye + [0, -0.015, -0.025]; lookTarget = spatial.anchors.iPhone.position; fov = 52
+    case .tablet:
+      position = eye + [0, -0.01, -0.02]; lookTarget = spatial.anchors.iPad.position; fov = 52
+    case .strategyBoard:
+      position = eye; lookTarget = spatial.anchors.fundingBoard.position; fov = 54
+    case .signalTV:
+      position = eye; lookTarget = spatial.anchors.signalTV.position; fov = 55
+    case .server:
+      position = eye; lookTarget = spatial.productionAnchors?.agentDeskSurface ?? spatial.anchors.desk.position; fov = 55
+    }
+    return FounderGarageCameraRecipe(position: position, lookTarget: lookTarget, fieldOfView: fov, duration: Self.shortTransitionDuration)
   }
 
   func recipe(for view: FounderGarageCameraState) -> FounderGarageCameraRecipe {
@@ -3189,6 +5205,30 @@ struct FounderGarageCameraConfiguration {
 /// Endpoints are installed under the bridge's interrupt-safe fade, avoiding travel through furniture.
 @MainActor
 final class FounderGarageCameraController {
+  struct Snapshot {
+    var mode: String
+    var position: SIMD3<Float>
+    var playerPosition: SIMD3<Float>
+    var bodyHeading: Float
+    var lookYaw: Float
+    var movementIntent: SIMD2<Float>
+    var worldMovementVector: SIMD2<Float>
+    var velocity: SIMD3<Float>
+    var angularVelocity: SIMD2<Float>
+    var target: FounderLookOrientation
+    var collision: String
+    var transition: FounderGarageCameraTransitionClass?
+    var founderPOVDriftError: Float
+    var interactionFocus: FounderGarageInteractionFocusTarget?
+    var reduceMotion: Bool
+  }
+  private struct InteractionFocusReturn {
+    var state: FounderGarageCameraState
+    var playerSpatialState: FounderGaragePlayerSpatialState
+    var cameraTransform: Transform
+    var fieldOfView: Float
+    var founderObservationActive: Bool
+  }
   struct Diagnostics {
     var requestCount = 0
     var applicationCount = 0
@@ -3204,15 +5244,42 @@ final class FounderGarageCameraController {
   private(set) var playerSpatialState: FounderGaragePlayerSpatialState
   private(set) var diagnostics = Diagnostics()
   private var lastReducedMotion: Bool?
+  private var targetLook = FounderLookOrientation.neutral
+  private var movementIntent = FounderGarageMovementIntent.idle
+  private var velocity = SIMD3<Float>.zero
+  private var angularVelocity = SIMD2<Float>.zero
+  private var transitionStart: Transform?
+  private var transitionTarget: Transform?
+  private var transitionElapsed: Float = 0
+  private var transitionDuration: Float = 0
+  private var transitionStartFOV: Float = 56
+  private var transitionTargetFOV: Float = 56
+  private var activeTransition: FounderGarageCameraTransitionClass?
+  private var interactionFocusReturn: InteractionFocusReturn?
+  private(set) var interactionFocusTarget: FounderGarageInteractionFocusTarget?
+  private var walkability: ((SIMD2<Float>) -> Bool)?
+  private var lastCollision = "none"
+  private var reduceMotionActive = false
+  private(set) var founderObservationActive = false
+  private var seatingTransitionActive = false
   var usesV7ExteriorViews = false
   private(set) var displayCorners: [SIMD3<Float>] = []
+
+  var usesFirstPersonPresentation: Bool {
+    playerSpatialState.navigationMode != .walking && !seatingTransitionActive
+  }
 
   init(camera: PerspectiveCamera, spatial: FounderGarageSpatialSpecification) {
     self.camera = camera
     self.spatial = spatial
     playerSpatialState = FounderGarageCameraConfiguration(spatial: spatial).seatedPlayerState
+    applySeatedCameraTransform()
   }
   func recipe(for state: FounderGarageCameraState) -> FounderGarageCameraRecipe {
+    authoredRecipe(for: state)
+  }
+
+  private func authoredRecipe(for state: FounderGarageCameraState) -> FounderGarageCameraRecipe {
     let base = FounderGarageCameraConfiguration(spatial: spatial, usesV7ExteriorViews: usesV7ExteriorViews).recipe(for: state)
     guard state == .founderPOV, !displayCorners.isEmpty else { return base }
     var pose = base
@@ -3295,23 +5362,28 @@ final class FounderGarageCameraController {
   }
 
   func setLookOrientation(_ requested: FounderLookOrientation) {
-    guard state == .founderPOV, playerSpatialState.navigationMode == .seated else { return }
-    playerSpatialState.lookOrientation = FounderGarageCameraConfiguration(spatial: spatial).clamped(requested)
+    guard state == .founderPOV,
+          playerSpatialState.navigationMode == .seated || playerSpatialState.navigationMode == .walking
+    else { return }
+    targetLook = FounderGarageCameraConfiguration(spatial: spatial).clamped(requested)
+    if reduceMotionActive { playerSpatialState.lookOrientation = targetLook; angularVelocity = .zero; applySeatedCameraTransform() }
     diagnostics.freeLookApplicationCount += 1
-    applySeatedCameraTransform()
   }
 
-  func recenterFounderPOV() {
-    guard state == .founderPOV, playerSpatialState.navigationMode == .seated else { return }
-    playerSpatialState.lookOrientation = .neutral
+  func recenterFounderPOV(reduceMotion: Bool = false) {
+    guard state == .founderPOV else { return }
+    founderObservationActive = playerSpatialState.navigationMode == .walking
+    targetLook = .neutral
+    if reduceMotion { playerSpatialState.lookOrientation = .neutral; angularVelocity = .zero; applySeatedCameraTransform() }
     diagnostics.recenterCount += 1
-    applySeatedCameraTransform()
   }
 
   func transition(to requested: FounderGarageCameraState, reduceMotion: Bool) {
     diagnostics.requestCount += 1
     diagnostics.lastRequested = requested
-    guard requested != state || lastReducedMotion == nil else { return }
+    guard requested != state || lastReducedMotion == nil || interactionFocusTarget != nil else { return }
+    cancelTransientMotion(countInterruption: true)
+    seatingTransitionActive = false
     if requested == .founderPOV {
       playerSpatialState.navigationMode = .seated
       playerSpatialState.lookOrientation = .neutral
@@ -3319,25 +5391,423 @@ final class FounderGarageCameraController {
       playerSpatialState.navigationMode = .authoredInspection(requested)
       playerSpatialState.lookOrientation = .neutral
     }
+    let previous = state
     state = requested
+    founderObservationActive = false
     lastReducedMotion = reduceMotion
-    applyCurrentCameraTransform()
+    reduceMotionActive = reduceMotion
+    targetLook = .neutral
+    let kind = FounderGarageCameraConfiguration(spatial: spatial).transitionClass(from: previous, to: requested)
+    let destination = presentationRecipe(for: requested)
+    if !reduceMotion && kind != .largeFade {
+      startTransition(to: destination, kind: kind)
+    } else {
+      applyCurrentCameraTransform()
+    }
     diagnostics.applicationCount += 1
     diagnostics.lastApplied = requested
   }
 
+  func configureWalkability(_ accepts: @escaping (SIMD2<Float>) -> Bool) { walkability = accepts }
 
-  private func applyCurrentCameraTransform() {
-    if state == .founderPOV {
-      applySeatedCameraTransform()
-    } else {
-      let pose = recipe(for: state)
-      camera.camera.fieldOfViewInDegrees = pose.fieldOfView
-      camera.transform = pose.transform
+  func beginWalking(reduceMotion: Bool = false) {
+    guard state == .founderPOV else { return }
+    cancelTransientMotion(countInterruption: true)
+    seatingTransitionActive = false
+    playerSpatialState.navigationMode = .walking
+    playerSpatialState.eyeOffset.y = FounderGarageCameraConfiguration.standingEyeHeight
+    let clearPathTarget = spatial.interactionApproaches.garageDoor.approach.position
+    playerSpatialState.playerPose.position = nearestWalkableStandingPosition(
+      to: playerSpatialState.playerPose.position,
+      withClearPathTo: clearPathTarget
+    )
+    let door = spatial.productionAnchors?.doorMouth ?? spatial.architecture.garageDoor.position
+    let directionToDoor = SIMD2<Float>(
+      door.x - playerSpatialState.playerPose.position.x,
+      door.z - playerSpatialState.playerPose.position.z
+    )
+    if simd_length_squared(directionToDoor) > 0.0001 {
+      // Explore begins facing the Garage exit so the primary forward gesture has
+      // a clear, discoverable path into Atlantis.
+      playerSpatialState.playerPose.heading = atan2(directionToDoor.x, -directionToDoor.y)
+    }
+    reduceMotionActive = reduceMotion
+    velocity = .zero
+    founderObservationActive = true
+    let observation = founderObservationRecipe()
+    camera.transform = observation.transform
+    camera.camera.fieldOfViewInDegrees = observation.fieldOfView
+  }
+
+  /// Installs an authored standing endpoint for interaction choreography while
+  /// retaining camera ownership of the canonical player transform.
+  @discardableResult
+  func beginInteractionStanding(
+    at pose: FounderGarageSpatialPose,
+    reduceMotion: Bool = false
+  ) -> Bool {
+    guard state == .founderPOV,
+          pose.position.x.isFinite, pose.position.y.isFinite, pose.position.z.isFinite,
+          pose.facingDirection.x.isFinite, pose.facingDirection.z.isFinite,
+          walkability?([pose.position.x, pose.position.z]) ?? true
+    else { return false }
+    cancelTransientMotion(countInterruption: true)
+    seatingTransitionActive = false
+    playerSpatialState.navigationMode = .walking
+    playerSpatialState.playerPose = FounderPlayerPose(
+      position: pose.position,
+      heading: atan2(pose.facingDirection.x, -pose.facingDirection.z)
+    )
+    playerSpatialState.eyeOffset.y = FounderGarageCameraConfiguration.standingEyeHeight
+    playerSpatialState.lookOrientation = .neutral
+    targetLook = .neutral
+    reduceMotionActive = reduceMotion
+    founderObservationActive = true
+    applySeatedCameraTransform()
+    return true
+  }
+
+  /// Applies only a bounded correction requested by interaction choreography.
+  /// Collision validation and the resulting player pose remain camera-owned.
+  func alignStandingPlayer(
+    toward pose: FounderGarageSpatialPose,
+    maximumTranslation: Float,
+    maximumRotation: Float
+  ) -> (translation: Float, rotation: Float, valid: Bool) {
+    guard playerSpatialState.navigationMode == .walking,
+          maximumTranslation.isFinite, maximumTranslation >= 0,
+          maximumRotation.isFinite, maximumRotation >= 0
+    else { return (0, 0, false) }
+    let current = playerSpatialState.playerPose
+    let planarDelta = SIMD2<Float>(pose.position.x - current.position.x, pose.position.z - current.position.z)
+    let distance = simd_length(planarDelta)
+    let translation = min(distance, maximumTranslation)
+    var nextPosition = current.position
+    if distance > 0.000001 {
+      let step = planarDelta / distance * translation
+      nextPosition.x += step.x
+      nextPosition.z += step.y
+    }
+    guard walkability?([nextPosition.x, nextPosition.z]) ?? true else {
+      return (0, 0, false)
+    }
+    let targetHeading = atan2(pose.facingDirection.x, -pose.facingDirection.z)
+    let yawDelta = atan2(sin(targetHeading - current.heading), cos(targetHeading - current.heading))
+    let rotation = min(abs(yawDelta), maximumRotation)
+    let signedRotation = min(max(yawDelta, -maximumRotation), maximumRotation)
+    playerSpatialState.playerPose.position = nextPosition
+    playerSpatialState.playerPose.heading += signedRotation
+    velocity = .zero
+    applySeatedCameraTransform()
+    return (translation, rotation, true)
+  }
+
+  /// The seated anchor overlaps the authored chair collision volume. Resolve the
+  /// standing endpoint to the nearest deterministic free sample before accepting
+  /// movement so collision cannot trap the Founder inside the chair.
+  private func nearestWalkableStandingPosition(
+    to origin: SIMD3<Float>,
+    withClearPathTo target: SIMD3<Float>
+  ) -> SIMD3<Float> {
+    guard let walkability else { return origin }
+    let angularSamples = 24
+    var nearestFallback: SIMD3<Float>?
+    for radius in stride(from: Float(0.45), through: 1.20, by: 0.05) {
+      for index in 0..<angularSamples {
+        // Search toward the room center/front first, then around the chair.
+        let angle = Float(index) * 2 * .pi / Float(angularSamples)
+        let point = SIMD2<Float>(
+          origin.x + sin(angle) * radius,
+          origin.z + cos(angle) * radius
+        )
+        guard walkability(point) else { continue }
+        let candidate = SIMD3<Float>(point.x, origin.y, point.y)
+        if nearestFallback == nil { nearestFallback = candidate }
+        if straightPathIsWalkable(from: candidate, to: target, walkability: walkability) {
+          return candidate
+        }
+      }
+    }
+    return nearestFallback ?? origin
+  }
+
+  private func straightPathIsWalkable(
+    from start: SIMD3<Float>,
+    to target: SIMD3<Float>,
+    walkability: (SIMD2<Float>) -> Bool
+  ) -> Bool {
+    let start2D = SIMD2<Float>(start.x, start.z)
+    let target2D = SIMD2<Float>(target.x, target.z)
+    let distance = simd_distance(start2D, target2D)
+    let samples = max(1, Int(ceil(distance / 0.08)))
+    return (1...samples).allSatisfy { index in
+      let progress = Float(index) / Float(samples)
+      return walkability(start2D + (target2D - start2D) * progress)
     }
   }
 
+  func endWalking(
+    reduceMotion: Bool = false,
+    keepFounderVisible: Bool = false
+  ) {
+    cancelTransientMotion(countInterruption: false)
+    playerSpatialState = FounderGarageCameraConfiguration(spatial: spatial).seatedPlayerState
+    targetLook = .neutral
+    reduceMotionActive = reduceMotion
+    seatingTransitionActive = keepFounderVisible
+    founderObservationActive = keepFounderVisible
+    applySeatedCameraTransform()
+  }
+
+  /// Completes the visible chair choreography before entering the eye camera.
+  /// Until this point the Founder remains visible from third person while the
+  /// locomotion graph resolves the authored sitting animation.
+  func completeSeatingTransition() {
+    guard seatingTransitionActive else { return }
+    seatingTransitionActive = false
+    founderObservationActive = false
+    applySeatedCameraTransform()
+  }
+
+  func setMovementIntent(_ intent: FounderGarageMovementIntent) {
+    movementIntent = intent
+  }
+
+  func nudge(lateral: Float, forward: Float, reduceMotion: Bool) {
+    guard playerSpatialState.navigationMode == .walking else { return }
+    setMovementIntent(.init(lateral: lateral, forward: forward))
+    advance(deltaTime: reduceMotion ? 0.08 : 0.18)
+    setMovementIntent(.idle)
+  }
+
+  func consume(_ sample: FounderLocomotionCameraSample) {
+    playerSpatialState.playerPose = .init(position: sample.bodyPosition, heading: sample.bodyHeading)
+    playerSpatialState.eyeOffset.y = sample.stance == .seated ? FounderGarageCameraConfiguration.seatedEyeHeight : FounderGarageCameraConfiguration.standingEyeHeight
+    velocity = sample.locomotionVelocity
+    applySeatedCameraTransform()
+  }
+
+  @discardableResult
+  func focus(on target: FounderGarageInteractionFocusTarget, reduceMotion: Bool = false) -> Bool {
+    guard playerSpatialState.navigationMode != .walking else { return false }
+    if interactionFocusReturn == nil {
+      interactionFocusReturn = InteractionFocusReturn(
+        state: state,
+        playerSpatialState: playerSpatialState,
+        cameraTransform: camera.transform,
+        fieldOfView: camera.camera.fieldOfViewInDegrees,
+        founderObservationActive: founderObservationActive
+      )
+    } else if activeTransition != nil {
+      diagnostics.interruptedCount += 1
+    }
+    transitionStart = nil; transitionTarget = nil; activeTransition = nil
+    interactionFocusTarget = target
+    founderObservationActive = false
+    playerSpatialState.navigationMode = .interactionFocus(target)
+    reduceMotionActive = reduceMotion
+    let focusRecipe = FounderGarageCameraConfiguration(spatial: spatial).interactionRecipe(for: target)
+    if reduceMotion { camera.transform = focusRecipe.transform; camera.camera.fieldOfViewInDegrees = focusRecipe.fieldOfView }
+    else { startTransition(to: focusRecipe, kind: .shortPhysical) }
+    return true
+  }
+
+  @discardableResult
+  func restoreInteractionFocus(reduceMotion: Bool = false) -> Bool {
+    guard let restore = interactionFocusReturn else { return false }
+    if activeTransition != nil { diagnostics.interruptedCount += 1 }
+    interactionFocusReturn = nil
+    interactionFocusTarget = nil
+    state = restore.state
+    playerSpatialState = restore.playerSpatialState
+    founderObservationActive = restore.founderObservationActive
+    reduceMotionActive = reduceMotion
+    let recipe = FounderGarageCameraRecipe(
+      position: restore.cameraTransform.translation,
+      lookTarget: restore.cameraTransform.translation - SIMD3<Float>(
+        restore.cameraTransform.matrix.columns.2.x,
+        restore.cameraTransform.matrix.columns.2.y,
+        restore.cameraTransform.matrix.columns.2.z
+      ),
+      fieldOfView: restore.fieldOfView,
+      duration: FounderGarageCameraConfiguration.shortTransitionDuration
+    )
+    if reduceMotion { camera.transform = restore.cameraTransform; camera.camera.fieldOfViewInDegrees = restore.fieldOfView }
+    else {
+      startTransition(to: recipe, kind: .shortPhysical)
+      transitionTarget = restore.cameraTransform
+    }
+    return true
+  }
+
+  func advance(deltaTime rawDelta: TimeInterval) {
+    let dt = min(max(Float(rawDelta), 0), FounderGarageCameraConfiguration.maximumDeltaTime)
+    guard dt > 0 else { return }
+    if let start = transitionStart, let target = transitionTarget {
+      transitionElapsed += dt
+      let x = min(transitionElapsed / max(transitionDuration, 0.001), 1)
+      let t = x * x * (3 - 2 * x)
+      camera.transform.translation = start.translation + (target.translation - start.translation) * t
+      camera.transform.rotation = simd_slerp(start.rotation, target.rotation, t)
+      camera.camera.fieldOfViewInDegrees = transitionStartFOV + (transitionTargetFOV - transitionStartFOV) * t
+      if x >= 1 { camera.transform = target; camera.camera.fieldOfViewInDegrees = transitionTargetFOV; transitionStart = nil; transitionTarget = nil; activeTransition = nil }
+      return
+    }
+    let steps = max(1, Int(ceil(dt / FounderGarageCameraConfiguration.fixedStep)))
+    let substep = dt / Float(steps)
+    for _ in 0..<steps { integrateNavigation(deltaTime: substep) }
+    if playerSpatialState.navigationMode == .seated || playerSpatialState.navigationMode == .walking {
+      applySeatedCameraTransform()
+    }
+  }
+
+  private func integrateNavigation(deltaTime dt: Float) {
+    integrateLook(deltaTime: dt)
+    guard playerSpatialState.navigationMode == .walking else { return }
+    let input = SIMD2<Float>(movementIntent.lateral, movementIntent.forward)
+    let magnitude = min(simd_length(input), 1)
+    let heading = playerSpatialState.playerPose.heading
+    let right = SIMD3<Float>(cos(heading), 0, sin(heading))
+    let forward = SIMD3<Float>(sin(heading), 0, -cos(heading))
+    let desired = magnitude > 0 ? (right * input.x + forward * input.y) / max(simd_length(input), 1) * FounderGarageCameraConfiguration.walkingSpeed : .zero
+    let rate = magnitude > 0 ? FounderGarageCameraConfiguration.linearAcceleration : FounderGarageCameraConfiguration.linearDeceleration
+    let delta = desired - velocity
+    velocity += simd_length(delta) <= rate * dt ? delta : simd_normalize(delta) * rate * dt
+    let old = playerSpatialState.playerPose.position
+    var next = old + velocity * dt
+    lastCollision = "none"
+    if let walkability, !walkability([next.x, next.z]) {
+      let slideX = SIMD2<Float>(next.x, old.z)
+      let slideZ = SIMD2<Float>(old.x, next.z)
+      if walkability(slideX) {
+        next.z = old.z; velocity.z = 0; lastCollision = "slide-x"
+      } else if walkability(slideZ) {
+        next.x = old.x; velocity.x = 0; lastCollision = "slide-z"
+      } else {
+        next = old; velocity = .zero; lastCollision = "blocked"
+      }
+    }
+    playerSpatialState.playerPose.position = next
+  }
+
+  var snapshot: Snapshot {
+    let heading = playerSpatialState.playerPose.heading
+    let input = SIMD2<Float>(movementIntent.lateral, movementIntent.forward)
+    let right = SIMD2<Float>(cos(heading), sin(heading))
+    let forward = SIMD2<Float>(sin(heading), -cos(heading))
+    let worldMovement = right * input.x + forward * input.y
+    return Snapshot(
+      mode: navigationModeLabel,
+      position: camera.position(relativeTo: nil),
+      playerPosition: playerSpatialState.playerPose.position,
+      bodyHeading: heading,
+      lookYaw: playerSpatialState.lookOrientation.yaw,
+      movementIntent: input,
+      worldMovementVector: worldMovement,
+      velocity: velocity,
+      angularVelocity: angularVelocity,
+      target: targetLook,
+      collision: lastCollision,
+      transition: activeTransition,
+      founderPOVDriftError: founderPOVDriftError,
+      interactionFocus: interactionFocusTarget,
+      reduceMotion: reduceMotionActive
+    )
+  }
+
+  var spatialState: FounderCameraSpatialState {
+    let heading = playerSpatialState.playerPose.heading + playerSpatialState.lookOrientation.yaw
+    let rawIntent = SIMD2<Float>(movementIntent.lateral, movementIntent.forward)
+    let intentLength = simd_length(rawIntent)
+    return FounderCameraSpatialState(
+      position: playerSpatialState.playerPose.position,
+      facingDirection: [sin(heading), 0, -cos(heading)],
+      horizontalVelocity: [velocity.x, velocity.z],
+      movementMagnitude: simd_length(SIMD2<Float>(velocity.x, velocity.z)),
+      stance: playerSpatialState.navigationMode == .walking ? .standing : .seated,
+      navigationMode: playerSpatialState.navigationMode,
+      normalizedLocomotionIntent: intentLength > 0.0001 ? rawIntent / max(intentLength, 1) : nil,
+      stepPhase: nil
+    )
+  }
+
+  private var navigationModeLabel: String {
+    switch playerSpatialState.navigationMode {
+    case .seated: "seated"
+    case .walking: "walking"
+    case .authoredInspection(let view): view.rawValue
+    case .interactionFocus(let target): "focus:\(target.rawValue)"
+    }
+  }
+
+  private var founderPOVDriftError: Float {
+    guard state == .founderPOV, playerSpatialState.navigationMode == .seated,
+          activeTransition == nil, targetLook.isNeutral, playerSpatialState.lookOrientation.isNeutral
+    else { return 0 }
+    return simd_distance(camera.transform.translation, recipe(for: .founderPOV).position)
+  }
+
+  private func startTransition(to recipe: FounderGarageCameraRecipe, kind: FounderGarageCameraTransitionClass) {
+    transitionStart = camera.transform
+    transitionTarget = recipe.transform
+    transitionStartFOV = camera.camera.fieldOfViewInDegrees
+    transitionTargetFOV = recipe.fieldOfView
+    transitionElapsed = 0
+    transitionDuration = Float(kind == .shortPhysical ? FounderGarageCameraConfiguration.shortTransitionDuration : FounderGarageCameraConfiguration.mediumTransitionDuration)
+    activeTransition = kind
+  }
+
+  private func cancelTransientMotion(countInterruption: Bool) {
+    if countInterruption && activeTransition != nil { diagnostics.interruptedCount += 1 }
+    transitionStart = nil; transitionTarget = nil; activeTransition = nil
+    interactionFocusReturn = nil; interactionFocusTarget = nil
+    movementIntent = .idle; velocity = .zero; angularVelocity = .zero
+  }
+
+  private func integrateLook(deltaTime dt: Float) {
+    if reduceMotionActive {
+      playerSpatialState.lookOrientation = targetLook; angularVelocity = .zero; return
+    }
+    var current = SIMD2<Float>(playerSpatialState.lookOrientation.yaw, playerSpatialState.lookOrientation.pitch)
+    let target = SIMD2<Float>(targetLook.yaw, targetLook.pitch)
+    let error = target - current
+    if simd_length(error) <= 0.0005 {
+      playerSpatialState.lookOrientation = targetLook
+      angularVelocity = .zero
+      return
+    }
+    let desired = simd_length(error) > 0.0001
+      ? simd_normalize(error) * min(simd_length(error) * FounderGarageCameraConfiguration.lookResponse, FounderGarageCameraConfiguration.maximumAngularSpeed)
+      : .zero
+    let velocityDelta = desired - angularVelocity
+    let maximumChange = FounderGarageCameraConfiguration.angularAcceleration * dt
+    angularVelocity += simd_length(velocityDelta) <= maximumChange ? velocityDelta : simd_normalize(velocityDelta) * maximumChange
+    let step = angularVelocity * dt
+    for axis in 0..<2 {
+      if abs(error[axis]) <= abs(step[axis]) { current[axis] = target[axis]; angularVelocity[axis] = 0 }
+      else { current[axis] += step[axis] }
+    }
+    playerSpatialState.lookOrientation = FounderLookOrientation(yaw: current.x, pitch: current.y)
+  }
+
+
+  private func applyCurrentCameraTransform() {
+    let pose = presentationRecipe(for: state)
+    camera.camera.fieldOfViewInDegrees = pose.fieldOfView
+    camera.transform = pose.transform
+  }
+
+  private func presentationRecipe(for state: FounderGarageCameraState) -> FounderGarageCameraRecipe {
+    recipe(for: state)
+  }
+
   private func applySeatedCameraTransform() {
+    if playerSpatialState.navigationMode == .walking || seatingTransitionActive {
+      let observation = founderObservationRecipe()
+      camera.camera.fieldOfViewInDegrees = observation.fieldOfView
+      camera.transform = observation.transform
+      return
+    }
     let configuration = FounderGarageCameraConfiguration(spatial: spatial)
     let neutral = recipe(for: .founderPOV)
     let canonicalHeading = configuration.seatedPlayerState.playerPose.heading
@@ -3350,5 +5820,38 @@ final class FounderGarageCameraController {
     transform.rotation = simd_normalize(yaw * transform.rotation * pitch)
     camera.camera.fieldOfViewInDegrees = neutral.fieldOfView
     camera.transform = transform
+  }
+
+  /// Explore uses a close three-quarter follow composition while the canonical
+  /// player pose continues to own navigation and chair interaction.
+  private func founderObservationRecipe(focusTarget: SIMD3<Float>? = nil) -> FounderGarageCameraRecipe {
+    let pose = playerSpatialState.playerPose
+    let heading = pose.heading
+    let forward = SIMD3<Float>(sin(heading), 0, -cos(heading))
+    let right = SIMD3<Float>(cos(heading), 0, sin(heading))
+    let orientation = playerSpatialState.lookOrientation
+    let yawRotation = simd_quatf(angle: -orientation.yaw, axis: [0, 1, 0])
+    let neutralHorizontal = -forward * 2.35 + right * 0.72
+    let orbitHorizontal = yawRotation.act(neutralHorizontal) * cos(orientation.pitch)
+    let orbitHeight = 1.72 - sin(orientation.pitch) * simd_length(neutralHorizontal)
+    let position = pose.position + orbitHorizontal + [0, orbitHeight, 0]
+    return FounderGarageCameraRecipe(
+      position: position,
+      lookTarget: focusTarget.map { pose.position + (($0 - pose.position) * 0.58) + [0, 0.36, 0] }
+        ?? (pose.position + [0, 1.05, 0]),
+      fieldOfView: 58,
+      duration: FounderGarageCameraConfiguration.shortTransitionDuration
+    )
+  }
+
+  private func interactionLookTarget(for target: FounderGarageInteractionFocusTarget) -> SIMD3<Float> {
+    switch target {
+    case .computer: spatial.anchors.founderComputer.position
+    case .phone: spatial.anchors.iPhone.position
+    case .tablet: spatial.anchors.iPad.position
+    case .strategyBoard: spatial.anchors.fundingBoard.position
+    case .signalTV: spatial.anchors.signalTV.position
+    case .server: spatial.productionAnchors?.agentDeskSurface ?? spatial.anchors.desk.position
+    }
   }
 }

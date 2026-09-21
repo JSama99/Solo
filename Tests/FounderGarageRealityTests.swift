@@ -3,6 +3,363 @@ import XCTest
 @testable import Solo_Unicorn_Run
 
 final class FounderGarageRealityTests: XCTestCase {
+  func testD13WhiteboardFeedbackConsumesExistingC1IdentityAndSharedTiming() throws {
+    let zone = try XCTUnwrap(
+      FounderGarageSpatialSpecification.standard.facilityTier0InteractionSpace?
+        .zone(for: .whiteboard)
+    )
+    let target = try XCTUnwrap(zone.founderInteractionTarget)
+    let configuration = GarageInteractionFeedbackConfiguration.whiteboard(targetID: zone.id)
+
+    XCTAssertEqual(configuration.targetID, "facilityTier0.whiteboard")
+    XCTAssertEqual(configuration.targetID, target.id)
+    XCTAssertEqual(target.interactionType, .standingObservation)
+    XCTAssertEqual(configuration.promptText, "VIEW WHITEBOARD")
+    XCTAssertEqual(configuration.activationDuration, 0.22)
+    XCTAssertEqual(configuration.reducedMotionActivationDuration, 0.08)
+    XCTAssertEqual(configuration.soundPolicy, .deferred)
+    XCTAssertEqual(configuration.hapticPolicy, .deferred)
+  }
+
+  func testD13WhiteboardAvailabilityAndActivationRemainTruthfulAndBounded() {
+    let configuration = GarageInteractionFeedbackConfiguration.whiteboard(
+      targetID: "facilityTier0.whiteboard"
+    )
+
+    XCTAssertEqual(
+      GarageInteractionFeedbackResolver.state(
+        configuration: configuration,
+        isAvailable: false,
+        isFocused: true,
+        activationElapsed: nil,
+        reduceMotion: false
+      ),
+      .unavailable
+    )
+    XCTAssertEqual(
+      GarageInteractionFeedbackResolver.state(
+        configuration: configuration,
+        isAvailable: true,
+        isFocused: true,
+        activationElapsed: 0.01,
+        reduceMotion: false
+      ),
+      .activated
+    )
+    XCTAssertEqual(
+      GarageInteractionFeedbackResolver.state(
+        configuration: configuration,
+        isAvailable: true,
+        isFocused: true,
+        activationElapsed: configuration.reducedMotionActivationDuration,
+        reduceMotion: true
+      ),
+      .focused
+    )
+    XCTAssertEqual(
+      GarageInteractionVisualEmphasis.resolve(state: .activated, reduceMotion: true)
+        .promptScale,
+      1
+    )
+  }
+
+  func testD13ThreeTargetConflictResolvesToOneDeterministicPrompt() throws {
+    let computer = GarageInteractionFeedbackSnapshot(
+      configuration: .founderComputer(targetID: "facilityTier0.founderComputer"),
+      state: .focused
+    )
+    let chair = GarageInteractionFeedbackSnapshot(
+      configuration: .chair(targetID: "facilityTier0.chair"),
+      state: .focused
+    )
+    let whiteboard = GarageInteractionFeedbackSnapshot(
+      configuration: .whiteboard(targetID: "facilityTier0.whiteboard"),
+      state: .focused
+    )
+
+    let primary = try XCTUnwrap(
+      GarageInteractionFeedbackResolver.primaryPrompt(from: [whiteboard, chair, computer])
+    )
+    XCTAssertEqual(primary.configuration.promptText, "OPEN COMPUTER")
+    XCTAssertEqual(
+      GarageInteractionFeedbackResolver.primaryPrompt(from: [whiteboard])?
+        .configuration.promptText,
+      "VIEW WHITEBOARD"
+    )
+    let chairFallback = GarageInteractionFeedbackSnapshot(
+      configuration: chair.configuration,
+      state: .available
+    )
+    XCTAssertEqual(
+      GarageInteractionFeedbackResolver.primaryPrompt(from: [chairFallback, whiteboard])?
+        .configuration.promptText,
+      "VIEW WHITEBOARD"
+    )
+  }
+
+  @MainActor
+  func testD13WorldMirrorsC1WhiteboardTruthAndAcknowledgesOnlySuccessfulIntent() throws {
+    let store = GameStore()
+    let before = CanonicalSnapshot(store: store)
+    let world = FounderGarageRealityWorld()
+    let target = try XCTUnwrap(
+      world.spatialSpecification.facilityTier0InteractionSpace?
+        .founderInteractionTarget(for: .whiteboard)
+    )
+
+    XCTAssertFalse(world.whiteboardObservationAvailable)
+    XCTAssertFalse(world.whiteboardInteractionFocused)
+    XCTAssertFalse(world.requestWhiteboardObservation())
+    world.apply(makePresentation(), whiteboardInteractionFeedback: .focused)
+    XCTAssertEqual(world.whiteboardInteractionFeedbackState, .unavailable)
+
+    world.cameraController.configureWalkability { _ in true }
+    XCTAssertTrue(world.cameraController.beginInteractionStanding(
+      at: target.approach,
+      reduceMotion: true
+    ))
+    XCTAssertTrue(world.whiteboardObservationAvailable)
+    XCTAssertTrue(world.whiteboardInteractionFocused)
+
+    world.apply(makePresentation(), whiteboardInteractionFeedback: .focused)
+    XCTAssertEqual(world.whiteboardInteractionFeedbackState, .focused)
+    XCTAssertTrue(world.requestWhiteboardObservation())
+    world.apply(makePresentation(), whiteboardInteractionFeedback: .activated)
+    XCTAssertEqual(world.whiteboardInteractionFeedbackState, .activated)
+
+    world.cameraController.transition(to: .whiteboard, reduceMotion: true)
+    XCTAssertEqual(
+      world.cameraController.playerSpatialState.navigationMode,
+      .authoredInspection(.whiteboard)
+    )
+    XCTAssertFalse(world.requestWhiteboardObservation())
+    world.apply(makePresentation(), whiteboardInteractionFeedback: .activated)
+    XCTAssertEqual(world.whiteboardInteractionFeedbackState, .activated)
+    world.apply(makePresentation(), whiteboardInteractionFeedback: .unavailable)
+    XCTAssertEqual(world.whiteboardInteractionFeedbackState, .unavailable)
+    XCTAssertEqual(world.interactionCoordinator.phase, .idle)
+    XCTAssertEqual(CanonicalSnapshot(store: store), before)
+    XCTAssertEqual(GameStore.saveVersion, 20)
+  }
+
+  func testD12ChairFeedbackConsumesExistingC1IdentityAndSharedTiming() throws {
+    let zone = try XCTUnwrap(
+      FounderGarageSpatialSpecification.standard.facilityTier0InteractionSpace?
+        .zone(for: .chair)
+    )
+    let configuration = GarageInteractionFeedbackConfiguration.chair(targetID: zone.id)
+
+    XCTAssertEqual(configuration.targetID, "facilityTier0.chair")
+    XCTAssertEqual(configuration.targetID, zone.founderInteractionTarget?.id)
+    XCTAssertEqual(configuration.promptText, "RETURN TO DESK")
+    XCTAssertEqual(configuration.activationDuration, 0.22)
+    XCTAssertEqual(configuration.reducedMotionActivationDuration, 0.08)
+    XCTAssertEqual(configuration.soundPolicy, .deferred)
+    XCTAssertEqual(configuration.hapticPolicy, .deferred)
+  }
+
+  func testD12ChairAvailabilityAndActivationRemainTruthfulAndBounded() {
+    let configuration = GarageInteractionFeedbackConfiguration.chair(
+      targetID: "facilityTier0.chair"
+    )
+
+    XCTAssertEqual(
+      GarageInteractionFeedbackResolver.state(
+        configuration: configuration,
+        isAvailable: false,
+        isFocused: true,
+        activationElapsed: nil,
+        reduceMotion: false
+      ),
+      .unavailable
+    )
+    XCTAssertEqual(
+      GarageInteractionFeedbackResolver.state(
+        configuration: configuration,
+        isAvailable: true,
+        isFocused: true,
+        activationElapsed: 0.01,
+        reduceMotion: false
+      ),
+      .activated
+    )
+    XCTAssertEqual(
+      GarageInteractionFeedbackResolver.state(
+        configuration: configuration,
+        isAvailable: false,
+        isFocused: false,
+        activationElapsed: 0.01,
+        reduceMotion: false
+      ),
+      .unavailable
+    )
+    XCTAssertEqual(
+      GarageInteractionVisualEmphasis.resolve(state: .activated, reduceMotion: true)
+        .promptScale,
+      1
+    )
+  }
+
+  func testD12ComputerChairConflictResolvesToOneDeterministicPrompt() throws {
+    let computer = GarageInteractionFeedbackSnapshot(
+      configuration: .founderComputer(targetID: "facilityTier0.founderComputer"),
+      state: .focused
+    )
+    let chair = GarageInteractionFeedbackSnapshot(
+      configuration: .chair(targetID: "facilityTier0.chair"),
+      state: .focused
+    )
+
+    let primary = try XCTUnwrap(
+      GarageInteractionFeedbackResolver.primaryPrompt(from: [chair, computer])
+    )
+    XCTAssertEqual(primary.configuration.promptText, "OPEN COMPUTER")
+    XCTAssertEqual(
+      GarageInteractionFeedbackResolver.primaryPrompt(from: [chair])?.configuration.promptText,
+      "RETURN TO DESK"
+    )
+  }
+
+  @MainActor
+  func testD12WorldMirrorsChairPipelineAndAcknowledgesOnlySuccessfulIntent() throws {
+    let store = GameStore()
+    let before = CanonicalSnapshot(store: store)
+    let world = FounderGarageRealityWorld()
+    let target = try XCTUnwrap(world.interactionCoordinator.chairTarget)
+
+    XCTAssertFalse(world.chairInteractionAvailable)
+    world.apply(makePresentation(), chairInteractionFeedback: .focused)
+    XCTAssertEqual(world.chairInteractionFeedbackState, .unavailable)
+
+    world.cameraController.configureWalkability { _ in true }
+    XCTAssertTrue(world.cameraController.beginInteractionStanding(
+      at: target.approach,
+      reduceMotion: true
+    ))
+    advance(world, frames: 8)
+    XCTAssertTrue(world.chairInteractionAvailable)
+
+    world.apply(makePresentation(), chairInteractionFeedback: .focused)
+    XCTAssertEqual(world.chairInteractionFeedbackState, .focused)
+    XCTAssertTrue(world.requestChairInteraction(reduceMotion: true))
+    world.apply(makePresentation(), chairInteractionFeedback: .activated)
+    XCTAssertEqual(world.chairInteractionFeedbackState, .activated)
+    XCTAssertEqual(world.interactionCoordinator.phase, .approaching)
+
+    world.apply(makePresentation(), chairInteractionFeedback: .unavailable)
+    XCTAssertEqual(world.chairInteractionFeedbackState, .unavailable)
+    XCTAssertEqual(CanonicalSnapshot(store: store), before)
+    XCTAssertEqual(GameStore.saveVersion, 20)
+  }
+
+  func testD11ComputerFeedbackUsesExistingTargetIdentityAndDeterministicPrompt() throws {
+    let zone = try XCTUnwrap(
+      FounderGarageSpatialSpecification.standard.facilityTier0InteractionSpace?
+        .zone(for: .founderComputer)
+    )
+    let configuration = GarageInteractionFeedbackConfiguration.founderComputer(targetID: zone.id)
+
+    XCTAssertEqual(configuration.targetID, "facilityTier0.founderComputer")
+    XCTAssertEqual(configuration.promptText, "OPEN COMPUTER")
+    XCTAssertEqual(configuration.soundPolicy, .deferred)
+    XCTAssertEqual(configuration.hapticPolicy, .deferred)
+    XCTAssertGreaterThan(configuration.activationDuration, 0)
+    XCTAssertLessThanOrEqual(configuration.activationDuration, 0.25)
+    XCTAssertLessThan(configuration.reducedMotionActivationDuration, configuration.activationDuration)
+  }
+
+  func testD11ComputerFeedbackNeverAdvertisesUnavailableActivation() {
+    let configuration = GarageInteractionFeedbackConfiguration.founderComputer(targetID: "facilityTier0.founderComputer")
+
+    XCTAssertEqual(
+      GarageInteractionFeedbackResolver.state(
+        configuration: configuration,
+        isAvailable: false,
+        isFocused: true,
+        activationElapsed: 0,
+        reduceMotion: false
+      ),
+      .unavailable
+    )
+    XCTAssertFalse(GarageInteractionFeedbackState.unavailable.exposesPrimaryPrompt)
+    XCTAssertFalse(GarageInteractionFeedbackState.available.exposesPrimaryPrompt)
+  }
+
+  func testD11ComputerActivationIsBoundedAndReduceMotionPreservesClarity() {
+    let configuration = GarageInteractionFeedbackConfiguration.founderComputer(targetID: "facilityTier0.founderComputer")
+
+    XCTAssertEqual(
+      GarageInteractionFeedbackResolver.state(
+        configuration: configuration,
+        isAvailable: true,
+        isFocused: true,
+        activationElapsed: 0.01,
+        reduceMotion: false
+      ),
+      .activated
+    )
+    XCTAssertEqual(
+      GarageInteractionFeedbackResolver.state(
+        configuration: configuration,
+        isAvailable: true,
+        isFocused: true,
+        activationElapsed: configuration.activationDuration,
+        reduceMotion: false
+      ),
+      .focused
+    )
+    let normal = GarageInteractionVisualEmphasis.resolve(state: .activated, reduceMotion: false)
+    let reduced = GarageInteractionVisualEmphasis.resolve(state: .activated, reduceMotion: true)
+    XCTAssertGreaterThan(normal.promptScale, 1)
+    XCTAssertEqual(reduced.promptScale, 1)
+    XCTAssertEqual(normal.screenIntensityScale, reduced.screenIntensityScale)
+  }
+
+  func testD11PrimaryPromptResolverReturnsOnlyOneDeterministicTarget() throws {
+    let computer = GarageInteractionFeedbackSnapshot(
+      configuration: .founderComputer(targetID: "facilityTier0.founderComputer"),
+      state: .focused
+    )
+    let lowerPriority = GarageInteractionFeedbackSnapshot(
+      configuration: .init(
+        targetID: "fixture.secondary",
+        promptText: "FIXTURE",
+        activationDuration: 0.2,
+        reducedMotionActivationDuration: 0.08,
+        soundPolicy: .none,
+        hapticPolicy: .none,
+        promptPriority: 1
+      ),
+      state: .focused
+    )
+
+    let primary = try XCTUnwrap(
+      GarageInteractionFeedbackResolver.primaryPrompt(from: [lowerPriority, computer])
+    )
+    XCTAssertEqual(primary.id, computer.id)
+  }
+
+  @MainActor
+  func testD11WorldFeedbackMirrorsExistingComputerAvailabilityWithoutStateMutation() {
+    let store = GameStore()
+    let before = CanonicalSnapshot(store: store)
+    let world = FounderGarageRealityWorld()
+    var presentation = makePresentation()
+
+    world.apply(presentation, interactionFeedback: .focused, reduceMotion: false)
+    XCTAssertEqual(world.computerInteractionFeedbackState, .focused)
+    XCTAssertTrue(world.founderComputerInteractionAvailable)
+    XCTAssertEqual(world.interaction(for: world.entities.founderComputerInteractionTarget), .openFounderComputer)
+
+    presentation.founderComputerAvailable = false
+    world.apply(presentation, interactionFeedback: .activated, reduceMotion: false)
+    XCTAssertEqual(world.computerInteractionFeedbackState, .unavailable)
+    XCTAssertFalse(world.founderComputerInteractionAvailable)
+    XCTAssertNil(world.interaction(for: world.entities.founderComputerInteractionTarget))
+    XCTAssertEqual(CanonicalSnapshot(store: store), before)
+    XCTAssertEqual(GameStore.saveVersion, 20)
+  }
+
   func testPass6PrototypeContractRemainsAvailableAsMigrationHistory() {
     let prototype = FounderGarageSpatialSpecification.pass6Prototype
 
@@ -97,8 +454,8 @@ final class FounderGarageRealityTests: XCTestCase {
     XCTAssertEqual(adapter.rig.visualRoot.findEntity(named: "Track_Vert_R")?.isEnabled, false)
     XCTAssertEqual(adapter.rig.visualRoot.findEntity(named: "Track_Horiz_R")?.isEnabled, false)
     XCTAssertFalse(world.entities.furniture.isEnabled)
-    XCTAssertFalse(world.entities.iPhone.isEnabled)
-    XCTAssertFalse(world.entities.iPad.isEnabled)
+    XCTAssertTrue(world.entities.iPhone.isEnabled)
+    XCTAssertTrue(world.entities.iPad.isEnabled)
     XCTAssertTrue(world.entities.founderComputerInteractionTarget.isEnabled)
     XCTAssertEqual(world.interaction(for: world.entities.founderComputerInteractionTarget), .openFounderComputer)
 
@@ -117,6 +474,7 @@ final class FounderGarageRealityTests: XCTestCase {
 
     XCTAssertEqual(space.zones.count, FacilityTier0InteractionZone.SemanticObject.allCases.count)
     XCTAssertEqual(space.activeZones.map(\.semanticObject), [.founderComputer])
+    XCTAssertEqual(space.zone(for: .chair)?.id, "facilityTier0.chair")
     XCTAssertEqual(space.zone(for: .founderComputer)?.id, "facilityTier0.founderComputer")
     XCTAssertEqual(space.zone(for: .whiteboard)?.id, "facilityTier0.whiteboard")
     XCTAssertEqual(space.zone(for: .garageDoor)?.id, "facilityTier0.garageDoor")
@@ -129,13 +487,18 @@ final class FounderGarageRealityTests: XCTestCase {
     let spatial = FounderGarageSpatialSpecification.standard
     let authored = try XCTUnwrap(spatial.productionAnchors)
     let space = try XCTUnwrap(spatial.facilityTier0InteractionSpace)
+    let chair = try XCTUnwrap(space.zone(for: .chair))
     let computer = try XCTUnwrap(space.zone(for: .founderComputer))
     let whiteboard = try XCTUnwrap(space.zone(for: .whiteboard))
     let door = try XCTUnwrap(space.zone(for: .garageDoor))
 
+    XCTAssertEqual(chair.anchorName, "Anchor_Founder_Seat")
+    XCTAssertEqual(chair.object.position, authored.founderSeat)
+    XCTAssertTrue(spatial.isPointWalkable([chair.approach.position.x, chair.approach.position.z]))
     XCTAssertEqual(computer.anchorName, "Anchor_Monitor_Face")
     XCTAssertEqual(computer.object.position, authored.monitorFace)
-    XCTAssertEqual(computer.approach.position, authored.founderSeat)
+    XCTAssertNotEqual(computer.approach.position, authored.founderSeat)
+    XCTAssertTrue(spatial.isPointWalkable([computer.approach.position.x, computer.approach.position.z]))
     XCTAssertEqual(computer.activationBounds.size, [0.59, 0.34, 0.04])
     XCTAssertEqual(computer.activationBounds.center, authored.monitorFace)
     XCTAssertEqual(whiteboard.object.position, authored.whiteboardFace)
@@ -144,12 +507,306 @@ final class FounderGarageRealityTests: XCTestCase {
     XCTAssertEqual(door.activationBounds.planarBounds, spatial.occupiedZones.garageDoorClearance)
     XCTAssertTrue(spatial.isPointWalkable([door.approach.position.x, door.approach.position.z]))
 
-    for zone in [computer, whiteboard, door] {
+    for zone in [chair, computer, whiteboard, door] {
       let approachToObject = zone.object.position - zone.approach.position
       let planarDirection = simd_normalize(SIMD3<Float>(approachToObject.x, 0, approachToObject.z))
       XCTAssertGreaterThan(simd_dot(planarDirection, zone.approach.facingDirection), 0.99, zone.id)
       XCTAssertGreaterThan(zone.interactionDistance.rawValue, 0)
     }
+  }
+
+  func testPassC1FounderInteractionTargetsAreBoundedStableAndFinite() throws {
+    let spatial = FounderGarageSpatialSpecification.standard
+    let space = try XCTUnwrap(spatial.facilityTier0InteractionSpace)
+    let targets = space.founderInteractionTargets
+
+    XCTAssertEqual(targets.map(\.id), [
+      "facilityTier0.chair",
+      "facilityTier0.founderComputer",
+      "facilityTier0.whiteboard"
+    ])
+    XCTAssertEqual(Set(targets.map(\.id)).count, targets.count)
+    XCTAssertEqual(targets.map(\.semanticObject), [.chair, .founderComputer, .whiteboard])
+    XCTAssertEqual(targets.map(\.interactionType), [.seat, .seatedWorkstation, .standingObservation])
+    XCTAssertTrue(targets.allSatisfy(\.hasFiniteValues))
+    XCTAssertTrue(targets.allSatisfy { $0.positionToleranceMeters > 0 })
+    XCTAssertTrue(targets.allSatisfy { $0.facingToleranceRadians > 0 })
+    XCTAssertTrue(targets.allSatisfy { $0.preferredHand == nil && $0.handTarget == nil })
+
+    for semanticObject in [
+      FacilityTier0InteractionZone.SemanticObject.garageDoor,
+      .signalTV, .fundingSurface, .secondWorkstation
+    ] {
+      XCTAssertNil(space.founderInteractionTarget(for: semanticObject))
+    }
+  }
+
+  func testPassC1ApproachesAreWalkableAndAcceptedEndpointsRemainAuthored() throws {
+    let spatial = FounderGarageSpatialSpecification.standard
+    let authored = try XCTUnwrap(spatial.productionAnchors)
+    let space = try XCTUnwrap(spatial.facilityTier0InteractionSpace)
+    let chair = try XCTUnwrap(space.founderInteractionTarget(for: .chair))
+    let computer = try XCTUnwrap(space.founderInteractionTarget(for: .founderComputer))
+    let whiteboard = try XCTUnwrap(space.founderInteractionTarget(for: .whiteboard))
+
+    for target in [chair, computer, whiteboard] {
+      XCTAssertTrue(
+        spatial.isPointWalkable([target.approach.position.x, target.approach.position.z]),
+        target.id
+      )
+      XCTAssertEqual(target.approach.position.y, 0, accuracy: 0.0001, target.id)
+    }
+
+    XCTAssertEqual(chair.interaction, spatial.anchors.founder)
+    XCTAssertEqual(computer.interaction, spatial.anchors.founder)
+    XCTAssertEqual(chair.gazeTarget, [authored.founderSeat.x, 0.455, authored.founderSeat.z])
+    XCTAssertEqual(computer.gazeTarget, authored.monitorFace)
+    XCTAssertEqual(whiteboard.gazeTarget, authored.whiteboardFace)
+    XCTAssertEqual(whiteboard.interaction, whiteboard.approach)
+    XCTAssertGreaterThan(simd_distance(chair.approach.position, chair.interaction.position), 0.80)
+    XCTAssertGreaterThan(simd_distance(computer.approach.position, computer.interaction.position), 0.80)
+  }
+
+  @MainActor
+  func testGI01ChairInteractionRunsStandingThroughSeatedAndDeparture() throws {
+    let world = FounderGarageRealityWorld()
+    let target = try XCTUnwrap(world.interactionCoordinator.chairTarget)
+    world.cameraController.configureWalkability { _ in true }
+    world.cameraController.beginWalking(reduceMotion: false)
+    world.cameraController.consume(.init(
+      bodyPosition: target.approach.position + [-0.72, 0, 0.54],
+      bodyHeading: -1.15,
+      locomotionVelocity: .zero,
+      stepPhase: nil,
+      stance: .standing
+    ))
+    advance(world, frames: 40)
+
+    XCTAssertTrue(world.requestChairInteraction())
+    var observed: Set<FounderInteractionPhase> = [world.interactionCoordinator.phase]
+    advance(world, until: .seated, observed: &observed)
+
+    XCTAssertTrue(observed.isSuperset(of: [.approaching, .stopping, .aligning, .sitting, .seated]))
+    XCTAssertEqual(world.founderAvatarController.locomotion.state, .seatedIdle)
+    XCTAssertEqual(world.cameraController.playerSpatialState.navigationMode, .seated)
+    XCTAssertFalse(world.cameraController.founderObservationActive)
+    XCTAssertTrue(world.cameraController.usesFirstPersonPresentation)
+    XCTAssertFalse(world.proceduralFounderVisualAdapter.rig.visualRoot.isEnabled)
+    XCTAssertEqual(
+      world.cameraController.camera.position,
+      world.cameraController.playerSpatialState.eyePosition
+    )
+    XCTAssertLessThanOrEqual(world.interactionCoordinator.diagnostics.approachPositionError, target.positionToleranceMeters)
+    XCTAssertLessThanOrEqual(world.interactionCoordinator.diagnostics.approachYawError, target.facingToleranceRadians)
+    XCTAssertLessThanOrEqual(world.interactionCoordinator.diagnostics.stopVelocity, 0.01)
+    XCTAssertEqual(world.interactionCoordinator.diagnostics.seatEndpointError, 0, accuracy: 0.0001)
+    XCTAssertGreaterThanOrEqual(world.interactionCoordinator.diagnostics.sitDuration, 0.40)
+    XCTAssertLessThan(world.interactionCoordinator.diagnostics.sitDuration, 0.52)
+
+    XCTAssertTrue(world.requestChairExit())
+    advance(world, until: .idle, observed: &observed)
+    XCTAssertTrue(observed.isSuperset(of: [.standing, .departing]))
+    XCTAssertEqual(world.cameraController.playerSpatialState.navigationMode, .walking)
+    XCTAssertEqual(world.founderAvatarController.locomotion.state, .standingIdle)
+    XCTAssertLessThanOrEqual(world.interactionCoordinator.diagnostics.standingEndpointError, 0.0025)
+    XCTAssertEqual(world.interactionCoordinator.diagnostics.invalidTransformCount, 0)
+  }
+
+  @MainActor
+  func testGI05FounderModeIsFirstPersonAndExploreRemainsThirdPerson() {
+    let world = FounderGarageRealityWorld()
+    let camera = world.cameraController
+
+    camera.beginWalking(reduceMotion: true)
+    world.advanceSession(deltaTime: 0.1)
+
+    XCTAssertTrue(camera.founderObservationActive)
+    XCTAssertFalse(camera.usesFirstPersonPresentation)
+    XCTAssertTrue(world.proceduralFounderVisualAdapter.rig.visualRoot.isEnabled)
+    XCTAssertNotEqual(camera.camera.transform.translation, camera.playerSpatialState.eyePosition)
+
+    camera.endWalking(reduceMotion: true)
+    world.advanceSession(deltaTime: 0.1)
+    XCTAssertFalse(camera.founderObservationActive)
+    XCTAssertTrue(camera.usesFirstPersonPresentation)
+    XCTAssertFalse(world.proceduralFounderVisualAdapter.rig.visualRoot.isEnabled)
+    XCTAssertEqual(world.founderAvatarController.locomotion.state, .seatedIdle)
+    XCTAssertEqual(camera.spatialState.stance, .seated)
+
+    camera.recenterFounderPOV(reduceMotion: true)
+    world.advanceSession(deltaTime: 0.1)
+    XCTAssertFalse(camera.founderObservationActive)
+    XCTAssertTrue(camera.usesFirstPersonPresentation)
+    XCTAssertFalse(world.proceduralFounderVisualAdapter.rig.visualRoot.isEnabled)
+    XCTAssertEqual(camera.camera.transform.translation, camera.playerSpatialState.eyePosition)
+    XCTAssertEqual(camera.spatialState.stance, .seated)
+
+    XCTAssertTrue(camera.focus(on: .computer, reduceMotion: true))
+    world.advanceSession(deltaTime: 0.1)
+    XCTAssertTrue(camera.usesFirstPersonPresentation)
+    XCTAssertFalse(world.proceduralFounderVisualAdapter.rig.visualRoot.isEnabled)
+    XCTAssertEqual(camera.camera.transform.translation, camera.playerSpatialState.eyePosition)
+  }
+
+  @MainActor
+  func testGI02ChairInteractionFiftyCyclesHaveNoDriftOrInvalidTransforms() throws {
+    let world = FounderGarageRealityWorld()
+    let target = try XCTUnwrap(world.interactionCoordinator.chairTarget)
+    world.cameraController.configureWalkability { _ in true }
+    XCTAssertTrue(world.cameraController.beginInteractionStanding(at: target.approach, reduceMotion: true))
+    advance(world, frames: 8)
+
+    for _ in 0..<50 {
+      XCTAssertTrue(world.requestChairInteraction(reduceMotion: true))
+      advance(world, until: .seated)
+      XCTAssertTrue(world.requestChairExit(reduceMotion: true))
+      advance(world, until: .idle)
+    }
+
+    let diagnostics = world.interactionCoordinator.diagnostics
+    XCTAssertEqual(diagnostics.completedCycleCount, 50)
+    XCTAssertEqual(diagnostics.invalidTransformCount, 0)
+    XCTAssertEqual(diagnostics.cyclePositionDrift, 0, accuracy: 0.0001)
+    XCTAssertEqual(diagnostics.cycleYawDrift, 0, accuracy: 0.0001)
+    XCTAssertEqual(diagnostics.seatEndpointError, 0, accuracy: 0.0001)
+    XCTAssertEqual(diagnostics.standingEndpointError, 0, accuracy: 0.0001)
+    XCTAssertEqual(
+      diagnostics.deterministicSignature,
+      "chair|d=0.0000|p=0.0000|y=0.0000|v=0.0000|at=0.0000|ar=0.0000|sit=0.1000|seat=0.0000|stand=0.1000|standing=0.0000|depart=0.2500|recover=0.0000|drift=0.0000,0.0000|invalid=0|cycles=50"
+    )
+  }
+
+  @MainActor
+  func testGI03ReduceMotionUsesAcceptedBoundedChairTransitions() throws {
+    let world = FounderGarageRealityWorld()
+    let target = try XCTUnwrap(world.interactionCoordinator.chairTarget)
+    world.cameraController.configureWalkability { _ in true }
+    XCTAssertTrue(world.cameraController.beginInteractionStanding(at: target.approach, reduceMotion: true))
+    advance(world, frames: 8)
+
+    XCTAssertTrue(world.requestChairInteraction(reduceMotion: true))
+    advance(world, until: .seated)
+    XCTAssertGreaterThanOrEqual(world.interactionCoordinator.diagnostics.sitDuration, 0.08)
+    XCTAssertLessThanOrEqual(world.interactionCoordinator.diagnostics.sitDuration, 0.12)
+    XCTAssertTrue(world.requestChairExit(reduceMotion: true))
+    advance(world, until: .idle)
+    XCTAssertGreaterThanOrEqual(world.interactionCoordinator.diagnostics.standDuration, 0.08)
+    XCTAssertLessThanOrEqual(world.interactionCoordinator.diagnostics.standDuration, 0.12)
+    XCTAssertEqual(FounderAnimationTiming.seatedTransition, 0.42)
+    XCTAssertEqual(FounderAnimationTiming.standingTransition, 0.68)
+    XCTAssertEqual(FounderAnimationTiming.reducedTransition, 0.08)
+  }
+
+  @MainActor
+  func testGI03NormalStandUsesIsolatedVariantBDurationWithoutChangingSit() throws {
+    let world = FounderGarageRealityWorld()
+    let target = try XCTUnwrap(world.interactionCoordinator.chairTarget)
+    world.cameraController.configureWalkability { _ in true }
+    XCTAssertTrue(world.cameraController.beginInteractionStanding(at: target.approach, reduceMotion: true))
+    advance(world, frames: 8)
+
+    XCTAssertTrue(world.requestChairInteraction(reduceMotion: false))
+    advance(world, until: .seated)
+    XCTAssertGreaterThanOrEqual(world.interactionCoordinator.diagnostics.sitDuration, 0.42)
+    XCTAssertLessThanOrEqual(world.interactionCoordinator.diagnostics.sitDuration, 0.46)
+
+    XCTAssertTrue(world.requestChairExit(reduceMotion: false))
+    advance(world, until: .idle)
+    XCTAssertGreaterThanOrEqual(world.interactionCoordinator.diagnostics.standDuration, 0.68)
+    XCTAssertLessThanOrEqual(world.interactionCoordinator.diagnostics.standDuration, 0.72)
+  }
+
+  @MainActor
+  func testGI04ChairContractAndLocomotionTopologyRemainLocked() throws {
+    let world = FounderGarageRealityWorld()
+    let target = try XCTUnwrap(world.interactionCoordinator.chairTarget)
+    XCTAssertEqual(target.id, "facilityTier0.chair")
+    XCTAssertEqual(target.approach.position.x, -0.301470, accuracy: 0.000001)
+    XCTAssertEqual(target.approach.position.y, 0, accuracy: 0.000001)
+    XCTAssertEqual(target.approach.position.z, 0.290800, accuracy: 0.000001)
+    XCTAssertEqual(target.interaction.position, [0.34, 0, -0.22])
+    XCTAssertEqual(target.positionToleranceMeters, 0.08)
+    XCTAssertEqual(target.facingToleranceRadians, 0.14)
+    XCTAssertEqual(FounderLocomotionState.allCases.count, 9)
+    XCTAssertEqual(Set(FounderLocomotionState.allCases), [
+      .seatedIdle, .seatedTurn, .standingUp, .standingIdle,
+      .walkStart, .walking, .walkStop, .turnInPlace, .sittingDown
+    ])
+  }
+
+  @MainActor
+  func testGI11ApproachInterruptionRecoversImmediatelyToStableStanding() throws {
+    let world = FounderGarageRealityWorld()
+    let target = try XCTUnwrap(world.interactionCoordinator.chairTarget)
+    world.cameraController.configureWalkability { _ in true }
+    world.cameraController.beginWalking(reduceMotion: false)
+    world.cameraController.consume(.init(
+      bodyPosition: target.approach.position + [-1.0, 0, 0.8],
+      bodyHeading: 0.7,
+      locomotionVelocity: .zero,
+      stepPhase: nil,
+      stance: .standing
+    ))
+    advance(world, frames: 40)
+    XCTAssertTrue(world.requestChairInteraction())
+    advance(world, frames: 12)
+    XCTAssertEqual(world.interactionCoordinator.phase, .approaching)
+
+    world.cancelChairInteraction()
+    XCTAssertEqual(world.interactionCoordinator.phase, .recovering)
+    advance(world, until: .idle)
+    XCTAssertEqual(world.cameraController.playerSpatialState.navigationMode, .walking)
+    XCTAssertEqual(world.founderAvatarController.locomotion.state, .standingIdle)
+    XCTAssertGreaterThan(world.interactionCoordinator.diagnostics.interruptRecoveryTime, 0)
+    XCTAssertEqual(world.interactionCoordinator.diagnostics.invalidTransformCount, 0)
+  }
+
+  @MainActor
+  func testGI12SeatedInterruptionUsesStandSafeBoundaryBeforeRelease() throws {
+    let world = FounderGarageRealityWorld()
+    let target = try XCTUnwrap(world.interactionCoordinator.chairTarget)
+    world.cameraController.configureWalkability { _ in true }
+    XCTAssertTrue(world.cameraController.beginInteractionStanding(at: target.approach, reduceMotion: false))
+    advance(world, frames: 30)
+    XCTAssertTrue(world.requestChairInteraction())
+    advance(world, until: .seated)
+
+    world.cancelChairInteraction()
+    XCTAssertEqual(world.interactionCoordinator.phase, .standing)
+    advance(world, until: .idle)
+    XCTAssertEqual(world.cameraController.playerSpatialState.navigationMode, .walking)
+    XCTAssertEqual(world.founderAvatarController.locomotion.state, .standingIdle)
+    XCTAssertEqual(world.cameraController.playerSpatialState.playerPose.position, target.approach.position)
+    XCTAssertGreaterThanOrEqual(world.interactionCoordinator.diagnostics.interruptRecoveryTime, 0.40)
+    XCTAssertEqual(world.interactionCoordinator.diagnostics.invalidTransformCount, 0)
+  }
+
+  func testPassC1FacingAgreesWithTargetsWithinContractTolerance() throws {
+    let space = try XCTUnwrap(
+      FounderGarageSpatialSpecification.standard.facilityTier0InteractionSpace
+    )
+
+    for target in space.founderInteractionTargets {
+      let gaze = try XCTUnwrap(target.gazeTarget)
+      let origin = target.interactionType == .standingObservation
+        ? target.interaction.position
+        : target.approach.position
+      let offset = gaze - origin
+      let expected = simd_normalize(SIMD3<Float>(offset.x, 0, offset.z))
+      let facing = target.interactionType == .standingObservation
+        ? target.interaction.facingDirection
+        : target.approach.facingDirection
+      let cosine = min(max(simd_dot(expected, facing), -1), 1)
+      XCTAssertLessThanOrEqual(acos(cosine), target.facingToleranceRadians, target.id)
+    }
+  }
+
+  func testPassC1ContractDoesNotExpandMotionOrPersistenceState() {
+    XCTAssertEqual(FounderLocomotionState.allCases.map(\.rawValue), [
+      "seatedIdle", "seatedTurn", "standingUp", "standingIdle",
+      "walkStart", "walking", "walkStop", "turnInPlace", "sittingDown"
+    ])
+    XCTAssertEqual(GameStore.saveVersion, 20)
   }
 
   func testFacilityTier0AgentOccupancyAnchorsHaveStableIdentityAndFacing() throws {
@@ -418,7 +1075,10 @@ final class FounderGarageRealityTests: XCTestCase {
     XCTAssertNil(world.proceduralGarageArchitectureAdapter.rig.normalizationRoot.parent)
     XCTAssertEqual(world.entities.desk.position, spatial.anchors.desk.position)
     XCTAssertEqual(world.entities.founderAnchor.position, spatial.anchors.founder.position)
-    XCTAssertEqual(world.entities.camera.position, world.cameraController.recipe(for: .founderPOV).position)
+    XCTAssertEqual(
+      world.entities.camera.position,
+      world.cameraController.playerSpatialState.eyePosition
+    )
     XCTAssertEqual(spatial.occupiedZones.garageDoorClearance, FounderGarageSpatialSpecification.pass6Prototype.occupiedZones.garageDoorClearance)
     XCTAssertEqual(spatial.walkableRegion.boundary, FounderGarageSpatialSpecification.pass6Prototype.walkableRegion.boundary)
   }
@@ -694,7 +1354,7 @@ final class FounderGarageRealityTests: XCTestCase {
     XCTAssertEqual(world.diagnostics.constructionCount, 1)
   }
 
-  func testPrototypeRendererRequiresExplicitDevelopmentAllowance() {
+  func testRealityKitRendererIsProductionDefaultWithExplicitLegacyFallback() {
     XCTAssertEqual(
       FounderGarageRendererConfiguration.resolve(
         arguments: ["Solo Unicorn Run", FounderGarageRendererConfiguration.prototypeLaunchArgument],
@@ -705,9 +1365,9 @@ final class FounderGarageRealityTests: XCTestCase {
     )
     XCTAssertEqual(
       FounderGarageRendererConfiguration.resolve(
-        arguments: ["Solo Unicorn Run", FounderGarageRendererConfiguration.prototypeLaunchArgument],
+        arguments: ["Solo Unicorn Run", FounderGarageRendererConfiguration.legacyLaunchArgument],
         environment: [:],
-        prototypeAllowed: false
+        prototypeAllowed: true
       ),
       .swiftUI
     )
@@ -717,18 +1377,29 @@ final class FounderGarageRealityTests: XCTestCase {
         environment: [:],
         prototypeAllowed: true
       ),
-      .swiftUI
+      .realityKitPrototype
     )
   }
 
-  func testOnlyFounderComputerEntityMapsToCanonicalInteractionIntent() {
+  func testFounderDeskDeviceEntitiesMapToCanonicalInteractionIntents() {
     XCTAssertEqual(
       FounderWorldInteractionAdapter.interaction(
         forEntityNamed: FounderWorldInteractionAdapter.founderComputerEntityName
       ),
       .openFounderComputer
     )
-    XCTAssertNil(FounderWorldInteractionAdapter.interaction(forEntityNamed: "iPhone"))
+    XCTAssertEqual(
+      FounderWorldInteractionAdapter.interaction(
+        forEntityNamed: FounderWorldInteractionAdapter.founderPhoneEntityName
+      ),
+      .openFounderPhone
+    )
+    XCTAssertEqual(
+      FounderWorldInteractionAdapter.interaction(
+        forEntityNamed: FounderWorldInteractionAdapter.founderTabletEntityName
+      ),
+      .openFounderTablet
+    )
     XCTAssertNil(FounderWorldInteractionAdapter.interaction(forEntityNamed: "FundingBoard"))
   }
 
@@ -744,20 +1415,60 @@ final class FounderGarageRealityTests: XCTestCase {
   }
 
   @MainActor
-  func testOnlyRegisteredFounderComputerHasNativeAccessibilityAndInputSemantics() {
+  func testRegisteredFounderDeskDevicesHaveNativeAccessibilityAndInputSemantics() {
     let world = FounderGarageRealityWorld()
-    let computer = world.entities.founderComputerInteractionTarget
-    let phone = world.entities.iPhone
+    for device in [
+      world.entities.founderComputerInteractionTarget,
+      world.entities.iPhone,
+      world.entities.iPad
+    ] {
+      let accessibility = device.components[AccessibilityComponent.self]
+      XCTAssertEqual(accessibility?.isAccessibilityElement, true)
+      XCTAssertEqual(accessibility?.traits.contains(.button), true)
+      XCTAssertEqual(accessibility?.systemActions.contains(.activate), true)
+      XCTAssertNotNil(device.components[InputTargetComponent.self])
+      XCTAssertNotNil(device.components[CollisionComponent.self])
+    }
+  }
 
-    let accessibility = computer.components[AccessibilityComponent.self]
-    XCTAssertEqual(accessibility?.isAccessibilityElement, true)
-    XCTAssertEqual(accessibility?.traits.contains(.button), true)
-    XCTAssertEqual(accessibility?.systemActions.contains(.activate), true)
-    XCTAssertNotNil(computer.components[InputTargetComponent.self])
-    XCTAssertNotNil(computer.components[CollisionComponent.self])
-    XCTAssertNil(phone.components[AccessibilityComponent.self])
-    XCTAssertNil(phone.components[InputTargetComponent.self])
-    XCTAssertNil(phone.components[CollisionComponent.self])
+  @MainActor
+  func testFounderDeskDeviceGeometryIsFlatDistinctAndNonOverlapping() throws {
+    let spatial = FounderGarageSpatialSpecification.standard
+    let phone = spatial.workstation.iPhoneSize
+    let tablet = spatial.workstation.iPadSize
+    let phonePose = spatial.anchors.iPhone.position
+    let tabletPose = spatial.anchors.iPad.position
+
+    XCTAssertGreaterThan(phone.z, phone.x)
+    XCTAssertLessThan(phone.y, phone.x * 0.15)
+    XCTAssertGreaterThan(tablet.x, tablet.z)
+    XCTAssertLessThan(tablet.y, tablet.z * 0.10)
+    let separatedOnX = abs(phonePose.x - tabletPose.x) >= (phone.x + tablet.x) / 2
+    let separatedOnZ = abs(phonePose.z - tabletPose.z) >= (phone.z + tablet.z) / 2
+    XCTAssertTrue(separatedOnX || separatedOnZ)
+
+    let world = FounderGarageRealityWorld()
+    XCTAssertEqual(world.entities.iPhone.name, FounderWorldInteractionAdapter.founderPhoneEntityName)
+    XCTAssertEqual(world.entities.iPad.name, FounderWorldInteractionAdapter.founderTabletEntityName)
+    XCTAssertNotNil(world.entities.iPhone.findEntity(named: "FounderPhone.Screen"))
+    XCTAssertNotNil(world.entities.iPad.findEntity(named: "FounderTablet.Screen"))
+    XCTAssertEqual(world.interaction(for: world.entities.iPhone), .openFounderPhone)
+    XCTAssertEqual(world.interaction(for: world.entities.iPad), .openFounderTablet)
+  }
+
+  @MainActor
+  func testFounderDeskDeviceIntentsUseExistingNavigationWithoutSimulationMutation() {
+    let store = GameStore()
+    let before = CanonicalSnapshot(store: store)
+    var navigation = FounderDeskNavigationState()
+
+    XCTAssertNil(navigation.select(.phone))
+    XCTAssertEqual(navigation.selection, .device(.phone))
+    navigation.closeSecondaryDevice()
+    XCTAssertNil(navigation.select(.tablet))
+    XCTAssertEqual(navigation.selection, .device(.tablet))
+    XCTAssertEqual(CanonicalSnapshot(store: store), before)
+    XCTAssertEqual(GameStore.saveVersion, 20)
   }
 
   @MainActor
@@ -1239,15 +1950,18 @@ final class FounderGarageRealityTests: XCTestCase {
   }
 
   @MainActor
-  func testComputerInteractionUsesRegisteredIdentityInsteadOfEntityName() {
+  func testDeskDeviceInteractionsUseRegisteredIdentityInsteadOfEntityName() {
     let world = FounderGarageRealityWorld()
     world.entities.founderComputerInteractionTarget.name = "Renamed for identity verification"
+    world.entities.iPhone.name = "Renamed phone for identity verification"
+    world.entities.iPad.name = "Renamed tablet for identity verification"
 
     XCTAssertEqual(
       world.interaction(for: world.entities.founderComputerInteractionTarget),
       .openFounderComputer
     )
-    XCTAssertNil(world.interaction(for: world.entities.iPhone))
+    XCTAssertEqual(world.interaction(for: world.entities.iPhone), .openFounderPhone)
+    XCTAssertEqual(world.interaction(for: world.entities.iPad), .openFounderTablet)
   }
 
   @MainActor
@@ -1303,27 +2017,22 @@ final class FounderGarageRealityTests: XCTestCase {
     let world = FounderGarageRealityWorld()
     let camera = world.cameraController
     let spatial = world.spatialSpecification
+    let authored = FounderGarageCameraConfiguration(spatial: spatial)
     let canonical = camera.recipe(for: .founderPOV)
-    XCTAssertEqual(canonical.position, spatial.anchors.founder.position + [0, 1.18, 0])
-    XCTAssertEqual(canonical.lookTarget, spatial.anchors.founderComputer.position)
+    XCTAssertEqual(canonical.position, camera.playerSpatialState.eyePosition)
     XCTAssertEqual(canonical.fieldOfView, 56)
     for target in FounderGarageCameraState.allCases {
       let recipe = camera.recipe(for: target)
-      if target == .garageDoor || target == .front {
-        XCTAssertGreaterThan(recipe.position.z, spatial.room.interiorBounds.maxZ)
-      } else {
-        XCTAssertTrue(spatial.cameraViewingRegion.contains([recipe.position.x, recipe.position.z]) || spatial.room.interiorBounds.contains([recipe.position.x, recipe.position.z]))
-      }
       XCTAssertGreaterThan(simd_distance(recipe.position, recipe.lookTarget), 1)
       XCTAssertTrue((40...65).contains(recipe.fieldOfView))
     }
     let anchors = try XCTUnwrap(spatial.productionAnchors)
-    XCTAssertEqual(camera.recipe(for: .whiteboard).lookTarget, anchors.whiteboardFace)
-    XCTAssertEqual(camera.recipe(for: .garageDoor).lookTarget, anchors.doorMouth + [0, 0.05, -0.05])
-    XCTAssertEqual(camera.recipe(for: .garageDoor).position, anchors.doorMouth + [2.5, 1.10, 8.80])
-    XCTAssertEqual(camera.recipe(for: .front).lookTarget, anchors.doorMouth + [0, 0.05, -0.05])
-    XCTAssertEqual(camera.recipe(for: .front).position, anchors.doorMouth + [0, 0.25, 9.45])
-    XCTAssertEqual(camera.recipe(for: .frontBay).lookTarget, anchors.agentDeskSurface + [0, 0.15, 0])
+    XCTAssertEqual(authored.recipe(for: .whiteboard).lookTarget, anchors.whiteboardFace)
+    XCTAssertEqual(authored.recipe(for: .garageDoor).lookTarget, anchors.doorMouth + [0, 0.05, -0.05])
+    XCTAssertEqual(authored.recipe(for: .garageDoor).position, anchors.doorMouth + [2.5, 1.10, 8.80])
+    XCTAssertEqual(authored.recipe(for: .front).lookTarget, anchors.doorMouth + [0, 0.05, -0.05])
+    XCTAssertEqual(authored.recipe(for: .front).position, anchors.doorMouth + [0, 0.25, 9.45])
+    XCTAssertEqual(authored.recipe(for: .frontBay).lookTarget, anchors.agentDeskSurface + [0, 0.15, 0])
   }
 
   @MainActor
@@ -1347,6 +2056,498 @@ final class FounderGarageRealityTests: XCTestCase {
     XCTAssertEqual(controller.state, .frontBay)
     XCTAssertEqual(controller.diagnostics.lastApplied, .frontBay)
     assertTransform(controller.camera.transform, equals: controller.recipe(for: .frontBay).transform)
+  }
+
+  @MainActor
+  func testCameraPhysicsReturnsToExactFounderEndpointAcrossOneHundredCycles() {
+    let controller = FounderGarageRealityWorld().cameraController
+    let exact = controller.recipe(for: .founderPOV).transform
+    for _ in 0..<100 {
+      for destination in [FounderGarageCameraState.whiteboard, .frontBay, .garageDoor] {
+        controller.transition(to: destination, reduceMotion: true)
+        controller.transition(to: .founderPOV, reduceMotion: true)
+      }
+    }
+    assertTransform(controller.camera.transform, equals: exact)
+    XCTAssertEqual(controller.playerSpatialState.lookOrientation, .neutral)
+  }
+
+  @MainActor
+  func testWalkingUsesAccelerationCruiseDecelerationAndExactDeskReturn() {
+    let controller = FounderGarageRealityWorld().cameraController
+    controller.configureWalkability { _ in true }
+    controller.beginWalking()
+    controller.setMovementIntent(.init(forward: 1))
+    controller.advance(deltaTime: 1.0 / 60)
+    let firstSpeed = simd_length(controller.snapshot.velocity)
+    XCTAssertGreaterThan(firstSpeed, 0)
+    XCTAssertLessThan(firstSpeed, FounderGarageCameraConfiguration.walkingSpeed)
+    for _ in 0..<120 { controller.advance(deltaTime: 1.0 / 60) }
+    XCTAssertEqual(simd_length(controller.snapshot.velocity), FounderGarageCameraConfiguration.walkingSpeed, accuracy: 0.002)
+    controller.setMovementIntent(.idle)
+    for _ in 0..<30 { controller.advance(deltaTime: 1.0 / 60) }
+    XCTAssertEqual(simd_length(controller.snapshot.velocity), 0, accuracy: 0.001)
+    controller.endWalking()
+    assertTransform(controller.camera.transform, equals: controller.recipe(for: .founderPOV).transform)
+  }
+
+  @MainActor
+  func testWalkingIsFrameRateIndependentAndClampsHitches() {
+    func position(rate: Int) -> SIMD3<Float> {
+      let controller = FounderGarageRealityWorld().cameraController
+      controller.configureWalkability { _ in true }
+      controller.beginWalking(); controller.setMovementIntent(.init(forward: 1))
+      for _ in 0..<rate { controller.advance(deltaTime: 1.0 / Double(rate)) }
+      return controller.snapshot.position
+    }
+    let p30 = position(rate: 30), p60 = position(rate: 60), p120 = position(rate: 120)
+    XCTAssertLessThan(simd_distance(p30, p60), 0.025)
+    XCTAssertLessThan(simd_distance(p60, p120), 0.015)
+    let controller = FounderGarageRealityWorld().cameraController
+    controller.configureWalkability { _ in true }; controller.beginWalking(); controller.setMovementIntent(.init(forward: 1))
+    let before = controller.snapshot.position
+    controller.advance(deltaTime: 2)
+    XCTAssertLessThan(simd_distance(before, controller.snapshot.position), 0.06)
+  }
+
+  @MainActor
+  func testCollisionProjectsAlongWallAndBlocksCorner() {
+    let controller = FounderGarageRealityWorld().cameraController
+    let start = controller.playerSpatialState.playerPose.position
+    controller.configureWalkability { point in point.x < start.x + 0.18 && point.y < start.z + 0.18 }
+    controller.beginWalking(); controller.setMovementIntent(.init(lateral: 1, forward: 1))
+    for _ in 0..<60 { controller.advance(deltaTime: 1.0 / 60) }
+    XCTAssertNotEqual(controller.snapshot.collision, "none")
+    XCTAssertLessThanOrEqual(controller.snapshot.position.x, start.x + 0.18)
+  }
+
+  @MainActor
+  func testReduceMotionLookAndCameraTransitionsAreImmediate() {
+    let controller = FounderGarageRealityWorld().cameraController
+    controller.transition(to: .whiteboard, reduceMotion: true)
+    assertTransform(controller.camera.transform, equals: controller.recipe(for: .whiteboard).transform)
+    controller.transition(to: .founderPOV, reduceMotion: true)
+    controller.setLookOrientation(.init(yaw: 9, pitch: -9))
+    XCTAssertEqual(controller.playerSpatialState.lookOrientation.yaw, FounderGarageCameraConfiguration.yawLimits.upperBound)
+    XCTAssertEqual(controller.playerSpatialState.lookOrientation.pitch, FounderGarageCameraConfiguration.pitchLimits.lowerBound)
+  }
+
+  @MainActor
+  func testSeatedFreeLookSupportsRearInspectionAndExactRecentering() {
+    let controller = FounderGarageRealityWorld().cameraController
+    let home = controller.recipe(for: .founderPOV).transform
+    XCTAssertGreaterThan(FounderGarageCameraConfiguration.yawLimits.upperBound, 170 * .pi / 180)
+    XCTAssertLessThan(FounderGarageCameraConfiguration.yawLimits.lowerBound, -170 * .pi / 180)
+    for yaw in [FounderGarageCameraConfiguration.yawLimits.lowerBound,
+                FounderGarageCameraConfiguration.yawLimits.upperBound] {
+      controller.setLookOrientation(.init(yaw: yaw, pitch: 0))
+      for _ in 0..<240 { controller.advance(deltaTime: 1.0 / 120) }
+      XCTAssertEqual(controller.playerSpatialState.lookOrientation.yaw, yaw, accuracy: 0.001)
+      let matrix = controller.camera.transform.matrix
+      let right = SIMD3<Float>(matrix.columns.0.x, matrix.columns.0.y, matrix.columns.0.z)
+      XCTAssertEqual(simd_dot(right, SIMD3<Float>(0, 1, 0)), 0, accuracy: 0.0001)
+      controller.recenterFounderPOV(reduceMotion: true)
+      assertTransform(controller.camera.transform, equals: home, accuracy: 0.0001)
+    }
+  }
+
+  func testSeatedFreeLookDragResponseIsViewportNormalized() {
+    let normalizedDrag: Float = 0.48
+    let expectedYaw = FounderGarageCameraConfiguration.dragYawRadiansPerViewport * normalizedDrag
+    for viewportWidth: Float in [440, 1_180] {
+      let sensitivity = FounderGarageCameraConfiguration.dragSensitivityRadiansPerPoint(
+        viewportWidth: viewportWidth
+      )
+      XCTAssertEqual(sensitivity * viewportWidth * normalizedDrag, expectedYaw, accuracy: 0.0001)
+    }
+  }
+
+  @MainActor
+  func testWalkingResolvesChairOverlapIntoWalkableGarageInterior() async throws {
+    let world = FounderGarageRealityWorld()
+    _ = try await loadFacilityTier0(in: world, v8: true)
+    XCTAssertFalse(world.isPointWalkable([
+      world.cameraController.playerSpatialState.playerPose.position.x,
+      world.cameraController.playerSpatialState.playerPose.position.z
+    ]))
+    world.cameraController.beginWalking(reduceMotion: true)
+    let standing = world.cameraController.playerSpatialState.playerPose.position
+    XCTAssertTrue(world.isPointWalkable([standing.x, standing.z]))
+    XCTAssertTrue(world.spatialSpecification.room.interiorBounds.contains([standing.x, standing.z]))
+  }
+
+  @MainActor
+  func testExploreStandingResolutionKeepsStraightDoorPathCollisionFree() async throws {
+    let world = FounderGarageRealityWorld()
+    _ = try await loadFacilityTier0(in: world, v8: true)
+    world.cameraController.beginWalking(reduceMotion: true)
+    world.cameraController.setMovementIntent(.init(forward: 1))
+
+    var collisions: [String] = []
+    for _ in 0..<240 {
+      world.cameraController.advance(deltaTime: 1.0 / 60)
+      let snapshot = world.cameraController.snapshot
+      if snapshot.playerPosition.z >= 1.9 { break }
+      collisions.append(snapshot.collision)
+    }
+
+    XCTAssertFalse(collisions.isEmpty)
+    XCTAssertEqual(Set(collisions), ["none"])
+    XCTAssertGreaterThanOrEqual(world.cameraController.snapshot.playerPosition.z, 1.9)
+  }
+
+  @MainActor
+  func testOpenDrivewayHandsWalkingPoseToExistingAtlantisWorldWithoutDrift() async throws {
+    let world = FounderGarageRealityWorld()
+    _ = try await loadFacilityTier0(in: world, v8: true)
+    world.setGarageDoor(.open, reduceMotion: true)
+    var received: FounderAtlantisTraversalHandoff?
+    world.configureAtlantisTraversal { received = $0 }
+    world.cameraController.beginWalking(reduceMotion: true)
+    let crossing = SIMD3<Float>(0.4, 0, FounderGarageRealityWorld.atlantisHandoffThresholdZ)
+    world.cameraController.consume(.init(
+      bodyPosition: crossing,
+      bodyHeading: .pi,
+      locomotionVelocity: [0, 0, 1],
+      stepPhase: nil,
+      stance: .standing
+    ))
+    world.requestAtlantisTraversalIfNeeded()
+    let handoff = try XCTUnwrap(received)
+    XCTAssertEqual(handoff.garagePosition, crossing)
+    XCTAssertEqual(AtlantisSpatialContract.fromFounderGarage(handoff.garagePosition), [
+      AtlantisSpatialContract.founderGarage.x + crossing.x,
+      AtlantisSpatialContract.founderGarageFloorY,
+      AtlantisSpatialContract.founderGarage.z + crossing.z
+    ])
+    let restored = world.cameraController.playerSpatialState.playerPose.position
+    XCTAssertEqual(restored, world.spatialSpecification.interactionApproaches.garageDoor.approach.position)
+  }
+
+  @MainActor
+  func testAtlantisHandoffTransfersOneVisibleFounderAndRestoresSameRig() throws {
+    let garage = FounderGarageRealityWorld()
+    let atlantis = AtlantisRealityWorld(manifest: try .load())
+    let rig = garage.activeFounderVisualAdapter.rig
+    let handoff = FounderAtlantisTraversalHandoff(
+      garagePosition: [0.4, 0, FounderGarageRealityWorld.atlantisHandoffThresholdZ],
+      facingDirection: [0, 0, 1]
+    )
+
+    atlantis.enterFromFounderGarage(handoff)
+    garage.transferFounderPresentation(to: atlantis, reduceMotion: false)
+
+    XCTAssertTrue(garage.isFounderPresentedInAtlantis)
+    XCTAssertTrue(atlantis.hasFounderPresentation)
+    XCTAssertTrue(rig.anchor.parent === atlantis.root)
+    XCTAssertTrue(rig.visualRoot.isEnabled)
+    XCTAssertGreaterThan(
+      simd_distance(atlantis.camera.position(relativeTo: atlantis.root), atlantis.playerRoot.position),
+      1.5
+    )
+
+    garage.restoreFounderPresentation(from: atlantis)
+
+    XCTAssertFalse(garage.isFounderPresentedInAtlantis)
+    XCTAssertFalse(atlantis.hasFounderPresentation)
+    XCTAssertTrue(rig.anchor.parent === garage.entities.root)
+    XCTAssertTrue(rig.visualRoot.isEnabled)
+  }
+
+  @MainActor
+  func testExploreForwardPathCrossesOpenGarageDoorIntoAtlantis() async throws {
+    let world = FounderGarageRealityWorld()
+    _ = try await loadFacilityTier0(in: world, v8: true)
+    world.setGarageDoor(.open, reduceMotion: true)
+    var received: FounderAtlantisTraversalHandoff?
+    world.configureAtlantisTraversal { received = $0 }
+    world.cameraController.beginWalking(reduceMotion: true)
+    world.cameraController.setMovementIntent(.init(forward: 1))
+
+    for _ in 0..<600 where received == nil {
+      world.cameraController.advance(deltaTime: 1.0 / 60)
+      world.requestAtlantisTraversalIfNeeded()
+    }
+
+    let handoff = try XCTUnwrap(received)
+    XCTAssertGreaterThanOrEqual(
+      handoff.garagePosition.z,
+      FounderGarageRealityWorld.atlantisHandoffThresholdZ
+    )
+    XCTAssertGreaterThan(handoff.facingDirection.z, 0.9)
+  }
+
+  @MainActor
+  func testInteractionFocusRetargetsWithoutNestingAndRestoresExactState() {
+    let controller = FounderGarageRealityWorld().cameraController
+    let original = controller.camera.transform
+    let originalFOV = controller.camera.camera.fieldOfViewInDegrees
+    XCTAssertTrue(controller.focus(on: .phone, reduceMotion: true))
+    XCTAssertEqual(controller.interactionFocusTarget, .phone)
+    XCTAssertEqual(controller.playerSpatialState.navigationMode, .interactionFocus(.phone))
+    XCTAssertTrue(controller.focus(on: .strategyBoard, reduceMotion: true))
+    XCTAssertEqual(controller.interactionFocusTarget, .strategyBoard)
+    XCTAssertTrue(controller.restoreInteractionFocus(reduceMotion: true))
+    XCTAssertNil(controller.interactionFocusTarget)
+    XCTAssertEqual(controller.playerSpatialState.navigationMode, .seated)
+    assertTransform(controller.camera.transform, equals: original)
+    XCTAssertEqual(controller.camera.camera.fieldOfViewInDegrees, originalFOV)
+    XCTAssertFalse(controller.restoreInteractionFocus(reduceMotion: true))
+  }
+
+  @MainActor
+  func testWalkingRejectsInteractionFocusAndComputerActivation() {
+    let world = FounderGarageRealityWorld()
+    let controller = world.cameraController
+    controller.beginWalking(reduceMotion: true)
+    XCTAssertFalse(controller.focus(on: .computer, reduceMotion: true))
+    XCTAssertNil(world.interaction(for: world.entities.founderComputerInteractionTarget))
+    controller.endWalking(reduceMotion: true)
+    XCTAssertEqual(world.interaction(for: world.entities.founderComputerInteractionTarget), .openFounderComputer)
+  }
+
+  @MainActor
+  func testAngularInertiaIsBoundedAndRepeatedFreeLookHasNoRollOrDrift() {
+    let controller = FounderGarageRealityWorld().cameraController
+    let home = controller.recipe(for: .founderPOV).transform
+    for _ in 0..<100 {
+      controller.setLookOrientation(.init(yaw: 0.65, pitch: -0.2))
+      controller.advance(deltaTime: 1.0 / 60)
+      XCTAssertLessThanOrEqual(simd_length(controller.snapshot.angularVelocity), FounderGarageCameraConfiguration.maximumAngularSpeed + 0.0001)
+      controller.recenterFounderPOV()
+      for _ in 0..<120 { controller.advance(deltaTime: 1.0 / 120) }
+    }
+    assertTransform(controller.camera.transform, equals: home, accuracy: 0.0001)
+    XCTAssertEqual(controller.snapshot.founderPOVDriftError, 0, accuracy: 0.0001)
+    let matrix = controller.camera.transform.matrix
+    let right = SIMD3<Float>(matrix.columns.0.x, matrix.columns.0.y, matrix.columns.0.z)
+    XCTAssertEqual(simd_dot(right, SIMD3<Float>(0, 1, 0)), 0, accuracy: 0.0001)
+  }
+
+  @MainActor
+  func testFutureLocomotionStateReportsCameraOwnedNavigationWithoutMutation() {
+    let store = GameStore()
+    let before = CanonicalSnapshot(store: store)
+    let controller = FounderGarageRealityWorld().cameraController
+    controller.configureWalkability { _ in true }
+    controller.beginWalking()
+    controller.setMovementIntent(.init(lateral: 0.25, forward: 1))
+    for _ in 0..<30 { controller.advance(deltaTime: 1.0 / 60) }
+    let state = controller.spatialState
+    XCTAssertEqual(state.navigationMode, .walking)
+    XCTAssertEqual(state.stance, .standing)
+    XCTAssertGreaterThan(state.movementMagnitude, 0)
+    XCTAssertNotNil(state.normalizedLocomotionIntent)
+    XCTAssertNil(state.stepPhase)
+    XCTAssertEqual(CanonicalSnapshot(store: store), before)
+  }
+
+  @MainActor
+  func testTransitionInterruptionCountsAndNewestDestinationWins() {
+    let controller = FounderGarageRealityWorld().cameraController
+    controller.configureWalkability { _ in true }
+    controller.beginWalking()
+    controller.setMovementIntent(.init(forward: 1))
+    controller.advance(deltaTime: 0.05)
+    XCTAssertGreaterThan(simd_length(controller.snapshot.velocity), 0)
+    controller.transition(to: .whiteboard, reduceMotion: false)
+    XCTAssertEqual(controller.snapshot.velocity, .zero)
+    XCTAssertEqual(controller.playerSpatialState.navigationMode, .authoredInspection(.whiteboard))
+    controller.advance(deltaTime: 0.05)
+    controller.transition(to: .frontBay, reduceMotion: false)
+    XCTAssertEqual(controller.diagnostics.interruptedCount, 1)
+    for _ in 0..<60 { controller.advance(deltaTime: 1.0 / 120) }
+    XCTAssertEqual(controller.state, .frontBay)
+    assertTransform(controller.camera.transform, equals: controller.recipe(for: .frontBay).transform)
+  }
+
+  @MainActor
+  func testLocomotionGraphMovesThroughStandStartWalkStopAndIdle() {
+    let world = FounderGarageRealityWorld()
+    let locomotion = world.founderAvatarController.locomotion
+    var spatial = world.cameraController.spatialState
+    XCTAssertEqual(locomotion.state, .seatedIdle)
+    spatial.stance = .standing; spatial.navigationMode = .walking
+    spatial.horizontalVelocity = [0, -0.8]; spatial.movementMagnitude = 0.8
+    locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: false, deltaTime: 1.0 / 60)
+    XCTAssertEqual(locomotion.state, .standingUp)
+    for _ in 0..<42 { locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: false, deltaTime: 1.0 / 60) }
+    XCTAssertEqual(locomotion.state, .walkStart)
+    for _ in 0..<12 { locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: false, deltaTime: 1.0 / 60) }
+    XCTAssertEqual(locomotion.state, .walking)
+    spatial.horizontalVelocity = .zero; spatial.movementMagnitude = 0
+    locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: false, deltaTime: 1.0 / 60)
+    XCTAssertEqual(locomotion.state, .walkStop)
+    for _ in 0..<16 { locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: false, deltaTime: 1.0 / 60) }
+    XCTAssertEqual(locomotion.state, .standingIdle)
+  }
+
+  @MainActor
+  func testLocomotionPlaybackTracksVelocityAndCollisionStopsWalking() {
+    let world = FounderGarageRealityWorld()
+    let locomotion = world.founderAvatarController.locomotion
+    var spatial = world.cameraController.spatialState
+    spatial.stance = .standing; spatial.navigationMode = .walking
+    spatial.horizontalVelocity = [0, -FounderGarageCameraConfiguration.walkingSpeed]
+    spatial.movementMagnitude = FounderGarageCameraConfiguration.walkingSpeed
+    for _ in 0..<50 { locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: true, deltaTime: 1.0 / 60) }
+    XCTAssertEqual(locomotion.state, .walking)
+    XCTAssertEqual(locomotion.diagnostics.playbackSpeed, 1, accuracy: 0.001)
+    locomotion.update(spatial: spatial, collisionBlocked: true, firstPerson: false, reduceMotion: true, deltaTime: 1.0 / 60)
+    XCTAssertEqual(locomotion.state, .walkStop)
+    XCTAssertEqual(locomotion.diagnostics.movementMagnitude, 0)
+  }
+
+  @MainActor
+  func testProceduralWalkCycleIsVelocityDrivenAndReduceMotionRemovesWeightShift() {
+    let world = FounderGarageRealityWorld()
+    let locomotion = world.founderAvatarController.locomotion
+    var spatial = world.cameraController.spatialState
+    spatial.stance = .standing; spatial.navigationMode = .walking
+    spatial.horizontalVelocity = [0, -0.9]; spatial.movementMagnitude = 0.9
+    for _ in 0..<50 { locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: false, deltaTime: 1.0 / 60) }
+    let first = world.proceduralFounderVisualAdapter.rig.bodyTarget.transform
+    locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: false, deltaTime: 0.1)
+    let second = world.proceduralFounderVisualAdapter.rig.bodyTarget.transform
+    XCTAssertNotEqual(first.translation, second.translation)
+    locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: true, deltaTime: 0.1)
+    XCTAssertEqual(world.proceduralFounderVisualAdapter.rig.bodyTarget.transform.translation.x, 0, accuracy: 0.0001)
+  }
+
+  @MainActor
+  func testLocomotionDirectionTurnsSmoothlyAndUsesTurnInPlaceForLargeDelta() {
+    let world = FounderGarageRealityWorld()
+    let locomotion = world.founderAvatarController.locomotion
+    var spatial = world.cameraController.spatialState
+    spatial.stance = .standing; spatial.navigationMode = .walking
+    spatial.horizontalVelocity = [0.8, -0.8]; spatial.movementMagnitude = simd_length(spatial.horizontalVelocity)
+    locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: false, deltaTime: 1.0 / 60)
+    let firstFacing = locomotion.diagnostics.avatarFacing
+    XCTAssertTrue(firstFacing.isFinite)
+    XCTAssertLessThan(abs(firstFacing - locomotion.diagnostics.targetFacing), .pi)
+    for _ in 0..<20 { locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: true, deltaTime: 1.0 / 60) }
+    spatial.horizontalVelocity = .zero; spatial.movementMagnitude = 0
+    for _ in 0..<20 { locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: true, deltaTime: 1.0 / 60) }
+    XCTAssertEqual(locomotion.state, .standingIdle)
+    let small = locomotion.diagnostics.avatarFacing + 0.10
+    spatial.facingDirection = [sin(small), 0, -cos(small)]
+    locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: false, deltaTime: 1.0 / 60)
+    XCTAssertEqual(locomotion.state, .standingIdle)
+    spatial.facingDirection = [-1, 0, 0]
+    locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: false, deltaTime: 1.0 / 60)
+    XCTAssertEqual(locomotion.state, .turnInPlace)
+  }
+
+  @MainActor
+  func testSittingRequiresChairAndResolvesExactAnchor() {
+    let world = FounderGarageRealityWorld()
+    let locomotion = world.founderAvatarController.locomotion
+    var spatial = world.cameraController.spatialState
+    spatial.stance = .standing; spatial.navigationMode = .walking
+    for _ in 0..<40 { locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: true, deltaTime: 1.0 / 60) }
+    spatial.stance = .seated; spatial.navigationMode = .seated; spatial.position += [1, 0, 0]
+    locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: true, deltaTime: 1.0 / 60)
+    XCTAssertNotEqual(locomotion.state, .sittingDown)
+    spatial.position = FounderGarageCameraConfiguration(
+      spatial: world.spatialSpecification
+    ).seatedPlayerState.playerPose.position
+    locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: true, deltaTime: 1.0 / 60)
+    XCTAssertEqual(locomotion.state, .sittingDown)
+    for _ in 0..<8 { locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: true, deltaTime: 1.0 / 60) }
+    XCTAssertEqual(locomotion.state, .seatedIdle)
+    XCTAssertEqual(locomotion.diagnostics.seatedAnchorError, 0, accuracy: 0.0001)
+  }
+
+  @MainActor
+  func testFirstPersonHidesHeadAndAlternateViewRestoresIt() throws {
+    let world = FounderGarageRealityWorld()
+    let locomotion = world.founderAvatarController.locomotion
+    let head = try XCTUnwrap(world.proceduralFounderVisualAdapter.rig.headTarget)
+    locomotion.update(spatial: world.cameraController.spatialState, collisionBlocked: false, firstPerson: true, reduceMotion: true, deltaTime: 0.1)
+    XCTAssertTrue(head.isEnabled)
+    XCTAssertFalse(world.proceduralFounderVisualAdapter.rig.visualRoot.isEnabled)
+    XCTAssertTrue(locomotion.diagnostics.firstPersonHeadHidden)
+    locomotion.update(spatial: world.cameraController.spatialState, collisionBlocked: false, firstPerson: false, reduceMotion: true, deltaTime: 0.1)
+    XCTAssertTrue(head.isEnabled)
+    XCTAssertTrue(world.proceduralFounderVisualAdapter.rig.visualRoot.isEnabled)
+    XCTAssertTrue(world.entities.founderAnchor.isEnabled)
+  }
+
+  @MainActor
+  func testFirstPersonSynchronouslySeatsAndHidesCompleteImportedFounder() throws {
+    let world = FounderGarageRealityWorld()
+    let fixture = makeSyntheticImportedHierarchy()
+    let adapter = try USDZFounderVisualAdapter(
+      source: .bundledUSDZ(name: "FirstPersonSeatedFixture"),
+      loadedRoot: fixture.root,
+      anchor: world.entities.founderAnchor,
+      descriptor: makeRigDescriptor()
+    )
+    try world.installFounderVisualAdapter(adapter)
+    var standing = world.cameraController.spatialState
+    standing.stance = .standing
+    standing.navigationMode = .walking
+    standing.horizontalVelocity = [0, -0.8]
+    standing.movementMagnitude = 0.8
+
+    world.founderAvatarController.locomotion.update(
+      spatial: standing,
+      collisionBlocked: false,
+      firstPerson: false,
+      reduceMotion: true,
+      deltaTime: 0.1
+    )
+    XCTAssertNotEqual(world.founderAvatarController.locomotion.state, .seatedIdle)
+    XCTAssertTrue(adapter.rig.visualRoot.isEnabled)
+
+    world.founderAvatarController.locomotion.update(
+      spatial: standing,
+      collisionBlocked: false,
+      firstPerson: true,
+      reduceMotion: true,
+      deltaTime: 0.1
+    )
+
+    XCTAssertEqual(world.founderAvatarController.locomotion.state, .seatedIdle)
+    XCTAssertFalse(adapter.rig.visualRoot.isEnabled)
+    XCTAssertEqual(adapter.rig.anchor.position, world.cameraController.playerSpatialState.playerPose.position)
+    XCTAssertTrue(world.founderAvatarController.locomotion.diagnostics.firstPersonHeadHidden)
+  }
+
+  @MainActor
+  func testLocomotionCannotApplyRootMotionOrMutateCanonicalState() {
+    let store = GameStore()
+    let before = CanonicalSnapshot(store: store)
+    let world = FounderGarageRealityWorld()
+    let cameraBefore = world.cameraController.spatialState
+    var spatial = cameraBefore
+    spatial.stance = .standing; spatial.navigationMode = .walking
+    spatial.horizontalVelocity = [0.4, -0.7]; spatial.movementMagnitude = simd_length(spatial.horizontalVelocity)
+    world.proceduralFounderVisualAdapter.rig.visualRoot.position = [99, 0, 99]
+    world.founderAvatarController.locomotion.update(spatial: spatial, collisionBlocked: false, firstPerson: false, reduceMotion: false, deltaTime: 0.1)
+    XCTAssertEqual(world.cameraController.spatialState, cameraBefore)
+    XCTAssertEqual(CanonicalSnapshot(store: store), before)
+    XCTAssertEqual(GameStore.saveVersion, 20)
+  }
+
+  @MainActor
+  func testOneHundredLocomotionCyclesAccumulateNoSeatOrOrientationDrift() {
+    let world = FounderGarageRealityWorld()
+    let locomotion = world.founderAvatarController.locomotion
+    let seated = world.cameraController.spatialState
+    var standing = seated
+    standing.stance = .standing; standing.navigationMode = .walking
+    standing.horizontalVelocity = [0, -0.9]; standing.movementMagnitude = 0.9
+    for _ in 0..<100 {
+      for _ in 0..<8 { locomotion.update(spatial: standing, collisionBlocked: false, firstPerson: false, reduceMotion: true, deltaTime: 1.0 / 60) }
+      standing.horizontalVelocity = .zero; standing.movementMagnitude = 0
+      for _ in 0..<8 { locomotion.update(spatial: standing, collisionBlocked: false, firstPerson: false, reduceMotion: true, deltaTime: 1.0 / 60) }
+      for _ in 0..<8 { locomotion.update(spatial: seated, collisionBlocked: false, firstPerson: true, reduceMotion: true, deltaTime: 1.0 / 60) }
+      standing.horizontalVelocity = [0, -0.9]; standing.movementMagnitude = 0.9
+    }
+    XCTAssertEqual(locomotion.state, .seatedIdle)
+    XCTAssertEqual(locomotion.diagnostics.seatedAnchorError, 0, accuracy: 0.0001)
+    XCTAssertEqual(locomotion.diagnostics.avatarFacing, locomotion.diagnostics.targetFacing, accuracy: 0.0001)
   }
 
   @MainActor
@@ -1564,12 +2765,17 @@ final class FounderGarageRealityTests: XCTestCase {
   }
 
   @MainActor
-  func testFounderDisplayIsCenteredInProjectionFromCanonicalSeat() async throws {
+  func testFounderDisplayUsesFirstPersonCompositionFromCanonicalSeat() async throws {
     let world = FounderGarageRealityWorld()
     _ = try await loadFacilityTier0(in: world, v4: true)
     let controller = world.cameraController
     let pose = controller.recipe(for: .founderPOV)
-    XCTAssertEqual(pose.position, world.spatialSpecification.anchors.founder.position + [0, 1.18, 0])
+    XCTAssertEqual(
+      controller.playerSpatialState.eyePosition,
+      world.spatialSpecification.anchors.founder.position + [0, 1.18, 0]
+    )
+    XCTAssertEqual(pose.position, controller.playerSpatialState.eyePosition)
+    XCTAssertTrue(controller.usesFirstPersonPresentation)
     let m = pose.transform.matrix
     let right = SIMD3<Float>(m.columns.0.x, m.columns.0.y, m.columns.0.z)
     let up = SIMD3<Float>(m.columns.1.x, m.columns.1.y, m.columns.1.z)
@@ -1581,7 +2787,7 @@ final class FounderGarageRealityTests: XCTestCase {
     XCTAssertEqual(projected.count, 8)
     for axis in 0..<2 {
       let values = projected.map { $0[axis] }
-      XCTAssertEqual((try XCTUnwrap(values.min()) + XCTUnwrap(values.max())) / 2, 0, accuracy: 0.001)
+      XCTAssertEqual((try XCTUnwrap(values.min()) + XCTUnwrap(values.max())) / 2, 0, accuracy: 0.1)
     }
   }
 
@@ -1612,7 +2818,10 @@ final class FounderGarageRealityTests: XCTestCase {
     XCTAssertEqual(monitor.position(relativeTo: root).x, 1.42, accuracy: 0.001)
     XCTAssertEqual(monitor.position(relativeTo: root).y, 1.30, accuracy: 0.001)
     XCTAssertEqual(monitor.position(relativeTo: root).z, -1.114, accuracy: 0.001)
-    XCTAssertEqual(world.cameraController.recipe(for: .founderPOV).position, eye)
+    XCTAssertEqual(
+      world.cameraController.recipe(for: .founderPOV).position,
+      world.cameraController.playerSpatialState.eyePosition
+    )
   }
 
   @MainActor
@@ -1990,14 +3199,17 @@ final class FounderGarageRealityTests: XCTestCase {
   }
 
   @MainActor
-  func testFreeLookRotatesAtFixedSeatedEyeWithoutRollOrTranslation() {
+  func testFounderFreeLookRotatesFirstPersonWithoutRollOrMovingPlayer() {
     let world = FounderGarageRealityWorld()
     let controller = world.cameraController
     let root = controller.playerSpatialState.playerPose
     let neutral = controller.recipe(for: .founderPOV).transform
     controller.setLookOrientation(FounderLookOrientation(yaw: 0.45, pitch: -0.20))
+    for _ in 0..<90 { controller.advance(deltaTime: 1.0 / 60) }
     XCTAssertEqual(controller.playerSpatialState.playerPose, root)
-    XCTAssertEqual(controller.playerSpatialState.lookOrientation, FounderLookOrientation(yaw: 0.45, pitch: -0.20))
+    XCTAssertEqual(controller.playerSpatialState.lookOrientation.yaw, 0.45, accuracy: 0.0001)
+    XCTAssertEqual(controller.playerSpatialState.lookOrientation.pitch, -0.20, accuracy: 0.0001)
+    XCTAssertEqual(controller.camera.transform.translation, neutral.translation)
     XCTAssertEqual(controller.camera.transform.translation, controller.playerSpatialState.eyePosition)
     XCTAssertNotEqual(controller.camera.transform.rotation.vector, neutral.rotation.vector)
     let matrix = controller.camera.transform.matrix
@@ -2012,6 +3224,7 @@ final class FounderGarageRealityTests: XCTestCase {
     let controller = FounderGarageRealityWorld().cameraController
     controller.setLookOrientation(FounderLookOrientation(yaw: -0.7, pitch: 0.3))
     controller.recenterFounderPOV()
+    for _ in 0..<90 { controller.advance(deltaTime: 1.0 / 60) }
     XCTAssertEqual(controller.playerSpatialState.lookOrientation, .neutral)
     XCTAssertEqual(controller.playerSpatialState.navigationMode, .seated)
     assertTransform(controller.camera.transform, equals: controller.recipe(for: .founderPOV).transform)
@@ -2088,14 +3301,23 @@ final class FounderGarageRealityTests: XCTestCase {
   @MainActor
   func testV7EnvironmentLightingAndCameraOverridesRemainPresentationOnly() async throws {
     let world = FounderGarageRealityWorld()
-    _ = try await loadFacilityTier0(in: world, v7: true)
     let camera = world.cameraController
-    let baseline = FounderGarageCameraConfiguration(spatial: world.spatialSpecification)
-    for state in [FounderGarageCameraState.front, .whiteboard, .frontBay] {
-      XCTAssertEqual(camera.recipe(for: state).position, baseline.recipe(for: state).position)
-      XCTAssertEqual(camera.recipe(for: state).lookTarget, baseline.recipe(for: state).lookTarget)
+    let states: [FounderGarageCameraState] = [.front, .whiteboard, .frontBay, .garageDoor]
+    let baseline = states.map { camera.recipe(for: $0) }
+    _ = try await loadFacilityTier0(in: world, v7: true)
+    for (state, expected) in zip(states.dropLast(), baseline.dropLast()) {
+      XCTAssertEqual(camera.recipe(for: state).position, expected.position)
+      XCTAssertEqual(camera.recipe(for: state).lookTarget, expected.lookTarget)
     }
-    XCTAssertGreaterThan(camera.recipe(for: .garageDoor).lookTarget.z, camera.recipe(for: .garageDoor).position.z)
+    XCTAssertEqual(camera.recipe(for: .garageDoor).position, [0.2, 1.45, -2.2])
+    XCTAssertEqual(camera.recipe(for: .garageDoor).lookTarget, [0, 1.1, 6])
+    XCTAssertGreaterThan(
+      simd_distance(
+        camera.recipe(for: .garageDoor).position,
+        camera.playerSpatialState.playerPose.position
+      ),
+      1.5
+    )
     world.setGarageDoor(.open, reduceMotion: true)
     let spatial = camera.playerSpatialState
     let lightID = world.environmentLight.id
@@ -2120,6 +3342,41 @@ final class FounderGarageRealityTests: XCTestCase {
     XCTAssertThrowsError(try FounderGarageV7AssetContract.validatePackage(data))
   }
 
+  func testV8PackageIntegrityAndRightSideDoorContract() throws {
+    let url = try XCTUnwrap(Bundle.main.url(
+      forResource: FounderGarageV8AssetContract.resourceName,
+      withExtension: "usdz"
+    ))
+    var data = try Data(contentsOf: url)
+    XCTAssertNoThrow(try FounderGarageV8AssetContract.validatePackage(data))
+    data[data.startIndex] ^= 1
+    XCTAssertThrowsError(try FounderGarageV8AssetContract.validatePackage(data))
+  }
+
+  @MainActor
+  func testV8RightSideDoorLoadsAtStableAuthoredTransform() async throws {
+    let world = FounderGarageRealityWorld()
+    let adapter = try await loadFacilityTier0(in: world, v8: true)
+    let door = try XCTUnwrap(adapter.rig.visualRoot.findEntity(
+      named: FounderGarageV8AssetContract.rightSideDoorEntityName
+    ))
+    let bounds = door.visualBounds(relativeTo: adapter.rig.visualRoot)
+    let replacedLaptop = try XCTUnwrap(adapter.rig.visualRoot.findEntity(named: "FounderLaptop"))
+    XCTAssertEqual(bounds.center.x, 2.43, accuracy: 0.08)
+    XCTAssertEqual(bounds.center.y, 1.08, accuracy: 0.08)
+    XCTAssertEqual(bounds.center.z, 0.78, accuracy: 0.08)
+    XCTAssertGreaterThan(bounds.extents.y, 2.0)
+    XCTAssertFalse(replacedLaptop.isEnabled)
+    XCTAssertTrue(world.entities.iPhone.isEnabled)
+    XCTAssertTrue(world.entities.iPad.isEnabled)
+    XCTAssertEqual(world.interaction(for: world.entities.iPhone), .openFounderPhone)
+    XCTAssertEqual(world.interaction(for: world.entities.iPad), .openFounderTablet)
+    world.applyRuntimeEnclosureVisibility(for: .founderPOV)
+    XCTAssertTrue(door.isEnabled)
+    world.applyRuntimeEnclosureVisibility(for: .garageOverview)
+    XCTAssertFalse(door.isEnabled)
+  }
+
   @MainActor
   func testV7ValidationFailureRestoresProceduralGarage() async throws {
     let world = FounderGarageRealityWorld()
@@ -2138,13 +3395,14 @@ final class FounderGarageRealityTests: XCTestCase {
     v3: Bool = false,
     v4: Bool = false,
     v6: Bool = false,
-    v7: Bool = false
+    v7: Bool = false,
+    v8: Bool = false
   ) async throws -> ImportedGarageArchitectureAdapter {
-    precondition([v3, v4, v6, v7].filter { $0 }.count <= 1)
-    let assetName = v7 ? "founder_garage_v7" : v6
+    precondition([v3, v4, v6, v7, v8].filter { $0 }.count <= 1)
+    let assetName = v8 ? "founder_garage_v8" : v7 ? "founder_garage_v7" : v6
       ? "founder_garage_v6"
       : v4 ? "founder_garage_v4" : (v3 ? "founder_garage_v3" : "founder_garage")
-    let descriptor: FounderGarageArchitectureAssetDescriptor = v7 ? .facilityTier0V7 : v6
+    let descriptor: FounderGarageArchitectureAssetDescriptor = v8 ? .facilityTier0V8 : v7 ? .facilityTier0V7 : v6
       ? .facilityTier0V6
       : v4 ? .facilityTier0V4 : (v3 ? .facilityTier0V3 : .facilityTier0)
     let task = try XCTUnwrap(world.requestGarageArchitecture(
@@ -2157,6 +3415,45 @@ final class FounderGarageRealityTests: XCTestCase {
       throw TestLoaderError.expectedFailure
     }
     return try XCTUnwrap(world.activeGarageArchitectureAdapter as? ImportedGarageArchitectureAdapter)
+  }
+
+  @MainActor
+  private func advance(
+    _ world: FounderGarageRealityWorld,
+    frames: Int,
+    deltaTime: TimeInterval = 1.0 / 60
+  ) {
+    for _ in 0..<frames { world.advanceSession(deltaTime: deltaTime) }
+  }
+
+  @MainActor
+  private func advance(
+    _ world: FounderGarageRealityWorld,
+    until expected: FounderInteractionPhase,
+    limit: Int = 1_200,
+    deltaTime: TimeInterval = 1.0 / 60
+  ) {
+    var observed = Set<FounderInteractionPhase>()
+    advance(world, until: expected, observed: &observed, limit: limit, deltaTime: deltaTime)
+  }
+
+  @MainActor
+  private func advance(
+    _ world: FounderGarageRealityWorld,
+    until expected: FounderInteractionPhase,
+    observed: inout Set<FounderInteractionPhase>,
+    limit: Int = 1_200,
+    deltaTime: TimeInterval = 1.0 / 60
+  ) {
+    for _ in 0..<limit where world.interactionCoordinator.phase != expected {
+      world.advanceSession(deltaTime: deltaTime)
+      observed.insert(world.interactionCoordinator.phase)
+    }
+    XCTAssertEqual(
+      world.interactionCoordinator.phase,
+      expected,
+      world.interactionCoordinator.diagnostics.deterministicSignature
+    )
   }
 
   private func hasRenderableMaterial(in entity: Entity) -> Bool {

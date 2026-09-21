@@ -1,0 +1,10 @@
+17:56:20 | INFO: Data are loaded, start creating Blender stuff
+17:56:20 | INFO: Blender create Mesh node tripo_mesh_fbf024bb-3672-47ca-ae5b-37cc9845ea23
+17:56:20 | INFO: glTF import finished in 0.02s
+/Users/jermainenelson/Documents/Solo/Assets/Atlantis/Phase3/MediaDistrict/inspect_sources.py:30: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  s=bpy.context.scene;s.world=bpy.data.worlds.new('ReviewWorld');s.world.use_nodes=True;s.world.node_tree.nodes['Background'].inputs[0].default_value=(.55,.65,.8,1);s.world.node_tree.nodes['Background'].inputs[1].default_value=.6
+00:04.218  render           | Saved: '/Users/jermainenelson/Documents/Solo/Assets/Atlantis/Phase3/MediaDistrict/SignalTV/Review/Source_Candidate.png'
+{"filename": "SignalTV_Higgsfield_Raw.glb", "bytes": 1602472, "dimensions": [1.0, 0.44162991642951965, 0.5812417268753052], "bounds": [[-0.5, -0.22081495821475983, -0.2906208634376526], [0.5, 0.22081495821475983, 0.2906208634376526]], "meshes": 1, "triangles": 15686, "materials": 1, "textures": 3, "objects": [{"name": "tripo_node_fbf024bb-3672-47ca-ae5b-37cc9845ea23", "position": [0.0, 0.0, 0.0], "rotation": [0.0, 0.0, 0.0], "scale": [1.0, 1.0, 1.0], "parent": null, "nonmanifold": 55, "zero_area": 0, "components": [7552]}]}
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 01:35:57)
+
+Blender quit

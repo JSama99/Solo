@@ -1,0 +1,191 @@
+{
+  "schema": "RivalAtlantisProfile planning v1",
+  "tiers": {
+    "1": {
+      "height": [
+        15,
+        35
+      ]
+    },
+    "2": {
+      "height": [
+        40,
+        100
+      ]
+    },
+    "3": {
+      "height": [
+        100,
+        180
+      ]
+    }
+  },
+  "profiles": [
+    {
+      "canonicalCompanyID": "pallas",
+      "displayName": "Pallas AI",
+      "semanticID": "PallasAI",
+      "district": "TechCore",
+      "slotID": "RivalHQ_Slot_04",
+      "hqTier": "3",
+      "targetHeightRange": [
+        120,
+        170
+      ],
+      "currentHeight": 160,
+      "footprint": [
+        60,
+        42
+      ],
+      "position": [
+        220,
+        300,
+        14
+      ],
+      "futureUpgradeEnvelope": [
+        64,
+        44,
+        180
+      ],
+      "architecturalLanguage": "Monumental composed taper, paired crown blades, formal compact podium",
+      "primaryMaterialFamily": "Deep neutral glass, pale bronze metal, restrained stone",
+      "accentLanguage": "Warm restrained premium edges",
+      "signageStrategy": "Integrated understated podium mark",
+      "nightIdentity": "Warm crown bars and lobby glow",
+      "visibilityPriority": [
+        "Venture District",
+        "Media District",
+        "Tech Core"
+      ],
+      "rotationDegrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y Blender / +Z glTF",
+      "planningOnly": true,
+      "canonicalSource": "App/ContentLibrary.swift",
+      "lodReadiness": [
+        "LOD0 future hero",
+        "LOD1 future simplified HQ",
+        "LOD2 future skyline proxy"
+      ],
+      "runtimeMapping": "Future visible canonical projections only; no thresholds or simulation state authored"
+    },
+    {
+      "canonicalCompanyID": "northwind",
+      "displayName": "Northwind Labs",
+      "semanticID": "NorthwindLabs",
+      "district": "TechCore",
+      "slotID": "RivalHQ_Slot_03",
+      "hqTier": "2/3",
+      "targetHeightRange": [
+        100,
+        130
+      ],
+      "preferredHeightRange": [
+        80,
+        130
+      ],
+      "currentHeight": 115,
+      "footprint": [
+        58,
+        52
+      ],
+      "position": [
+        -100,
+        520,
+        14
+      ],
+      "futureUpgradeEnvelope": [
+        65,
+        60,
+        150
+      ],
+      "architecturalLanguage": "Offset technical tower, low research wing, modular structural frame",
+      "primaryMaterialFamily": "Cool blue glass and pale silver",
+      "accentLanguage": "Muted cyan technical grid",
+      "signageStrategy": "Small precise lobby plate",
+      "nightIdentity": "Cool vertical laboratory grid",
+      "visibilityPriority": [
+        "Tech Core",
+        "Media District",
+        "Unicorn Heights"
+      ],
+      "rotationDegrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y Blender / +Z glTF",
+      "planningOnly": true,
+      "canonicalSource": "App/ContentLibrary.swift",
+      "lodReadiness": [
+        "LOD0 future hero",
+        "LOD1 future simplified HQ",
+        "LOD2 future skyline proxy"
+      ],
+      "runtimeMapping": "Future visible canonical projections only; no thresholds or simulation state authored"
+    },
+    {
+      "canonicalCompanyID": "flashpoint",
+      "displayName": "Flashpoint",
+      "semanticID": "Flashpoint",
+      "district": "CommerceDistrict",
+      "slotID": "RivalHQ_Slot_05",
+      "hqTier": "2",
+      "targetHeightRange": [
+        55,
+        90
+      ],
+      "preferredHeightRange": [
+        55,
+        95
+      ],
+      "currentHeight": 75,
+      "footprint": [
+        40,
+        32
+      ],
+      "position": [
+        430,
+        -240,
+        14
+      ],
+      "futureUpgradeEnvelope": [
+        42,
+        34,
+        90
+      ],
+      "architecturalLanguage": "Asymmetric stepped wedge, sharp launch-facing podium",
+      "primaryMaterialFamily": "Dark glass with light structural metal",
+      "accentLanguage": "Concentrated warm orange-red accent",
+      "signageStrategy": "Visible south launch facade panel",
+      "nightIdentity": "Energetic diagonal accent and brighter entry",
+      "visibilityPriority": [
+        "Startup Row",
+        "Commerce District",
+        "Founder skyline"
+      ],
+      "rotationDegrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y Blender / +Z glTF",
+      "planningOnly": true,
+      "canonicalSource": "App/ContentLibrary.swift",
+      "lodReadiness": [
+        "LOD0 future hero",
+        "LOD1 future simplified HQ",
+        "LOD2 future skyline proxy"
+      ],
+      "runtimeMapping": "Future visible canonical projections only; no thresholds or simulation state authored"
+    }
+  ],
+  "unassignedSlots": [
+    "RivalHQ_Slot_01",
+    "RivalHQ_Slot_02"
+  ],
+  "simulationNote": "Runtime strengths/archetypes remain untouched. Requested prestige/tier labels are visual direction only."
+}

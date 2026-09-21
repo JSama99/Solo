@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "current_candidate": {
+    "iphone_16_pro": {
+      "samples": 3,
+      "incremental_memory_median_mib": 40.078125,
+      "cold_import_median_ms": 1901.5364583465271,
+      "garage_plus_founder_endpoint_median_mib": 332.39166259765625
+    },
+    "ipad_air_11_m4": {
+      "samples": 3,
+      "incremental_memory_median_mib": 46.187522888183594,
+      "cold_import_median_ms": 1783.549416664755,
+      "garage_plus_founder_endpoint_median_mib": 385.73542785644531
+    },
+    "triangles": 29488,
+    "canonical_joints": 55,
+    "skeleton_instances": 10,
+    "facial_targets": 9,
+    "model_entities_in_realitykit": 10
+  },
+  "reduced_duplication_experiment": {
+    "package_size_delta_bytes": -785,
+    "canonical_joints_in_usd": 55,
+    "skeleton_instances_in_usd": 1,
+    "facial_targets_in_usd": 9,
+    "model_entities_in_realitykit": 1,
+    "head_modules_in_realitykit": 0,
+    "physical_profile": "not run; failed mandatory functionality gate",
+    "decision": "rejected"
+  },
+  "performance_decision": "ACCEPTABLE for Pass A.2 under the existing asynchronous load path; the only reduced-duplication candidate was not a Pareto improvement because it broke module visibility and head masking"
+}

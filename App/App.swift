@@ -37,6 +37,10 @@ struct SoloUnicornRunApp: App {
       ProcessInfo.processInfo.arguments.contains("--campaign-calibration-qa-\($0.rawValue)")
     }
   }
+
+  private var founderMotionReviewSection: FounderMotionReviewSection? {
+    FounderMotionReviewSection.requested
+  }
   #endif
 
   init() {
@@ -53,7 +57,17 @@ struct SoloUnicornRunApp: App {
     WindowGroup {
       Group {
         #if DEBUG
-        if AtlantisRendererConfiguration.active {
+        if let founderMotionReviewSection {
+          FounderMotionReviewView(section: founderMotionReviewSection)
+        } else if ProcessInfo.processInfo.arguments.contains("--founder-character-qa") {
+          FounderCharacterQAView()
+        } else if ProcessInfo.processInfo.arguments.contains("--garage-feedback-review") {
+          FounderGarageInteractionFeedbackReviewHost()
+        } else if ProcessInfo.processInfo.arguments.contains("--garage-chair-feedback-review") {
+          FounderGarageChairFeedbackReviewHost()
+        } else if ProcessInfo.processInfo.arguments.contains("--garage-whiteboard-feedback-review") {
+          FounderGarageWhiteboardFeedbackReviewHost()
+        } else if AtlantisRendererConfiguration.active {
           AtlantisRealityView()
         } else if ProcessInfo.processInfo.arguments.contains("--agent-operations-qa") {
           AgentOperationsQAHost()

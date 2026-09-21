@@ -1,0 +1,1133 @@
+{
+  "slots": [
+    {
+      "id": "Landmark_TechComTower",
+      "district": "MediaDistrict",
+      "origin": [
+        835,
+        220,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        75,
+        70
+      ],
+      "target_height_m": [
+        120,
+        180
+      ],
+      "max_bbox_m": [
+        75,
+        70,
+        180
+      ],
+      "placeholder_height_m": 160,
+      "kind": "hero",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "visible upper-center sample",
+        "TechCore_Skyline": "outside frame",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    },
+    {
+      "id": "Landmark_SignalTV",
+      "district": "MediaDistrict",
+      "origin": [
+        860,
+        460,
+        14
+      ],
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": [
+        95,
+        65
+      ],
+      "target_height_m": [
+        25,
+        60
+      ],
+      "max_bbox_m": [
+        95,
+        65,
+        60
+      ],
+      "placeholder_height_m": 38,
+      "kind": "hero",
+      "view_visibility": {
+        "Atlantis_Master_Aerial": "visible upper-center sample",
+        "Founder_To_City": "occluded upper-center sample",
+        "TechCore_Skyline": "occluded upper-center sample",
+        "Atlantis_Waterfront": "visible upper-center sample",
+        "UnicornHeights_View": "visible upper-center sample",
+        "Atlantis_Top_Down": "visible upper-center sample"
+      }
+    }
+  ],
+  "district_properties": {
+    "export_owner": "MediaDistrict",
+    "future_lods": "LOD0 / LOD1 / LOD2; not authored"
+  },
+  "objects": [
+    {
+      "name": "MediaDistrict_Boundary_0",
+      "position": [
+        800.0,
+        110.0,
+        14.119999885559082
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        370.0,
+        2.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Boundary_1",
+      "position": [
+        800.0,
+        540.0,
+        14.119999885559082
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        370.0,
+        2.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Boundary_2",
+      "position": [
+        615.0,
+        325.0,
+        14.119999885559082
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        2.0,
+        430.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Boundary_3",
+      "position": [
+        985.0,
+        325.0,
+        14.119999885559082
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        2.0,
+        430.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_000",
+      "position": [
+        644.5999755859375,
+        264.79998779296875,
+        46.503944396972656
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        65.00788879394531
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_001",
+      "position": [
+        644.5999755859375,
+        385.20001220703125,
+        44.12174606323242
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        60.24349594116211
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_002",
+      "position": [
+        644.5999755859375,
+        505.6000061035156,
+        45.90510177612305
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        63.81019973754883
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_003",
+      "position": [
+        748.2000122070312,
+        144.39999389648438,
+        42.27608108520508
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        56.55215835571289
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_004",
+      "position": [
+        851.7999877929688,
+        144.39999389648438,
+        48.41495132446289
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        68.82990264892578
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_005",
+      "position": [
+        851.7999877929688,
+        385.20001220703125,
+        41.64564895629883
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        55.291297912597656
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_006",
+      "position": [
+        955.4000244140625,
+        144.39999389648438,
+        57.440250396728516
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        86.88050079345703
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_007",
+      "position": [
+        955.4000244140625,
+        264.79998779296875,
+        38.95102310180664
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        49.90204620361328
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_008",
+      "position": [
+        955.4000244140625,
+        385.20001220703125,
+        53.02440643310547
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        78.04881286621094
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_009",
+      "position": [
+        955.4000244140625,
+        505.6000061035156,
+        46.73627853393555
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        65.4725570678711
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    }
+  ],
+  "nearby_infrastructure": [
+    {
+      "name": "Media_Headland",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        520.0,
+        600.0,
+        26.0
+      ],
+      "collections": [
+        "Terrain"
+      ]
+    },
+    {
+      "name": "Media_Boulevard_00",
+      "position": [
+        685.0,
+        185.0,
+        15.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        24.0,
+        174.92855834960938,
+        0.699999988079071
+      ],
+      "collections": [
+        "PrimaryRoads"
+      ]
+    },
+    {
+      "name": "Media_Boulevard_01",
+      "position": [
+        735.0,
+        375.0,
+        15.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        24.0,
+        230.21728515625,
+        0.699999988079071
+      ],
+      "collections": [
+        "PrimaryRoads"
+      ]
+    },
+    {
+      "name": "Media_Boulevard_02",
+      "position": [
+        700.0,
+        525.0,
+        15.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        24.0,
+        106.30146026611328,
+        0.699999988079071
+      ],
+      "collections": [
+        "PrimaryRoads"
+      ]
+    },
+    {
+      "name": "MediaDistrict_CrossStreet_00",
+      "position": [
+        800.0,
+        325.0,
+        14.800000190734863
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        14.000001907348633,
+        333.0000305175781,
+        0.699999988079071
+      ],
+      "collections": [
+        "SecondaryRoads"
+      ]
+    },
+    {
+      "name": "Media_Link_00",
+      "position": [
+        770.0,
+        325.0,
+        15.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        14.000001907348633,
+        60.00000762939453,
+        0.699999988079071
+      ],
+      "collections": [
+        "SecondaryRoads"
+      ]
+    },
+    {
+      "name": "AtlantisBridge_Main_00",
+      "position": [
+        -660.0,
+        -540.0,
+        16.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        26.0,
+        141.42135620117188,
+        0.699999988079071
+      ],
+      "collections": [
+        "Bridges"
+      ]
+    },
+    {
+      "name": "Bridge_Media_00",
+      "position": [
+        530.0,
+        75.0,
+        15.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        24.000003814697266,
+        230.8679656982422,
+        0.699999988079071
+      ],
+      "collections": [
+        "Bridges"
+      ]
+    },
+    {
+      "name": "Bridge_TechCore_00",
+      "position": [
+        480.0,
+        615.0,
+        50.5
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        26.0,
+        383.0678405761719,
+        0.699999988079071
+      ],
+      "collections": [
+        "Bridges"
+      ]
+    },
+    {
+      "name": "AtlantisBridge_Main_Pier_0.2",
+      "position": [
+        -690.0,
+        -570.0,
+        3.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        26.0
+      ],
+      "collections": [
+        "Bridges"
+      ]
+    },
+    {
+      "name": "AtlantisBridge_Main_Pier_0.5",
+      "position": [
+        -660.0,
+        -540.0,
+        3.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        26.0
+      ],
+      "collections": [
+        "Bridges"
+      ]
+    },
+    {
+      "name": "AtlantisBridge_Main_Pier_0.8",
+      "position": [
+        -630.0,
+        -510.0,
+        3.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        26.0
+      ],
+      "collections": [
+        "Bridges"
+      ]
+    },
+    {
+      "name": "Bridge_Media_Pier_0.2",
+      "position": [
+        464.0,
+        54.0,
+        2.5
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        25.0
+      ],
+      "collections": [
+        "Bridges"
+      ]
+    },
+    {
+      "name": "Bridge_Media_Pier_0.5",
+      "position": [
+        530.0,
+        75.0,
+        2.5
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        25.0
+      ],
+      "collections": [
+        "Bridges"
+      ]
+    },
+    {
+      "name": "Bridge_Media_Pier_0.8",
+      "position": [
+        596.0,
+        96.0,
+        2.5
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        25.0
+      ],
+      "collections": [
+        "Bridges"
+      ]
+    },
+    {
+      "name": "Bridge_TechCore_Pier_0.2",
+      "position": [
+        408.0,
+        528.0,
+        9.59999942779541
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        39.19999694824219
+      ],
+      "collections": [
+        "Bridges"
+      ]
+    },
+    {
+      "name": "Bridge_TechCore_Pier_0.5",
+      "position": [
+        480.0,
+        615.0,
+        20.25
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        60.5
+      ],
+      "collections": [
+        "Bridges"
+      ]
+    },
+    {
+      "name": "Bridge_TechCore_Pier_0.8",
+      "position": [
+        552.0,
+        702.0,
+        30.900001525878906
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        81.80000305175781
+      ],
+      "collections": [
+        "Bridges"
+      ]
+    },
+    {
+      "name": "Media_Waterfront",
+      "position": [
+        940.0,
+        350.0,
+        14.199999809265137
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        65.0,
+        120.0,
+        0.30000001192092896
+      ],
+      "collections": [
+        "Plazas"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Boundary_0",
+      "position": [
+        800.0,
+        110.0,
+        14.119999885559082
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        370.0,
+        2.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Boundary_1",
+      "position": [
+        800.0,
+        540.0,
+        14.119999885559082
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        370.0,
+        2.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Boundary_2",
+      "position": [
+        615.0,
+        325.0,
+        14.119999885559082
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        2.0,
+        430.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Boundary_3",
+      "position": [
+        985.0,
+        325.0,
+        14.119999885559082
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        2.0,
+        430.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_000",
+      "position": [
+        644.5999755859375,
+        264.79998779296875,
+        46.503944396972656
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        65.00788879394531
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_001",
+      "position": [
+        644.5999755859375,
+        385.20001220703125,
+        44.12174606323242
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        60.24349594116211
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_002",
+      "position": [
+        644.5999755859375,
+        505.6000061035156,
+        45.90510177612305
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        63.81019973754883
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_003",
+      "position": [
+        748.2000122070312,
+        144.39999389648438,
+        42.27608108520508
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        56.55215835571289
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_004",
+      "position": [
+        851.7999877929688,
+        144.39999389648438,
+        48.41495132446289
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        68.82990264892578
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_005",
+      "position": [
+        851.7999877929688,
+        385.20001220703125,
+        41.64564895629883
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        55.291297912597656
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_006",
+      "position": [
+        955.4000244140625,
+        144.39999389648438,
+        57.440250396728516
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        86.88050079345703
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_007",
+      "position": [
+        955.4000244140625,
+        264.79998779296875,
+        38.95102310180664
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        49.90204620361328
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_008",
+      "position": [
+        955.4000244140625,
+        385.20001220703125,
+        53.02440643310547
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        78.04881286621094
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    },
+    {
+      "name": "MediaDistrict_Block_009",
+      "position": [
+        955.4000244140625,
+        505.6000061035156,
+        46.73627853393555
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        65.4725570678711
+      ],
+      "collections": [
+        "MediaDistrict"
+      ]
+    }
+  ],
+  "relationships": {
+    "Landmark_TechComTower": {
+      "actual": {
+        "name": "Landmark_TechComTower",
+        "position": [
+          835.0,
+          220.0,
+          14.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "dimensions": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "collections": [
+          "Atlantis_Anchors"
+        ]
+      },
+      "distance_to_spire_xy": 810.077156819028,
+      "distance_to_other_hero_xy": 241.29857024027308,
+      "east_shore_distance": 225.0,
+      "public_approach": "south -Y, connected westward to existing Media Boulevard",
+      "waterfront": "east +X; existing Media_Waterfront plaza inland of unchanged east shoreline"
+    },
+    "Landmark_SignalTV": {
+      "actual": {
+        "name": "Landmark_SignalTV",
+        "position": [
+          860.0,
+          460.0,
+          14.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "dimensions": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "collections": [
+          "Atlantis_Anchors"
+        ]
+      },
+      "distance_to_spire_xy": 810.987052917616,
+      "distance_to_other_hero_xy": 241.29857024027308,
+      "east_shore_distance": 200.0,
+      "public_approach": "south -Y, connected westward to existing Media Boulevard",
+      "waterfront": "east +X; existing Media_Waterfront plaza inland of unchanged east shoreline"
+    }
+  }
+}

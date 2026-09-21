@@ -1,0 +1,30 @@
+[
+  {
+    "name": "VentureHall_atrium_glazing",
+    "triangles": 216,
+    "nonmanifold": 0,
+    "zero_area": 0,
+    "signed_volume": 91187.35999225613
+  },
+  {
+    "name": "VentureHall_pale_limestone",
+    "triangles": 228,
+    "nonmanifold": 0,
+    "zero_area": 0,
+    "signed_volume": 25416.799943208694
+  },
+  {
+    "name": "VentureHall_brushed_bronze",
+    "triangles": 792,
+    "nonmanifold": 0,
+    "zero_area": 0,
+    "signed_volume": 3242.531466517481
+  },
+  {
+    "name": "VentureHall_warm_entry",
+    "triangles": 48,
+    "nonmanifold": 0,
+    "zero_area": 0,
+    "signed_volume": 5.47502679818718
+  }
+]
