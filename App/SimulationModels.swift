@@ -936,11 +936,33 @@ struct LatentDefect: Codable, Hashable, Identifiable {
   var id: String
   var originVenture: Int
   var originSprint: Int
+  var originTaskID: UUID? = nil
   var originTaskTitle: String
+  var originAgentID: String? = nil
   var originAgentName: String
+  var originResolution: TaskResolutionChoice? = nil
   var originEvidenceCompleteness: Int
   var surfacesAtCareerSprint: Int
   var severity: Int
+
+  /// Stable causal identity derived from already-deterministic simulation state.
+  /// It consumes no RNG and remains available after the originating task leaves
+  /// the active sprint board.
+  var sourceDecisionID: String {
+    let task = originTaskID?.uuidString.lowercased() ?? id.lowercased()
+    let action = originResolution?.rawValue ?? "unreviewedCommit"
+    return "founder-decision-\(task)-\(action)"
+  }
+
+  var founderActionSummary: String {
+    switch originResolution {
+    case .approve: "the founder approved the reviewed report"
+    case .rework: "the founder reworked the reviewed report"
+    case .shipAnyway: "the founder shipped despite unresolved evidence"
+    case .escalate: "the founder cross-checked the reviewed report"
+    case nil: "the founder committed the report without review"
+    }
+  }
 
   var receipt: String {
     "\(originTaskTitle) (Venture \(originVenture), Sprint \(originSprint), \(originAgentName) — shipped at \(originEvidenceCompleteness)% evidence) failed in production."

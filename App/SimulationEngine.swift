@@ -40,8 +40,11 @@ enum SimulationEngine {
       id: "DEF-V\(venture)-S\(sprint)-\(String(SeededRandomNumberGenerator.mixed(key), radix: 16))",
       originVenture: venture,
       originSprint: sprint,
+      originTaskID: task.id,
       originTaskTitle: task.title,
+      originAgentID: agent.id,
       originAgentName: agent.name,
+      originResolution: task.resolution,
       originEvidenceCompleteness: result.evidenceCompleteness,
       surfacesAtCareerSprint: careerSprint + delay,
       severity: severity

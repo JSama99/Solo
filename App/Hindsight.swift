@@ -92,6 +92,11 @@ struct Precedent: Codable, Hashable, Identifiable {
   /// through synthesized `decodeIfPresent` behavior.
   var recordKind: PrecedentRecordKind? = nil
   var founderVisibleOutcome: String? = nil
+  /// Optional causal receipt for delayed outcomes. Optional fields preserve
+  /// decoding of save-version-20 precedents written before Pass 2A.
+  var sourceDecisionID: String? = nil
+  var sourceAgentID: String? = nil
+  var delayedConsequenceID: String? = nil
 
   var recallTitle: String { "Venture \(venture), Sprint \(sprint)" }
   var isFundingRecord: Bool { recordKind == .funding }

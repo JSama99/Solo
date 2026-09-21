@@ -1989,6 +1989,16 @@ final class GameStore {
     if effects.trust > 0 { effects.trust = Int((Double(effects.trust) * (1 + Double(thesisProfile.customerLoyaltyModifier) / 100)).rounded()) }
     effects = effects + rivalMoves.reduce(SimulationEffects()) { $0 + $1.playerEffects }
     apply(effects)
+    for defect in surfacedDefects.sorted(by: { $0.id < $1.id }) {
+      _ = applyPublicMediaEvent(
+        LatentDefectPublicMediaProjection.surfaced(
+          defect,
+          venture: venture,
+          sprint: sprint
+        ),
+        persist: false
+      )
+    }
     advanceOperatingTime(hours: 7 * 24)
     finance.beginSprint()
     recordRivalMoveHeadlines(rivalMoves, venture: rivalMoveVenture, sprint: rivalMoveSprint)
@@ -2023,7 +2033,8 @@ final class GameStore {
     recordPrecedentIfConsequential(
       assignedIndices: assignedIndices,
       effects: effects,
-      reviewedCount: reviewed
+      reviewedCount: reviewed,
+      surfacedDefects: surfacedDefects
     )
     collapseDivergenceIfDue()
 
@@ -2476,7 +2487,8 @@ final class GameStore {
   private func recordPrecedentIfConsequential(
     assignedIndices: [Int],
     effects: SimulationEffects,
-    reviewedCount: Int
+    reviewedCount: Int,
+    surfacedDefects: [LatentDefect]
   ) {
     var outcome = PrecedentOutcome()
     outcome.trustDelta = effects.trust
@@ -2496,15 +2508,23 @@ final class GameStore {
     guard HindsightEngine.isConsequential(outcome) else { return }
 
     let unreviewed = assignedIndices.count - reviewedCount
+    let surfaced = surfacedDefects.sorted(by: { $0.id < $1.id }).first
+    let decisionSummary = surfaced.map {
+      "\($0.originAgentName)'s \($0.originTaskTitle) later failed after \($0.founderActionSummary)."
+    } ?? "Committed \(assignedIndices.count) task\(assignedIndices.count == 1 ? "" : "s") "
+      + "with \(reviewedCount) verified and \(unreviewed) unverified."
     precedents.append(
       Precedent(
         id: HindsightEngine.identifier(venture: venture, sprint: sprint),
         venture: venture,
         sprint: sprint,
         context: currentPrecedentContext(),
-        decisionSummary: "Committed \(assignedIndices.count) task\(assignedIndices.count == 1 ? "" : "s") "
-          + "with \(reviewedCount) verified and \(unreviewed) unverified.",
-        outcome: outcome
+        decisionSummary: decisionSummary,
+        outcome: outcome,
+        founderVisibleOutcome: surfaced.map { "\($0.receipt) \(outcome.summary)" },
+        sourceDecisionID: surfaced?.sourceDecisionID,
+        sourceAgentID: surfaced?.originAgentID,
+        delayedConsequenceID: surfaced?.id
       )
     )
   }
