@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "result": "PASS",
+  "method": "identity-and-runtime-contract-equivalence",
+  "accepted_asset": {
+    "path": "App/RealityKit/FounderCharacter/founder_candidate_a.usdz",
+    "sha256": "6392eb1dea5f13506913feeb1a65bf84c97f9b61266ba027bd3b3377278171f5",
+    "bytes": 2657535
+  },
+  "accepted_pose": {
+    "path": "Documentation/FounderCharacter/Intermediate/founder_validation_pose_a2_iteration_2.json",
+    "sha256": "fbf7047d37a30f6e882814b827d3edc6e7e1b2e858e87a07f8f88cb8a4f08011"
+  },
+  "production_equivalence": {
+    "normal_route_uses_accepted_asset": true,
+    "normal_route_uses_accepted_pose": true,
+    "normal_route_preserves_materials_and_morphs": true,
+    "automatic_baseline_update": false,
+    "material_difference_detected": false
+  },
+  "accepted_views": [
+    {"view":"front","path":"Documentation/FounderCharacter/Evidence/A2/FacialAcceptance/PortraitFront.png","sha256":"287c3e646fe87603644de6857eb07e85db23e4237a12eee0bc3d7dfa26011c5a"},
+    {"view":"three-quarter-left","path":"Documentation/FounderCharacter/Evidence/A2/FacialAcceptance/PortraitThreeQuarterLeft.png","sha256":"cabc5f6116480a905e1ce11c7cbb97ce7b23070a62094e4e47e25e91cb170e14"},
+    {"view":"three-quarter-right","path":"Documentation/FounderCharacter/Evidence/A2/FacialAcceptance/PortraitThreeQuarterRight.png","sha256":"e1c17172ee9723c9b8efccc798e09a9a76294219c1f4b3425e0c0334f5784354"},
+    {"view":"profile","path":"Documentation/FounderCharacter/Evidence/A2/FacialAcceptance/PortraitProfile.png","sha256":"d476d326b7394ea4e129b0e86fa6e7fa9fd680f4a3589a7c442cfd920c544ede"},
+    {"view":"seated","path":"Documentation/FounderCharacter/Evidence/A2/FacialAcceptance/SeatedFront.png","sha256":"56d0456dd553aba5540fbbf3c418ffd2e7c106286ed645eb9ec9806a9ecafcae"},
+    {"view":"standing","path":"Documentation/FounderCharacter/Evidence/A2/FacialAcceptance/Standing.png","sha256":"defbd9f68b6b8fe32f4fbd110b1bd36b3bd0ac10ec584f91feeb45d95efdf16c"},
+    {"view":"blink","path":"Documentation/FounderCharacter/Evidence/A2/FacialAcceptance/Blink.png","sha256":"0d66403397dd155a417f6505aa053fc46d57f284127ea99a49cc054d94fb6246"},
+    {"view":"jaw-open","path":"Documentation/FounderCharacter/Evidence/A2/FacialAcceptance/JawOpen.png","sha256":"9020a0a9e03247a7a6bcc20470e1ae6cfae42a4d3a5518e1f1836aa8dc4370a7"}
+  ]
+}

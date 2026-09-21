@@ -1,0 +1,12 @@
+{
+  "before_mb" : 42.361480712890625,
+  "facial_weight_names" : 9,
+  "first_scene_update_ms" : 230.54112505633384,
+  "first_update_mb" : 55.642845153808594,
+  "joint_names" : 55,
+  "load_delta_mb" : 13.156364440917969,
+  "load_ms" : 198.07008327916265,
+  "loaded_mb" : 55.517845153808594,
+  "model_entities" : 10,
+  "note" : "Process footprint endpoints; not an import peak. Scene update is not pixel presentation latency."
+}

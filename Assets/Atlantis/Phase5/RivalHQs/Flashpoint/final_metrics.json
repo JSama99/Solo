@@ -1,0 +1,98 @@
+{
+  "checks": {
+    "fits_initial_footprint": true,
+    "target_height": true,
+    "ground_origin": true,
+    "clean_geometry": true,
+    "clean_transforms": true,
+    "semantic_main_exact": true,
+    "semantic_uvs": true,
+    "metres": true
+  },
+  "bounds": [
+    [
+      -19.0,
+      -15.0,
+      0.0
+    ],
+    [
+      19.0,
+      15.0,
+      75.0
+    ]
+  ],
+  "dimensions": [
+    38.0,
+    30.0,
+    75.0
+  ],
+  "triangles": 420,
+  "meshes": 7,
+  "materials": 7,
+  "textures": 0,
+  "bytes": 36940,
+  "semantic_targets": [
+    "Flashpoint_LaunchDisplay",
+    "Flashpoint_Signage_Main",
+    "Flashpoint_Ticker"
+  ],
+  "geometry": [
+    {
+      "name": "Flashpoint_DarkGlazing",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 36821.9006576538
+    },
+    {
+      "name": "Flashpoint_LaunchDisplay",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 9.0
+    },
+    {
+      "name": "Flashpoint_MomentumAccent",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 10.440002176759437
+    },
+    {
+      "name": "Flashpoint_PodiumConcrete",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 2280.0
+    },
+    {
+      "name": "Flashpoint_Signage_Main",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 2.625
+    },
+    {
+      "name": "Flashpoint_StructuralSilver",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 4581.597207376859
+    },
+    {
+      "name": "Flashpoint_Ticker",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 3.000000119209288
+    }
+  ],
+  "remaining_growth_dimensions": [
+    4.0,
+    4.0,
+    15.0
+  ],
+  "remaining_growth_plan_area_m2": 288.0,
+  "material_names": [
+    "Flashpoint_DarkGlazing",
+    "Flashpoint_LaunchDisplay",
+    "Flashpoint_MomentumAccent",
+    "Flashpoint_PodiumConcrete",
+    "Flashpoint_Signage_Main",
+    "Flashpoint_StructuralSilver",
+    "Flashpoint_Ticker"
+  ]
+}

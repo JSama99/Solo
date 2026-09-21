@@ -1,0 +1,900 @@
+{
+  "hidden_original_objects": [
+    "Commerce_CentralPlaza",
+    "CommerceDistrict_Block_000",
+    "CommerceDistrict_Podium_001",
+    "CommerceDistrict_Block_001",
+    "CommerceDistrict_Podium_002",
+    "CommerceDistrict_Block_002",
+    "CommerceDistrict_Podium_003",
+    "CommerceDistrict_Block_003",
+    "CommerceDistrict_Podium_004",
+    "CommerceDistrict_Block_004",
+    "CommerceDistrict_Podium_005",
+    "CommerceDistrict_Block_005",
+    "CommerceDistrict_Podium_006",
+    "CommerceDistrict_Block_006",
+    "CommerceDistrict_Podium_007",
+    "CommerceDistrict_Block_007",
+    "CommerceDistrict_Podium_008",
+    "CommerceDistrict_Block_008",
+    "CommerceDistrict_Podium_009",
+    "CommerceDistrict_Block_009",
+    "CommerceDistrict_Podium_010",
+    "CommerceDistrict_Block_010",
+    "CommerceDistrict_Podium_011",
+    "CommerceDistrict_Block_011",
+    "CommerceDistrict_Podium_012",
+    "CommerceDistrict_Block_012",
+    "CommerceDistrict_Podium_013"
+  ],
+  "paths": [
+    {
+      "name": "Commerce_Sidewalk_Commerce_Boulevard_0_-1",
+      "points": [
+        [
+          -192.56163024902344,
+          -284.2719421386719,
+          15.399999618530273
+        ],
+        [
+          197.43836975097656,
+          -354.2719421386719,
+          15.399999618530273
+        ]
+      ],
+      "width": 5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Sidewalk_Commerce_Boulevard_0_1",
+      "points": [
+        [
+          -187.43836975097656,
+          -255.7280731201172,
+          15.399999618530273
+        ],
+        [
+          202.56163024902344,
+          -325.7280578613281,
+          15.399999618530273
+        ]
+      ],
+      "width": 5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Sidewalk_Commerce_Boulevard_1_1",
+      "points": [
+        [
+          192.2417449951172,
+          -327.7501220703125,
+          15.399999618530273
+        ],
+        [
+          492.24176025390625,
+          -137.7501220703125,
+          15.399999618530273
+        ]
+      ],
+      "width": 5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Sidewalk_Commerce_Boulevard_2_-1",
+      "points": [
+        [
+          513.3637084960938,
+          -144.3731689453125,
+          15.399999618530273
+        ],
+        [
+          433.36370849609375,
+          45.626827239990234,
+          15.399999618530273
+        ]
+      ],
+      "width": 5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Sidewalk_Commerce_Boulevard_2_1",
+      "points": [
+        [
+          486.63629150390625,
+          -155.6268310546875,
+          15.399999618530273
+        ],
+        [
+          406.63629150390625,
+          34.373172760009766,
+          15.399999618530273
+        ]
+      ],
+      "width": 5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Sidewalk_CommerceDistrict_CrossStreet_0_-1",
+      "points": [
+        [
+          75.0,
+          -199.0,
+          15.399999618530273
+        ],
+        [
+          525.0,
+          -199.0,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Sidewalk_CommerceDistrict_CrossStreet_0_1",
+      "points": [
+        [
+          75.0,
+          -181.0,
+          15.399999618530273
+        ],
+        [
+          525.0,
+          -181.0,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Sidewalk_Commerce_Link_0_-1",
+      "points": [
+        [
+          307.9792785644531,
+          -194.16310119628906,
+          15.399999618530273
+        ],
+        [
+          427.9792785644531,
+          35.83690643310547,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Sidewalk_Commerce_Link_0_1",
+      "points": [
+        [
+          292.0207214355469,
+          -185.83689880371094,
+          15.399999618530273
+        ],
+        [
+          412.0207214355469,
+          44.16309356689453,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_PlazaToCrossStreet",
+      "points": [
+        [
+          213,
+          -132,
+          15.4
+        ],
+        [
+          213,
+          -200.5,
+          15.4
+        ]
+      ],
+      "width": 6,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_EventApproach",
+      "points": [
+        [
+          106,
+          -225,
+          15.4
+        ],
+        [
+          106,
+          -179.5,
+          15.4
+        ]
+      ],
+      "width": 5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_MarketWalk",
+      "points": [
+        [
+          213,
+          -132,
+          15.4
+        ],
+        [
+          265,
+          -132,
+          15.4
+        ],
+        [
+          288,
+          -153,
+          15.4
+        ],
+        [
+          288,
+          -179.5,
+          15.4
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_FlashpointArrival",
+      "points": [
+        [
+          452,
+          -303,
+          15.4
+        ],
+        [
+          479,
+          -303,
+          15.4
+        ],
+        [
+          479,
+          -280,
+          15.4
+        ],
+        [
+          474,
+          -260,
+          14.6
+        ],
+        [
+          467.5,
+          -260,
+          14.6
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.03880570000581331
+    },
+    {
+      "name": "Commerce_FlashpointToCrossStreet",
+      "points": [
+        [
+          474,
+          -260,
+          14.6
+        ],
+        [
+          478,
+          -260,
+          14.6
+        ],
+        [
+          478,
+          -240,
+          15.4
+        ],
+        [
+          478,
+          -179.5,
+          15.4
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.040000000000000036
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_00",
+      "points": [
+        [
+          90.0,
+          -74.5,
+          15.399999618530273
+        ],
+        [
+          294.45458984375,
+          -181.17196655273438,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_01",
+      "points": [
+        [
+          292.0,
+          -73.5,
+          15.399999618530273
+        ],
+        [
+          338.08612060546875,
+          -97.54491424560547,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_02",
+      "points": [
+        [
+          515.0,
+          -73.5,
+          15.399999618530273
+        ],
+        [
+          488.2625427246094,
+          -84.75788879394531,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_03",
+      "points": [
+        [
+          106.0,
+          -240.5,
+          15.399999618530273
+        ],
+        [
+          106.0,
+          -199.0,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_04",
+      "points": [
+        [
+          193.0,
+          -247.5,
+          15.399999618530273
+        ],
+        [
+          193.0,
+          -199.0,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_05",
+      "points": [
+        [
+          358.0,
+          -312.5,
+          15.399999618530273
+        ],
+        [
+          317.44000244140625,
+          -248.45790100097656,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_06",
+      "points": [
+        [
+          480.0,
+          -319.5,
+          15.399999618530273
+        ],
+        [
+          480.0,
+          -199.0,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_07",
+      "points": [
+        [
+          518.0,
+          -274.5,
+          15.399999618530273
+        ],
+        [
+          518.0,
+          -199.0,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_08",
+      "points": [
+        [
+          410.0,
+          -133.5,
+          15.399999618530273
+        ],
+        [
+          410.0,
+          -181.0,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_09",
+      "points": [
+        [
+          90.0,
+          -140.5,
+          15.399999618530273
+        ],
+        [
+          90.0,
+          -181.0,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_10",
+      "points": [
+        [
+          160.0,
+          -72.5,
+          15.399999618530273
+        ],
+        [
+          175.0,
+          -181.0,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_11",
+      "points": [
+        [
+          228.0,
+          -72.5,
+          15.399999618530273
+        ],
+        [
+          228.0,
+          -181.0,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_12",
+      "points": [
+        [
+          278.0,
+          -253.5,
+          15.399999618530273
+        ],
+        [
+          287.01177978515625,
+          -267.7291259765625,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_13",
+      "points": [
+        [
+          299.0131530761719,
+          -345.00042724609375,
+          15.399999618530273
+        ],
+        [
+          260.6490478515625,
+          -284.4255065917969,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_Frontage_Commerce_Building_14",
+      "points": [
+        [
+          142.0,
+          -147.5,
+          15.399999618530273
+        ],
+        [
+          142.0,
+          -181.0,
+          15.399999618530273
+        ]
+      ],
+      "width": 4,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_BoulevardCrossing_Arrival",
+      "points": [
+        [
+          167.0850372314453,
+          -350.8558654785156,
+          15.399999618530273
+        ],
+        [
+          172.9149627685547,
+          -318.3749084472656,
+          15.399999618530273
+        ]
+      ],
+      "width": 5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Commerce_BoulevardCrossing_Hotel",
+      "points": [
+        [
+          485.20697021484375,
+          -72.34706115722656,
+          15.399999618530273
+        ],
+        [
+          454.79302978515625,
+          -85.15293884277344,
+          15.399999618530273
+        ]
+      ],
+      "width": 5,
+      "max_grade": 0.0
+    }
+  ],
+  "frontages": [
+    {
+      "building": "Commerce_Building_00",
+      "points": [
+        [
+          90.0,
+          -74.5,
+          15.399999618530273
+        ],
+        [
+          294.45458984375,
+          -181.17196655273438,
+          15.399999618530273
+        ]
+      ]
+    },
+    {
+      "building": "Commerce_Building_01",
+      "points": [
+        [
+          292.0,
+          -73.5,
+          15.399999618530273
+        ],
+        [
+          338.08612060546875,
+          -97.54491424560547,
+          15.399999618530273
+        ]
+      ]
+    },
+    {
+      "building": "Commerce_Building_02",
+      "points": [
+        [
+          515.0,
+          -73.5,
+          15.399999618530273
+        ],
+        [
+          488.2625427246094,
+          -84.75788879394531,
+          15.399999618530273
+        ]
+      ]
+    },
+    {
+      "building": "Commerce_Building_03",
+      "points": [
+        [
+          106.0,
+          -240.5,
+          15.399999618530273
+        ],
+        [
+          106.0,
+          -199.0,
+          15.399999618530273
+        ]
+      ]
+    },
+    {
+      "building": "Commerce_Building_04",
+      "points": [
+        [
+          193.0,
+          -247.5,
+          15.399999618530273
+        ],
+        [
+          193.0,
+          -199.0,
+          15.399999618530273
+        ]
+      ]
+    },
+    {
+      "building": "Commerce_Building_05",
+      "points": [
+        [
+          358.0,
+          -312.5,
+          15.399999618530273
+        ],
+        [
+          317.44000244140625,
+          -248.45790100097656,
+          15.399999618530273
+        ]
+      ]
+    },
+    {
+      "building": "Commerce_Building_06",
+      "points": [
+        [
+          480.0,
+          -319.5,
+          15.399999618530273
+        ],
+        [
+          480.0,
+          -199.0,
+          15.399999618530273
+        ]
+      ]
+    },
+    {
+      "building": "Commerce_Building_07",
+      "points": [
+        [
+          518.0,
+          -274.5,
+          15.399999618530273
+        ],
+        [
+          518.0,
+          -199.0,
+          15.399999618530273
+        ]
+      ]
+    },
+    {
+      "building": "Commerce_Building_08",
+      "points": [
+        [
+          410.0,
+          -133.5,
+          15.399999618530273
+        ],
+        [
+          410.0,
+          -181.0,
+          15.399999618530273
+        ]
+      ]
+    },
+    {
+      "building": "Commerce_Building_09",
+      "points": [
+        [
+          90.0,
+          -140.5,
+          15.399999618530273
+        ],
+        [
+          90.0,
+          -181.0,
+          15.399999618530273
+        ]
+      ]
+    },
+    {
+      "building": "Commerce_Building_10",
+      "points": [
+        [
+          160.0,
+          -72.5,
+          15.399999618530273
+        ],
+        [
+          175.0,
+          -181.0,
+          15.399999618530273
+        ]
+      ]
+    },
+    {
+      "building": "Commerce_Building_11",
+      "points": [
+        [
+          228.0,
+          -72.5,
+          15.399999618530273
+        ],
+        [
+          228.0,
+          -181.0,
+          15.399999618530273
+        ]
+      ]
+    },
+    {
+      "building": "Commerce_Building_12",
+      "points": [
+        [
+          278.0,
+          -253.5,
+          15.399999618530273
+        ],
+        [
+          287.01177978515625,
+          -267.7291259765625,
+          15.399999618530273
+        ]
+      ]
+    },
+    {
+      "building": "Commerce_Building_13",
+      "points": [
+        [
+          299.0131530761719,
+          -345.00042724609375,
+          15.399999618530273
+        ],
+        [
+          260.6490478515625,
+          -284.4255065917969,
+          15.399999618530273
+        ]
+      ]
+    },
+    {
+      "building": "Commerce_Building_14",
+      "points": [
+        [
+          142.0,
+          -147.5,
+          15.399999618530273
+        ],
+        [
+          142.0,
+          -181.0,
+          15.399999618530273
+        ]
+      ]
+    }
+  ],
+  "missing_frontages": [],
+  "crossings": [
+    {
+      "name": "CustomerPlaza",
+      "position": [
+        213,
+        -190
+      ],
+      "road_width": 14,
+      "rise": 0.25,
+      "ramp_length": 6
+    },
+    {
+      "name": "Conference",
+      "position": [
+        106,
+        -190
+      ],
+      "road_width": 14,
+      "rise": 0.25,
+      "ramp_length": 6
+    },
+    {
+      "name": "Market",
+      "position": [
+        288,
+        -190
+      ],
+      "road_width": 14,
+      "rise": 0.25,
+      "ramp_length": 6
+    },
+    {
+      "name": "Flashpoint",
+      "position": [
+        478,
+        -190
+      ],
+      "road_width": 14,
+      "rise": 0.25,
+      "ramp_length": 6
+    },
+    {
+      "name": "Arrival",
+      "position": [
+        170,
+        -334.615384615
+      ],
+      "road_width": 24,
+      "rise": 0.05000000000000071,
+      "ramp_length": 6
+    },
+    {
+      "name": "Hotel",
+      "position": [
+        470,
+        -78.75
+      ],
+      "road_width": 24,
+      "rise": 0.05000000000000071,
+      "ramp_length": 6
+    }
+  ],
+  "authored_components": 2460,
+  "shared_box_modules": 86,
+  "review_cameras": [
+    "Commerce_Aerial",
+    "Commerce_MainBoulevard",
+    "Commerce_FlashpointCorridor",
+    "Commerce_CustomerPlaza",
+    "Startup_To_Commerce",
+    "Commerce_To_TechCore",
+    "Commerce_To_Media",
+    "Commerce_NightPreview",
+    "Commerce_Conference",
+    "Commerce_HotelCorridor",
+    "Commerce_FlashpointContext"
+  ]
+}

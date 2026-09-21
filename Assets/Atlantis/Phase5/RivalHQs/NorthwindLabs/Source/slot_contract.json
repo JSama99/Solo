@@ -1,0 +1,38 @@
+{
+  "canonicalCompanyID": "northwind",
+  "displayName": "Northwind Labs",
+  "slotID": "RivalHQ_Slot_03",
+  "semanticLocator": "RivalHQ_NorthwindLabs",
+  "district": "TechCore",
+  "worldPosition": [
+    -100,
+    520,
+    14
+  ],
+  "worldRotationDegrees": [
+    0,
+    0,
+    0
+  ],
+  "forward": "-Y Blender / +Z glTF",
+  "units": "metres; 1 Blender unit = 1 metre",
+  "origin": "footprint centre at ground/base; local (0,0,0)",
+  "targetHeight": 115,
+  "finalHeightRange": [
+    100,
+    130
+  ],
+  "initialMaximumFootprint": [
+    58,
+    52
+  ],
+  "absoluteUpgradeEnvelope": [
+    65,
+    60,
+    150
+  ],
+  "signageObject": "NorthwindLabs_Signage_Main",
+  "prompt": "Create a standalone Northwind Labs headquarters for Atlantis, approximately 115 metres tall, fitting a 58 by 52 metre footprint including podium, projections and roof elements. Offset technical tower, low research wing, modular structural frame. Materials: Cool blue glass and pale silver. Accents: Muted cyan technical grid. Small precise lobby plate, reserve a blank architectural signage surface. Night identity: Cool vertical laboratory grid. Main public facade faces south (-Y in Blender). Foundation-centred ground pivot. Credible contemporary architecture with clean mobile-friendly silhouette. No surrounding city, terrain, streets, unrelated structures, giant billboards, permanent text, floating parts, or fantasy crown. Keep the building subordinate to the 280 metre Spire.",
+  "delivery": "Standalone raw GLB retained; normalize uniformly; clean/reconstruct in Blender as required; independently export and reimport; validate original slot, roads and established sightlines; do not change runtime.",
+  "lodPlan": "Keep hero root independent for future LOD0/LOD1/LOD2. LOD assets and runtime switching are not authored in Phase4."
+}

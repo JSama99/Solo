@@ -1,0 +1,72 @@
+{
+  "checks": {
+    "only_four_original_masses_changed": true,
+    "district_territories_preserved": true,
+    "spire_geometry_transform_preserved": true,
+    "venture_anchor_and_alias_preserved": true,
+    "all_other_slots_preserved": true,
+    "original_cameras_preserved": true,
+    "source_staged": true,
+    "spire_sightlines_preserved": true,
+    "hall_shorter_than_spire": true,
+    "footprint_within_slot": true,
+    "height_within_contract": true,
+    "origin_at_ground": true,
+    "unit_scale": true,
+    "closed_export_meshes": true,
+    "valid_faces_and_winding": true,
+    "no_missing_textures": true,
+    "four_material_meshes": true,
+    "phase0_phase1_app_bytes_unchanged": true,
+    "raw_source_retained": true
+  },
+  "geometry": [
+    {
+      "name": "VentureHall_atrium_glazing",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "outward_volume": 91187.35999225614
+    },
+    {
+      "name": "VentureHall_brushed_bronze",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "outward_volume": 3242.5314665174756
+    },
+    {
+      "name": "VentureHall_pale_limestone",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "outward_volume": 25416.799943208687
+    },
+    {
+      "name": "VentureHall_warm_entry",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "outward_volume": 5.475026798187187
+    }
+  ],
+  "bounds": [
+    [
+      -44.0,
+      -36.5,
+      0.0
+    ],
+    [
+      44.0,
+      36.5,
+      41.420616149902344
+    ]
+  ],
+  "changed_original_objects": [
+    "VentureDistrict_Block_001",
+    "VentureDistrict_Block_004",
+    "VentureDistrict_Block_007",
+    "VentureDistrict_Block_009"
+  ],
+  "changed_protected_files": [],
+  "sightlines": {
+    "Founder_To_City": true,
+    "TheSpire_StartupSightline": true
+  }
+}

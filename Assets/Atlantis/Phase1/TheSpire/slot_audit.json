@@ -1,0 +1,58 @@
+{
+  "contract": {
+    "id": "Landmark_TheSpire",
+    "district": "TechCore",
+    "origin": [
+      50,
+      420,
+      14
+    ],
+    "rotation_degrees": [
+      0,
+      0,
+      0
+    ],
+    "forward": "-Y (Blender); +Z after glTF conversion",
+    "footprint_m": [
+      70,
+      70
+    ],
+    "target_height_m": [
+      280,
+      350
+    ],
+    "max_bbox_m": [
+      70,
+      70,
+      350
+    ],
+    "placeholder_height_m": 348,
+    "kind": "hero",
+    "view_visibility": {
+      "Atlantis_Master_Aerial": "visible upper-center sample",
+      "Founder_To_City": "visible upper-center sample",
+      "TechCore_Skyline": "visible upper-center sample",
+      "Atlantis_Waterfront": "visible upper-center sample",
+      "UnicornHeights_View": "visible upper-center sample",
+      "Atlantis_Top_Down": "visible upper-center sample"
+    }
+  },
+  "plaza": {
+    "center": [
+      50,
+      420,
+      14.2
+    ],
+    "dimensions": [
+      110,
+      110,
+      0.3
+    ]
+  },
+  "founder_distance_m": 1719.9305218525544,
+  "target_design_height_m": 330,
+  "target_design_footprint_m": [
+    60,
+    60
+  ]
+}

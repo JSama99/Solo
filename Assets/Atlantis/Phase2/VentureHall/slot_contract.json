@@ -1,0 +1,38 @@
+{
+  "id": "Landmark_VentureHall",
+  "district": "VentureDistrict",
+  "origin": [
+    -520,
+    110,
+    14
+  ],
+  "rotation_degrees": [
+    0,
+    0,
+    0
+  ],
+  "forward": "-Y (Blender); +Z after glTF conversion",
+  "footprint_m": [
+    90,
+    75
+  ],
+  "target_height_m": [
+    30,
+    65
+  ],
+  "max_bbox_m": [
+    90,
+    75,
+    65
+  ],
+  "placeholder_height_m": 40,
+  "kind": "hero",
+  "view_visibility": {
+    "Atlantis_Master_Aerial": "visible upper-center sample",
+    "Founder_To_City": "occluded upper-center sample",
+    "TechCore_Skyline": "visible upper-center sample",
+    "Atlantis_Waterfront": "visible upper-center sample",
+    "UnicornHeights_View": "visible upper-center sample",
+    "Atlantis_Top_Down": "visible upper-center sample"
+  }
+}

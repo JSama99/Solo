@@ -15,6 +15,8 @@ enum FounderPresentationState: String, CaseIterable, Equatable, Sendable {
 
 enum FounderWorldInteraction: Equatable, Sendable {
   case openFounderComputer
+  case openFounderPhone
+  case openFounderTablet
 }
 
 /// Session-only presentation state for the authored production sectional garage door.
@@ -112,6 +114,10 @@ enum FounderEnvironmentLightingConfiguration {
 
 enum FounderGarageAccessibilityID {
   static let founderComputer = "founderGarage.realityKit.founderComputer"
+  static let founderPhone = "founderGarage.realityKit.founderPhone"
+  static let founderTablet = "founderGarage.realityKit.founderTablet"
+  static let chair = "founderGarage.realityKit.chair"
+  static let whiteboard = "founderGarage.realityKit.whiteboard"
   static let garageDoorToggle = "founderGarage.realityKit.garageDoor.toggle"
   static let environmentTimeMenu = "founderGarage.environment.timeMenu"
 
@@ -124,9 +130,202 @@ struct FounderWorldInteractionAdapter {
   static let founderComputerEntityName = "FounderComputer.InteractionTarget"
   static let founderComputerAccessibilityLabel = "Founder Computer"
   static let founderComputerAccessibilityHint = "Opens Company Command on the Founder Computer."
+  static let founderPhoneEntityName = "FounderPhone.InteractionTarget"
+  static let founderPhoneAccessibilityLabel = "Tech.com iPhone"
+  static let founderPhoneAccessibilityHint = "Opens Tech.com on the Founder's iPhone."
+  static let founderTabletEntityName = "FounderTablet.InteractionTarget"
+  static let founderTabletAccessibilityLabel = "Venture iPad"
+  static let founderTabletAccessibilityHint = "Opens Venture on the Founder's iPad."
 
   static func interaction(forEntityNamed name: String) -> FounderWorldInteraction? {
-    name == founderComputerEntityName ? .openFounderComputer : nil
+    switch name {
+    case founderComputerEntityName: .openFounderComputer
+    case founderPhoneEntityName: .openFounderPhone
+    case founderTabletEntityName: .openFounderTablet
+    default: nil
+    }
+  }
+}
+
+/// Session-only presentation feedback. It mirrors existing interaction truth and
+/// never authorizes an interaction or enters career persistence.
+enum GarageInteractionFeedbackState: Int, CaseIterable, Equatable, Sendable {
+  case unavailable
+  case available
+  case focused
+  case activated
+
+  var exposesPrimaryPrompt: Bool { self == .focused || self == .activated }
+}
+
+enum GarageInteractionFeedbackPolicy: String, Equatable, Sendable {
+  case none
+  case deferred
+}
+
+struct GarageInteractionVisualEmphasis: Equatable, Sendable {
+  let screenIntensityScale: Float
+  let promptBorderOpacity: Double
+  let promptScale: Double
+
+  /// Shared target-strength signal. Individual materials translate this into a
+  /// restrained local lift appropriate to the object instead of a global glow.
+  var targetIntensityScale: Float { screenIntensityScale }
+
+  static func resolve(
+    state: GarageInteractionFeedbackState,
+    reduceMotion: Bool
+  ) -> Self {
+    switch state {
+    case .unavailable:
+      .init(screenIntensityScale: 0.82, promptBorderOpacity: 0, promptScale: 1)
+    case .available:
+      .init(screenIntensityScale: 0.96, promptBorderOpacity: 0, promptScale: 1)
+    case .focused:
+      .init(screenIntensityScale: 1.14, promptBorderOpacity: 0.42, promptScale: 1)
+    case .activated:
+      .init(
+        screenIntensityScale: 1.38,
+        promptBorderOpacity: 0.78,
+        promptScale: reduceMotion ? 1 : 1.025
+      )
+    }
+  }
+}
+
+struct GarageInteractionFeedbackConfiguration: Equatable, Identifiable, Sendable {
+  let targetID: String
+  let promptText: String
+  let activationDuration: TimeInterval
+  let reducedMotionActivationDuration: TimeInterval
+  let soundPolicy: GarageInteractionFeedbackPolicy
+  let hapticPolicy: GarageInteractionFeedbackPolicy
+  let promptPriority: Int
+  let systemImage: String
+  let accessibilityLabel: String
+  let accessibilityHint: String
+  let accessibilityIdentifier: String
+
+  var id: String { targetID }
+
+  init(
+    targetID: String,
+    promptText: String,
+    activationDuration: TimeInterval,
+    reducedMotionActivationDuration: TimeInterval,
+    soundPolicy: GarageInteractionFeedbackPolicy,
+    hapticPolicy: GarageInteractionFeedbackPolicy,
+    promptPriority: Int,
+    systemImage: String = "hand.tap.fill",
+    accessibilityLabel: String = "Garage interaction",
+    accessibilityHint: String = "Activates this Garage interaction.",
+    accessibilityIdentifier: String = "founderGarage.realityKit.interaction"
+  ) {
+    self.targetID = targetID
+    self.promptText = promptText
+    self.activationDuration = activationDuration
+    self.reducedMotionActivationDuration = reducedMotionActivationDuration
+    self.soundPolicy = soundPolicy
+    self.hapticPolicy = hapticPolicy
+    self.promptPriority = promptPriority
+    self.systemImage = systemImage
+    self.accessibilityLabel = accessibilityLabel
+    self.accessibilityHint = accessibilityHint
+    self.accessibilityIdentifier = accessibilityIdentifier
+  }
+
+  static func founderComputer(targetID: String) -> Self {
+    .init(
+      targetID: targetID,
+      promptText: "OPEN COMPUTER",
+      activationDuration: 0.22,
+      reducedMotionActivationDuration: 0.08,
+      soundPolicy: .deferred,
+      hapticPolicy: .deferred,
+      promptPriority: 100,
+      systemImage: "desktopcomputer",
+      accessibilityLabel: FounderWorldInteractionAdapter.founderComputerAccessibilityLabel,
+      accessibilityHint: FounderWorldInteractionAdapter.founderComputerAccessibilityHint,
+      accessibilityIdentifier: FounderGarageAccessibilityID.founderComputer
+    )
+  }
+
+  static func chair(targetID: String) -> Self {
+    .init(
+      targetID: targetID,
+      promptText: "RETURN TO DESK",
+      activationDuration: 0.22,
+      reducedMotionActivationDuration: 0.08,
+      soundPolicy: .deferred,
+      hapticPolicy: .deferred,
+      promptPriority: 90,
+      systemImage: "chair.fill",
+      accessibilityLabel: "Founder Chair",
+      accessibilityHint: "Returns the Founder to the desk using the existing Chair interaction.",
+      accessibilityIdentifier: FounderGarageAccessibilityID.chair
+    )
+  }
+
+  static func whiteboard(targetID: String) -> Self {
+    .init(
+      targetID: targetID,
+      promptText: "VIEW WHITEBOARD",
+      activationDuration: 0.22,
+      reducedMotionActivationDuration: 0.08,
+      soundPolicy: .deferred,
+      hapticPolicy: .deferred,
+      promptPriority: 80,
+      systemImage: "viewfinder",
+      accessibilityLabel: "Garage Whiteboard",
+      accessibilityHint: "Opens the existing Whiteboard observation view.",
+      accessibilityIdentifier: FounderGarageAccessibilityID.whiteboard
+    )
+  }
+
+  func duration(reduceMotion: Bool) -> TimeInterval {
+    reduceMotion ? reducedMotionActivationDuration : activationDuration
+  }
+}
+
+struct GarageInteractionFeedbackSnapshot: Equatable, Identifiable, Sendable {
+  let configuration: GarageInteractionFeedbackConfiguration
+  let state: GarageInteractionFeedbackState
+
+  var id: String { configuration.targetID }
+}
+
+enum GarageInteractionFeedbackResolver {
+  static func state(
+    configuration: GarageInteractionFeedbackConfiguration,
+    isAvailable: Bool,
+    isFocused: Bool,
+    activationElapsed: TimeInterval?,
+    reduceMotion: Bool
+  ) -> GarageInteractionFeedbackState {
+    guard isAvailable else { return .unavailable }
+    if let activationElapsed,
+       activationElapsed >= 0,
+       activationElapsed < configuration.duration(reduceMotion: reduceMotion) {
+      return .activated
+    }
+    return isFocused ? .focused : .available
+  }
+
+  static func primaryPrompt(
+    from snapshots: [GarageInteractionFeedbackSnapshot]
+  ) -> GarageInteractionFeedbackSnapshot? {
+    snapshots
+      .filter { $0.state.exposesPrimaryPrompt }
+      .sorted {
+        if $0.state.rawValue != $1.state.rawValue {
+          return $0.state.rawValue > $1.state.rawValue
+        }
+        if $0.configuration.promptPriority != $1.configuration.promptPriority {
+          return $0.configuration.promptPriority > $1.configuration.promptPriority
+        }
+        return $0.configuration.targetID < $1.configuration.targetID
+      }
+      .first
   }
 }
 
@@ -239,7 +438,37 @@ struct FounderLookOrientation: Equatable, Sendable {
 /// deliberately different input semantics.
 enum FounderGarageNavigationMode: Equatable, Sendable {
   case seated
+  case walking
   case authoredInspection(FounderGarageCameraState)
+  case interactionFocus(FounderGarageInteractionFocusTarget)
+}
+
+enum FounderGarageInteractionFocusTarget: String, CaseIterable, Equatable, Sendable {
+  case computer, phone, tablet, strategyBoard, signalTV, server
+}
+
+/// Presentation-only handoff for the later locomotion graph. Camera physics may
+/// consume this pose without owning animation, foot contacts, or canonical state.
+struct FounderLocomotionCameraSample: Equatable, Sendable {
+  enum Stance: Equatable, Sendable { case seated, standing }
+  var bodyPosition: SIMD3<Float>
+  var bodyHeading: Float
+  var locomotionVelocity: SIMD3<Float>
+  var stepPhase: Float?
+  var stance: Stance
+}
+
+/// Read-only presentation state consumed by the future Founder locomotion graph.
+/// It describes camera-owned navigation without transferring transform authority.
+struct FounderCameraSpatialState: Equatable, Sendable {
+  var position: SIMD3<Float>
+  var facingDirection: SIMD3<Float>
+  var horizontalVelocity: SIMD2<Float>
+  var movementMagnitude: Float
+  var stance: FounderLocomotionCameraSample.Stance
+  var navigationMode: FounderGarageNavigationMode
+  var normalizedLocomotionIntent: SIMD2<Float>?
+  var stepPhase: Float?
 }
 
 /// Session-only RealityKit player state. This never enters GameStore or saves.
@@ -250,4 +479,12 @@ struct FounderGaragePlayerSpatialState: Equatable, Sendable {
   var navigationMode: FounderGarageNavigationMode = .seated
 
   var eyePosition: SIMD3<Float> { playerPose.position + eyeOffset }
+}
+
+/// Session-only spatial continuity passed from the Garage camera authority to
+/// the existing Atlantis traversal runtime at the authored driveway seam.
+struct FounderAtlantisTraversalHandoff: Identifiable, Equatable, Sendable {
+  let id = UUID()
+  var garagePosition: SIMD3<Float>
+  var facingDirection: SIMD3<Float>
 }

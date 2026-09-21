@@ -41,7 +41,7 @@ final class AtlantisRuntimeTests: XCTestCase {
     await source.waitFor(1);XCTAssertEqual(source.count,1);XCTAssertEqual(loader.states[.founderDistrict],.loading)
     source.finish();await a?.value;await b?.value
     XCTAssertEqual(loader.loaded,[.founderDistrict]);XCTAssertNil(loader.load(.founderDistrict));XCTAssertEqual(loader.root.children.count,1)
-    weak var released=loader.entity(for:.founderDistrict)
+      weak let released=loader.entity(for:.founderDistrict)
     loader.unload(.founderDistrict);XCTAssertNil(released);XCTAssertEqual(loader.states[.founderDistrict],.unloaded)
     let next=loader.load(.founderDistrict);await source.waitFor(2);source.finish();await next?.value
     XCTAssertEqual(loader.root.children.count,1)

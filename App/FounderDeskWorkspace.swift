@@ -26,9 +26,9 @@ struct FounderDeskWorkspace: View {
     uniqueKeysWithValues: FounderDeskDevice.allCases.map { ($0, FounderPhysicalDeviceState.idle) }
   )
   @State private var deviceActivationID = UUID()
-  #if DEBUG
   @State private var showsMotionVerification = false
-  #endif
+  @State private var atlantisRoute: AtlantisCanonicalRoute?
+  @State private var atlantisInteractionReturnID = UUID()
   @AccessibilityFocusState private var focusedDevice: FounderDeskDevice?
   @AccessibilityFocusState private var deskIsFocused: Bool
 
@@ -128,6 +128,16 @@ struct FounderDeskWorkspace: View {
       .presentationDetents([.height(310)])
       .presentationDragIndicator(.visible)
     }
+    .fullScreenCover(item: $atlantisRoute, onDismiss: {
+      atlantisInteractionReturnID = UUID()
+    }) { destination in
+      AtlantisCanonicalDestination(
+        destination: destination,
+        store: store,
+        presentation: presentation,
+        onReturn: { atlantisRoute = nil }
+      )
+    }
     #if DEBUG
     .sheet(isPresented: $showsMotionVerification) {
       MotionVerificationScreen()
@@ -155,7 +165,22 @@ struct FounderDeskWorkspace: View {
         presentation: garageCameraPresentation(worldPresentation),
         isActive: navigation.selection == .overview,
         onOpenFounderComputer: { select(.computer) },
-        onCameraIntent: { navigation.observeGarage($0) }
+        onOpenFounderPhone: { select(.phone) },
+        onOpenFounderTablet: { select(.tablet) },
+        onOpenFounderServer: { select(.server) },
+        onOpenFundingBoard: { selectedGarageViewer = .fundingBoard },
+        onCameraIntent: { navigation.observeGarage($0) },
+        onExitToAtlantis: { handoff in
+          if ProcessInfo.processInfo.arguments.contains("--founder-traversal-diagnostics") {
+            print("TRAVERSAL_DIAG event=workspace-handoff-received")
+          }
+        },
+        atlantisSignals: .read(store),
+        atlantisInteractionReturnID: atlantisInteractionReturnID,
+        onAtlantisInteraction: { intent in
+          let rivalIDs = Set(ContentLibrary.rivalCompanies.map(\.id))
+          atlantisRoute = AtlantisCanonicalRoute.resolve(intent, availableRivalIDs: rivalIDs)
+        }
       )
       .allowsHitTesting(navigation.selection == .overview)
     }

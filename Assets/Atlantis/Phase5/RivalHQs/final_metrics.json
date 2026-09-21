@@ -1,0 +1,302 @@
+{
+  "PallasAI": {
+    "checks": {
+      "fits_initial_footprint": true,
+      "target_height": true,
+      "ground_origin": true,
+      "clean_geometry": true,
+      "clean_transforms": true,
+      "semantic_main_exact": true,
+      "semantic_uvs": true,
+      "metres": true
+    },
+    "bounds": [
+      [
+        -29.0,
+        -20.0,
+        0.0
+      ],
+      [
+        29.0,
+        20.0,
+        160.0
+      ]
+    ],
+    "dimensions": [
+      58.0,
+      40.0,
+      160.0
+    ],
+    "triangles": 572,
+    "meshes": 8,
+    "materials": 8,
+    "textures": 0,
+    "bytes": 47440,
+    "semantic_targets": [
+      "PallasAI_CrownMark",
+      "PallasAI_LobbyDisplay",
+      "PallasAI_Signage_Main"
+    ],
+    "geometry": [
+      {
+        "name": "PallasAI_ArchitecturalGlow",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 0.480000991818087
+      },
+      {
+        "name": "PallasAI_Bronze",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 9920.589883956993
+      },
+      {
+        "name": "PallasAI_CrownMark",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 2.7000001072883606
+      },
+      {
+        "name": "PallasAI_LobbyDisplay",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 3.75
+      },
+      {
+        "name": "PallasAI_PodiumGlass",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 27216.0
+      },
+      {
+        "name": "PallasAI_PodiumStone",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 12608.000000000005
+      },
+      {
+        "name": "PallasAI_Signage_Main",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 6.0
+      },
+      {
+        "name": "PallasAI_TowerRetopology",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 162989.33333333337
+      }
+    ],
+    "remaining_growth_dimensions": [
+      6.0,
+      4.0,
+      20.0
+    ],
+    "remaining_growth_plan_area_m2": 496.0,
+    "material_names": [
+      "PallasAI_ArchitecturalGlow",
+      "PallasAI_Bronze",
+      "PallasAI_CrownMark",
+      "PallasAI_LobbyDisplay",
+      "PallasAI_PodiumGlass",
+      "PallasAI_PodiumStone",
+      "PallasAI_Signage_Main",
+      "PallasAI_RefinedTowerGlass"
+    ]
+  },
+  "NorthwindLabs": {
+    "checks": {
+      "fits_initial_footprint": true,
+      "target_height": true,
+      "ground_origin": true,
+      "clean_geometry": true,
+      "clean_transforms": true,
+      "semantic_main_exact": true,
+      "semantic_uvs": true,
+      "metres": true
+    },
+    "bounds": [
+      [
+        -28.0,
+        -25.0,
+        0.0
+      ],
+      [
+        28.0,
+        25.0,
+        115.0
+      ]
+    ],
+    "dimensions": [
+      56.0,
+      50.0,
+      115.0
+    ],
+    "triangles": 708,
+    "meshes": 7,
+    "materials": 7,
+    "textures": 0,
+    "bytes": 57152,
+    "semantic_targets": [
+      "NorthwindLabs_LabDisplay",
+      "NorthwindLabs_Signage_Main"
+    ],
+    "geometry": [
+      {
+        "name": "NorthwindLabs_LabDisplay",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 6.0
+      },
+      {
+        "name": "NorthwindLabs_LabGlow",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 1.2000091552908974
+      },
+      {
+        "name": "NorthwindLabs_PaleStructure",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 22179.478904506264
+      },
+      {
+        "name": "NorthwindLabs_ResearchGlazing",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 121630.0
+      },
+      {
+        "name": "NorthwindLabs_RoofLouvers",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 7.199993133544922
+      },
+      {
+        "name": "NorthwindLabs_Signage_Main",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 5.0
+      },
+      {
+        "name": "NorthwindLabs_Silver",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 212.76038726841216
+      }
+    ],
+    "remaining_growth_dimensions": [
+      9.0,
+      10.0,
+      35.0
+    ],
+    "remaining_growth_plan_area_m2": 1100.0,
+    "material_names": [
+      "NorthwindLabs_LabDisplay",
+      "NorthwindLabs_LabGlow",
+      "NorthwindLabs_PaleStructure",
+      "NorthwindLabs_ResearchGlazing",
+      "NorthwindLabs_RoofLouvers",
+      "NorthwindLabs_Signage_Main",
+      "NorthwindLabs_Silver"
+    ]
+  },
+  "Flashpoint": {
+    "checks": {
+      "fits_initial_footprint": true,
+      "target_height": true,
+      "ground_origin": true,
+      "clean_geometry": true,
+      "clean_transforms": true,
+      "semantic_main_exact": true,
+      "semantic_uvs": true,
+      "metres": true
+    },
+    "bounds": [
+      [
+        -19.0,
+        -15.0,
+        0.0
+      ],
+      [
+        19.0,
+        15.0,
+        75.0
+      ]
+    ],
+    "dimensions": [
+      38.0,
+      30.0,
+      75.0
+    ],
+    "triangles": 420,
+    "meshes": 7,
+    "materials": 7,
+    "textures": 0,
+    "bytes": 36940,
+    "semantic_targets": [
+      "Flashpoint_LaunchDisplay",
+      "Flashpoint_Signage_Main",
+      "Flashpoint_Ticker"
+    ],
+    "geometry": [
+      {
+        "name": "Flashpoint_DarkGlazing",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 36821.9006576538
+      },
+      {
+        "name": "Flashpoint_LaunchDisplay",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 9.0
+      },
+      {
+        "name": "Flashpoint_MomentumAccent",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 10.440002176759437
+      },
+      {
+        "name": "Flashpoint_PodiumConcrete",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 2280.0
+      },
+      {
+        "name": "Flashpoint_Signage_Main",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 2.625
+      },
+      {
+        "name": "Flashpoint_StructuralSilver",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 4581.597207376859
+      },
+      {
+        "name": "Flashpoint_Ticker",
+        "nonmanifold": 0,
+        "zero_area": 0,
+        "signed_volume": 3.000000119209288
+      }
+    ],
+    "remaining_growth_dimensions": [
+      4.0,
+      4.0,
+      15.0
+    ],
+    "remaining_growth_plan_area_m2": 288.0,
+    "material_names": [
+      "Flashpoint_DarkGlazing",
+      "Flashpoint_LaunchDisplay",
+      "Flashpoint_MomentumAccent",
+      "Flashpoint_PodiumConcrete",
+      "Flashpoint_Signage_Main",
+      "Flashpoint_StructuralSilver",
+      "Flashpoint_Ticker"
+    ]
+  }
+}

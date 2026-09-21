@@ -1,0 +1,305 @@
+Application, 0x109ac9900, pid: 3871, label: 'SOLO: Unicorn Run' <App element pid: 3871>
+  Window (Main), 0x109ac9a40, {{0.0, 0.0}, {1180.0, 820.0}} <AX element pid: 3871, elementOrHash.elementID: 4323182496.4>
+    Other, 0x109aca300, {{0.0, 0.0}, {1180.0, 820.0}} <AX element pid: 3871, elementOrHash.elementID: 5789532160.6>
+      Other, 0x109ac92c0, {{0.0, 0.0}, {1180.0, 820.0}} <AX element pid: 3871, elementOrHash.elementID: 5773792896.8>
+        Other, 0x109ac9e00, {{0.0, 0.0}, {1180.0, 820.0}} <AX element pid: 3871, elementOrHash.elementID: 5788895424.10>
+          Other, 0x109ac9f40, {{0.0, 0.0}, {1180.0, 820.0}} <AX element pid: 3871, elementOrHash.elementID: 4323101856.11>
+            Other, 0x109aca080, {{0.0, 0.0}, {1180.0, 820.0}} <AX element pid: 3871, elementOrHash.elementID: 5793790848.12>
+              Other, 0x109ac9680, {{0.0, 0.0}, {1180.0, 820.0}}, identifier: 'founder-garage-realitykit', value: Founder View <AX element pid: 3871, elementOrHash.elementID: 5842829760.194>
+                Other, 0x109ac97c0, {{0.0, 32.0}, {1180.0, 768.0}} <AX element pid: 3871, elementOrHash.elementID: 5801466880.199>
+                  Button, 0x109aca6c0, {{0.0, 32.0}, {1180.0, 768.0}}, label: 'Founder Computer, off screen' <AX element pid: 3871, elementOrHash.elementID: 5874300736.230>
+                StaticText, 0x109aca440, {{18.0, 54.0}, {159.0, 16.0}}, label: 'FOUNDER’S GARAGE' <AX element pid: 3871, elementOrHash.elementID: 5838875136.200>
+                StaticText, 0x109aca580, {{18.0, 73.0}, {276.5, 17.0}}, label: 'Choose a response to the Founder Event.' <AX element pid: 3871, elementOrHash.elementID: 5838875584.201>
+                Button, 0x109ac8000, {{1090.0, 50.0}, {72.0, 44.0}}, identifier: 'founderGarage.environment.timeMenu', label: 'Garage Environment Time', value: Day <AX element pid: 3871, elementOrHash.elementID: 5838877376.202>
+                  Button, 0x106981180, {{1090.0, 50.0}, {72.0, 44.0}} <AX element pid: 3871, elementOrHash.elementID: 5790251008.231>
+                    Image, 0x1069830c0, {{1101.0, 64.5}, {15.0, 15.0}}, identifier: 'sun.max.fill', label: 'Brightness Higher' <AX element pid: 3871, elementOrHash.elementID: 5838876032.255>
+                    StaticText, 0x106983980, {{1101.0, 64.1}, {51.0, 16.0}}, label: 'DAY' <AX element pid: 3871, elementOrHash.elementID: 5838876480.256>
+                StaticText, 0x106983200, {{18.0, 103.0}, {108.5, 33.0}}, identifier: 'founderGarage.currentView', label: 'Founder View', value: Founder View <AX element pid: 3871, elementOrHash.elementID: 5838877824.203>
+                Button, 0x106983c00, {{18.0, 606.0}, {118.0, 44.0}}, identifier: 'founderGarage.lookOut', label: 'LOOK OUT' <AX element pid: 3871, elementOrHash.elementID: 5838878272.204>
+                Button, 0x106983d40, {{144.0, 606.0}, {118.5, 44.0}}, identifier: 'founderGarage.recenter', label: 'Recenter Founder View', value: Centered <AX element pid: 3871, elementOrHash.elementID: 5838878720.205>
+                Other, 0x106983e80, {{207.5, 658.0}, {72.0, 72.0}}, identifier: 'founderGarage.camera.movementPad', label: 'Garage movement' <AX element pid: 3871, elementOrHash.elementID: 5882832512.495>
+                  Image, 0x106983700, {{207.5, 658.0}, {72.0, 72.0}}, identifier: 'move.3d', label: 'move.3d' <AX element pid: 3871, elementOrHash.elementID: 5882831616.497>
+                Button, 0x106983840, {{18.0, 686.0}, {179.5, 44.0}}, identifier: 'founderGarage.camera.toggleWalking', label: 'Return to Founder desk', value: Walking <AX element pid: 3871, elementOrHash.elementID: 5838879168.206>
+                Button, 0x106983340, {{18.0, 738.0}, {145.0, 44.0}}, identifier: 'founderGarage.realityKit.garageDoor.toggle', label: 'Close Garage Door', value: Open <AX element pid: 3871, elementOrHash.elementID: 5882833408.496>
+                  Image, 0x106983480, {{31.5, 752.5}, {18.0, 15.0}}, identifier: 'door.garage.closed', label: 'door.garage.closed' <AX element pid: 3871, elementOrHash.elementID: 5882832064.498>
+                  StaticText, 0x1069835c0, {{31.5, 751.5}, {119.5, 17.0}}, label: 'CLOSE DOOR' <AX element pid: 3871, elementOrHash.elementID: 5882832960.499>
+              Other, 0x106983ac0, {{58.5, 69.9}, {1062.9, 692.1}} <AX element pid: 3871, elementOrHash.elementID: 5843033088.195>
+                ScrollView, 0x106982f80, {{59.0, 128.0}, {1062.0, 633.6}} <AX element pid: 3871, elementOrHash.elementID: 5839703040.210>
+                  Other, 0x114894000, {{59.0, 128.0}, {1062.0, 1137.2}} <AX element pid: 3871, elementOrHash.elementID: 5840425984.234>
+                  Other, 0x114894140, {{1091.3, 128.0}, {27.0, 547.2}}, label: 'Vertical scroll bar, 3 pages', value: 0% <AX element pid: 3871, elementOrHash.elementID: 5840432128.235>
+                  Other, 0x114894280, {{1091.3, 128.0}, {27.0, 547.2}}, label: 'Vertical scroll bar, 3 pages', value: 0% <AX element pid: 3871, elementOrHash.elementID: 5840432128.235>
+                Button, 0x1148943c0, {{69.8, 72.2}, {100.8, 54.0}}, identifier: 'founder-computer-look-out', label: 'LOOK OUT' <AX element pid: 3871, elementOrHash.elementID: 5843031296.211>
+                  Image, 0x114894500, {{76.5, 93.3}, {16.2, 11.7}}, identifier: 'binoculars.fill', label: 'binoculars.fill' <AX element pid: 3871, elementOrHash.elementID: 5843030400.236>
+                  StaticText, 0x114894640, {{69.8, 72.2}, {100.8, 54.0}}, label: 'LOOK OUT' <AX element pid: 3871, elementOrHash.elementID: 5843030848.237>
+                Image, 0x114894780, {{180.9, 92.0}, {16.2, 14.4}}, identifier: 'desktopcomputer', label: 'Computer' <AX element pid: 3871, elementOrHash.elementID: 5843031744.212>
+                StaticText, 0x1148948c0, {{180.9, 91.5}, {148.9, 15.3}}, label: 'Founder Computer' <AX element pid: 3871, elementOrHash.elementID: 5843032192.213>
+                StaticText, 0x114894a00, {{1043.2, 92.0}, {67.0, 14.4}}, label: 'FOCUSED' <AX element pid: 3871, elementOrHash.elementID: 5843032640.214>
+              Other, 0x114894b40, {{148.6, 93.3}, {882.9, 645.3}} <AX element pid: 3871, elementOrHash.elementID: 5843035776.196>
+                Other, 0x114894c80, {{165.2, 167.6}, {849.6, 554.4}} <AX element pid: 3871, elementOrHash.elementID: 5822194880.215>
+                  NavigationBar, 0x114894dc0, {{165.2, 176.6}, {849.6, 48.6}}, identifier: 'Tech.com' <AX element pid: 3871, elementOrHash.elementID: 5802004224.240>
+                  Other, 0x114894f00, {{165.2, 167.6}, {849.6, 554.4}} <AX element pid: 3871, elementOrHash.elementID: 5822194432.241>
+                    Other, 0x114895040, {{165.2, 167.6}, {849.6, 554.4}} <AX element pid: 3871, elementOrHash.elementID: 5844172800.257>
+                      Other, 0x114895180, {{165.2, 167.6}, {849.6, 554.4}} <AX element pid: 3871, elementOrHash.elementID: 5790251904.267>
+                        Other, 0x1148952c0, {{165.2, 167.6}, {849.6, 554.4}} <AX element pid: 3871, elementOrHash.elementID: 5873698112.270>
+                          ScrollView, 0x114895400, {{165.2, 167.6}, {849.6, 554.4}} <AX element pid: 3871, elementOrHash.elementID: 5795033088.273>
+                            Other, 0x114895540, {{165.2, 225.2}, {849.6, 2566.8}} <AX element pid: 3871, elementOrHash.elementID: 5789541888.276>
+                              Other, 0x114895680, {{179.1, 173.9}, {859.0, 1102.9}}, identifier: 'techcom-build-30-3' <AX element pid: 3871, elementOrHash.elementID: 5873697216.281>
+                                StaticText, 0x1148957c0, {{179.1, 173.9}, {859.0, 205.2}}, label: 'Tech.com, live startup intelligence. Venture 1, sprint 1, SOLO market position 1' <AX element pid: 3871, elementOrHash.elementID: 5873849152.309>
+                                  StaticText, 0x114895900, {{205.7, 246.4}, {27.9, 14.4}}, label: 'LIVE' <AX element pid: 3871, elementOrHash.elementID: 5873845568.414>
+                                  StaticText, 0x114895a40, {{240.8, 246.4}, {144.4, 14.4}}, label: 'STARTUP INTELLIGENCE' <AX element pid: 3871, elementOrHash.elementID: 5873844224.415>
+                                  StaticText, 0x114895b80, {{942.3, 245.9}, {43.7, 15.3}}, label: 'V1 · S1' <AX element pid: 3871, elementOrHash.elementID: 5873845120.416>
+                                  StaticText, 0x114895cc0, {{194.0, 270.2}, {155.7, 38.7}}, label: 'Tech.com' <AX element pid: 3871, elementOrHash.elementID: 5873844672.417>
+                                  StaticText, 0x114895e00, {{194.0, 312.5}, {244.8, 18.5}}, label: 'The signal behind the startup noise.' <AX element pid: 3871, elementOrHash.elementID: 5873847808.418>
+                                  Image, 0x114895f40, {{194.4, 347.2}, {14.4, 17.1}}, identifier: 'building.2.fill', label: 'Business' <AX element pid: 3871, elementOrHash.elementID: 5873848256.419>
+                                  StaticText, 0x114896080, {{194.4, 347.1}, {58.1, 17.1}}, label: 'SOLO' <AX element pid: 3871, elementOrHash.elementID: 5873846912.420>
+                                  StaticText, 0x1148961c0, {{914.5, 348.1}, {71.5, 15.3}}, label: 'MARKET #1' <AX element pid: 3871, elementOrHash.elementID: 5873846464.421>
+                                StaticText, 0x114896300, {{179.6, 393.0}, {236.2, 39.2}}, label: 'YOUR COMPANY, Live company activity' <AX element pid: 3871, elementOrHash.elementID: 5873850944.310>
+                                  Image, 0x114896440, {{182.8, 405.7}, {20.7, 14.4}}, identifier: 'dot.radiowaves.left.and.right', label: 'Radio' <AX element pid: 3871, elementOrHash.elementID: 5873849600.422>
+                                  StaticText, 0x114896580, {{215.6, 393.1}, {102.2, 14.4}}, label: 'YOUR COMPANY' <AX element pid: 3871, elementOrHash.elementID: 5873850048.423>
+                                  StaticText, 0x1148966c0, {{215.6, 408.4}, {200.3, 23.9}}, label: 'Live company activity' <AX element pid: 3871, elementOrHash.elementID: 5873850496.424>
+                                StaticText, 0x114896800, {{192.0, 441.0}, {382.3, 55.6}}, label: 'Live feed standing by. Waiting for company activity. Your company moves will appear here as the sprint unfolds.' <AX element pid: 3871, elementOrHash.elementID: 5873853184.311>
+                                  Image, 0x114896940, {{200.8, 449.3}, {11.7, 13.1}}, identifier: 'waveform', label: 'waveform' <AX element pid: 3871, elementOrHash.elementID: 5873851392.425>
+                                  StaticText, 0x114896a80, {{229.1, 443.0}, {149.4, 14.4}}, label: 'LIVE FEED STANDING BY' <AX element pid: 3871, elementOrHash.elementID: 5873851840.426>
+                                  StaticText, 0x114896bc0, {{229.1, 460.1}, {203.8, 18.4}}, label: 'Waiting for company activity' <AX element pid: 3871, elementOrHash.elementID: 5873852288.427>
+                                  StaticText, 0x114896d00, {{229.1, 481.3}, {345.1, 15.3}}, label: 'Your company moves will appear here as the sprint unfolds.' <AX element pid: 3871, elementOrHash.elementID: 5873852736.428>
+                                StaticText, 0x114896e40, {{179.6, 514.5}, {165.6, 39.1}}, label: 'PUBLIC NARRATIVE, Decision Feed' <AX element pid: 3871, elementOrHash.elementID: 5873854976.312>
+                                  Image, 0x114896f80, {{184.1, 525.8}, {18.0, 16.7}}, identifier: 'megaphone.fill', label: 'megaphone.fill' <AX element pid: 3871, elementOrHash.elementID: 5873853632.429>
+                                  StaticText, 0x1148970c0, {{215.6, 514.5}, {121.5, 14.4}}, label: 'PUBLIC NARRATIVE' <AX element pid: 3871, elementOrHash.elementID: 5873854080.430>
+                                  StaticText, 0x114897200, {{215.6, 529.9}, {129.6, 23.9}}, label: 'Decision Feed' <AX element pid: 3871, elementOrHash.elementID: 5873854528.431>
+                                Image, 0x114897340, {{180.9, 564.0}, {14.4, 13.5}}, identifier: 'quote.bubble.fill', label: 'Bubble' <AX element pid: 3871, elementOrHash.elementID: 5873855424.313>
+                                StaticText, 0x114897480, {{180.9, 562.7}, {146.3, 15.3}}, label: 'Statement available' <AX element pid: 3871, elementOrHash.elementID: 5873855872.314>
+                                StaticText, 0x1148975c0, {{921.2, 563.0}, {79.2, 15.3}}, label: 'Coverage +0' <AX element pid: 3871, elementOrHash.elementID: 5873856320.315>
+                                Other, 0x114897700, {{179.6, 587.5}, {820.8, 232.2}} <AX element pid: 3871, elementOrHash.elementID: 5864944768.316>
+                                  Image, 0x114897840, {{193.5, 601.0}, {14.0, 13.0}}, identifier: 'newspaper.fill', label: 'newspaper.fill' <AX element pid: 3871, elementOrHash.elementID: 5873856768.432>
+                                  StaticText, 0x114897980, {{193.6, 600.6}, {119.2, 14.4}}, label: 'PRESS INQUIRY' <AX element pid: 3871, elementOrHash.elementID: 5873857216.433>
+                                  StaticText, 0x114897ac0, {{192.2, 623.1}, {417.6, 20.7}}, label: 'Tech.com asks SOLO to explain its operating posture' <AX element pid: 3871, elementOrHash.elementID: 5873857664.434>
+                                  StaticText, 0x114897c00, {{192.2, 651.9}, {438.8, 18.5}}, label: 'A public response can shape the story before commentators do.' <AX element pid: 3871, elementOrHash.elementID: 5873858112.435>
+                                  StaticText, 0x114897d40, {{192.2, 678.5}, {104.8, 14.4}}, label: 'YOUR RESPONSE' <AX element pid: 3871, elementOrHash.elementID: 5873858560.436>
+                                  Button, 0x114897e80, {{191.8, 697.7}, {796.5, 52.6}}, label: 'Give a statement, Trade a little trust for a clearer public narrative.' <AX element pid: 3871, elementOrHash.elementID: 5864947008.437>
+                                    StaticText, 0x114960000, {{202.1, 706.2}, {123.3, 18.5}}, label: 'Give a statement' <AX element pid: 3871, elementOrHash.elementID: 5873859008.483>
+                                    StaticText, 0x114960140, {{202.1, 726.5}, {272.7, 15.3}}, label: 'Trade a little trust for a clearer public narrative.' <AX element pid: 3871, elementOrHash.elementID: 5873859456.484>
+                                    Image, 0x114960280, {{964.4, 719.3}, {12.1, 9.9}}, identifier: 'arrow.right', label: 'Right' <AX element pid: 3871, elementOrHash.elementID: 5873859904.485>
+                                  Button, 0x1149603c0, {{191.8, 754.8}, {796.5, 52.7}}, label: 'Decline to comment, Let the story travel without you.' <AX element pid: 3871, elementOrHash.elementID: 5864945216.438>
+                                    StaticText, 0x114960500, {{202.1, 763.4}, {146.3, 18.4}}, label: 'Decline to comment' <AX element pid: 3871, elementOrHash.elementID: 5864946560.486>
+                                    StaticText, 0x114960640, {{202.1, 783.7}, {184.0, 15.3}}, label: 'Let the story travel without you.' <AX element pid: 3871, elementOrHash.elementID: 5864946112.487>
+                                    Image, 0x114960780, {{964.4, 776.5}, {12.1, 9.9}}, identifier: 'arrow.right', label: 'Right' <AX element pid: 3871, elementOrHash.elementID: 5864945664.488>
+                                Other, 0x1149608c0, {{179.6, 828.7}, {820.8, 233.5}} <AX element pid: 3871, elementOrHash.elementID: 5864939392.317>
+                                  Image, 0x114960a00, {{193.1, 842.2}, {14.4, 14.4}}, identifier: 'scope', label: 'scope' <AX element pid: 3871, elementOrHash.elementID: 5864944320.439>
+                                  StaticText, 0x114960b40, {{193.1, 842.2}, {144.4, 14.6}}, label: 'COMPETITOR MOVE' <AX element pid: 3871, elementOrHash.elementID: 5864943872.440>
+                                  StaticText, 0x114960c80, {{192.2, 865.7}, {255.2, 20.7}}, label: 'Pallas AI pressures the category' <AX element pid: 3871, elementOrHash.elementID: 5864943424.441>
+                                  StaticText, 0x114960dc0, {{192.2, 894.5}, {196.7, 18.5}}, label: 'Its market share is now 25%.' <AX element pid: 3871, elementOrHash.elementID: 5864942976.442>
+                                  StaticText, 0x114960f00, {{192.2, 921.0}, {104.8, 14.4}}, label: 'YOUR RESPONSE' <AX element pid: 3871, elementOrHash.elementID: 5864942528.443>
+                                  Button, 0x114961040, {{191.8, 940.2}, {796.5, 52.7}}, label: 'Counter with proof, Put a targeted response into the next task draft.' <AX element pid: 3871, elementOrHash.elementID: 5864940736.444>
+                                    StaticText, 0x114961180, {{202.1, 948.8}, {138.2, 18.4}}, label: 'Counter with proof' <AX element pid: 3871, elementOrHash.elementID: 5864942080.489>
+                                    StaticText, 0x1149612c0, {{202.1, 969.1}, {278.5, 15.3}}, label: 'Put a targeted response into the next task draft.' <AX element pid: 3871, elementOrHash.elementID: 5864941632.490>
+                                    Image, 0x114961400, {{964.4, 961.9}, {12.1, 9.9}}, identifier: 'arrow.right', label: 'Right' <AX element pid: 3871, elementOrHash.elementID: 5864941184.491>
+                                  Button, 0x114961540, {{191.8, 997.4}, {796.5, 52.7}}, label: 'Ignore the move, Keep your current plan.' <AX element pid: 3871, elementOrHash.elementID: 5864939840.445>
+                                    StaticText, 0x114961680, {{202.1, 1006.0}, {117.9, 18.5}}, label: 'Ignore the move' <AX element pid: 3871, elementOrHash.elementID: 5864940288.492>
+                                    StaticText, 0x1149617c0, {{202.1, 1026.2}, {135.9, 15.3}}, label: 'Keep your current plan.' <AX element pid: 3871, elementOrHash.elementID: 5864937600.493>
+                                    Image, 0x114961900, {{964.4, 1019.0}, {12.1, 9.9}}, identifier: 'arrow.right', label: 'Right' <AX element pid: 3871, elementOrHash.elementID: 5864938048.494>
+                                Other, 0x114961a40, {{179.6, 1071.2}, {820.8, 95.4}} <AX element pid: 3871, elementOrHash.elementID: 5864935360.318>
+                                  Image, 0x114961b80, {{193.5, 1084.7}, {12.6, 13.0}}, identifier: 'waveform.path.ecg', label: 'waveform.path.ecg' <AX element pid: 3871, elementOrHash.elementID: 5864938944.446>
+                                  StaticText, 0x114961cc0, {{193.6, 1084.0}, {113.4, 14.4}}, label: 'TREND SIGNAL' <AX element pid: 3871, elementOrHash.elementID: 5864934016.447>
+                                  StaticText, 0x114961e00, {{192.2, 1106.9}, {199.8, 20.7}}, label: 'Ahead: Traction pressure' <AX element pid: 3871, elementOrHash.elementID: 5864934464.448>
+                                  StaticText, 0x114961f40, {{192.2, 1135.7}, {306.4, 18.4}}, label: 'A recurring competitor shadows your moves.' <AX element pid: 3871, elementOrHash.elementID: 5864934912.449>
+                                StaticText, 0x114962080, {{179.6, 1181.1}, {132.3, 39.2}}, label: 'SIGNAL WATCH, Trends' <AX element pid: 3871, elementOrHash.elementID: 5864937152.319>
+                                  Image, 0x1149621c0, {{185.4, 1192.2}, {15.8, 16.7}}, identifier: 'waveform.path.ecg', label: 'waveform.path.ecg' <AX element pid: 3871, elementOrHash.elementID: 5864935808.450>
+                                  StaticText, 0x114962300, {{215.6, 1181.1}, {96.3, 14.4}}, label: 'SIGNAL WATCH' <AX element pid: 3871, elementOrHash.elementID: 5864936256.451>
+                                  StaticText, 0x114962440, {{215.6, 1196.4}, {63.9, 23.8}}, label: 'Trends' <AX element pid: 3871, elementOrHash.elementID: 5864936704.452>
+                                StaticText, 0x114962580, {{194.0, 1243.7}, {233.6, 18.4}}, label: 'Industry watch is gathering signal.' <AX element pid: 3871, elementOrHash.elementID: 5873696768.320>
+                            Other, 0x1149626c0, {{985.1, 225.2}, {27.0, 496.8}}, label: 'Vertical scroll bar, 6 pages', value: 0% <AX element pid: 3871, elementOrHash.elementID: 5846422528.277>
+                            Other, 0x114962800, {{985.1, 225.2}, {27.0, 496.8}}, label: 'Vertical scroll bar, 6 pages', value: 0% <AX element pid: 3871, elementOrHash.elementID: 5846422528.277>
+                  Other, 0x114962940, {{165.2, 167.6}, {849.6, 554.4}} <AX element pid: 3871, elementOrHash.elementID: 5789547008.242>
+                    Other, 0x114962a80, {{165.2, 167.6}, {0.0, 0.0}} <AX element pid: 3871, elementOrHash.elementID: 5822200704.258>
+                    Other, 0x114962bc0, {{165.2, 167.6}, {849.6, 554.4}} <AX element pid: 3871, elementOrHash.elementID: 5789534720.259>
+                Button, 0x114962d00, {{159.8, 95.6}, {54.0, 54.0}}, identifier: 'return-to-founder-desk-phone', label: 'Return to Founder Desk' <AX element pid: 3871, elementOrHash.elementID: 5843033984.216>
+                Image, 0x114962e40, {{224.6, 115.0}, {10.8, 15.8}}, identifier: 'iphone', label: 'iphone' <AX element pid: 3871, elementOrHash.elementID: 5843034432.217>
+                StaticText, 0x114962f80, {{224.6, 114.9}, {132.3, 15.8}}, label: 'Tech.com iPhone' <AX element pid: 3871, elementOrHash.elementID: 5843034880.218>
+                StaticText, 0x1149630c0, {{953.1, 115.4}, {67.1, 14.4}}, label: 'FOCUSED' <AX element pid: 3871, elementOrHash.elementID: 5843035328.219>
+              Other, 0x114963200, {{148.6, 93.3}, {882.9, 645.3}} <AX element pid: 3871, elementOrHash.elementID: 5843038464.197>
+                Other, 0x114963340, {{161.6, 164.0}, {856.8, 561.6}} <AX element pid: 3871, elementOrHash.elementID: 5838864384.220>
+                  NavigationBar, 0x114963480, {{161.6, 173.0}, {856.8, 48.6}}, identifier: 'Venture 1' <AX element pid: 3871, elementOrHash.elementID: 5802006528.245>
+                  Other, 0x1149635c0, {{161.6, 164.0}, {856.8, 561.6}} <AX element pid: 3871, elementOrHash.elementID: 5838864832.246>
+                    Other, 0x114963700, {{161.6, 164.0}, {856.8, 561.6}} <AX element pid: 3871, elementOrHash.elementID: 5843696960.260>
+                      Other, 0x114963840, {{161.6, 164.0}, {856.8, 561.6}} <AX element pid: 3871, elementOrHash.elementID: 5790240256.268>
+                        Other, 0x114963980, {{161.6, 164.0}, {856.8, 561.6}} <AX element pid: 3871, elementOrHash.elementID: 5882768768.271>
+                          ScrollView, 0x114963ac0, {{161.6, 164.0}, {856.8, 561.6}} <AX element pid: 3871, elementOrHash.elementID: 5795026944.274>
+                            Other, 0x114963c00, {{161.6, 221.6}, {856.8, 1675.8}} <AX element pid: 3871, elementOrHash.elementID: 5798983680.278>
+                              Other, 0x114963d40, {{175.6, 231.9}, {828.9, 298.3}} <AX element pid: 3871, elementOrHash.elementID: 5882707968.282>
+                                Image, 0x114963e80, {{194.9, 251.3}, {15.8, 15.8}}, identifier: 'scope', label: 'scope' <AX element pid: 3871, elementOrHash.elementID: 5873698560.321>
+                                StaticText, 0x11496c000, {{194.9, 251.3}, {106.2, 15.7}}, label: 'VENTURE 1' <AX element pid: 3871, elementOrHash.elementID: 5873699008.322>
+                                StaticText, 0x11496c140, {{830.8, 251.9}, {155.2, 14.4}}, label: 'LIVE OPERATING BOARD' <AX element pid: 3871, elementOrHash.elementID: 5873699456.323>
+                                Other, 0x11496c280, {{548.8, 284.1}, {82.3, 108.5}}, label: 'Sprint 1 of 12', value: 0 sprints completed <AX element pid: 3871, elementOrHash.elementID: 5873701248.324>
+                                  StaticText, 0x11496c3c0, {{558.5, 284.1}, {63.0, 15.3}}, label: 'SPRINT' <AX element pid: 3871, elementOrHash.elementID: 5873699904.453>
+                                  StaticText, 0x11496c500, {{548.8, 301.2}, {82.3, 71.1}}, label: '01' <AX element pid: 3871, elementOrHash.elementID: 5873700352.454>
+                                  StaticText, 0x11496c640, {{566.2, 374.1}, {47.7, 18.4}}, label: 'OF 12' <AX element pid: 3871, elementOrHash.elementID: 5873700800.455>
+                                Other, 0x11496c780, {{193.6, 408.8}, {792.5, 9.0}}, label: 'Sprint timeline', value: Sprint 1 of 12; 0 ... <AX element pid: 3871, elementOrHash.elementID: 5873707072.325>
+                                  Other, 0x11496c8c0, {{193.6, 408.8}, {63.0, 9.0}} <AX element pid: 3871, elementOrHash.elementID: 5873701696.456>
+                                  Other, 0x11496ca00, {{260.6, 411.1}, {61.6, 4.5}} <AX element pid: 3871, elementOrHash.elementID: 5873702144.457>
+                                  Other, 0x11496cb40, {{326.8, 411.1}, {62.1, 4.5}} <AX element pid: 3871, elementOrHash.elementID: 5873702592.458>
+                                  Other, 0x11496cc80, {{393.4, 411.1}, {61.7, 4.5}} <AX element pid: 3871, elementOrHash.elementID: 5873703040.459>
+                                  Other, 0x11496cdc0, {{459.5, 411.1}, {62.1, 4.5}} <AX element pid: 3871, elementOrHash.elementID: 5873703488.460>
+                                  Other, 0x11496cf00, {{526.1, 411.1}, {61.6, 4.5}} <AX element pid: 3871, elementOrHash.elementID: 5873703936.461>
+                                  Other, 0x11496d040, {{592.2, 411.1}, {62.1, 4.5}} <AX element pid: 3871, elementOrHash.elementID: 5873704384.462>
+                                  Other, 0x11496d180, {{658.9, 411.1}, {61.6, 4.5}} <AX element pid: 3871, elementOrHash.elementID: 5873704832.463>
+                                  Other, 0x11496d2c0, {{725.0, 411.1}, {62.1, 4.5}} <AX element pid: 3871, elementOrHash.elementID: 5873705280.464>
+                                  Other, 0x11496d400, {{791.6, 411.1}, {61.6, 4.5}} <AX element pid: 3871, elementOrHash.elementID: 5873705728.465>
+                                  Other, 0x11496d540, {{857.8, 411.1}, {62.1, 4.5}} <AX element pid: 3871, elementOrHash.elementID: 5873706176.466>
+                                  Other, 0x11496d680, {{924.4, 411.1}, {61.6, 4.5}} <AX element pid: 3871, elementOrHash.elementID: 5873706624.467>
+                                Other, 0x11496d7c0, {{194.0, 434.9}, {82.8, 45.4}}, label: 'Evidence', value: 0 <AX element pid: 3871, elementOrHash.elementID: 5873708864.326>
+                                  Image, 0x11496d900, {{194.9, 434.9}, {13.9, 13.9}}, identifier: 'checkmark.seal.fill', label: 'Verified', Selected <AX element pid: 3871, elementOrHash.elementID: 5873707520.468>
+                                  StaticText, 0x11496da40, {{194.9, 434.9}, {81.9, 14.4}}, label: 'EVIDENCE' <AX element pid: 3871, elementOrHash.elementID: 5873707968.469>
+                                  StaticText, 0x11496db80, {{194.0, 454.2}, {30.2, 26.1}}, label: '00' <AX element pid: 3871, elementOrHash.elementID: 5873708416.470>
+                                Other, 0x11496dcc0, {{601.0, 434.6}, {116.5, 45.0}}, label: 'Track Record', value: 0 <AX element pid: 3871, elementOrHash.elementID: 5873710656.327>
+                                  Image, 0x11496de00, {{602.6, 435.4}, {13.1, 11.7}}, identifier: 'chart.line.uptrend.xyaxis', label: 'Chart Line' <AX element pid: 3871, elementOrHash.elementID: 5873709312.471>
+                                  StaticText, 0x11496df40, {{602.6, 434.6}, {115.0, 14.4}}, label: 'TRACK RECORD' <AX element pid: 3871, elementOrHash.elementID: 5873709760.472>
+                                  StaticText, 0x11496e080, {{601.0, 453.5}, {30.1, 26.1}}, label: '00' <AX element pid: 3871, elementOrHash.elementID: 5873710208.473>
+                                StaticText, 0x11496e1c0, {{498.6, 496.5}, {182.7, 15.3}}, label: 'CHAPTER 1, ·, PROTOTYPE' <AX element pid: 3871, elementOrHash.elementID: 5873712448.328>
+                                  StaticText, 0x11496e300, {{498.7, 496.5}, {79.6, 15.3}}, label: 'CHAPTER 1' <AX element pid: 3871, elementOrHash.elementID: 5873711104.474>
+                                  StaticText, 0x11496e440, {{583.7, 496.5}, {5.8, 15.3}}, label: '·' <AX element pid: 3871, elementOrHash.elementID: 5873711552.475>
+                                  StaticText, 0x11496e580, {{595.0, 496.5}, {86.4, 15.3}}, label: 'PROTOTYPE' <AX element pid: 3871, elementOrHash.elementID: 5873712000.476>
+                              StaticText, 0x11496e6c0, {{175.6, 551.0}, {828.9, 179.1}}, label: 'Chapter 1, Prototype. Prove the product deserves to exist.. Sprint 1 · 1 of 3 in chapter' <AX element pid: 3871, elementOrHash.elementID: 5882712000.283>
+                                Other, 0x11496e800, {{907.7, 610.4}, {53.1, 60.3}} <AX element pid: 3871, elementOrHash.elementID: 5882708416.329>
+                                StaticText, 0x11496e940, {{931.6, 576.6}, {61.6, 142.2}}, label: '1' <AX element pid: 3871, elementOrHash.elementID: 5882708864.330>
+                                Image, 0x11496ea80, {{195.4, 581.2}, {17.1, 16.6}}, identifier: 'hammer.fill', label: 'Build' <AX element pid: 3871, elementOrHash.elementID: 5882709312.331>
+                                StaticText, 0x11496ebc0, {{195.4, 581.2}, {109.4, 16.7}}, label: 'CHAPTER 1' <AX element pid: 3871, elementOrHash.elementID: 5882709760.332>
+                                StaticText, 0x11496ed00, {{841.6, 582.2}, {144.4, 14.4}}, label: 'Sprint 1 · 1 of 3 in chapter' <AX element pid: 3871, elementOrHash.elementID: 5882710208.333>
+                                StaticText, 0x11496ee40, {{194.0, 607.6}, {125.1, 32.4}}, label: 'Prototype' <AX element pid: 3871, elementOrHash.elementID: 5882710656.334>
+                                StaticText, 0x11496ef80, {{194.0, 649.0}, {260.1, 19.3}}, label: 'Prove the product deserves to exist.' <AX element pid: 3871, elementOrHash.elementID: 5882711104.335>
+                                StaticText, 0x11496f0c0, {{202.1, 681.9}, {94.1, 14.4}}, label: 'IN PROGRESS' <AX element pid: 3871, elementOrHash.elementID: 5882711552.336>
+                              StaticText, 0x11496f200, {{175.6, 750.8}, {828.9, 184.9}}, label: 'Venture objective, Build the Proof Loop. Make verified evidence a company habit.', value: 79 percent complet... <AX element pid: 3871, elementOrHash.elementID: 5882716480.284>
+                                Image, 0x11496f340, {{194.9, 770.1}, {13.5, 13.5}}, identifier: 'target', label: 'target' <AX element pid: 3871, elementOrHash.elementID: 5882712448.337>
+                                StaticText, 0x11496f480, {{194.9, 769.2}, {179.6, 15.3}}, label: 'VENTURE OBJECTIVE' <AX element pid: 3871, elementOrHash.elementID: 5882712896.338>
+                                StaticText, 0x11496f5c0, {{937.9, 769.2}, {48.1, 23.8}}, label: '79%' <AX element pid: 3871, elementOrHash.elementID: 5882713344.339>
+                                StaticText, 0x11496f700, {{194.0, 805.6}, {202.5, 26.1}}, label: 'Build the Proof Loop' <AX element pid: 3871, elementOrHash.elementID: 5882713792.340>
+                                StaticText, 0x11496f840, {{194.0, 836.2}, {293.9, 19.4}}, label: 'Make verified evidence a company habit.' <AX element pid: 3871, elementOrHash.elementID: 5882714240.341>
+                                Other, 0x11496f980, {{194.0, 868.2}, {792.0, 8.1}} <AX element pid: 3871, elementOrHash.elementID: 5882714688.342>
+                                StaticText, 0x11496fac0, {{194.0, 895.4}, {101.7, 15.3}}, label: '79% COMPLETE' <AX element pid: 3871, elementOrHash.elementID: 5882715136.343>
+                                Image, 0x11496fc00, {{903.2, 896.1}, {12.6, 13.5}}, identifier: 'gift.fill', label: 'Gift' <AX element pid: 3871, elementOrHash.elementID: 5882715584.344>
+                                StaticText, 0x11496fd40, {{903.2, 895.6}, {73.8, 15.3}}, label: '+6 Trust' <AX element pid: 3871, elementOrHash.elementID: 5882716032.345>
+                              StaticText, 0x11496fe80, {{175.6, 956.5}, {828.9, 102.6}}, label: 'Active thesis: Sustainable. Protect energy and loyalty while growing deliberately.' <AX element pid: 3871, elementOrHash.elementID: 5882718720.285>
+                                Image, 0x114978000, {{192.2, 973.1}, {43.2, 43.2}}, identifier: 'compass.drawing', label: 'compass.drawing' <AX element pid: 3871, elementOrHash.elementID: 5882716928.346>
+                                StaticText, 0x114978140, {{249.8, 973.0}, {113.4, 15.3}}, label: 'ACTIVE THESIS' <AX element pid: 3871, elementOrHash.elementID: 5882717376.347>
+                                StaticText, 0x114978280, {{249.8, 993.7}, {105.8, 23.9}}, label: 'Sustainable' <AX element pid: 3871, elementOrHash.elementID: 5882717824.348>
+                                StaticText, 0x1149783c0, {{249.8, 1022.9}, {383.9, 19.4}}, label: 'Protect energy and loyalty while growing deliberately.' <AX element pid: 3871, elementOrHash.elementID: 5882718272.349>
+                              Other, 0x114978500, {{175.6, 1079.8}, {828.9, 182.7}} <AX element pid: 3871, elementOrHash.elementID: 5882758016.286>
+                                Image, 0x114978640, {{193.1, 1097.3}, {13.5, 13.5}}, identifier: 'gauge.with.dots.needle.67percent', label: 'gauge.with.dots.needle.67percent' <AX element pid: 3871, elementOrHash.elementID: 5882719168.350>
+                                StaticText, 0x114978780, {{193.1, 1096.3}, {189.0, 15.3}}, label: 'OPERATING PRESSURE' <AX element pid: 3871, elementOrHash.elementID: 5882719616.351>
+                                StaticText, 0x1149788c0, {{938.3, 1096.8}, {49.5, 14.4}}, label: 'GARAGE' <AX element pid: 3871, elementOrHash.elementID: 5882720064.352>
+                                StaticText, 0x114978a00, {{192.2, 1124.2}, {243.9, 19.4}}, label: 'Learn the loop. Baseline pressure.' <AX element pid: 3871, elementOrHash.elementID: 5882720512.353>
+                                Other, 0x114978b40, {{191.8, 1155.8}, {394.2, 62.5}}, label: 'Runway operating cost', value: Minus 3 each sprint <AX element pid: 3871, elementOrHash.elementID: 5882722304.354>
+                                  Image, 0x114978c80, {{205.7, 1177.8}, {21.6, 18.5}}, identifier: 'calendar.badge.minus', label: 'Remove From Calendar' <AX element pid: 3871, elementOrHash.elementID: 5882720960.477>
+                                  StaticText, 0x114978dc0, {{233.6, 1167.1}, {59.9, 14.4}}, label: 'RUNWAY' <AX element pid: 3871, elementOrHash.elementID: 5882721408.478>
+                                  StaticText, 0x114978f00, {{233.6, 1183.2}, {116.6, 23.9}}, label: '−3 / SPRINT' <AX element pid: 3871, elementOrHash.elementID: 5882721856.479>
+                                Other, 0x114979040, {{594.0, 1155.8}, {394.2, 62.5}}, label: 'Energy operating cost', value: Minus 2 each sprint <AX element pid: 3871, elementOrHash.elementID: 5882757120.355>
+                                  Image, 0x114979180, {{610.2, 1177.4}, {12.2, 19.8}}, identifier: 'bolt.fill', label: 'Flash' <AX element pid: 3871, elementOrHash.elementID: 5882722752.480>
+                                  StaticText, 0x1149792c0, {{635.9, 1167.1}, {54.9, 14.4}}, label: 'ENERGY' <AX element pid: 3871, elementOrHash.elementID: 5882723200.481>
+                                  StaticText, 0x114979400, {{635.9, 1183.2}, {116.5, 23.9}}, label: '−2 / SPRINT' <AX element pid: 3871, elementOrHash.elementID: 5882723648.482>
+                                StaticText, 0x114979540, {{192.2, 1230.4}, {164.7, 15.3}}, label: 'Milestone ahead: Venture 10' <AX element pid: 3871, elementOrHash.elementID: 5882757568.356>
+                              Image, 0x114979680, {{194.0, 1299.4}, {14.8, 18.4}}, identifier: 'point.topleft.down.curvedto.point.bottomright.up', label: 'point.topleft.down.curvedto.point.bottomright.up' <AX element pid: 3871, elementOrHash.elementID: 5882758464.287>
+                              StaticText, 0x1149797c0, {{221.9, 1297.9}, {195.8, 20.7}}, label: 'Company consequences' <AX element pid: 3871, elementOrHash.elementID: 5882758912.288>
+                              StaticText, 0x114979900, {{221.9, 1321.3}, {278.1, 15.3}}, label: 'The permanent shape left by founder decisions.' <AX element pid: 3871, elementOrHash.elementID: 5882759360.289>
+                              StaticText, 0x114979a40, {{202.1, 1360.0}, {460.8, 15.3}}, label: 'Founder decisions will appear here when they create lasting company state.' <AX element pid: 3871, elementOrHash.elementID: 5882760256.290>
+                              Image, 0x114979b80, {{192.7, 1438.0}, {17.1, 18.5}}, identifier: 'shippingbox.fill', label: 'Box' <AX element pid: 3871, elementOrHash.elementID: 5882760704.291>
+                              StaticText, 0x114979cc0, {{221.9, 1436.5}, {171.4, 20.7}}, label: 'Garage infrastructure' <AX element pid: 3871, elementOrHash.elementID: 5882761152.292>
+                              StaticText, 0x114979e00, {{221.9, 1459.9}, {265.9, 15.3}}, label: 'Installed capabilities supporting the company.' <AX element pid: 3871, elementOrHash.elementID: 5882761600.293>
+                              StaticText, 0x114979f40, {{202.6, 1499.5}, {456.8, 15.4}}, label: 'Complete sprints, earn revenue, and record evidence to evolve the garage.' <AX element pid: 3871, elementOrHash.elementID: 5882762496.294>
+                              StaticText, 0x11497a080, {{175.6, 1555.8}, {835.2, 166.1}}, label: 'Founder doctrine: Human-Guided. Keep founder judgment close to critical work.. Founder’s company is a chain of decisions and consequences.' <AX element pid: 3871, elementOrHash.elementID: 5882766080.295>
+                                Other, 0x11497a1c0, {{905.5, 1555.9}, {105.3, 105.3}} <AX element pid: 3871, elementOrHash.elementID: 5882762944.357>
+                                Image, 0x11497a300, {{194.9, 1581.5}, {13.5, 13.5}}, identifier: 'network', label: 'network' <AX element pid: 3871, elementOrHash.elementID: 5882763392.358>
+                                StaticText, 0x11497a440, {{194.9, 1580.5}, {173.7, 15.3}}, label: 'FOUNDER DOCTRINE' <AX element pid: 3871, elementOrHash.elementID: 5882763840.359>
+                                StaticText, 0x11497a580, {{194.0, 1604.9}, {194.0, 32.4}}, label: 'Human-Guided' <AX element pid: 3871, elementOrHash.elementID: 5882764288.360>
+                                StaticText, 0x11497a6c0, {{194.0, 1646.3}, {326.2, 19.4}}, label: 'Keep founder judgment close to critical work.' <AX element pid: 3871, elementOrHash.elementID: 5882764736.361>
+                                Image, 0x11497a800, {{195.8, 1685.5}, {13.5, 16.7}}, identifier: 'point.topleft.down.curvedto.point.bottomright.up', label: 'point.topleft.down.curvedto.point.bottomright.up' <AX element pid: 3871, elementOrHash.elementID: 5882765184.362>
+                                StaticText, 0x11497a940, {{195.8, 1685.0}, {459.5, 18.4}}, label: 'Founder’s company is a chain of decisions and consequences.' <AX element pid: 3871, elementOrHash.elementID: 5882765632.363>
+                              StaticText, 0x11497aa80, {{179.6, 1753.8}, {766.3, 64.4}}, label: 'CAREER OBJECTIVE, Complete two ventures and 24 sprints while protecting runway, trust, energy, and the company you create through persistent decisions.' <AX element pid: 3871, elementOrHash.elementID: 5882767872.296>
+                                Image, 0x11497abc0, {{181.0, 1755.2}, {14.0, 13.0}}, identifier: 'map.fill', label: 'Show Map' <AX element pid: 3871, elementOrHash.elementID: 5882766528.364>
+                                StaticText, 0x11497ad00, {{180.9, 1753.8}, {168.8, 15.3}}, label: 'CAREER OBJECTIVE' <AX element pid: 3871, elementOrHash.elementID: 5882766976.365>
+                                StaticText, 0x11497ae40, {{179.6, 1778.2}, {766.4, 40.0}}, label: 'Complete two ventures and 24 sprints while protecting runway, trust, energy, and the company you create through persistent decisions.' <AX element pid: 3871, elementOrHash.elementID: 5882767424.366>
+                  Other, 0x11497af80, {{161.6, 164.0}, {856.8, 561.6}} <AX element pid: 3871, elementOrHash.elementID: 5838832128.247>
+                    Other, 0x11497b0c0, {{161.6, 164.0}, {0.0, 0.0}} <AX element pid: 3871, elementOrHash.elementID: 5838866176.261>
+                    Other, 0x11497b200, {{161.6, 164.0}, {856.8, 561.6}} <AX element pid: 3871, elementOrHash.elementID: 5838834176.262>
+                Button, 0x11497b340, {{159.8, 95.6}, {54.0, 54.0}}, identifier: 'return-to-founder-desk-tablet', label: 'Return to Founder Desk' <AX element pid: 3871, elementOrHash.elementID: 5843036672.221>
+                Image, 0x11497b480, {{224.2, 116.3}, {15.8, 12.6}}, identifier: 'ipad.landscape', label: 'ipad.landscape' <AX element pid: 3871, elementOrHash.elementID: 5843037120.222>
+                StaticText, 0x11497b5c0, {{224.1, 114.9}, {108.9, 15.3}}, label: 'Venture iPad' <AX element pid: 3871, elementOrHash.elementID: 5843037568.223>
+                StaticText, 0x11497b700, {{953.1, 115.4}, {67.1, 14.4}}, label: 'FOCUSED' <AX element pid: 3871, elementOrHash.elementID: 5843038016.224>
+              Other, 0x11497b840, {{148.6, 93.3}, {882.9, 645.3}} <AX element pid: 3871, elementOrHash.elementID: 5843041152.198>
+                Other, 0x11497b980, {{159.8, 162.2}, {860.4, 565.2}} <AX element pid: 3871, elementOrHash.elementID: 5838870208.225>
+                  NavigationBar, 0x11497bac0, {{159.8, 171.2}, {860.4, 48.6}}, identifier: 'Company Server' <AX element pid: 3871, elementOrHash.elementID: 5802008832.250>
+                  Other, 0x11497bc00, {{159.8, 162.2}, {860.4, 565.2}} <AX element pid: 3871, elementOrHash.elementID: 5838870656.251>
+                    Other, 0x11497bd40, {{159.8, 162.2}, {860.4, 565.2}} <AX element pid: 3871, elementOrHash.elementID: 5843696512.263>
+                      Other, 0x11497be80, {{159.8, 162.2}, {860.4, 565.2}} <AX element pid: 3871, elementOrHash.elementID: 5790248320.269>
+                        Other, 0x114984000, {{159.8, 162.2}, {860.4, 565.2}} <AX element pid: 3871, elementOrHash.elementID: 5882829376.272>
+                          ScrollView, 0x114984140, {{159.8, 162.2}, {860.4, 565.2}} <AX element pid: 3871, elementOrHash.elementID: 5839699968.275>
+                            Other, 0x114984280, {{159.8, 219.8}, {860.4, 906.8}} <AX element pid: 3871, elementOrHash.elementID: 5838837248.279>
+                              StaticText, 0x1149843c0, {{174.2, 239.6}, {223.2, 31.5}}, label: 'OPERATIONS, Canonical Founder Computer modules' <AX element pid: 3871, elementOrHash.elementID: 5882770112.297>
+                                StaticText, 0x114984500, {{174.2, 239.6}, {95.0, 14.4}}, label: 'OPERATIONS' <AX element pid: 3871, elementOrHash.elementID: 5882769216.367>
+                                StaticText, 0x114984640, {{174.2, 255.8}, {223.2, 15.3}}, label: 'Canonical Founder Computer modules' <AX element pid: 3871, elementOrHash.elementID: 5882769664.368>
+                              Button, 0x114984780, {{174.2, 285.5}, {831.6, 68.4}}, identifier: 'server-module-evidence', label: 'Evidence Ledger, Verified work and unresolved uncertainty, 0', Selected <AX element pid: 3871, elementOrHash.elementID: 5882772800.298>
+                                Image, 0x1149848c0, {{196.2, 307.6}, {24.8, 24.8}}, identifier: 'checkmark.seal.fill', label: 'Verified', Selected <AX element pid: 3871, elementOrHash.elementID: 5882770560.369>
+                                StaticText, 0x114984a00, {{240.8, 300.4}, {132.3, 20.7}}, label: 'Evidence Ledger' <AX element pid: 3871, elementOrHash.elementID: 5882771008.370>
+                                StaticText, 0x114984b40, {{240.8, 323.8}, {237.6, 15.3}}, label: 'Verified work and unresolved uncertainty' <AX element pid: 3871, elementOrHash.elementID: 5882771456.371>
+                                StaticText, 0x114984c80, {{955.4, 309.4}, {10.8, 20.7}}, label: '0' <AX element pid: 3871, elementOrHash.elementID: 5882771904.372>
+                                Image, 0x114984dc0, {{982.0, 312.5}, {8.5, 14.8}}, identifier: 'chevron.right', label: 'Forward' <AX element pid: 3871, elementOrHash.elementID: 5882772352.373>
+                              Button, 0x114984f00, {{174.2, 368.3}, {831.6, 68.4}}, label: 'Agent Operations, Trust, reliability, and model-family exposure, 3' <AX element pid: 3871, elementOrHash.elementID: 5882792128.299>
+                                Image, 0x114985040, {{197.6, 391.7}, {21.6, 21.6}}, identifier: 'cpu.fill', label: 'cpu.fill' <AX element pid: 3871, elementOrHash.elementID: 5882789888.374>
+                                StaticText, 0x114985180, {{240.8, 383.2}, {139.5, 20.7}}, label: 'Agent Operations' <AX element pid: 3871, elementOrHash.elementID: 5882790336.375>
+                                StaticText, 0x1149852c0, {{240.8, 406.6}, {252.9, 15.3}}, label: 'Trust, reliability, and model-family exposure' <AX element pid: 3871, elementOrHash.elementID: 5882790784.376>
+                                StaticText, 0x114985400, {{955.4, 392.2}, {10.8, 20.7}}, label: '3' <AX element pid: 3871, elementOrHash.elementID: 5882791232.377>
+                                Image, 0x114985540, {{982.0, 395.3}, {8.5, 14.9}}, identifier: 'chevron.right', label: 'Forward' <AX element pid: 3871, elementOrHash.elementID: 5882791680.378>
+                              StaticText, 0x114985680, {{174.2, 456.5}, {216.0, 31.5}}, label: 'COMPANY RECORDS, Progress, identity, and administration' <AX element pid: 3871, elementOrHash.elementID: 5882793472.300>
+                                StaticText, 0x1149857c0, {{174.2, 456.5}, {147.2, 14.4}}, label: 'COMPANY RECORDS' <AX element pid: 3871, elementOrHash.elementID: 5882792576.379>
+                                StaticText, 0x114985900, {{174.2, 472.7}, {216.0, 15.3}}, label: 'Progress, identity, and administration' <AX element pid: 3871, elementOrHash.elementID: 5882793024.380>
+                              Button, 0x114985a40, {{174.2, 502.4}, {831.6, 68.4}}, label: 'Achievements, Founder milestones across four families, 2' <AX element pid: 3871, elementOrHash.elementID: 5882796160.301>
+                                Image, 0x114985b80, {{200.3, 523.6}, {16.7, 26.6}}, identifier: 'medal.star.fill', label: 'medal.star.fill' <AX element pid: 3871, elementOrHash.elementID: 5882793920.381>
+                                StaticText, 0x114985cc0, {{240.8, 517.2}, {112.5, 20.7}}, label: 'Achievements' <AX element pid: 3871, elementOrHash.elementID: 5882794368.382>
+                                StaticText, 0x114985e00, {{240.8, 540.7}, {230.9, 15.3}}, label: 'Founder milestones across four families' <AX element pid: 3871, elementOrHash.elementID: 5882794816.383>
+                                StaticText, 0x114985f40, {{955.4, 526.2}, {10.8, 20.7}}, label: '2' <AX element pid: 3871, elementOrHash.elementID: 5882795264.384>
+                                Image, 0x114986080, {{982.0, 529.4}, {8.5, 14.8}}, identifier: 'chevron.right', label: 'Forward' <AX element pid: 3871, elementOrHash.elementID: 5882795712.385>
+                              Button, 0x1149861c0, {{174.2, 585.2}, {831.6, 68.4}}, label: 'Headquarters Progress, Founder Garage, 1' <AX element pid: 3871, elementOrHash.elementID: 5882798848.302>
+                                Image, 0x114986300, {{196.7, 605.5}, {22.0, 27.9}}, identifier: 'building.2.fill', label: 'Business' <AX element pid: 3871, elementOrHash.elementID: 5882796608.386>
+                                StaticText, 0x114986440, {{240.8, 600.1}, {184.9, 20.7}}, label: 'Headquarters Progress' <AX element pid: 3871, elementOrHash.elementID: 5882797056.387>
+                                StaticText, 0x114986580, {{240.8, 623.5}, {94.1, 15.3}}, label: 'Founder Garage' <AX element pid: 3871, elementOrHash.elementID: 5882797504.388>
+                                StaticText, 0x1149866c0, {{955.4, 609.1}, {10.8, 20.7}}, label: '1' <AX element pid: 3871, elementOrHash.elementID: 5882797952.389>
+                                Image, 0x114986800, {{982.0, 612.2}, {8.5, 14.9}}, identifier: 'chevron.right', label: 'Forward' <AX element pid: 3871, elementOrHash.elementID: 5882798400.390>
+                              Button, 0x114986940, {{174.2, 668.0}, {831.6, 68.4}}, label: 'Company Story, Persistent decisions, obligations, and narrative state, 0' <AX element pid: 3871, elementOrHash.elementID: 5882801536.303>
+                                Image, 0x114986a80, {{199.0, 691.0}, {18.9, 23.0}}, identifier: 'point.topleft.down.curvedto.point.bottomright.up', label: 'point.topleft.down.curvedto.point.bottomright.up' <AX element pid: 3871, elementOrHash.elementID: 5882799296.391>
+                                StaticText, 0x114986bc0, {{240.8, 682.9}, {123.3, 20.7}}, label: 'Company Story' <AX element pid: 3871, elementOrHash.elementID: 5882799744.392>
+                                StaticText, 0x114986d00, {{240.8, 706.3}, {303.3, 15.3}}, label: 'Persistent decisions, obligations, and narrative state' <AX element pid: 3871, elementOrHash.elementID: 5882800192.393>
+                                StaticText, 0x114986e40, {{955.4, 691.9}, {10.8, 20.7}}, label: '0' <AX element pid: 3871, elementOrHash.elementID: 5882800640.394>
+                                Image, 0x114986f80, {{982.0, 695.0}, {8.5, 14.8}}, identifier: 'chevron.right', label: 'Forward' <AX element pid: 3871, elementOrHash.elementID: 5882801088.395>
+                              Button, 0x1149870c0, {{174.2, 750.8}, {831.6, 68.4}}, label: 'Solo Pro, Plans, purchases, and subscription management, 3' <AX element pid: 3871, elementOrHash.elementID: 5882804224.304>
+                                Image, 0x114987200, {{198.5, 772.9}, {19.8, 24.3}}, identifier: 'sparkles', label: 'Sparkle' <AX element pid: 3871, elementOrHash.elementID: 5882801984.396>
+                                StaticText, 0x114987340, {{240.8, 765.7}, {66.2, 20.7}}, label: 'Solo Pro' <AX element pid: 3871, elementOrHash.elementID: 5882802432.397>
+                                StaticText, 0x114987480, {{240.8, 789.1}, {282.2, 15.3}}, label: 'Plans, purchases, and subscription management' <AX element pid: 3871, elementOrHash.elementID: 5882802880.398>
+                                StaticText, 0x1149875c0, {{955.4, 774.7}, {10.8, 20.7}}, label: '3' <AX element pid: 3871, elementOrHash.elementID: 5882803328.399>
+                                Image, 0x114987700, {{982.0, 777.8}, {8.5, 14.9}}, identifier: 'chevron.right', label: 'Forward' <AX element pid: 3871, elementOrHash.elementID: 5882803776.400>
+                              Button, 0x114987840, {{174.2, 833.6}, {831.6, 68.4}}, label: 'Settings, Cash feedback and your music, 2' <AX element pid: 3871, elementOrHash.elementID: 5882823552.305>
+                                Image, 0x114987980, {{197.6, 857.0}, {22.0, 22.0}}, identifier: 'gearshape.fill', label: 'gearshape.fill' <AX element pid: 3871, elementOrHash.elementID: 5882804672.401>
+                                StaticText, 0x114987ac0, {{240.8, 848.5}, {66.6, 20.7}}, label: 'Settings' <AX element pid: 3871, elementOrHash.elementID: 5882805120.402>
+                                StaticText, 0x114987c00, {{240.8, 871.9}, {179.1, 15.3}}, label: 'Cash feedback and your music' <AX element pid: 3871, elementOrHash.elementID: 5882805568.403>
+                                StaticText, 0x114987d40, {{955.4, 857.5}, {10.8, 20.7}}, label: '2' <AX element pid: 3871, elementOrHash.elementID: 5882822656.404>
+                                Image, 0x114987e80, {{982.0, 860.6}, {8.5, 14.9}}, identifier: 'chevron.right', label: 'Forward' <AX element pid: 3871, elementOrHash.elementID: 5882823104.405>
+                              Button, 0x114990000, {{174.2, 916.4}, {831.6, 68.4}}, label: 'How to Play, Sprint rules, systems, and reference' <AX element pid: 3871, elementOrHash.elementID: 5882825792.306>
+                                Image, 0x114990140, {{197.6, 939.8}, {21.6, 21.6}}, identifier: 'questionmark.circle.fill', label: 'questionmark.circle.fill' <AX element pid: 3871, elementOrHash.elementID: 5882824000.406>
+                                StaticText, 0x114990280, {{240.8, 931.3}, {93.6, 20.7}}, label: 'How to Play' <AX element pid: 3871, elementOrHash.elementID: 5882824448.407>
+                                StaticText, 0x1149903c0, {{240.8, 954.7}, {209.2, 15.3}}, label: 'Sprint rules, systems, and reference' <AX element pid: 3871, elementOrHash.elementID: 5882824896.408>
+                                Image, 0x114990500, {{982.0, 943.4}, {8.5, 14.9}}, identifier: 'chevron.right', label: 'Forward' <AX element pid: 3871, elementOrHash.elementID: 5882825344.409>
+                              StaticText, 0x114990640, {{174.2, 1004.6}, {133.2, 31.5}}, label: 'SYSTEM CONTROL, Career-level actions' <AX element pid: 3871, elementOrHash.elementID: 5882827136.307>
+                                StaticText, 0x114990780, {{174.2, 1004.6}, {133.2, 14.4}}, label: 'SYSTEM CONTROL' <AX element pid: 3871, elementOrHash.elementID: 5882826240.410>
+                                StaticText, 0x1149908c0, {{174.2, 1020.8}, {116.5, 15.3}}, label: 'Career-level actions' <AX element pid: 3871, elementOrHash.elementID: 5882826688.411>
+                              Button, 0x114990a00, {{174.2, 1050.5}, {831.6, 61.7}}, label: 'Restart Career' <AX element pid: 3871, elementOrHash.elementID: 5882828480.308>
+                                Image, 0x114990b40, {{523.9, 1071.7}, {14.9, 18.0}}, identifier: 'arrow.counterclockwise', label: 'arrow.counterclockwise' <AX element pid: 3871, elementOrHash.elementID: 5882827584.412>
+                                StaticText, 0x114990c80, {{185.0, 1056.8}, {810.0, 49.0}}, label: 'Restart Career' <AX element pid: 3871, elementOrHash.elementID: 5882828032.413>
+                            Other, 0x114990dc0, {{990.5, 219.8}, {27.0, 507.6}}, label: 'Vertical scroll bar, 2 pages', value: 0% <AX element pid: 3871, elementOrHash.elementID: 5843974144.280>
+                            Other, 0x114990f00, {{990.5, 219.8}, {27.0, 507.6}}, label: 'Vertical scroll bar, 2 pages', value: 0% <AX element pid: 3871, elementOrHash.elementID: 5843974144.280>
+                  Other, 0x114991040, {{159.8, 162.2}, {860.4, 565.2}} <AX element pid: 3871, elementOrHash.elementID: 5838838784.252>
+                    Other, 0x114991180, {{159.8, 162.2}, {0.0, 0.0}} <AX element pid: 3871, elementOrHash.elementID: 5838872000.264>
+                    Other, 0x1149912c0, {{159.8, 162.2}, {860.4, 565.2}} <AX element pid: 3871, elementOrHash.elementID: 5838840832.265>
+                Button, 0x114991400, {{159.8, 95.6}, {54.0, 54.0}}, identifier: 'return-to-founder-desk-server', label: 'Return to Founder Desk' <AX element pid: 3871, elementOrHash.elementID: 5843039360.226>
+                Image, 0x114991540, {{224.2, 116.3}, {15.3, 12.6}}, identifier: 'server.rack', label: 'server.rack' <AX element pid: 3871, elementOrHash.elementID: 5843039808.227>
+                StaticText, 0x114991680, {{224.1, 114.9}, {133.6, 15.3}}, label: 'Company Server' <AX element pid: 3871, elementOrHash.elementID: 5843040256.228>
+                StaticText, 0x1149917c0, {{953.1, 115.4}, {67.1, 14.4}}, label: 'FOCUSED' <AX element pid: 3871, elementOrHash.elementID: 5843040704.229>
+  Window, 0x114991900, {{0.0, 0.0}, {1180.0, 820.0}} <AX element pid: 3871, elementOrHash.elementID: 5788864256.5>
+    Other, 0x114991a40, {{0.0, 0.0}, {1180.0, 820.0}} <AX element pid: 3871, elementOrHash.elementID: 5793783680.7>
+      Other, 0x114991b80, {{0.0, 0.0}, {1180.0, 820.0}} <AX element pid: 3871, elementOrHash.elementID: 5793785024.9>

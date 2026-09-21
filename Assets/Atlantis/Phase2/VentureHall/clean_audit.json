@@ -1,0 +1,89 @@
+{
+  "meshes": [
+    {
+      "name": "VentureHall_atrium_glazing",
+      "triangles": 216,
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 91187.35999225613
+    },
+    {
+      "name": "VentureHall_pale_limestone",
+      "triangles": 228,
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 25416.799943208694
+    },
+    {
+      "name": "VentureHall_brushed_bronze",
+      "triangles": 792,
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 3242.531466517481
+    },
+    {
+      "name": "VentureHall_warm_entry",
+      "triangles": 48,
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "signed_volume": 5.47502679818718
+    }
+  ],
+  "triangles": 1284,
+  "bounds": [
+    [
+      -564.0,
+      73.5,
+      14.0
+    ],
+    [
+      -476.0,
+      146.5,
+      55.420616149902344
+    ]
+  ],
+  "dimensions": [
+    88.0,
+    73.0,
+    41.420616149902344
+  ],
+  "source_normalization": {
+    "source_dimensions": [
+      1.0,
+      0.9799569845199585,
+      0.7823653221130371
+    ],
+    "uniform_scale": 50,
+    "source_rotation_degrees": -45,
+    "final_root_rotation_degrees": 0,
+    "base_offset": 2,
+    "removed_components": 0,
+    "final_method": "Source-informed architectural reconstruction; source 50x normalized study retained in staging"
+  },
+  "support_changes": {
+    "VentureDistrict_Block_001": {
+      "old_height": 105.1207046508789,
+      "new_height": 38
+    },
+    "VentureDistrict_Block_004": {
+      "old_height": 89.69602966308594,
+      "new_height": 30
+    },
+    "VentureDistrict_Block_009": {
+      "old_height": 48.59666442871094,
+      "new_height": 32
+    },
+    "VentureDistrict_Block_007": {
+      "old_height": 62.37080383300781,
+      "new_height": 45
+    }
+  },
+  "unexpected_original_changes": [],
+  "district_triangles": 1764,
+  "materials": [
+    "Venture \u2022 atrium glazing",
+    "Venture \u2022 brushed bronze",
+    "Venture \u2022 pale limestone",
+    "Venture \u2022 warm entry"
+  ]
+}

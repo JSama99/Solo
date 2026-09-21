@@ -1,0 +1,52 @@
+{
+  "devicesAndConfigurations" : [
+    {
+      "device" : {
+        "architecture" : "arm64",
+        "deviceId" : "00008132-001248E621FA401C",
+        "deviceName" : "iPad (2)",
+        "modelName" : "iPad Air 11-inch (M4)",
+        "osBuildNumber" : "23G90",
+        "osVersion" : "26.6.2",
+        "platform" : "iOS"
+      },
+      "expectedFailures" : 0,
+      "failedTests" : 1,
+      "passedTests" : 1,
+      "skippedTests" : 0,
+      "testPlanConfiguration" : {
+        "configurationId" : "1",
+        "configurationName" : "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription" : "Solo Unicorn Run · Built with macOS 26.6.2",
+  "expectedFailures" : 0,
+  "failedTests" : 1,
+  "finishTime" : 1789678483.578,
+  "passedTests" : 1,
+  "result" : "Failed",
+  "runtimeWarnings" : [
+
+  ],
+  "skippedTests" : 0,
+  "startTime" : 1789678401.263,
+  "statistics" : [
+
+  ],
+  "testFailures" : [
+    {
+      "failureText" : "XCTAssertTrue failed - Open-door traversal never entered Atlantis",
+      "targetName" : "Solo Unicorn Run UI Tests",
+      "testIdentifier" : 1,
+      "testIdentifierString" : "Build32_6_2ProductionContinuityUITests/testProductionGarageWalksThroughOpenDoorIntoAtlantis()",
+      "testIdentifierURL" : "test://com.apple.xcode/SoloUnicornRun/Solo%20Unicorn%20Run%20UI%20Tests/Build32_6_2ProductionContinuityUITests/testProductionGarageWalksThroughOpenDoorIntoAtlantis",
+      "testName" : "testProductionGarageWalksThroughOpenDoorIntoAtlantis()"
+    }
+  ],
+  "title" : "Test - Solo Unicorn Run",
+  "topInsights" : [
+
+  ],
+  "totalTestCount" : 2
+}

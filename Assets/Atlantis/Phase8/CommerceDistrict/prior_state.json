@@ -1,0 +1,2709 @@
+[
+  {
+    "name": "Founder_Shore",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      780.0,
+      600.0,
+      20.0
+    ],
+    "hidden": false,
+    "props": {},
+    "bounds": [
+      [
+        -1220.0,
+        -1140.0,
+        -12.0
+      ],
+      [
+        -440.0,
+        -540.0,
+        8.0
+      ]
+    ]
+  },
+  {
+    "name": "Central_Peninsula",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      1610.0,
+      1450.0,
+      26.0
+    ],
+    "hidden": false,
+    "props": {},
+    "bounds": [
+      [
+        -790.0,
+        -670.0,
+        -12.0
+      ],
+      [
+        820.0,
+        780.0,
+        14.0
+      ]
+    ]
+  },
+  {
+    "name": "Media_Headland",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      520.0,
+      600.0,
+      26.0
+    ],
+    "hidden": false,
+    "props": {},
+    "bounds": [
+      [
+        540.0,
+        20.0,
+        -12.0
+      ],
+      [
+        1060.0,
+        620.0,
+        14.0
+      ]
+    ]
+  },
+  {
+    "name": "Unicorn_Raised_Headland",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      830.0,
+      630.0,
+      97.0
+    ],
+    "hidden": false,
+    "props": {},
+    "bounds": [
+      [
+        410.0,
+        640.0,
+        -12.0
+      ],
+      [
+        1240.0,
+        1270.0,
+        85.0
+      ]
+    ]
+  },
+  {
+    "name": "Commerce_Boulevard_00",
+    "type": "MESH",
+    "position": [
+      5.0,
+      -305.0,
+      15.0
+    ],
+    "dimensions": [
+      24.0,
+      396.2322692871094,
+      0.699999988079071
+    ],
+    "hidden": false,
+    "props": {
+      "route": "Commerce_Boulevard"
+    },
+    "bounds": [
+      [
+        -192.11997985839844,
+        -351.8112487792969,
+        14.649999618530273
+      ],
+      [
+        202.11997985839844,
+        -258.1887512207031,
+        15.350000381469727
+      ]
+    ]
+  },
+  {
+    "name": "Commerce_Boulevard_01",
+    "type": "MESH",
+    "position": [
+      350.0,
+      -245.0,
+      15.0
+    ],
+    "dimensions": [
+      24.0,
+      355.1056213378906,
+      0.699999988079071
+    ],
+    "hidden": false,
+    "props": {
+      "route": "Commerce_Boulevard"
+    },
+    "bounds": [
+      [
+        193.57936096191406,
+        -350.1378173828125,
+        14.649999618530273
+      ],
+      [
+        506.420654296875,
+        -139.8621826171875,
+        15.350000381469727
+      ]
+    ]
+  },
+  {
+    "name": "Commerce_Boulevard_02",
+    "type": "MESH",
+    "position": [
+      460.0,
+      -55.0,
+      15.0
+    ],
+    "dimensions": [
+      24.0,
+      206.15528869628906,
+      0.699999988079071
+    ],
+    "hidden": false,
+    "props": {
+      "route": "Commerce_Boulevard"
+    },
+    "bounds": [
+      [
+        408.94036865234375,
+        -154.65667724609375,
+        14.649999618530273
+      ],
+      [
+        511.05963134765625,
+        44.65668487548828,
+        15.350000381469727
+      ]
+    ]
+  },
+  {
+    "name": "Commerce_Boulevard_03",
+    "type": "MESH",
+    "position": [
+      210.0,
+      70.0,
+      15.0
+    ],
+    "dimensions": [
+      23.999998092651367,
+      424.2640380859375,
+      0.699999988079071
+    ],
+    "hidden": false,
+    "props": {
+      "route": "Commerce_Boulevard"
+    },
+    "bounds": [
+      [
+        -1.697056531906128,
+        28.120601654052734,
+        14.649999618530273
+      ],
+      [
+        421.6970520019531,
+        111.87939453125,
+        15.350000381469727
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_CrossStreet_00",
+    "type": "MESH",
+    "position": [
+      300.0,
+      -190.0,
+      14.800000190734863
+    ],
+    "dimensions": [
+      14.000001907348633,
+      450.00006103515625,
+      0.699999988079071
+    ],
+    "hidden": false,
+    "props": {
+      "route": "CommerceDistrict_CrossStreet"
+    },
+    "bounds": [
+      [
+        74.99996948242188,
+        -197.00003051757812,
+        14.449999809265137
+      ],
+      [
+        525.0000610351562,
+        -182.99996948242188,
+        15.15000057220459
+      ]
+    ]
+  },
+  {
+    "name": "Commerce_Link_00",
+    "type": "MESH",
+    "position": [
+      360.0,
+      -75.0,
+      15.0
+    ],
+    "dimensions": [
+      14.0,
+      259.42242431640625,
+      0.699999988079071
+    ],
+    "hidden": false,
+    "props": {
+      "route": "Commerce_Link"
+    },
+    "bounds": [
+      [
+        293.7939147949219,
+        -193.2379608154297,
+        14.649999618530273
+      ],
+      [
+        426.2060852050781,
+        43.23796081542969,
+        15.350000381469727
+      ]
+    ]
+  },
+  {
+    "name": "Commerce_CentralPlaza",
+    "type": "MESH",
+    "position": [
+      220.0,
+      -170.0,
+      14.199999809265137
+    ],
+    "dimensions": [
+      85.0,
+      75.0,
+      0.30000001192092896
+    ],
+    "hidden": false,
+    "props": {},
+    "bounds": [
+      [
+        177.5,
+        -207.5,
+        14.050000190734863
+      ],
+      [
+        262.5,
+        -132.5,
+        14.34999942779541
+      ]
+    ]
+  },
+  {
+    "name": "FounderDistrict_Aerial",
+    "type": "CAMERA",
+    "position": [
+      -1280.0,
+      -1330.0,
+      510.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "FounderGarage_Context",
+    "type": "CAMERA",
+    "position": [
+      -940.0,
+      -1100.0,
+      49.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Founder_To_Startup_Phase7",
+    "type": "CAMERA",
+    "position": [
+      -825.0,
+      -1010.0,
+      9.699999809265137
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Founder_To_Spire",
+    "type": "CAMERA",
+    "position": [
+      -875.0,
+      -1020.0,
+      9.800000190734863
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Founder_StreetLevel",
+    "type": "CAMERA",
+    "position": [
+      -1010.0,
+      -969.0,
+      9.949999809265137
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Founder_GreenSpace",
+    "type": "CAMERA",
+    "position": [
+      -936.0,
+      -935.0,
+      9.850000381469727
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Founder_NightPreview",
+    "type": "CAMERA",
+    "position": [
+      -1010.0,
+      -969.0,
+      9.949999809265137
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Garage_Transition_Seam",
+    "type": "CAMERA",
+    "position": [
+      -885.0,
+      -1042.0,
+      9.649999618530273
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "StartupRow_Aerial",
+    "type": "CAMERA",
+    "position": [
+      -850.0,
+      -850.0,
+      650.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Founder_To_Startup",
+    "type": "CAMERA",
+    "position": [
+      -710.0,
+      -590.0,
+      21.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Startup_To_TechCore",
+    "type": "CAMERA",
+    "position": [
+      -460.0,
+      -400.0,
+      20.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Startup_MainBoulevard",
+    "type": "CAMERA",
+    "position": [
+      -600.0,
+      -484.0,
+      20.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Startup_Core",
+    "type": "CAMERA",
+    "position": [
+      -540.0,
+      -340.0,
+      20.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Startup_ProgressionParcels",
+    "type": "CAMERA",
+    "position": [
+      -850.0,
+      -760.0,
+      470.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Startup_NightPreview",
+    "type": "CAMERA",
+    "position": [
+      -710.0,
+      -600.0,
+      170.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "CommerceDistrict_Boundary_0",
+    "type": "MESH",
+    "position": [
+      300.0,
+      -360.0,
+      14.119999885559082
+    ],
+    "dimensions": [
+      500.0,
+      2.0,
+      0.15000000596046448
+    ],
+    "hidden": false,
+    "props": {},
+    "bounds": [
+      [
+        50.0,
+        -361.0,
+        14.045000076293945
+      ],
+      [
+        550.0,
+        -359.0,
+        14.194999694824219
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Boundary_1",
+    "type": "MESH",
+    "position": [
+      300.0,
+      -20.0,
+      14.119999885559082
+    ],
+    "dimensions": [
+      500.0,
+      2.0,
+      0.15000000596046448
+    ],
+    "hidden": false,
+    "props": {},
+    "bounds": [
+      [
+        50.0,
+        -21.0,
+        14.045000076293945
+      ],
+      [
+        550.0,
+        -19.0,
+        14.194999694824219
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Boundary_2",
+    "type": "MESH",
+    "position": [
+      50.0,
+      -190.0,
+      14.119999885559082
+    ],
+    "dimensions": [
+      2.0,
+      340.0,
+      0.15000000596046448
+    ],
+    "hidden": false,
+    "props": {},
+    "bounds": [
+      [
+        49.0,
+        -360.0,
+        14.045000076293945
+      ],
+      [
+        51.0,
+        -20.0,
+        14.194999694824219
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Boundary_3",
+    "type": "MESH",
+    "position": [
+      550.0,
+      -190.0,
+      14.119999885559082
+    ],
+    "dimensions": [
+      2.0,
+      340.0,
+      0.15000000596046448
+    ],
+    "hidden": false,
+    "props": {},
+    "bounds": [
+      [
+        549.0,
+        -360.0,
+        14.045000076293945
+      ],
+      [
+        551.0,
+        -20.0,
+        14.194999694824219
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Block_000",
+    "type": "MESH",
+    "position": [
+      90.0,
+      -261.3999938964844,
+      30.229433059692383
+    ],
+    "dimensions": [
+      32.0,
+      27.200000762939453,
+      32.458866119384766
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict",
+      "height_m": "32.45886663813748"
+    },
+    "bounds": [
+      [
+        74.0,
+        -275.0,
+        14.0
+      ],
+      [
+        106.0,
+        -247.79998779296875,
+        46.458866119384766
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Podium_001",
+    "type": "MESH",
+    "position": [
+      90.0,
+      -261.3999938964844,
+      19.0
+    ],
+    "dimensions": [
+      40.0,
+      35.20000076293945,
+      10.0
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict"
+    },
+    "bounds": [
+      [
+        70.0,
+        -279.0,
+        14.0
+      ],
+      [
+        110.0,
+        -243.79998779296875,
+        24.0
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Block_001",
+    "type": "MESH",
+    "position": [
+      90.0,
+      -118.5999984741211,
+      47.04620361328125
+    ],
+    "dimensions": [
+      32.0,
+      27.200000762939453,
+      66.0924072265625
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict",
+      "height_m": "66.0924107326453"
+    },
+    "bounds": [
+      [
+        74.0,
+        -132.1999969482422,
+        14.0
+      ],
+      [
+        106.0,
+        -105.0,
+        80.0924072265625
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Podium_002",
+    "type": "MESH",
+    "position": [
+      90.0,
+      -118.5999984741211,
+      19.0
+    ],
+    "dimensions": [
+      40.0,
+      35.20000076293945,
+      10.0
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict"
+    },
+    "bounds": [
+      [
+        70.0,
+        -136.1999969482422,
+        14.0
+      ],
+      [
+        110.0,
+        -101.0,
+        24.0
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Block_002",
+    "type": "MESH",
+    "position": [
+      90.0,
+      -47.20000076293945,
+      52.78602600097656
+    ],
+    "dimensions": [
+      32.0,
+      27.200000762939453,
+      77.57205200195312
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict",
+      "height_m": "77.57205514880854"
+    },
+    "bounds": [
+      [
+        74.0,
+        -60.80000305175781,
+        14.0
+      ],
+      [
+        106.0,
+        -33.599998474121094,
+        91.57205200195312
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Podium_003",
+    "type": "MESH",
+    "position": [
+      90.0,
+      -47.20000076293945,
+      19.0
+    ],
+    "dimensions": [
+      40.0,
+      35.20000076293945,
+      10.0
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict"
+    },
+    "bounds": [
+      [
+        70.0,
+        -64.80000305175781,
+        14.0
+      ],
+      [
+        110.0,
+        -29.600000381469727,
+        24.0
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Block_003",
+    "type": "MESH",
+    "position": [
+      195.0,
+      -261.3999938964844,
+      45.17116928100586
+    ],
+    "dimensions": [
+      32.0,
+      27.200000762939453,
+      62.34233856201172
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict",
+      "height_m": "62.34233915825749"
+    },
+    "bounds": [
+      [
+        179.0,
+        -275.0,
+        14.0
+      ],
+      [
+        211.0,
+        -247.79998779296875,
+        76.34233856201172
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Podium_004",
+    "type": "MESH",
+    "position": [
+      195.0,
+      -261.3999938964844,
+      19.0
+    ],
+    "dimensions": [
+      40.0,
+      35.20000076293945,
+      10.0
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict"
+    },
+    "bounds": [
+      [
+        175.0,
+        -279.0,
+        14.0
+      ],
+      [
+        215.0,
+        -243.79998779296875,
+        24.0
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Block_004",
+    "type": "MESH",
+    "position": [
+      195.0,
+      -118.5999984741211,
+      37.63819122314453
+    ],
+    "dimensions": [
+      32.0,
+      27.200000762939453,
+      47.27638626098633
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict",
+      "height_m": "47.27638613290717"
+    },
+    "bounds": [
+      [
+        179.0,
+        -132.1999969482422,
+        13.999998092651367
+      ],
+      [
+        211.0,
+        -105.0,
+        61.27638244628906
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Podium_005",
+    "type": "MESH",
+    "position": [
+      195.0,
+      -118.5999984741211,
+      19.0
+    ],
+    "dimensions": [
+      40.0,
+      35.20000076293945,
+      10.0
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict"
+    },
+    "bounds": [
+      [
+        175.0,
+        -136.1999969482422,
+        14.0
+      ],
+      [
+        215.0,
+        -101.0,
+        24.0
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Block_005",
+    "type": "MESH",
+    "position": [
+      195.0,
+      -47.20000076293945,
+      48.80366134643555
+    ],
+    "dimensions": [
+      32.0,
+      27.200000762939453,
+      69.6073226928711
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict",
+      "height_m": "69.60732157895374"
+    },
+    "bounds": [
+      [
+        179.0,
+        -60.80000305175781,
+        14.0
+      ],
+      [
+        211.0,
+        -33.599998474121094,
+        83.6073226928711
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Podium_006",
+    "type": "MESH",
+    "position": [
+      195.0,
+      -47.20000076293945,
+      19.0
+    ],
+    "dimensions": [
+      40.0,
+      35.20000076293945,
+      10.0
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict"
+    },
+    "bounds": [
+      [
+        175.0,
+        -64.80000305175781,
+        14.0
+      ],
+      [
+        215.0,
+        -29.600000381469727,
+        24.0
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Block_006",
+    "type": "MESH",
+    "position": [
+      300.0,
+      -332.79998779296875,
+      28.848539352416992
+    ],
+    "dimensions": [
+      32.0,
+      27.200000762939453,
+      29.697078704833984
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict",
+      "height_m": "29.69707942020863"
+    },
+    "bounds": [
+      [
+        284.0,
+        -346.3999938964844,
+        14.0
+      ],
+      [
+        316.0,
+        -319.1999816894531,
+        43.697078704833984
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Podium_007",
+    "type": "MESH",
+    "position": [
+      300.0,
+      -332.79998779296875,
+      19.0
+    ],
+    "dimensions": [
+      40.0,
+      35.20000076293945,
+      10.0
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict"
+    },
+    "bounds": [
+      [
+        280.0,
+        -350.3999938964844,
+        14.0
+      ],
+      [
+        320.0,
+        -315.1999816894531,
+        24.0
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Block_007",
+    "type": "MESH",
+    "position": [
+      300.0,
+      -47.20000076293945,
+      49.999637603759766
+    ],
+    "dimensions": [
+      32.0,
+      27.200000762939453,
+      71.99927520751953
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict",
+      "height_m": "71.99927453243234"
+    },
+    "bounds": [
+      [
+        284.0,
+        -60.80000305175781,
+        14.0
+      ],
+      [
+        316.0,
+        -33.599998474121094,
+        85.99927520751953
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Podium_008",
+    "type": "MESH",
+    "position": [
+      300.0,
+      -47.20000076293945,
+      19.0
+    ],
+    "dimensions": [
+      40.0,
+      35.20000076293945,
+      10.0
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict"
+    },
+    "bounds": [
+      [
+        280.0,
+        -64.80000305175781,
+        14.0
+      ],
+      [
+        320.0,
+        -29.600000381469727,
+        24.0
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Block_008",
+    "type": "MESH",
+    "position": [
+      405.0,
+      -332.79998779296875,
+      44.12675094604492
+    ],
+    "dimensions": [
+      32.0,
+      27.200000762939453,
+      60.253501892089844
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict",
+      "height_m": "60.25350118624929"
+    },
+    "bounds": [
+      [
+        389.0,
+        -346.3999938964844,
+        14.0
+      ],
+      [
+        421.0,
+        -319.1999816894531,
+        74.25350189208984
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Podium_009",
+    "type": "MESH",
+    "position": [
+      405.0,
+      -332.79998779296875,
+      19.0
+    ],
+    "dimensions": [
+      40.0,
+      35.20000076293945,
+      10.0
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict"
+    },
+    "bounds": [
+      [
+        385.0,
+        -350.3999938964844,
+        14.0
+      ],
+      [
+        425.0,
+        -315.1999816894531,
+        24.0
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Block_009",
+    "type": "MESH",
+    "position": [
+      405.0,
+      -118.5999984741211,
+      42.42161178588867
+    ],
+    "dimensions": [
+      32.0,
+      27.200000762939453,
+      56.843223571777344
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict",
+      "height_m": "56.84322344829134"
+    },
+    "bounds": [
+      [
+        389.0,
+        -132.1999969482422,
+        14.0
+      ],
+      [
+        421.0,
+        -105.0,
+        70.84322357177734
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Podium_010",
+    "type": "MESH",
+    "position": [
+      405.0,
+      -118.5999984741211,
+      19.0
+    ],
+    "dimensions": [
+      40.0,
+      35.20000076293945,
+      10.0
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict"
+    },
+    "bounds": [
+      [
+        385.0,
+        -136.1999969482422,
+        14.0
+      ],
+      [
+        425.0,
+        -101.0,
+        24.0
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Block_010",
+    "type": "MESH",
+    "position": [
+      510.0,
+      -332.79998779296875,
+      44.96318054199219
+    ],
+    "dimensions": [
+      32.0,
+      27.200000762939453,
+      61.926361083984375
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict",
+      "height_m": "61.92636070958276"
+    },
+    "bounds": [
+      [
+        494.0,
+        -346.3999938964844,
+        14.0
+      ],
+      [
+        526.0,
+        -319.1999816894531,
+        75.92636108398438
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Podium_011",
+    "type": "MESH",
+    "position": [
+      510.0,
+      -332.79998779296875,
+      19.0
+    ],
+    "dimensions": [
+      40.0,
+      35.20000076293945,
+      10.0
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict"
+    },
+    "bounds": [
+      [
+        490.0,
+        -350.3999938964844,
+        14.0
+      ],
+      [
+        530.0,
+        -315.1999816894531,
+        24.0
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Block_011",
+    "type": "MESH",
+    "position": [
+      510.0,
+      -261.3999938964844,
+      31.703487396240234
+    ],
+    "dimensions": [
+      32.0,
+      27.200000762939453,
+      35.40697479248047
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict",
+      "height_m": "35.40697346197665"
+    },
+    "bounds": [
+      [
+        494.0,
+        -275.0,
+        14.0
+      ],
+      [
+        526.0,
+        -247.79998779296875,
+        49.40697479248047
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Podium_012",
+    "type": "MESH",
+    "position": [
+      510.0,
+      -261.3999938964844,
+      19.0
+    ],
+    "dimensions": [
+      40.0,
+      35.20000076293945,
+      10.0
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict"
+    },
+    "bounds": [
+      [
+        490.0,
+        -279.0,
+        14.0
+      ],
+      [
+        530.0,
+        -243.79998779296875,
+        24.0
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Block_012",
+    "type": "MESH",
+    "position": [
+      510.0,
+      -47.20000076293945,
+      41.43413162231445
+    ],
+    "dimensions": [
+      32.0,
+      27.200000762939453,
+      54.868263244628906
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict",
+      "height_m": "54.868263452226785"
+    },
+    "bounds": [
+      [
+        494.0,
+        -60.80000305175781,
+        14.0
+      ],
+      [
+        526.0,
+        -33.599998474121094,
+        68.8682632446289
+      ]
+    ]
+  },
+  {
+    "name": "CommerceDistrict_Podium_013",
+    "type": "MESH",
+    "position": [
+      510.0,
+      -47.20000076293945,
+      19.0
+    ],
+    "dimensions": [
+      40.0,
+      35.20000076293945,
+      10.0
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict"
+    },
+    "bounds": [
+      [
+        490.0,
+        -64.80000305175781,
+        14.0
+      ],
+      [
+        530.0,
+        -29.600000381469727,
+        24.0
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_Foundation",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      40.0,
+      32.0,
+      2.0
+    ],
+    "hidden": true,
+    "props": {},
+    "bounds": [
+      [
+        -20.0,
+        -16.0,
+        -1.0
+      ],
+      [
+        20.0,
+        16.0,
+        1.0
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_LaunchPodium",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      36.0,
+      28.0,
+      6.0
+    ],
+    "hidden": true,
+    "props": {},
+    "bounds": [
+      [
+        -18.0,
+        -14.0,
+        -3.0
+      ],
+      [
+        18.0,
+        14.0,
+        3.0
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_VelocityWedge",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      27.0,
+      22.0,
+      67.0
+    ],
+    "hidden": true,
+    "props": {},
+    "bounds": [
+      [
+        -16.5,
+        -9.0,
+        8.0
+      ],
+      [
+        10.5,
+        13.0,
+        75.0
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_LaunchWing",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      10.0,
+      24.0,
+      28.0
+    ],
+    "hidden": true,
+    "props": {},
+    "bounds": [
+      [
+        -5.0,
+        -12.0,
+        -14.0
+      ],
+      [
+        5.0,
+        12.0,
+        14.0
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_OffsetFin",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      29.0,
+      1.0,
+      0.800000011920929
+    ],
+    "hidden": true,
+    "props": {},
+    "bounds": [
+      [
+        -14.5,
+        -0.5,
+        -0.4000000059604645
+      ],
+      [
+        14.5,
+        0.5,
+        0.4000000059604645
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_OffsetFin.001",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      29.0,
+      1.0,
+      0.800000011920929
+    ],
+    "hidden": true,
+    "props": {},
+    "bounds": [
+      [
+        -14.5,
+        -0.5,
+        -0.4000000059604645
+      ],
+      [
+        14.5,
+        0.5,
+        0.4000000059604645
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_OffsetFin.002",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      29.0,
+      1.0,
+      0.800000011920929
+    ],
+    "hidden": true,
+    "props": {},
+    "bounds": [
+      [
+        -14.5,
+        -0.5,
+        -0.4000000059604645
+      ],
+      [
+        14.5,
+        0.5,
+        0.4000000059604645
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_OffsetFin.003",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      29.0,
+      1.0,
+      0.800000011920929
+    ],
+    "hidden": true,
+    "props": {},
+    "bounds": [
+      [
+        -14.5,
+        -0.5,
+        -0.4000000059604645
+      ],
+      [
+        14.5,
+        0.5,
+        0.4000000059604645
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_VelocityLight",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      8.600000381469727,
+      3.9000000953674316,
+      65.0
+    ],
+    "hidden": true,
+    "props": {},
+    "bounds": [
+      [
+        -15.300000190734863,
+        -10.0,
+        9.0
+      ],
+      [
+        -6.699999809265137,
+        -6.099999904632568,
+        74.0
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_Signage_Main",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      24.0,
+      0.30000001192092896,
+      3.0
+    ],
+    "hidden": true,
+    "props": {
+      "future_signage_target": "True",
+      "content": "blank"
+    },
+    "bounds": [
+      [
+        -12.0,
+        -0.15000000596046448,
+        -1.5
+      ],
+      [
+        12.0,
+        0.15000000596046448,
+        1.5
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_HQ_AssetRoot",
+    "type": "EMPTY",
+    "position": [
+      430.0,
+      -240.0,
+      14.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {
+      "canonicalCompanyID": "flashpoint",
+      "method": "Source-informed architectural reconstruction",
+      "forward": "-Y"
+    }
+  },
+  {
+    "name": "Flashpoint_PodiumConcrete",
+    "type": "MESH",
+    "position": [
+      430.0,
+      -240.0,
+      14.0
+    ],
+    "dimensions": [
+      38.0,
+      30.0,
+      2.0
+    ],
+    "hidden": false,
+    "props": {},
+    "bounds": [
+      [
+        411.0,
+        -255.0,
+        14.0
+      ],
+      [
+        449.0,
+        -225.0,
+        16.0
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_DarkGlazing",
+    "type": "MESH",
+    "position": [
+      430.0,
+      -240.0,
+      14.0
+    ],
+    "dimensions": [
+      36.0,
+      27.0,
+      71.9000015258789
+    ],
+    "hidden": false,
+    "props": {},
+    "bounds": [
+      [
+        412.0,
+        -254.0,
+        16.0
+      ],
+      [
+        448.0,
+        -227.0,
+        87.9000015258789
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_StructuralSilver",
+    "type": "MESH",
+    "position": [
+      430.0,
+      -240.0,
+      14.0
+    ],
+    "dimensions": [
+      37.0,
+      28.449996948242188,
+      72.75
+    ],
+    "hidden": false,
+    "props": {},
+    "bounds": [
+      [
+        411.5,
+        -254.9499969482422,
+        16.25
+      ],
+      [
+        448.5,
+        -226.5,
+        89.0
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_MomentumAccent",
+    "type": "MESH",
+    "position": [
+      430.0,
+      -240.0,
+      14.0
+    ],
+    "dimensions": [
+      8.299999237060547,
+      6.800005912780762,
+      65.0
+    ],
+    "hidden": false,
+    "props": {},
+    "bounds": [
+      [
+        416.8500061035156,
+        -254.25,
+        16.0
+      ],
+      [
+        425.1499938964844,
+        -247.4499969482422,
+        81.0
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_Signage_Main.001",
+    "type": "MESH",
+    "position": [
+      421.0,
+      -254.25,
+      21.0
+    ],
+    "dimensions": [
+      7.0,
+      0.25,
+      1.5
+    ],
+    "hidden": false,
+    "props": {
+      "semantic_target": "Flashpoint_Signage_Main",
+      "dynamic_material_target": "True",
+      "content": "blank"
+    },
+    "bounds": [
+      [
+        417.5,
+        -254.375,
+        20.25
+      ],
+      [
+        424.5,
+        -254.125,
+        21.75
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_LaunchDisplay",
+    "type": "MESH",
+    "position": [
+      438.0,
+      -254.25,
+      21.0
+    ],
+    "dimensions": [
+      9.0,
+      0.25,
+      4.0
+    ],
+    "hidden": false,
+    "props": {
+      "semantic_target": "Flashpoint_LaunchDisplay",
+      "dynamic_material_target": "True",
+      "content": "blank"
+    },
+    "bounds": [
+      [
+        433.5,
+        -254.375,
+        19.0
+      ],
+      [
+        442.5,
+        -254.125,
+        23.0
+      ]
+    ]
+  },
+  {
+    "name": "Flashpoint_Ticker",
+    "type": "MESH",
+    "position": [
+      434.0,
+      -254.3000030517578,
+      25.0
+    ],
+    "dimensions": [
+      20.0,
+      0.25,
+      0.6000000238418579
+    ],
+    "hidden": false,
+    "props": {
+      "semantic_target": "Flashpoint_Ticker",
+      "dynamic_material_target": "True",
+      "content": "blank"
+    },
+    "bounds": [
+      [
+        424.0,
+        -254.4250030517578,
+        24.700000762939453
+      ],
+      [
+        444.0,
+        -254.1750030517578,
+        25.299999237060547
+      ]
+    ]
+  },
+  {
+    "name": "RivalHQ_Slot_05_Parcel",
+    "type": "MESH",
+    "position": [
+      430.0,
+      -240.0,
+      14.300000190734863
+    ],
+    "dimensions": [
+      75.0,
+      60.0,
+      0.6000000238418579
+    ],
+    "hidden": false,
+    "props": {
+      "district": "CommerceDistrict",
+      "slot_id": "RivalHQ_Slot_05"
+    },
+    "bounds": [
+      [
+        392.5,
+        -270.0,
+        14.0
+      ],
+      [
+        467.5,
+        -210.0,
+        14.600000381469727
+      ]
+    ]
+  },
+  {
+    "name": "RivalHQ_Slot_05_Massing",
+    "type": "MESH",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      48.75,
+      39.0,
+      70.0
+    ],
+    "hidden": true,
+    "props": {
+      "district": "CommerceDistrict",
+      "slot_id": "RivalHQ_Slot_05"
+    },
+    "bounds": [
+      [
+        -24.375,
+        -19.5,
+        -35.0
+      ],
+      [
+        24.375,
+        19.5,
+        35.0
+      ]
+    ]
+  },
+  {
+    "name": "RivalHQ_Slot_05",
+    "type": "EMPTY",
+    "position": [
+      430.0,
+      -240.0,
+      14.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {
+      "id": "RivalHQ_Slot_05",
+      "district": "CommerceDistrict",
+      "origin": "<bpy id property array [3]>",
+      "rotation_degrees": "<bpy id property array [3]>",
+      "forward": "-Y (Blender); +Z after glTF conversion",
+      "footprint_m": "<bpy id property array [2]>",
+      "target_height_m": "<bpy id property array [2]>",
+      "max_bbox_m": "<bpy id property array [3]>",
+      "placeholder_height_m": "70",
+      "kind": "RivalHQ_Medium"
+    }
+  },
+  {
+    "name": "Atlantis_Master_Aerial",
+    "type": "CAMERA",
+    "position": [
+      2700.0,
+      -3600.0,
+      2900.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Founder_To_City",
+    "type": "CAMERA",
+    "position": [
+      -875.0,
+      -1020.0,
+      9.800000190734863
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "TechCore_Skyline",
+    "type": "CAMERA",
+    "position": [
+      -700.0,
+      -1100.0,
+      100.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Atlantis_Waterfront",
+    "type": "CAMERA",
+    "position": [
+      2000.0,
+      -1400.0,
+      800.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "UnicornHeights_View",
+    "type": "CAMERA",
+    "position": [
+      1500.0,
+      1700.0,
+      700.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Atlantis_Top_Down",
+    "type": "CAMERA",
+    "position": [
+      0.0,
+      80.0,
+      4000.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "TheSpire_Hero",
+    "type": "CAMERA",
+    "position": [
+      410.0,
+      -120.0,
+      260.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "TheSpire_Side",
+    "type": "CAMERA",
+    "position": [
+      550.0,
+      420.0,
+      175.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "TheSpire_StartupSightline",
+    "type": "CAMERA",
+    "position": [
+      -460.0,
+      -400.0,
+      25.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "TheSpire_TechCoreApproach",
+    "type": "CAMERA",
+    "position": [
+      50.0,
+      105.0,
+      20.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "TheSpire_VentureSightline",
+    "type": "CAMERA",
+    "position": [
+      -490.0,
+      70.0,
+      35.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "TheSpire_MediaSightline",
+    "type": "CAMERA",
+    "position": [
+      780.0,
+      300.0,
+      35.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "VentureHall_Hero",
+    "type": "CAMERA",
+    "position": [
+      -365.0,
+      -90.0,
+      140.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "VentureHall_Side",
+    "type": "CAMERA",
+    "position": [
+      -300.0,
+      110.0,
+      80.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "VentureHall_Plaza",
+    "type": "CAMERA",
+    "position": [
+      -520.0,
+      -20.0,
+      17.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "VentureDistrict_Aerial",
+    "type": "CAMERA",
+    "position": [
+      -850.0,
+      -400.0,
+      530.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "VentureDistrict_Arrival",
+    "type": "CAMERA",
+    "position": [
+      -455.0,
+      -85.0,
+      25.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "VentureHall_ToSpire",
+    "type": "CAMERA",
+    "position": [
+      -850.0,
+      -400.0,
+      470.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Startup_ToVenture",
+    "type": "CAMERA",
+    "position": [
+      -535.0,
+      -265.0,
+      30.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "MediaDistrict_Aerial",
+    "type": "CAMERA",
+    "position": [
+      1400.0,
+      -400.0,
+      650.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "TechCom_Hero",
+    "type": "CAMERA",
+    "position": [
+      1030.0,
+      -60.0,
+      190.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "TechCom_PublicApproach",
+    "type": "CAMERA",
+    "position": [
+      835.0,
+      125.0,
+      100.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "TechCom_Skyline",
+    "type": "CAMERA",
+    "position": [
+      1450.0,
+      -350.0,
+      190.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "SignalTV_Hero",
+    "type": "CAMERA",
+    "position": [
+      1010.0,
+      235.0,
+      140.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "SignalTV_Plaza",
+    "type": "CAMERA",
+    "position": [
+      860.0,
+      330.0,
+      38.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "SignalTV_Waterfront",
+    "type": "CAMERA",
+    "position": [
+      1120.0,
+      260.0,
+      185.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "MediaDistrict_Together",
+    "type": "CAMERA",
+    "position": [
+      1270.0,
+      80.0,
+      310.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "MediaDistrict_ToSpire",
+    "type": "CAMERA",
+    "position": [
+      1500.0,
+      160.0,
+      390.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Commerce_ToMedia",
+    "type": "CAMERA",
+    "position": [
+      480.0,
+      -270.0,
+      200.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Rivals_Aerial",
+    "type": "CAMERA",
+    "position": [
+      1000.0,
+      -1200.0,
+      1300.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Pallas_HeroBlockout",
+    "type": "CAMERA",
+    "position": [
+      420.0,
+      60.0,
+      200.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Northwind_HeroBlockout",
+    "type": "CAMERA",
+    "position": [
+      90.0,
+      270.0,
+      185.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Flashpoint_HeroBlockout",
+    "type": "CAMERA",
+    "position": [
+      580.0,
+      -440.0,
+      145.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Founder_RivalSkyline",
+    "type": "CAMERA",
+    "position": [
+      -875.0,
+      -950.0,
+      90.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "StartupRow_Flashpoint",
+    "type": "CAMERA",
+    "position": [
+      -220.0,
+      -500.0,
+      35.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Venture_Pallas",
+    "type": "CAMERA",
+    "position": [
+      -320.0,
+      300.0,
+      35.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Northwind_TechApproach",
+    "type": "CAMERA",
+    "position": [
+      -100.0,
+      290.0,
+      100.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Media_RivalSkyline",
+    "type": "CAMERA",
+    "position": [
+      835.0,
+      260.0,
+      130.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "TechCore_Rivals_Aerial",
+    "type": "CAMERA",
+    "position": [
+      600.0,
+      -200.0,
+      750.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": false,
+    "props": {}
+  },
+  {
+    "name": "Flashpoint_PresentationProfile",
+    "type": "EMPTY",
+    "position": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dimensions": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "hidden": true,
+    "props": {
+      "profile_json": "{\"canonicalCompanyID\": \"flashpoint\", \"displayName\": \"Flashpoint\", \"semanticID\": \"Flashpoint\", \"district\": \"CommerceDistrict\", \"slotID\": \"RivalHQ_Slot_05\", \"hqTier\": \"2\", \"targetHeightRange\": [55, 90], \"preferredHeightRange\": [55, 95], \"currentHeight\": 75, \"footprint\": [40, 32], \"position\": [430, -240, 14], \"futureUpgradeEnvelope\": [42, 34, 90], \"architecturalLanguage\": \"Asymmetric stepped wedge, sharp launch-facing podium\", \"primaryMaterialFamily\": \"Dark glass with light structural metal\", \"accentLanguage\": \"Concentrated warm orange-red accent\", \"signageStrategy\": \"Visible south launch facade panel\", \"nightIdentity\": \"Energetic diagonal accent and brighter entry\", \"visibilityPriority\": [\"Startup Row\", \"Commerce District\", \"Founder skyline\"], \"rotationDegrees\": [0, 0, 0], \"forward\": \"-Y Blender / +Z glTF\", \"planningOnly\": true, \"canonicalSource\": \"App/ContentLibrary.swift\", \"lodReadiness\": [\"LOD0 future hero\", \"LOD1 future simplified HQ\", \"LOD2 future skyline proxy\"], \"runtimeMapping\": \"Future visible canonical projections only; no thresholds or simulation state authored\"}"
+    }
+  }
+]

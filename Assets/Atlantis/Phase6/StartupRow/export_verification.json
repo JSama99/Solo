@@ -1,0 +1,16 @@
+{
+  "checks": {
+    "no_zero_area_faces": true,
+    "no_negative_scales": true,
+    "38_signage_targets": true,
+    "signage_uvs": true,
+    "five_planning_slots": true,
+    "no_textures": true
+  },
+  "issues": [],
+  "triangles": 31972,
+  "meshes": 143,
+  "materials": 12,
+  "textures": 0,
+  "bytes": 2030292
+}

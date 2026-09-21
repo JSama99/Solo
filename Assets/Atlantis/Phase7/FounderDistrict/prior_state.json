@@ -1,0 +1,2475 @@
+{
+  "objects": [
+    {
+      "name": "Founder_Shore",
+      "type": "MESH",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dimensions": [
+        780.0,
+        600.0,
+        20.0
+      ],
+      "collections": [
+        "Terrain"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -1220.0,
+          -1140.0,
+          -12.0
+        ],
+        [
+          -440.0,
+          -540.0,
+          8.0
+        ]
+      ]
+    },
+    {
+      "name": "Progression_Startup_00",
+      "type": "MESH",
+      "position": [
+        -535.0,
+        -445.0,
+        15.5
+      ],
+      "dimensions": [
+        26.0,
+        174.93141174316406,
+        0.699999988079071
+      ],
+      "collections": [
+        "PrimaryRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Progression_Startup"
+      },
+      "bounds": [
+        [
+          -616.690185546875,
+          -501.1484375,
+          14.650005340576172
+        ],
+        [
+          -453.3098449707031,
+          -388.8515625,
+          16.349994659423828
+        ]
+      ]
+    },
+    {
+      "name": "Progression_Startup_01",
+      "type": "MESH",
+      "position": [
+        -325.0,
+        -335.0,
+        15.0
+      ],
+      "dimensions": [
+        26.0,
+        299.6664733886719,
+        0.699999988079071
+      ],
+      "collections": [
+        "PrimaryRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Progression_Startup"
+      },
+      "bounds": [
+        [
+          -465.6396179199219,
+          -411.7130126953125,
+          14.649999618530273
+        ],
+        [
+          -184.3603973388672,
+          -258.2869873046875,
+          15.350000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Progression_Startup_02",
+      "type": "MESH",
+      "position": [
+        -180.0,
+        -175.0,
+        15.0
+      ],
+      "dimensions": [
+        26.0,
+        191.0497283935547,
+        0.699999988079071
+      ],
+      "collections": [
+        "PrimaryRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Progression_Startup"
+      },
+      "bounds": [
+        [
+          -202.92855834960938,
+          -271.36090087890625,
+          14.649999618530273
+        ],
+        [
+          -157.07144165039062,
+          -78.63909912109375,
+          15.350000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Progression_Startup_03",
+      "type": "MESH",
+      "position": [
+        -85.0,
+        10.0,
+        15.0
+      ],
+      "dimensions": [
+        26.0,
+        247.58836364746094,
+        0.699999988079071
+      ],
+      "collections": [
+        "PrimaryRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Progression_Startup"
+      },
+      "bounds": [
+        [
+          -179.45115661621094,
+          -88.92610168457031,
+          14.649999618530273
+        ],
+        [
+          9.451163291931152,
+          108.92610168457031,
+          15.350000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Progression_Startup_04",
+      "type": "MESH",
+      "position": [
+        25.0,
+        200.0,
+        15.0
+      ],
+      "dimensions": [
+        26.0,
+        206.15528869628906,
+        0.699999988079071
+      ],
+      "collections": [
+        "PrimaryRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Progression_Startup"
+      },
+      "bounds": [
+        [
+          -12.611860275268555,
+          96.84703826904297,
+          14.649999618530273
+        ],
+        [
+          62.61186218261719,
+          303.1529541015625,
+          15.350000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Founder_Local_Spine_00",
+      "type": "MESH",
+      "position": [
+        -875.0,
+        -955.0,
+        8.699999809265137
+      ],
+      "dimensions": [
+        10.0,
+        210.0,
+        0.699999988079071
+      ],
+      "collections": [
+        "LocalRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Founder_Local_Spine"
+      },
+      "bounds": [
+        [
+          -880.0,
+          -1060.0,
+          8.34999942779541
+        ],
+        [
+          -870.0,
+          -850.0,
+          9.050000190734863
+        ]
+      ]
+    },
+    {
+      "name": "Founder_Local_Spine_01",
+      "type": "MESH",
+      "position": [
+        -832.5,
+        -755.0,
+        8.850000381469727
+      ],
+      "dimensions": [
+        10.0,
+        208.1468048095703,
+        0.699999988079071
+      ],
+      "collections": [
+        "LocalRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Founder_Local_Spine"
+      },
+      "bounds": [
+        [
+          -879.5643310546875,
+          -852.0422973632812,
+          8.350000381469727
+        ],
+        [
+          -785.4356689453125,
+          -657.9577026367188,
+          9.350000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Founder_Local_Spine_02",
+      "type": "MESH",
+      "position": [
+        -750.0,
+        -625.0,
+        12.5
+      ],
+      "dimensions": [
+        10.0,
+        106.53168487548828,
+        0.6999999284744263
+      ],
+      "collections": [
+        "LocalRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Founder_Local_Spine"
+      },
+      "bounds": [
+        [
+          -793.309814453125,
+          -663.7780151367188,
+          8.650755882263184
+        ],
+        [
+          -706.690185546875,
+          -586.2219848632812,
+          16.3492431640625
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_CrossStreet_00",
+      "type": "MESH",
+      "position": [
+        -850.0,
+        -850.0,
+        8.800000190734863
+      ],
+      "dimensions": [
+        8.000000953674316,
+        450.00006103515625,
+        0.699999988079071
+      ],
+      "collections": [
+        "LocalRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "FounderDistrict_CrossStreet"
+      },
+      "bounds": [
+        [
+          -1075.0,
+          -854.0000610351562,
+          8.449999809265137
+        ],
+        [
+          -624.9999389648438,
+          -845.9999389648438,
+          9.15000057220459
+        ]
+      ]
+    },
+    {
+      "name": "AtlantisBridge_Main_00",
+      "type": "MESH",
+      "position": [
+        -660.0,
+        -540.0,
+        16.0
+      ],
+      "dimensions": [
+        26.0,
+        141.42135620117188,
+        0.699999988079071
+      ],
+      "collections": [
+        "Bridges"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "AtlantisBridge_Main"
+      },
+      "bounds": [
+        [
+          -719.1923828125,
+          -599.1923828125,
+          15.649999618530273
+        ],
+        [
+          -600.8076171875,
+          -480.8076171875,
+          16.350000381469727
+        ]
+      ]
+    },
+    {
+      "name": "AtlantisBridge_Main_Pier_0.2",
+      "type": "MESH",
+      "position": [
+        -690.0,
+        -570.0,
+        3.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        26.0
+      ],
+      "collections": [
+        "Bridges"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -694.5,
+          -577.0,
+          -10.0
+        ],
+        [
+          -685.5,
+          -563.0,
+          16.0
+        ]
+      ]
+    },
+    {
+      "name": "AtlantisBridge_Main_Pier_0.5",
+      "type": "MESH",
+      "position": [
+        -660.0,
+        -540.0,
+        3.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        26.0
+      ],
+      "collections": [
+        "Bridges"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -664.5,
+          -547.0,
+          -10.0
+        ],
+        [
+          -655.5,
+          -533.0,
+          16.0
+        ]
+      ]
+    },
+    {
+      "name": "AtlantisBridge_Main_Pier_0.8",
+      "type": "MESH",
+      "position": [
+        -630.0,
+        -510.0,
+        3.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        26.0
+      ],
+      "collections": [
+        "Bridges"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -634.5,
+          -517.0,
+          -10.0
+        ],
+        [
+          -625.5,
+          -503.0,
+          16.0
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Boundary_0",
+      "type": "MESH",
+      "position": [
+        -850.0,
+        -1065.0,
+        8.119999885559082
+      ],
+      "dimensions": [
+        500.0,
+        2.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -1100.0,
+          -1066.0,
+          8.045000076293945
+        ],
+        [
+          -600.0,
+          -1064.0,
+          8.194999694824219
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Boundary_1",
+      "type": "MESH",
+      "position": [
+        -850.0,
+        -635.0,
+        8.119999885559082
+      ],
+      "dimensions": [
+        500.0,
+        2.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -1100.0,
+          -636.0,
+          8.045000076293945
+        ],
+        [
+          -600.0,
+          -634.0,
+          8.194999694824219
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Boundary_2",
+      "type": "MESH",
+      "position": [
+        -1100.0,
+        -850.0,
+        8.119999885559082
+      ],
+      "dimensions": [
+        2.0,
+        430.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -1101.0,
+          -1065.0,
+          8.045000076293945
+        ],
+        [
+          -1099.0,
+          -635.0,
+          8.194999694824219
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Boundary_3",
+      "type": "MESH",
+      "position": [
+        -600.0,
+        -850.0,
+        8.119999885559082
+      ],
+      "dimensions": [
+        2.0,
+        430.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -601.0,
+          -1065.0,
+          8.045000076293945
+        ],
+        [
+          -599.0,
+          -635.0,
+          8.194999694824219
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_000",
+      "type": "MESH",
+      "position": [
+        -1060.0,
+        -1030.5999755859375,
+        13.639077186584473
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        11.278154373168945
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "11.278153903390976"
+      },
+      "bounds": [
+        [
+          -1071.0,
+          -1039.949951171875,
+          8.0
+        ],
+        [
+          -1049.0,
+          -1021.25,
+          19.278154373168945
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_001",
+      "type": "MESH",
+      "position": [
+        -1060.0,
+        -985.4500122070312,
+        11.176316261291504
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        6.352632522583008
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "6.352632326069428"
+      },
+      "bounds": [
+        [
+          -1071.0,
+          -994.7999877929688,
+          8.0
+        ],
+        [
+          -1049.0,
+          -976.1000366210938,
+          14.352632522583008
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_002",
+      "type": "MESH",
+      "position": [
+        -1060.0,
+        -940.2999877929688,
+        11.837735176086426
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        7.67547082901001
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "7.675471034649756"
+      },
+      "bounds": [
+        [
+          -1071.0,
+          -949.6499633789062,
+          8.0
+        ],
+        [
+          -1049.0,
+          -930.9500122070312,
+          15.675470352172852
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_003",
+      "type": "MESH",
+      "position": [
+        -1060.0,
+        -895.1500244140625,
+        10.545434951782227
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        5.090869903564453
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "5.0908696843484895"
+      },
+      "bounds": [
+        [
+          -1071.0,
+          -904.5,
+          8.0
+        ],
+        [
+          -1049.0,
+          -885.800048828125,
+          13.090869903564453
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_004",
+      "type": "MESH",
+      "position": [
+        -1060.0,
+        -804.8499755859375,
+        13.980242729187012
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        11.960485458374023
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "11.960485762770157"
+      },
+      "bounds": [
+        [
+          -1071.0,
+          -814.199951171875,
+          8.0
+        ],
+        [
+          -1049.0,
+          -795.5,
+          19.960485458374023
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_005",
+      "type": "MESH",
+      "position": [
+        -1060.0,
+        -759.7000122070312,
+        10.618576049804688
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        5.237152099609375
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "5.2371519696603785"
+      },
+      "bounds": [
+        [
+          -1071.0,
+          -769.0499877929688,
+          8.0
+        ],
+        [
+          -1049.0,
+          -750.3500366210938,
+          13.237152099609375
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_006",
+      "type": "MESH",
+      "position": [
+        -1060.0,
+        -714.5499877929688,
+        12.695757865905762
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        9.39151668548584
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "9.391516427712514"
+      },
+      "bounds": [
+        [
+          -1071.0,
+          -723.8999633789062,
+          7.999999523162842
+        ],
+        [
+          -1049.0,
+          -705.2000122070312,
+          17.391515731811523
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_007",
+      "type": "MESH",
+      "position": [
+        -1060.0,
+        -669.4000244140625,
+        12.392102241516113
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        8.784204483032227
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "8.784204436333447"
+      },
+      "bounds": [
+        [
+          -1071.0,
+          -678.75,
+          8.0
+        ],
+        [
+          -1049.0,
+          -660.050048828125,
+          16.784204483032227
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_008",
+      "type": "MESH",
+      "position": [
+        -1007.5,
+        -1030.5999755859375,
+        12.858494758605957
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        9.716989517211914
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "9.71698973591138"
+      },
+      "bounds": [
+        [
+          -1018.5,
+          -1039.949951171875,
+          8.0
+        ],
+        [
+          -996.5,
+          -1021.25,
+          17.716989517211914
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_009",
+      "type": "MESH",
+      "position": [
+        -1007.5,
+        -985.4500122070312,
+        11.642104148864746
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        7.284207344055176
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "7.284207392091635"
+      },
+      "bounds": [
+        [
+          -1018.5,
+          -994.7999877929688,
+          8.0
+        ],
+        [
+          -996.5,
+          -976.1000366210938,
+          15.284208297729492
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_010",
+      "type": "MESH",
+      "position": [
+        -1007.5,
+        -940.2999877929688,
+        11.520357131958008
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        7.040714263916016
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "7.040714397110391"
+      },
+      "bounds": [
+        [
+          -1018.5,
+          -949.6499633789062,
+          8.0
+        ],
+        [
+          -996.5,
+          -930.9500122070312,
+          15.040714263916016
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_011",
+      "type": "MESH",
+      "position": [
+        -1007.5,
+        -895.1500244140625,
+        11.59958553314209
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        7.199172019958496
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "7.1991719394344615"
+      },
+      "bounds": [
+        [
+          -1018.5,
+          -904.5,
+          7.999999523162842
+        ],
+        [
+          -996.5,
+          -885.800048828125,
+          15.19917106628418
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_012",
+      "type": "MESH",
+      "position": [
+        -1007.5,
+        -804.8499755859375,
+        10.290205955505371
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        4.580412864685059
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "4.5804128351639735"
+      },
+      "bounds": [
+        [
+          -1018.5,
+          -814.199951171875,
+          7.999999523162842
+        ],
+        [
+          -996.5,
+          -795.5,
+          12.580411911010742
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_013",
+      "type": "MESH",
+      "position": [
+        -1007.5,
+        -759.7000122070312,
+        11.279059410095215
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        6.558119297027588
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "6.558119104617063"
+      },
+      "bounds": [
+        [
+          -1018.5,
+          -769.0499877929688,
+          8.0
+        ],
+        [
+          -996.5,
+          -750.3500366210938,
+          14.55811882019043
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_014",
+      "type": "MESH",
+      "position": [
+        -1007.5,
+        -714.5499877929688,
+        11.10333251953125
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        6.2066650390625
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "6.206665180704496"
+      },
+      "bounds": [
+        [
+          -1018.5,
+          -723.8999633789062,
+          8.0
+        ],
+        [
+          -996.5,
+          -705.2000122070312,
+          14.2066650390625
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_015",
+      "type": "MESH",
+      "position": [
+        -1007.5,
+        -669.4000244140625,
+        13.123290061950684
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        10.246580123901367
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "10.246580117305633"
+      },
+      "bounds": [
+        [
+          -1018.5,
+          -678.75,
+          8.0
+        ],
+        [
+          -996.5,
+          -660.050048828125,
+          18.246580123901367
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_016",
+      "type": "MESH",
+      "position": [
+        -955.0,
+        -1030.5999755859375,
+        11.783370971679688
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        7.566742897033691
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "7.566742828898502"
+      },
+      "bounds": [
+        [
+          -966.0,
+          -1039.949951171875,
+          7.999999523162842
+        ],
+        [
+          -944.0,
+          -1021.25,
+          15.566741943359375
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_017",
+      "type": "MESH",
+      "position": [
+        -955.0,
+        -985.4500122070312,
+        10.38542652130127
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        4.7708539962768555
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "4.770853763438557"
+      },
+      "bounds": [
+        [
+          -966.0,
+          -994.7999877929688,
+          7.999999523162842
+        ],
+        [
+          -944.0,
+          -976.1000366210938,
+          12.770853042602539
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_018",
+      "type": "MESH",
+      "position": [
+        -955.0,
+        -940.2999877929688,
+        10.12679386138916
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        4.253586769104004
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "4.253586798365313"
+      },
+      "bounds": [
+        [
+          -966.0,
+          -949.6499633789062,
+          8.0
+        ],
+        [
+          -944.0,
+          -930.9500122070312,
+          12.25358772277832
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_019",
+      "type": "MESH",
+      "position": [
+        -955.0,
+        -895.1500244140625,
+        11.383907318115234
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        6.767814636230469
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "6.767814414661334"
+      },
+      "bounds": [
+        [
+          -966.0,
+          -904.5,
+          8.0
+        ],
+        [
+          -944.0,
+          -885.800048828125,
+          14.767814636230469
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_020",
+      "type": "MESH",
+      "position": [
+        -955.0,
+        -804.8499755859375,
+        13.938871383666992
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        11.877742767333984
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "11.877742417724075"
+      },
+      "bounds": [
+        [
+          -966.0,
+          -814.199951171875,
+          8.0
+        ],
+        [
+          -944.0,
+          -795.5,
+          19.877742767333984
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_021",
+      "type": "MESH",
+      "position": [
+        -955.0,
+        -759.7000122070312,
+        10.101712226867676
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        4.203424453735352
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "4.203424350345855"
+      },
+      "bounds": [
+        [
+          -966.0,
+          -769.0499877929688,
+          8.0
+        ],
+        [
+          -944.0,
+          -750.3500366210938,
+          12.203424453735352
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_022",
+      "type": "MESH",
+      "position": [
+        -955.0,
+        -714.5499877929688,
+        11.803009986877441
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        7.606019973754883
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "7.606020078197067"
+      },
+      "bounds": [
+        [
+          -966.0,
+          -723.8999633789062,
+          8.0
+        ],
+        [
+          -944.0,
+          -705.2000122070312,
+          15.606019973754883
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_023",
+      "type": "MESH",
+      "position": [
+        -955.0,
+        -669.4000244140625,
+        13.076519012451172
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        10.153037071228027
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "10.153037478588736"
+      },
+      "bounds": [
+        [
+          -966.0,
+          -678.75,
+          8.0
+        ],
+        [
+          -944.0,
+          -660.050048828125,
+          18.153038024902344
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_024",
+      "type": "MESH",
+      "position": [
+        -902.5,
+        -985.4500122070312,
+        10.484091758728027
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        4.968182563781738
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "4.968182772330933"
+      },
+      "bounds": [
+        [
+          -913.5,
+          -994.7999877929688,
+          8.0
+        ],
+        [
+          -891.5,
+          -976.1000366210938,
+          12.968183517456055
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_025",
+      "type": "MESH",
+      "position": [
+        -902.5,
+        -940.2999877929688,
+        13.213739395141602
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        10.427478790283203
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "10.427478542489926"
+      },
+      "bounds": [
+        [
+          -913.5,
+          -949.6499633789062,
+          8.0
+        ],
+        [
+          -891.5,
+          -930.9500122070312,
+          18.427478790283203
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_026",
+      "type": "MESH",
+      "position": [
+        -902.5,
+        -895.1500244140625,
+        13.535578727722168
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        11.071157455444336
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "11.071157080431192"
+      },
+      "bounds": [
+        [
+          -913.5,
+          -904.5,
+          8.0
+        ],
+        [
+          -891.5,
+          -885.800048828125,
+          19.071157455444336
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_027",
+      "type": "MESH",
+      "position": [
+        -902.5,
+        -804.8499755859375,
+        13.3057279586792
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        10.611454963684082
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "10.611455325179852"
+      },
+      "bounds": [
+        [
+          -913.5,
+          -814.199951171875,
+          8.0
+        ],
+        [
+          -891.5,
+          -795.5,
+          18.6114559173584
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_028",
+      "type": "MESH",
+      "position": [
+        -902.5,
+        -759.7000122070312,
+        10.53531265258789
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        5.070624351501465
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "5.070624551712421"
+      },
+      "bounds": [
+        [
+          -913.5,
+          -769.0499877929688,
+          8.0
+        ],
+        [
+          -891.5,
+          -750.3500366210938,
+          13.070625305175781
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_029",
+      "type": "MESH",
+      "position": [
+        -902.5,
+        -714.5499877929688,
+        13.724014282226562
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        11.448028564453125
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "11.44802877523568"
+      },
+      "bounds": [
+        [
+          -913.5,
+          -723.8999633789062,
+          8.0
+        ],
+        [
+          -891.5,
+          -705.2000122070312,
+          19.448028564453125
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_030",
+      "type": "MESH",
+      "position": [
+        -902.5,
+        -669.4000244140625,
+        10.915739059448242
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        5.831477165222168
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "5.831477379772363"
+      },
+      "bounds": [
+        [
+          -913.5,
+          -678.75,
+          8.0
+        ],
+        [
+          -891.5,
+          -660.050048828125,
+          13.831478118896484
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_031",
+      "type": "MESH",
+      "position": [
+        -850.0,
+        -895.1500244140625,
+        13.19892692565918
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        10.397852897644043
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "10.397853081260173"
+      },
+      "bounds": [
+        [
+          -861.0,
+          -904.5,
+          8.0
+        ],
+        [
+          -839.0,
+          -885.800048828125,
+          18.39785385131836
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_032",
+      "type": "MESH",
+      "position": [
+        -850.0,
+        -714.5499877929688,
+        13.187715530395508
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        10.3754301071167
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "10.375430408729928"
+      },
+      "bounds": [
+        [
+          -861.0,
+          -723.8999633789062,
+          8.0
+        ],
+        [
+          -839.0,
+          -705.2000122070312,
+          18.375431060791016
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_033",
+      "type": "MESH",
+      "position": [
+        -850.0,
+        -669.4000244140625,
+        12.092463493347168
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        8.184926986694336
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "8.184927010164184"
+      },
+      "bounds": [
+        [
+          -861.0,
+          -678.75,
+          8.0
+        ],
+        [
+          -839.0,
+          -660.050048828125,
+          16.184926986694336
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_034",
+      "type": "MESH",
+      "position": [
+        -797.5,
+        -1030.5999755859375,
+        13.0078125
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        10.015624046325684
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "10.015624227589447"
+      },
+      "bounds": [
+        [
+          -808.5,
+          -1039.949951171875,
+          8.0
+        ],
+        [
+          -786.5,
+          -1021.25,
+          18.015625
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_035",
+      "type": "MESH",
+      "position": [
+        -797.5,
+        -804.8499755859375,
+        13.090084075927734
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        10.180167198181152
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "10.180167242356237"
+      },
+      "bounds": [
+        [
+          -808.5,
+          -814.199951171875,
+          8.0
+        ],
+        [
+          -786.5,
+          -795.5,
+          18.18016815185547
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_036",
+      "type": "MESH",
+      "position": [
+        -797.5,
+        -759.7000122070312,
+        13.204292297363281
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        10.408584594726562
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "10.40858434103859"
+      },
+      "bounds": [
+        [
+          -808.5,
+          -769.0499877929688,
+          8.0
+        ],
+        [
+          -786.5,
+          -750.3500366210938,
+          18.408584594726562
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_037",
+      "type": "MESH",
+      "position": [
+        -745.0,
+        -1030.5999755859375,
+        11.23790168762207
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        6.475802898406982
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "6.4758028475970475"
+      },
+      "bounds": [
+        [
+          -756.0,
+          -1039.949951171875,
+          8.0
+        ],
+        [
+          -734.0,
+          -1021.25,
+          14.47580337524414
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_038",
+      "type": "MESH",
+      "position": [
+        -745.0,
+        -985.4500122070312,
+        13.851409912109375
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        11.702820777893066
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "11.702820715479948"
+      },
+      "bounds": [
+        [
+          -756.0,
+          -994.7999877929688,
+          7.999999523162842
+        ],
+        [
+          -734.0,
+          -976.1000366210938,
+          19.70281982421875
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_039",
+      "type": "MESH",
+      "position": [
+        -745.0,
+        -940.2999877929688,
+        12.487648010253906
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        8.975295066833496
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "8.975295298276798"
+      },
+      "bounds": [
+        [
+          -756.0,
+          -949.6499633789062,
+          8.0
+        ],
+        [
+          -734.0,
+          -930.9500122070312,
+          16.975296020507812
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_040",
+      "type": "MESH",
+      "position": [
+        -745.0,
+        -714.5499877929688,
+        11.426722526550293
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        6.853446006774902
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "6.853445824296616"
+      },
+      "bounds": [
+        [
+          -756.0,
+          -723.8999633789062,
+          7.999999523162842
+        ],
+        [
+          -734.0,
+          -705.2000122070312,
+          14.853445053100586
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_041",
+      "type": "MESH",
+      "position": [
+        -745.0,
+        -669.4000244140625,
+        10.487126350402832
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        4.974252223968506
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "4.974251997271344"
+      },
+      "bounds": [
+        [
+          -756.0,
+          -678.75,
+          8.0
+        ],
+        [
+          -734.0,
+          -660.050048828125,
+          12.974252700805664
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_042",
+      "type": "MESH",
+      "position": [
+        -692.5,
+        -1030.5999755859375,
+        13.35861873626709
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        10.717238426208496
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "10.717238018147935"
+      },
+      "bounds": [
+        [
+          -703.5,
+          -1039.949951171875,
+          7.999999523162842
+        ],
+        [
+          -681.5,
+          -1021.25,
+          18.71723747253418
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_043",
+      "type": "MESH",
+      "position": [
+        -692.5,
+        -985.4500122070312,
+        13.940057754516602
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        11.880115509033203
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "11.880115126535099"
+      },
+      "bounds": [
+        [
+          -703.5,
+          -994.7999877929688,
+          8.0
+        ],
+        [
+          -681.5,
+          -976.1000366210938,
+          19.880115509033203
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_044",
+      "type": "MESH",
+      "position": [
+        -692.5,
+        -940.2999877929688,
+        13.488791465759277
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        10.977582931518555
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "10.977583142880722"
+      },
+      "bounds": [
+        [
+          -703.5,
+          -949.6499633789062,
+          8.0
+        ],
+        [
+          -681.5,
+          -930.9500122070312,
+          18.977582931518555
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_045",
+      "type": "MESH",
+      "position": [
+        -692.5,
+        -895.1500244140625,
+        12.635575294494629
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        9.271151542663574
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "9.27115130864111"
+      },
+      "bounds": [
+        [
+          -703.5,
+          -904.5,
+          7.999999523162842
+        ],
+        [
+          -681.5,
+          -885.800048828125,
+          17.271150588989258
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_046",
+      "type": "MESH",
+      "position": [
+        -640.0,
+        -1030.5999755859375,
+        12.914948463439941
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        9.829896926879883
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "9.829896705988244"
+      },
+      "bounds": [
+        [
+          -651.0,
+          -1039.949951171875,
+          8.0
+        ],
+        [
+          -629.0,
+          -1021.25,
+          17.829896926879883
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_047",
+      "type": "MESH",
+      "position": [
+        -640.0,
+        -985.4500122070312,
+        11.576887130737305
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        7.153773784637451
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "7.153773552554137"
+      },
+      "bounds": [
+        [
+          -651.0,
+          -994.7999877929688,
+          8.0
+        ],
+        [
+          -629.0,
+          -976.1000366210938,
+          15.15377426147461
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_048",
+      "type": "MESH",
+      "position": [
+        -640.0,
+        -940.2999877929688,
+        10.602757453918457
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        5.205514907836914
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "5.2055148779852685"
+      },
+      "bounds": [
+        [
+          -651.0,
+          -949.6499633789062,
+          8.0
+        ],
+        [
+          -629.0,
+          -930.9500122070312,
+          13.205514907836914
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_049",
+      "type": "MESH",
+      "position": [
+        -640.0,
+        -895.1500244140625,
+        13.709593772888184
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        11.419187545776367
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "11.419187809874808"
+      },
+      "bounds": [
+        [
+          -651.0,
+          -904.5,
+          8.0
+        ],
+        [
+          -629.0,
+          -885.800048828125,
+          19.419187545776367
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_050",
+      "type": "MESH",
+      "position": [
+        -640.0,
+        -804.8499755859375,
+        13.091970443725586
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        10.183940887451172
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "10.18394108251496"
+      },
+      "bounds": [
+        [
+          -651.0,
+          -814.199951171875,
+          8.0
+        ],
+        [
+          -629.0,
+          -795.5,
+          18.183940887451172
+        ]
+      ]
+    },
+    {
+      "name": "FounderDistrict_Block_051",
+      "type": "MESH",
+      "position": [
+        -640.0,
+        -759.7000122070312,
+        12.184616088867188
+      ],
+      "dimensions": [
+        22.0,
+        18.700000762939453,
+        8.369231224060059
+      ],
+      "collections": [
+        "FounderDistrict"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "height_m": "8.369231439138158"
+      },
+      "bounds": [
+        [
+          -651.0,
+          -769.0499877929688,
+          8.0
+        ],
+        [
+          -629.0,
+          -750.3500366210938,
+          16.369232177734375
+        ]
+      ]
+    },
+    {
+      "name": "Founder_To_Startup",
+      "type": "CAMERA",
+      "position": [
+        -710.0,
+        -590.0,
+        21.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "collections": [
+        "Startup_ReviewCameras"
+      ],
+      "hidden": false,
+      "props": {}
+    },
+    {
+      "name": "FounderGarage_Slot_Parcel",
+      "type": "MESH",
+      "position": [
+        -875.0,
+        -1030.0,
+        8.300000190734863
+      ],
+      "dimensions": [
+        32.0,
+        38.0,
+        0.6000000238418579
+      ],
+      "collections": [
+        "LandmarkPlaceholders"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "slot_id": "FounderGarage_Slot"
+      },
+      "bounds": [
+        [
+          -891.0,
+          -1049.0,
+          8.0
+        ],
+        [
+          -859.0,
+          -1011.0,
+          8.600000381469727
+        ]
+      ]
+    },
+    {
+      "name": "FounderGarage_Slot",
+      "type": "EMPTY",
+      "position": [
+        -875.0,
+        -1030.0,
+        8.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "collections": [
+        "Atlantis_Anchors"
+      ],
+      "hidden": false,
+      "props": {
+        "id": "FounderGarage_Slot",
+        "district": "FounderDistrict",
+        "origin": "<bpy id property array [3]>",
+        "rotation_degrees": "<bpy id property array [3]>",
+        "forward": "-Y (Blender); +Z after glTF conversion",
+        "footprint_m": "<bpy id property array [2]>",
+        "target_height_m": "<bpy id property array [2]>",
+        "max_bbox_m": "<bpy id property array [3]>",
+        "placeholder_height_m": "0",
+        "kind": "hero"
+      }
+    },
+    {
+      "name": "Founder_To_City",
+      "type": "CAMERA",
+      "position": [
+        -875.0,
+        -1020.0,
+        9.800000190734863
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "collections": [
+        "Reference"
+      ],
+      "hidden": false,
+      "props": {}
+    },
+    {
+      "name": "Founder_RivalSkyline",
+      "type": "CAMERA",
+      "position": [
+        -875.0,
+        -950.0,
+        90.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "collections": [
+        "Reference"
+      ],
+      "hidden": false,
+      "props": {}
+    }
+  ],
+  "visible_meshes": 493,
+  "visible_triangles": 40580,
+  "all_meshes": 1039,
+  "all_triangles_including_staging": 164719
+}

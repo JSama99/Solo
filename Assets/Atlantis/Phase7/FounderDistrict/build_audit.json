@@ -1,0 +1,2107 @@
+{
+  "sites": [
+    {
+      "name": "Founder_Building_00",
+      "position": [
+        -1060,
+        -1024,
+        8.2
+      ],
+      "typology": "Founder_HomeGarage_A",
+      "width": 12,
+      "depth": 10,
+      "floors": 1,
+      "face": 0,
+      "height": 4.449999999999999
+    },
+    {
+      "name": "Founder_Building_01",
+      "position": [
+        -1016,
+        -1024,
+        8.2
+      ],
+      "typology": "Founder_HomeGarage_B",
+      "width": 11,
+      "depth": 10,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_02",
+      "position": [
+        -970,
+        -1024,
+        8.2
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_03",
+      "position": [
+        -925,
+        -1024,
+        8.2
+      ],
+      "typology": "Founder_HomeGarage_A",
+      "width": 12,
+      "depth": 10,
+      "floors": 1,
+      "face": 0,
+      "height": 4.449999999999999
+    },
+    {
+      "name": "Founder_Building_04",
+      "position": [
+        -780,
+        -1024,
+        8.2
+      ],
+      "typology": "Founder_HomeGarage_B",
+      "width": 11,
+      "depth": 10,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_05",
+      "position": [
+        -730,
+        -1024,
+        8.2
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_06",
+      "position": [
+        -676,
+        -1024,
+        8.2
+      ],
+      "typology": "Founder_HomeGarage_A",
+      "width": 12,
+      "depth": 10,
+      "floors": 1,
+      "face": 0,
+      "height": 4.449999999999999
+    },
+    {
+      "name": "Founder_Building_07",
+      "position": [
+        -1060,
+        -986,
+        8.2
+      ],
+      "typology": "Founder_HomeGarage_B",
+      "width": 11,
+      "depth": 10,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_08",
+      "position": [
+        -1016,
+        -986,
+        8.2
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_09",
+      "position": [
+        -970,
+        -986,
+        8.2
+      ],
+      "typology": "Founder_HomeGarage_A",
+      "width": 12,
+      "depth": 10,
+      "floors": 1,
+      "face": 180,
+      "height": 4.449999999999999
+    },
+    {
+      "name": "Founder_Building_10",
+      "position": [
+        -925,
+        -986,
+        8.2
+      ],
+      "typology": "Founder_HomeGarage_B",
+      "width": 11,
+      "depth": 10,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_11",
+      "position": [
+        -780,
+        -986,
+        8.2
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_12",
+      "position": [
+        -730,
+        -986,
+        8.2
+      ],
+      "typology": "Founder_HomeGarage_A",
+      "width": 12,
+      "depth": 10,
+      "floors": 1,
+      "face": 180,
+      "height": 4.449999999999999
+    },
+    {
+      "name": "Founder_Building_13",
+      "position": [
+        -676,
+        -986,
+        8.2
+      ],
+      "typology": "Founder_HomeGarage_B",
+      "width": 11,
+      "depth": 10,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_14",
+      "position": [
+        -1060,
+        -943,
+        8.2
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_15",
+      "position": [
+        -1016,
+        -943,
+        8.2
+      ],
+      "typology": "Founder_Workshop_A",
+      "width": 14,
+      "depth": 12,
+      "floors": 1,
+      "face": 0,
+      "height": 4.449999999999999
+    },
+    {
+      "name": "Founder_Building_16",
+      "position": [
+        -970,
+        -943,
+        8.2
+      ],
+      "typology": "Founder_HomeGarage_B",
+      "width": 11,
+      "depth": 10,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_17",
+      "position": [
+        -925,
+        -943,
+        8.2
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_18",
+      "position": [
+        -780,
+        -943,
+        8.2
+      ],
+      "typology": "Founder_HomeGarage_A",
+      "width": 12,
+      "depth": 10,
+      "floors": 1,
+      "face": 0,
+      "height": 4.449999999999999
+    },
+    {
+      "name": "Founder_Building_19",
+      "position": [
+        -730,
+        -943,
+        8.2
+      ],
+      "typology": "Founder_HomeGarage_B",
+      "width": 11,
+      "depth": 10,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_20",
+      "position": [
+        -676,
+        -943,
+        8.2
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_21",
+      "position": [
+        -1060,
+        -872,
+        8.8
+      ],
+      "typology": "Founder_HomeGarage_A",
+      "width": 12,
+      "depth": 10,
+      "floors": 1,
+      "face": 180,
+      "height": 4.449999999999999
+    },
+    {
+      "name": "Founder_Building_22",
+      "position": [
+        -1027,
+        -872,
+        8.8
+      ],
+      "typology": "Founder_HomeGarage_B",
+      "width": 11,
+      "depth": 10,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_23",
+      "position": [
+        -992,
+        -872,
+        8.8
+      ],
+      "typology": "Founder_CornerStore_A",
+      "width": 14,
+      "depth": 12,
+      "floors": 1,
+      "face": 180,
+      "height": 4.449999999999999
+    },
+    {
+      "name": "Founder_Building_24",
+      "position": [
+        -954,
+        -872,
+        8.8
+      ],
+      "typology": "Founder_HomeGarage_A",
+      "width": 12,
+      "depth": 10,
+      "floors": 1,
+      "face": 180,
+      "height": 4.449999999999999
+    },
+    {
+      "name": "Founder_Building_25",
+      "position": [
+        -918,
+        -872,
+        8.8
+      ],
+      "typology": "Founder_HomeGarage_B",
+      "width": 11,
+      "depth": 10,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_26",
+      "position": [
+        -750,
+        -872,
+        8.8
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_27",
+      "position": [
+        -713,
+        -872,
+        8.8
+      ],
+      "typology": "Founder_HomeGarage_A",
+      "width": 12,
+      "depth": 10,
+      "floors": 1,
+      "face": 180,
+      "height": 4.449999999999999
+    },
+    {
+      "name": "Founder_Building_28",
+      "position": [
+        -670,
+        -872,
+        8.8
+      ],
+      "typology": "Founder_HomeGarage_B",
+      "width": 11,
+      "depth": 10,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_29",
+      "position": [
+        -627,
+        -872,
+        8.8
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_30",
+      "position": [
+        -1060,
+        -828,
+        8.8
+      ],
+      "typology": "Founder_HomeGarage_B",
+      "width": 11,
+      "depth": 10,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_31",
+      "position": [
+        -1027,
+        -828,
+        8.8
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_32",
+      "position": [
+        -992,
+        -828,
+        8.8
+      ],
+      "typology": "Founder_Workshop_A",
+      "width": 14,
+      "depth": 12,
+      "floors": 1,
+      "face": 0,
+      "height": 4.449999999999999
+    },
+    {
+      "name": "Founder_Building_33",
+      "position": [
+        -954,
+        -828,
+        8.8
+      ],
+      "typology": "Founder_HomeGarage_B",
+      "width": 11,
+      "depth": 10,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_34",
+      "position": [
+        -918,
+        -828,
+        8.8
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_35",
+      "position": [
+        -713,
+        -828,
+        8.8
+      ],
+      "typology": "Founder_HomeGarage_B",
+      "width": 11,
+      "depth": 10,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_36",
+      "position": [
+        -670,
+        -828,
+        8.8
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_37",
+      "position": [
+        -627,
+        -828,
+        8.8
+      ],
+      "typology": "Founder_HomeGarage_A",
+      "width": 12,
+      "depth": 10,
+      "floors": 1,
+      "face": 0,
+      "height": 4.449999999999999
+    },
+    {
+      "name": "Founder_Building_38",
+      "position": [
+        -1060,
+        -760,
+        8.9
+      ],
+      "typology": "Founder_SmallApartment_A",
+      "width": 19,
+      "depth": 14,
+      "floors": 3,
+      "face": 180,
+      "height": 9.389999999999999
+    },
+    {
+      "name": "Founder_Building_39",
+      "position": [
+        -1027,
+        -760,
+        8.9
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_40",
+      "position": [
+        -992,
+        -760,
+        8.9
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_41",
+      "position": [
+        -954,
+        -760,
+        8.9
+      ],
+      "typology": "Founder_SmallApartment_A",
+      "width": 19,
+      "depth": 14,
+      "floors": 3,
+      "face": 180,
+      "height": 9.389999999999999
+    },
+    {
+      "name": "Founder_Building_42",
+      "position": [
+        -918,
+        -760,
+        8.9
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_43",
+      "position": [
+        -750,
+        -760,
+        8.9
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_44",
+      "position": [
+        -670,
+        -760,
+        8.9
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_45",
+      "position": [
+        -627,
+        -760,
+        8.9
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 180,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_46",
+      "position": [
+        -1060,
+        -720,
+        8.9
+      ],
+      "typology": "Founder_SmallApartment_A",
+      "width": 19,
+      "depth": 14,
+      "floors": 3,
+      "face": 0,
+      "height": 9.389999999999999
+    },
+    {
+      "name": "Founder_Building_47",
+      "position": [
+        -1027,
+        -720,
+        8.9
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_48",
+      "position": [
+        -992,
+        -720,
+        8.9
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_49",
+      "position": [
+        -954,
+        -720,
+        8.9
+      ],
+      "typology": "Founder_SmallApartment_A",
+      "width": 19,
+      "depth": 14,
+      "floors": 3,
+      "face": 0,
+      "height": 9.389999999999999
+    },
+    {
+      "name": "Founder_Building_50",
+      "position": [
+        -918,
+        -720,
+        8.9
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    },
+    {
+      "name": "Founder_Building_51",
+      "position": [
+        -750,
+        -720,
+        8.9
+      ],
+      "typology": "Founder_MixedUseEdge_A",
+      "width": 19,
+      "depth": 14,
+      "floors": 4,
+      "face": 0,
+      "height": 12.44
+    },
+    {
+      "name": "Founder_Building_52",
+      "position": [
+        -713,
+        -720,
+        8.9
+      ],
+      "typology": "Founder_SmallApartment_A",
+      "width": 19,
+      "depth": 14,
+      "floors": 3,
+      "face": 0,
+      "height": 9.389999999999999
+    },
+    {
+      "name": "Founder_Building_53",
+      "position": [
+        -627,
+        -720,
+        8.9
+      ],
+      "typology": "Founder_Duplex_A",
+      "width": 17,
+      "depth": 12,
+      "floors": 2,
+      "face": 0,
+      "height": 7.5
+    }
+  ],
+  "paths": [
+    {
+      "name": "Founder_GarageDriveway",
+      "points": [
+        [
+          -875,
+          -1032.75,
+          8.03
+        ],
+        [
+          -875,
+          -1040.9,
+          8.03
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Founder_GarageApron",
+      "points": [
+        [
+          -875,
+          -1040.9,
+          8.03
+        ],
+        [
+          -875,
+          -1043.6,
+          8.16
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.04814814814815168
+    },
+    {
+      "name": "Founder_GarageSeam",
+      "points": [
+        [
+          -895,
+          -1040.1,
+          8.03
+        ],
+        [
+          -855,
+          -1040.1,
+          8.03
+        ]
+      ],
+      "width": 2.0,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Founder_ToStartup_Walk",
+      "points": [
+        [
+          -875,
+          -1040.1,
+          8.03
+        ],
+        [
+          -825,
+          -1040.1,
+          8.03
+        ],
+        [
+          -825,
+          -970,
+          8.25
+        ],
+        [
+          -825,
+          -960,
+          8.25
+        ],
+        [
+          -825,
+          -920,
+          8.5
+        ],
+        [
+          -890,
+          -860,
+          9.15
+        ],
+        [
+          -890,
+          -845,
+          9.15
+        ],
+        [
+          -852,
+          -754,
+          9.2
+        ],
+        [
+          -850,
+          -700,
+          9.3
+        ],
+        [
+          -842,
+          -677,
+          10.4
+        ],
+        [
+          -785,
+          -648,
+          13.0
+        ],
+        [
+          -748,
+          -615,
+          15.0
+        ],
+        [
+          -716,
+          -584,
+          16.35
+        ],
+        [
+          -616,
+          -484,
+          16.35
+        ],
+        [
+          -625.443359375,
+          -488.67626953125,
+          16.440000534057617
+        ]
+      ],
+      "width": 3,
+      "max_grade": 0.04517158592942498
+    },
+    {
+      "name": "Founder_ConnectedSidewalk",
+      "points": [
+        [
+          -1080,
+          -970,
+          8.25
+        ],
+        [
+          -640,
+          -970,
+          8.25
+        ]
+      ],
+      "width": 2.5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Founder_ConnectedSidewalk",
+      "points": [
+        [
+          -1080,
+          -960,
+          8.25
+        ],
+        [
+          -640,
+          -960,
+          8.25
+        ]
+      ],
+      "width": 2.5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Founder_ConnectedSidewalk",
+      "points": [
+        [
+          -1080,
+          -855,
+          9.15
+        ],
+        [
+          -640,
+          -855,
+          9.15
+        ]
+      ],
+      "width": 2.5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Founder_ConnectedSidewalk",
+      "points": [
+        [
+          -1080,
+          -845,
+          9.15
+        ],
+        [
+          -640,
+          -845,
+          9.15
+        ]
+      ],
+      "width": 2.5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Founder_ConnectedSidewalk",
+      "points": [
+        [
+          -1080,
+          -745,
+          9.2
+        ],
+        [
+          -640,
+          -745,
+          9.2
+        ]
+      ],
+      "width": 2.5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Founder_ConnectedSidewalk",
+      "points": [
+        [
+          -1080,
+          -735,
+          9.2
+        ],
+        [
+          -640,
+          -735,
+          9.2
+        ]
+      ],
+      "width": 2.5,
+      "max_grade": 0.0
+    },
+    {
+      "name": "Founder_EastWalk",
+      "points": [
+        [
+          -815,
+          -1044,
+          8.03
+        ],
+        [
+          -815,
+          -970,
+          8.25
+        ],
+        [
+          -815,
+          -960,
+          8.25
+        ],
+        [
+          -815,
+          -920,
+          8.5
+        ],
+        [
+          -868,
+          -850,
+          9.15
+        ]
+      ],
+      "width": 2.5,
+      "max_grade": 0.007403112239207709
+    },
+    {
+      "name": "Founder_GreenPath",
+      "points": [
+        [
+          -932,
+          -921,
+          8.2
+        ],
+        [
+          -900,
+          -921,
+          8.2
+        ],
+        [
+          -851,
+          -896,
+          8.76
+        ]
+      ],
+      "width": 2.5,
+      "max_grade": 0.010180135653808386
+    },
+    {
+      "name": "Founder_Frontage_00",
+      "points": [
+        [
+          -1060,
+          -1031.0,
+          8.2
+        ],
+        [
+          -1060,
+          -1039,
+          8.03
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.02124999999999999
+    },
+    {
+      "name": "Founder_Frontage_01",
+      "points": [
+        [
+          -1016,
+          -1031.0,
+          8.2
+        ],
+        [
+          -1016,
+          -1039,
+          8.03
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.02124999999999999
+    },
+    {
+      "name": "Founder_Frontage_02",
+      "points": [
+        [
+          -970,
+          -1032.0,
+          8.2
+        ],
+        [
+          -970,
+          -1039,
+          8.03
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.024285714285714275
+    },
+    {
+      "name": "Founder_Frontage_03",
+      "points": [
+        [
+          -925,
+          -1031.0,
+          8.2
+        ],
+        [
+          -925,
+          -1039,
+          8.03
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.02124999999999999
+    },
+    {
+      "name": "Founder_Frontage_04",
+      "points": [
+        [
+          -780,
+          -1031.0,
+          8.2
+        ],
+        [
+          -780,
+          -1039,
+          8.03
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.02124999999999999
+    },
+    {
+      "name": "Founder_Frontage_05",
+      "points": [
+        [
+          -730,
+          -1032.0,
+          8.2
+        ],
+        [
+          -730,
+          -1039,
+          8.03
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.024285714285714275
+    },
+    {
+      "name": "Founder_Frontage_06",
+      "points": [
+        [
+          -676,
+          -1031.0,
+          8.2
+        ],
+        [
+          -676,
+          -1039,
+          8.03
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.02124999999999999
+    },
+    {
+      "name": "Founder_Frontage_07",
+      "points": [
+        [
+          -1060,
+          -979.0,
+          8.2
+        ],
+        [
+          -1060,
+          -970,
+          8.25
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.005555555555555635
+    },
+    {
+      "name": "Founder_Frontage_08",
+      "points": [
+        [
+          -1016,
+          -978.0,
+          8.2
+        ],
+        [
+          -1016,
+          -970,
+          8.25
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.006250000000000089
+    },
+    {
+      "name": "Founder_Frontage_09",
+      "points": [
+        [
+          -970,
+          -979.0,
+          8.2
+        ],
+        [
+          -970,
+          -970,
+          8.25
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.005555555555555635
+    },
+    {
+      "name": "Founder_Frontage_10",
+      "points": [
+        [
+          -925,
+          -979.0,
+          8.2
+        ],
+        [
+          -925,
+          -970,
+          8.25
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.005555555555555635
+    },
+    {
+      "name": "Founder_Frontage_11",
+      "points": [
+        [
+          -780,
+          -978.0,
+          8.2
+        ],
+        [
+          -780,
+          -970,
+          8.25
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.006250000000000089
+    },
+    {
+      "name": "Founder_Frontage_12",
+      "points": [
+        [
+          -730,
+          -979.0,
+          8.2
+        ],
+        [
+          -730,
+          -970,
+          8.25
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.005555555555555635
+    },
+    {
+      "name": "Founder_Frontage_13",
+      "points": [
+        [
+          -676,
+          -979.0,
+          8.2
+        ],
+        [
+          -676,
+          -970,
+          8.25
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.005555555555555635
+    },
+    {
+      "name": "Founder_Frontage_14",
+      "points": [
+        [
+          -1060,
+          -951.0,
+          8.2
+        ],
+        [
+          -1060,
+          -960,
+          8.25
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.005555555555555635
+    },
+    {
+      "name": "Founder_Frontage_15",
+      "points": [
+        [
+          -1016,
+          -951.0,
+          8.2
+        ],
+        [
+          -1016,
+          -960,
+          8.25
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.005555555555555635
+    },
+    {
+      "name": "Founder_Frontage_16",
+      "points": [
+        [
+          -970,
+          -950.0,
+          8.2
+        ],
+        [
+          -970,
+          -960,
+          8.25
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.005000000000000071
+    },
+    {
+      "name": "Founder_Frontage_17",
+      "points": [
+        [
+          -925,
+          -951.0,
+          8.2
+        ],
+        [
+          -925,
+          -960,
+          8.25
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.005555555555555635
+    },
+    {
+      "name": "Founder_Frontage_18",
+      "points": [
+        [
+          -780,
+          -950.0,
+          8.2
+        ],
+        [
+          -780,
+          -960,
+          8.25
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.005000000000000071
+    },
+    {
+      "name": "Founder_Frontage_19",
+      "points": [
+        [
+          -730,
+          -950.0,
+          8.2
+        ],
+        [
+          -730,
+          -960,
+          8.25
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.005000000000000071
+    },
+    {
+      "name": "Founder_Frontage_20",
+      "points": [
+        [
+          -676,
+          -951.0,
+          8.2
+        ],
+        [
+          -676,
+          -960,
+          8.25
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.005555555555555635
+    },
+    {
+      "name": "Founder_Frontage_21",
+      "points": [
+        [
+          -1060,
+          -865.0,
+          8.8
+        ],
+        [
+          -1060,
+          -855,
+          9.15
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.03499999999999996
+    },
+    {
+      "name": "Founder_Frontage_22",
+      "points": [
+        [
+          -1027,
+          -865.0,
+          8.8
+        ],
+        [
+          -1027,
+          -855,
+          9.15
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.03499999999999996
+    },
+    {
+      "name": "Founder_Frontage_23",
+      "points": [
+        [
+          -992,
+          -864.0,
+          8.8
+        ],
+        [
+          -992,
+          -855,
+          9.15
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.03888888888888885
+    },
+    {
+      "name": "Founder_Frontage_24",
+      "points": [
+        [
+          -954,
+          -865.0,
+          8.8
+        ],
+        [
+          -954,
+          -855,
+          9.15
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.03499999999999996
+    },
+    {
+      "name": "Founder_Frontage_25",
+      "points": [
+        [
+          -918,
+          -865.0,
+          8.8
+        ],
+        [
+          -918,
+          -855,
+          9.15
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.03499999999999996
+    },
+    {
+      "name": "Founder_Frontage_26",
+      "points": [
+        [
+          -750,
+          -864.0,
+          8.8
+        ],
+        [
+          -750,
+          -855,
+          9.15
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.03888888888888885
+    },
+    {
+      "name": "Founder_Frontage_27",
+      "points": [
+        [
+          -713,
+          -865.0,
+          8.8
+        ],
+        [
+          -713,
+          -855,
+          9.15
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.03499999999999996
+    },
+    {
+      "name": "Founder_Frontage_28",
+      "points": [
+        [
+          -670,
+          -865.0,
+          8.8
+        ],
+        [
+          -670,
+          -855,
+          9.15
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.03499999999999996
+    },
+    {
+      "name": "Founder_Frontage_29",
+      "points": [
+        [
+          -627,
+          -864.0,
+          8.8
+        ],
+        [
+          -627,
+          -855,
+          9.15
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.03888888888888885
+    },
+    {
+      "name": "Founder_Frontage_30",
+      "points": [
+        [
+          -1060,
+          -835.0,
+          8.8
+        ],
+        [
+          -1060,
+          -845,
+          9.15
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.03499999999999996
+    },
+    {
+      "name": "Founder_Frontage_31",
+      "points": [
+        [
+          -1027,
+          -836.0,
+          8.8
+        ],
+        [
+          -1027,
+          -845,
+          9.15
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.03888888888888885
+    },
+    {
+      "name": "Founder_Frontage_32",
+      "points": [
+        [
+          -992,
+          -836.0,
+          8.8
+        ],
+        [
+          -992,
+          -845,
+          9.15
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.03888888888888885
+    },
+    {
+      "name": "Founder_Frontage_33",
+      "points": [
+        [
+          -954,
+          -835.0,
+          8.8
+        ],
+        [
+          -954,
+          -845,
+          9.15
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.03499999999999996
+    },
+    {
+      "name": "Founder_Frontage_34",
+      "points": [
+        [
+          -918,
+          -836.0,
+          8.8
+        ],
+        [
+          -918,
+          -845,
+          9.15
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.03888888888888885
+    },
+    {
+      "name": "Founder_Frontage_35",
+      "points": [
+        [
+          -713,
+          -835.0,
+          8.8
+        ],
+        [
+          -713,
+          -845,
+          9.15
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.03499999999999996
+    },
+    {
+      "name": "Founder_Frontage_36",
+      "points": [
+        [
+          -670,
+          -836.0,
+          8.8
+        ],
+        [
+          -670,
+          -845,
+          9.15
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.03888888888888885
+    },
+    {
+      "name": "Founder_Frontage_37",
+      "points": [
+        [
+          -627,
+          -835.0,
+          8.8
+        ],
+        [
+          -627,
+          -845,
+          9.15
+        ]
+      ],
+      "width": 3.5,
+      "max_grade": 0.03499999999999996
+    },
+    {
+      "name": "Founder_Frontage_38",
+      "points": [
+        [
+          -1060,
+          -751.0,
+          8.9
+        ],
+        [
+          -1060,
+          -745,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.04999999999999982
+    },
+    {
+      "name": "Founder_Frontage_39",
+      "points": [
+        [
+          -1027,
+          -752.0,
+          8.9
+        ],
+        [
+          -1027,
+          -745,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.042857142857142705
+    },
+    {
+      "name": "Founder_Frontage_40",
+      "points": [
+        [
+          -992,
+          -752.0,
+          8.9
+        ],
+        [
+          -992,
+          -745,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.042857142857142705
+    },
+    {
+      "name": "Founder_Frontage_41",
+      "points": [
+        [
+          -954,
+          -751.0,
+          8.9
+        ],
+        [
+          -954,
+          -745,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.04999999999999982
+    },
+    {
+      "name": "Founder_Frontage_42",
+      "points": [
+        [
+          -918,
+          -752.0,
+          8.9
+        ],
+        [
+          -918,
+          -745,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.042857142857142705
+    },
+    {
+      "name": "Founder_Frontage_43",
+      "points": [
+        [
+          -750,
+          -752.0,
+          8.9
+        ],
+        [
+          -750,
+          -745,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.042857142857142705
+    },
+    {
+      "name": "Founder_Frontage_44",
+      "points": [
+        [
+          -670,
+          -752.0,
+          8.9
+        ],
+        [
+          -670,
+          -745,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.042857142857142705
+    },
+    {
+      "name": "Founder_Frontage_45",
+      "points": [
+        [
+          -627,
+          -752.0,
+          8.9
+        ],
+        [
+          -627,
+          -745,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.042857142857142705
+    },
+    {
+      "name": "Founder_Frontage_46",
+      "points": [
+        [
+          -1060,
+          -729.0,
+          8.9
+        ],
+        [
+          -1060,
+          -735,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.04999999999999982
+    },
+    {
+      "name": "Founder_Frontage_47",
+      "points": [
+        [
+          -1027,
+          -728.0,
+          8.9
+        ],
+        [
+          -1027,
+          -735,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.042857142857142705
+    },
+    {
+      "name": "Founder_Frontage_48",
+      "points": [
+        [
+          -992,
+          -728.0,
+          8.9
+        ],
+        [
+          -992,
+          -735,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.042857142857142705
+    },
+    {
+      "name": "Founder_Frontage_49",
+      "points": [
+        [
+          -954,
+          -729.0,
+          8.9
+        ],
+        [
+          -954,
+          -735,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.04999999999999982
+    },
+    {
+      "name": "Founder_Frontage_50",
+      "points": [
+        [
+          -918,
+          -728.0,
+          8.9
+        ],
+        [
+          -918,
+          -735,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.042857142857142705
+    },
+    {
+      "name": "Founder_Frontage_51",
+      "points": [
+        [
+          -750,
+          -729.0,
+          8.9
+        ],
+        [
+          -750,
+          -735,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.04999999999999982
+    },
+    {
+      "name": "Founder_Frontage_52",
+      "points": [
+        [
+          -713,
+          -729.0,
+          8.9
+        ],
+        [
+          -713,
+          -735,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.04999999999999982
+    },
+    {
+      "name": "Founder_Frontage_53",
+      "points": [
+        [
+          -627,
+          -728.0,
+          8.9
+        ],
+        [
+          -627,
+          -735,
+          9.2
+        ]
+      ],
+      "width": 2,
+      "max_grade": 0.042857142857142705
+    }
+  ],
+  "hidden_original_objects": [
+    "Founder_Local_Spine_00",
+    "Founder_Local_Spine_01",
+    "Founder_Local_Spine_02",
+    "FounderDistrict_Block_000",
+    "FounderDistrict_Block_001",
+    "FounderDistrict_Block_002",
+    "FounderDistrict_Block_003",
+    "FounderDistrict_Block_004",
+    "FounderDistrict_Block_005",
+    "FounderDistrict_Block_006",
+    "FounderDistrict_Block_007",
+    "FounderDistrict_Block_008",
+    "FounderDistrict_Block_009",
+    "FounderDistrict_Block_010",
+    "FounderDistrict_Block_011",
+    "FounderDistrict_Block_012",
+    "FounderDistrict_Block_013",
+    "FounderDistrict_Block_014",
+    "FounderDistrict_Block_015",
+    "FounderDistrict_Block_016",
+    "FounderDistrict_Block_017",
+    "FounderDistrict_Block_018",
+    "FounderDistrict_Block_019",
+    "FounderDistrict_Block_020",
+    "FounderDistrict_Block_021",
+    "FounderDistrict_Block_022",
+    "FounderDistrict_Block_023",
+    "FounderDistrict_Block_024",
+    "FounderDistrict_Block_025",
+    "FounderDistrict_Block_026",
+    "FounderDistrict_Block_027",
+    "FounderDistrict_Block_028",
+    "FounderDistrict_Block_029",
+    "FounderDistrict_Block_030",
+    "FounderDistrict_Block_031",
+    "FounderDistrict_Block_032",
+    "FounderDistrict_Block_033",
+    "FounderDistrict_Block_034",
+    "FounderDistrict_Block_035",
+    "FounderDistrict_Block_036",
+    "FounderDistrict_Block_037",
+    "FounderDistrict_Block_038",
+    "FounderDistrict_Block_039",
+    "FounderDistrict_Block_040",
+    "FounderDistrict_Block_041",
+    "FounderDistrict_Block_042",
+    "FounderDistrict_Block_043",
+    "FounderDistrict_Block_044",
+    "FounderDistrict_Block_045",
+    "FounderDistrict_Block_046",
+    "FounderDistrict_Block_047",
+    "FounderDistrict_Block_048",
+    "FounderDistrict_Block_049",
+    "FounderDistrict_Block_050",
+    "FounderDistrict_Block_051",
+    "FounderGarage_Slot_Parcel"
+  ],
+  "tree_count": 56,
+  "authored_building_components": 3458,
+  "reusable_dimension_material_meshes": 65,
+  "typologies": {
+    "Founder_HomeGarage_A": [
+      12,
+      10,
+      1,
+      "siding"
+    ],
+    "Founder_HomeGarage_B": [
+      11,
+      10,
+      2,
+      "cream"
+    ],
+    "Founder_Duplex_A": [
+      17,
+      12,
+      2,
+      "brick"
+    ],
+    "Founder_SmallApartment_A": [
+      19,
+      14,
+      3,
+      "siding"
+    ],
+    "Founder_Workshop_A": [
+      14,
+      12,
+      1,
+      "brick"
+    ],
+    "Founder_CornerStore_A": [
+      14,
+      12,
+      1,
+      "cream"
+    ],
+    "Founder_MixedUseEdge_A": [
+      19,
+      14,
+      4,
+      "brick"
+    ]
+  },
+  "review_cameras": [
+    "FounderDistrict_Aerial",
+    "FounderGarage_Context",
+    "Founder_To_Startup_Phase7",
+    "Founder_To_Spire",
+    "Founder_StreetLevel",
+    "Founder_GreenSpace",
+    "Founder_NightPreview",
+    "Garage_Transition_Seam"
+  ],
+  "envelope": {
+    "bounds": [
+      [
+        -915,
+        -1056,
+        7.76
+      ],
+      [
+        -835,
+        -1000,
+        15.9
+      ]
+    ],
+    "width": 80,
+    "depth": 56,
+    "ground": 8,
+    "forward": "-Y",
+    "slot": [
+      -875,
+      -1030,
+      8
+    ]
+  }
+}

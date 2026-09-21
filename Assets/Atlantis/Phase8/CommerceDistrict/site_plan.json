@@ -1,0 +1,729 @@
+{
+  "bounds": [
+    50,
+    -360,
+    550,
+    -20
+  ],
+  "kit": {
+    "EnterpriseOffice_A": [
+      38,
+      30,
+      48,
+      "stone"
+    ],
+    "EnterpriseOffice_B": [
+      40,
+      32,
+      64,
+      "silver"
+    ],
+    "Hotel_A": [
+      34,
+      28,
+      60,
+      "warm"
+    ],
+    "Hotel_B": [
+      40,
+      32,
+      108,
+      "warm"
+    ],
+    "ServiceTower_A": [
+      32,
+      28,
+      72,
+      "stone"
+    ],
+    "MixedUse_A": [
+      36,
+      30,
+      28,
+      "warm"
+    ],
+    "MixedUse_B": [
+      38,
+      30,
+      40,
+      "stone"
+    ],
+    "ConferenceCenter": [
+      68,
+      42,
+      19,
+      "stone"
+    ],
+    "RetailPodium_A": [
+      30,
+      24,
+      12,
+      "warm"
+    ],
+    "BusinessAnchor_A": [
+      42,
+      34,
+      96,
+      "silver"
+    ]
+  },
+  "sites": [
+    {
+      "id": "Commerce_Building_00",
+      "typology": "Commerce_BusinessAnchor_A",
+      "position": [
+        90,
+        -55,
+        15.4
+      ],
+      "angle": 0,
+      "width": 42,
+      "depth": 34,
+      "height": 96,
+      "material": "silver",
+      "polygon": [
+        [
+          68.0,
+          -74.0
+        ],
+        [
+          112.0,
+          -74.0
+        ],
+        [
+          112.0,
+          -36.0
+        ],
+        [
+          68.0,
+          -36.0
+        ]
+      ]
+    },
+    {
+      "id": "Commerce_Building_01",
+      "typology": "Commerce_Hotel_B",
+      "position": [
+        292,
+        -55,
+        15.4
+      ],
+      "angle": 0,
+      "width": 40,
+      "depth": 32,
+      "height": 108,
+      "material": "warm",
+      "polygon": [
+        [
+          271.0,
+          -73.0
+        ],
+        [
+          313.0,
+          -73.0
+        ],
+        [
+          313.0,
+          -37.0
+        ],
+        [
+          271.0,
+          -37.0
+        ]
+      ]
+    },
+    {
+      "id": "Commerce_Building_02",
+      "typology": "Commerce_Hotel_A",
+      "position": [
+        515,
+        -57,
+        15.4
+      ],
+      "angle": 0,
+      "width": 34,
+      "depth": 28,
+      "height": 60,
+      "material": "warm",
+      "polygon": [
+        [
+          497.0,
+          -73.0
+        ],
+        [
+          533.0,
+          -73.0
+        ],
+        [
+          533.0,
+          -41.0
+        ],
+        [
+          497.0,
+          -41.0
+        ]
+      ]
+    },
+    {
+      "id": "Commerce_Building_03",
+      "typology": "Commerce_ConferenceCenter",
+      "position": [
+        106,
+        -264,
+        15.4
+      ],
+      "angle": 180,
+      "width": 68,
+      "depth": 42,
+      "height": 19,
+      "material": "stone",
+      "polygon": [
+        [
+          141.0,
+          -241.0
+        ],
+        [
+          71.0,
+          -241.0
+        ],
+        [
+          71.0,
+          -287.0
+        ],
+        [
+          141.0,
+          -287.0
+        ]
+      ]
+    },
+    {
+      "id": "Commerce_Building_04",
+      "typology": "Commerce_EnterpriseOffice_A",
+      "position": [
+        193,
+        -265,
+        15.4
+      ],
+      "angle": 180,
+      "width": 38,
+      "depth": 30,
+      "height": 48,
+      "material": "stone",
+      "polygon": [
+        [
+          213.0,
+          -248.0
+        ],
+        [
+          173.0,
+          -248.0
+        ],
+        [
+          173.0,
+          -282.0
+        ],
+        [
+          213.0,
+          -282.0
+        ]
+      ]
+    },
+    {
+      "id": "Commerce_Building_05",
+      "typology": "Commerce_Hotel_A",
+      "position": [
+        358,
+        -329,
+        15.4
+      ],
+      "angle": 180,
+      "width": 34,
+      "depth": 28,
+      "height": 60,
+      "material": "warm",
+      "polygon": [
+        [
+          376.0,
+          -313.0
+        ],
+        [
+          340.0,
+          -313.0
+        ],
+        [
+          340.0,
+          -345.0
+        ],
+        [
+          376.0,
+          -345.0
+        ]
+      ]
+    },
+    {
+      "id": "Commerce_Building_06",
+      "typology": "Commerce_EnterpriseOffice_B",
+      "position": [
+        480,
+        -338,
+        15.4
+      ],
+      "angle": 180,
+      "width": 40,
+      "depth": 32,
+      "height": 64,
+      "material": "silver",
+      "polygon": [
+        [
+          501.0,
+          -320.0
+        ],
+        [
+          459.0,
+          -320.0
+        ],
+        [
+          459.0,
+          -356.0
+        ],
+        [
+          501.0,
+          -356.0
+        ]
+      ]
+    },
+    {
+      "id": "Commerce_Building_07",
+      "typology": "Commerce_RetailPodium_A",
+      "position": [
+        518,
+        -260,
+        15.4
+      ],
+      "angle": 0,
+      "width": 30,
+      "depth": 24,
+      "height": 12,
+      "material": "warm",
+      "polygon": [
+        [
+          502.0,
+          -274.0
+        ],
+        [
+          534.0,
+          -274.0
+        ],
+        [
+          534.0,
+          -246.0
+        ],
+        [
+          502.0,
+          -246.0
+        ]
+      ]
+    },
+    {
+      "id": "Commerce_Building_08",
+      "typology": "Commerce_EnterpriseOffice_B",
+      "position": [
+        410,
+        -115,
+        15.4
+      ],
+      "angle": 0,
+      "width": 40,
+      "depth": 32,
+      "height": 64,
+      "material": "silver",
+      "polygon": [
+        [
+          389.0,
+          -133.0
+        ],
+        [
+          431.0,
+          -133.0
+        ],
+        [
+          431.0,
+          -97.0
+        ],
+        [
+          389.0,
+          -97.0
+        ]
+      ]
+    },
+    {
+      "id": "Commerce_Building_09",
+      "typology": "Commerce_ServiceTower_A",
+      "position": [
+        90,
+        -124,
+        15.4
+      ],
+      "angle": 0,
+      "width": 32,
+      "depth": 28,
+      "height": 72,
+      "material": "stone",
+      "polygon": [
+        [
+          73.0,
+          -140.0
+        ],
+        [
+          107.0,
+          -140.0
+        ],
+        [
+          107.0,
+          -108.0
+        ],
+        [
+          73.0,
+          -108.0
+        ]
+      ]
+    },
+    {
+      "id": "Commerce_Building_10",
+      "typology": "Commerce_MixedUse_B",
+      "position": [
+        160,
+        -55,
+        15.4
+      ],
+      "angle": 0,
+      "width": 38,
+      "depth": 30,
+      "height": 40,
+      "material": "stone",
+      "polygon": [
+        [
+          140.0,
+          -72.0
+        ],
+        [
+          180.0,
+          -72.0
+        ],
+        [
+          180.0,
+          -38.0
+        ],
+        [
+          140.0,
+          -38.0
+        ]
+      ]
+    },
+    {
+      "id": "Commerce_Building_11",
+      "typology": "Commerce_EnterpriseOffice_A",
+      "position": [
+        228,
+        -55,
+        15.4
+      ],
+      "angle": 0,
+      "width": 38,
+      "depth": 30,
+      "height": 48,
+      "material": "stone",
+      "polygon": [
+        [
+          208.0,
+          -72.0
+        ],
+        [
+          248.0,
+          -72.0
+        ],
+        [
+          248.0,
+          -38.0
+        ],
+        [
+          208.0,
+          -38.0
+        ]
+      ]
+    },
+    {
+      "id": "Commerce_Building_12",
+      "typology": "Commerce_MixedUse_A",
+      "position": [
+        278,
+        -236,
+        15.4
+      ],
+      "angle": 0,
+      "width": 36,
+      "depth": 30,
+      "height": 28,
+      "material": "warm",
+      "polygon": [
+        [
+          259.0,
+          -253.0
+        ],
+        [
+          297.0,
+          -253.0
+        ],
+        [
+          297.0,
+          -219.0
+        ],
+        [
+          259.0,
+          -219.0
+        ]
+      ]
+    },
+    {
+      "id": "Commerce_Building_13",
+      "typology": "Commerce_MixedUse_A",
+      "position": [
+        290,
+        -330,
+        15.4
+      ],
+      "angle": 31,
+      "width": 36,
+      "depth": 30,
+      "height": 28,
+      "material": "warm",
+      "polygon": [
+        [
+          282.4694685601308,
+          -354.3575675352269
+        ],
+        [
+          315.04182598681103,
+          -334.78612068864487
+        ],
+        [
+          297.5305314398692,
+          -305.6424324647731
+        ],
+        [
+          264.95817401318897,
+          -325.21387931135513
+        ]
+      ]
+    },
+    {
+      "id": "Commerce_Building_14",
+      "typology": "Commerce_RetailPodium_A",
+      "position": [
+        142,
+        -133,
+        15.4
+      ],
+      "angle": 0,
+      "width": 30,
+      "depth": 24,
+      "height": 12,
+      "material": "warm",
+      "polygon": [
+        [
+          126.0,
+          -147.0
+        ],
+        [
+          158.0,
+          -147.0
+        ],
+        [
+          158.0,
+          -119.0
+        ],
+        [
+          126.0,
+          -119.0
+        ]
+      ]
+    }
+  ],
+  "roads": [
+    {
+      "id": "Commerce_Boulevard",
+      "width_m": 24,
+      "length_m": 1381.8,
+      "points": [
+        [
+          -190,
+          -270,
+          15
+        ],
+        [
+          200,
+          -340,
+          15
+        ],
+        [
+          500,
+          -150,
+          15
+        ],
+        [
+          420,
+          40,
+          15
+        ],
+        [
+          0,
+          100,
+          15
+        ]
+      ],
+      "collection": "PrimaryRoads"
+    },
+    {
+      "id": "CommerceDistrict_CrossStreet",
+      "width_m": 14,
+      "length_m": 450.0,
+      "points": [
+        [
+          75.0,
+          -190,
+          14.8
+        ],
+        [
+          525.0,
+          -190,
+          14.8
+        ]
+      ],
+      "collection": "SecondaryRoads"
+    },
+    {
+      "id": "Commerce_Link",
+      "width_m": 14,
+      "length_m": 259.4,
+      "points": [
+        [
+          300,
+          -190,
+          15
+        ],
+        [
+          420,
+          40,
+          15
+        ]
+      ],
+      "collection": "SecondaryRoads"
+    }
+  ],
+  "public_spaces": [
+    {
+      "name": "CustomerPlaza",
+      "center": [
+        213,
+        -132,
+        15.4
+      ],
+      "size": [
+        82,
+        70
+      ]
+    },
+    {
+      "name": "EventForecourt",
+      "center": [
+        106,
+        -225,
+        15.4
+      ],
+      "size": [
+        66,
+        20
+      ]
+    },
+    {
+      "name": "FlashpointCorridor",
+      "center": [
+        452,
+        -303,
+        15.4
+      ],
+      "size": [
+        142,
+        22
+      ]
+    }
+  ],
+  "rejected": [
+    [
+      "MixedUse_A",
+      285,
+      -329,
+      "road"
+    ],
+    [
+      "MixedUse_A",
+      295,
+      -132,
+      "road"
+    ],
+    [
+      "RetailPodium_A",
+      160,
+      -126,
+      "plaza"
+    ],
+    [
+      "ServiceTower_A",
+      355,
+      -238,
+      "road"
+    ],
+    [
+      "MixedUse_A",
+      520,
+      -120,
+      "road"
+    ],
+    [
+      "MixedUse_B",
+      335,
+      -100,
+      "road"
+    ],
+    [
+      "EnterpriseOffice_A",
+      220,
+      -93,
+      "plaza"
+    ],
+    [
+      "RetailPodium_A",
+      295,
+      -126,
+      "road"
+    ],
+    [
+      "MixedUse_A",
+      530,
+      -123,
+      "bounds"
+    ],
+    [
+      "MixedUse_B",
+      345,
+      -64,
+      "road"
+    ],
+    [
+      "RetailPodium_A",
+      80,
+      -332,
+      "road"
+    ]
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "status": "TECHNICAL_RUNTIME_PACKAGE_PASS; visual and performance acceptance remain NO-GO",
+  "sha256": "b07ddd8438d09abe0277fda10a8302ca7f17c189bdff8c5d1b7d5d9ef13fbe77",
+  "package_bytes": 1891885,
+  "bundled_package_matches": true,
+  "canonical_joint_count": 55,
+  "identical_skeleton_copies": 10,
+  "meshes": [
+    "/FounderRoot/TopMeshModule/TopMesh/TopMesh",
+    "/FounderRoot/IrisMesh_LModule/IrisMesh_L/Sphere_001",
+    "/FounderRoot/EyeMesh_RModule/EyeMesh_R/Sphere_002",
+    "/FounderRoot/ShoeMeshModule/ShoeMesh/Cube_001",
+    "/FounderRoot/IrisMesh_RModule/IrisMesh_R/Sphere_003",
+    "/FounderRoot/HeadMeshModule/HeadMesh/HeadMesh",
+    "/FounderRoot/EyeMesh_LModule/EyeMesh_L/Sphere",
+    "/FounderRoot/BottomMeshModule/BottomMesh/BottomMesh",
+    "/FounderRoot/BodyMeshModule/BodyMesh/BodyMesh",
+    "/FounderRoot/HairMeshModule/HairMesh/HairMesh"
+  ],
+  "facial_targets": 9
+}

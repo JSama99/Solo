@@ -1,0 +1,237 @@
+{
+  "schema": 1,
+  "fixture": {
+    "blend": "Source/founder_candidate_a.blend",
+    "pose": "Intermediate/founder_validation_pose_a2_iteration_2.json",
+    "garage_state": "production v8 canonical anchors",
+    "camera_state": "founderPOV",
+    "animation_state": "authored seated validation pose at t=0",
+    "lighting": "not applicable to skeletal measurement",
+    "door_state": "closed",
+    "reduce_motion": false
+  },
+  "references_world_m": {
+    "camera": [
+      0.34,
+      1.18,
+      -0.22
+    ],
+    "chair_seat": [
+      0.34,
+      0.45,
+      -0.22
+    ],
+    "chair_back": [
+      0.34,
+      0.45,
+      -0.0276
+    ],
+    "desk_underside": [
+      null,
+      0.72,
+      null
+    ],
+    "desktop": [
+      null,
+      0.7575,
+      null
+    ],
+    "floor_y": 0.0
+  },
+  "landmarks_world_m": {
+    "pelvis": [
+      0.273769,
+      0.492239,
+      -0.123629
+    ],
+    "spine_01": [
+      0.273769,
+      0.577962,
+      -0.088156
+    ],
+    "spine_02": [
+      0.273769,
+      0.652,
+      -0.097095
+    ],
+    "chest": [
+      0.272744,
+      0.720831,
+      -0.092284
+    ],
+    "neck": [
+      0.265048,
+      1.070077,
+      -0.089738
+    ],
+    "head": [
+      0.279119,
+      1.16442,
+      -0.149637
+    ],
+    "left_knee": [
+      0.20355,
+      0.511953,
+      -0.537916
+    ],
+    "right_knee": [
+      0.449045,
+      0.510944,
+      -0.535019
+    ],
+    "left_ankle": [
+      0.208886,
+      0.072142,
+      -0.610363
+    ],
+    "right_ankle": [
+      0.471114,
+      0.072142,
+      -0.610363
+    ],
+    "left_hand": [
+      -0.001272,
+      0.757176,
+      -0.389819
+    ],
+    "right_hand": [
+      0.470831,
+      0.767972,
+      -0.44367
+    ],
+    "left_eye": [
+      0.315356,
+      1.186208,
+      -0.242205
+    ],
+    "right_eye": [
+      0.365525,
+      1.182429,
+      -0.200296
+    ],
+    "eye_midpoint": [
+      0.34044,
+      1.184319,
+      -0.221251
+    ]
+  },
+  "foot_contacts_world_m": {
+    "left": [
+      0.217056,
+      1e-06,
+      -0.704772
+    ],
+    "right": [
+      0.462944,
+      0.0,
+      -0.704772
+    ]
+  },
+  "errors_m": {
+    "eye_camera_vertical": 0.004319,
+    "eye_camera_horizontal": 0.001326,
+    "pelvis_above_chair_seat": 0.042239,
+    "pelvis_horizontal_from_chair_seat": 0.116936,
+    "left_knee_clearance_below_desk": 0.208047,
+    "right_knee_clearance_below_desk": 0.209056,
+    "left_foot_floor": 1e-06,
+    "right_foot_floor": 0.0,
+    "left_hand_above_desktop": -0.000324,
+    "right_hand_above_desktop": 0.010472
+  },
+  "angles_degrees": {
+    "hip_flexion_from_vertical": 93.357,
+    "spine_from_vertical": 7.812,
+    "neck_from_vertical": 33.112,
+    "head_pitch_proxy": 11.918,
+    "head_yaw_proxy": 40.573
+  },
+  "spine_chain": {
+    "Hips": {
+      "parent": "Root",
+      "length_m": 0.092773,
+      "head_world_m": [
+        0.273769,
+        0.492239,
+        -0.123629
+      ],
+      "tail_world_m": [
+        0.273769,
+        0.577962,
+        -0.088156
+      ]
+    },
+    "Spine01": {
+      "parent": "Hips",
+      "length_m": 0.074575,
+      "head_world_m": [
+        0.273769,
+        0.577962,
+        -0.088156
+      ],
+      "tail_world_m": [
+        0.273769,
+        0.652,
+        -0.097095
+      ]
+    },
+    "Spine02": {
+      "parent": "Spine01",
+      "length_m": 0.069006,
+      "head_world_m": [
+        0.273769,
+        0.652,
+        -0.097095
+      ],
+      "tail_world_m": [
+        0.272744,
+        0.720831,
+        -0.092284
+      ]
+    },
+    "Chest": {
+      "parent": "Spine02",
+      "length_m": 0.156328,
+      "head_world_m": [
+        0.272744,
+        0.720831,
+        -0.092284
+      ],
+      "tail_world_m": [
+        0.274146,
+        0.871279,
+        -0.049834
+      ]
+    },
+    "Neck": {
+      "parent": "Chest",
+      "length_m": 0.112634,
+      "head_world_m": [
+        0.265048,
+        1.070077,
+        -0.089738
+      ],
+      "tail_world_m": [
+        0.279119,
+        1.16442,
+        -0.149637
+      ]
+    },
+    "Head": {
+      "parent": "Neck",
+      "length_m": 0.165618,
+      "head_world_m": [
+        0.279119,
+        1.16442,
+        -0.149637
+      ],
+      "tail_world_m": [
+        0.313337,
+        1.324275,
+        -0.176187
+      ]
+    }
+  },
+  "standing_height_m": 1.792,
+  "standing_pose_modified": false
+}

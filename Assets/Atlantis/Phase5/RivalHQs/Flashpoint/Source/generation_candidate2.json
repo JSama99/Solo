@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "2026-09-10T08:21:56.924324Z",
+    "display_name": "Text to 3D",
+    "id": "e7476365-b291-41bb-ad9f-23dad0ca49ca",
+    "job_type": "tripo_3d",
+    "min_result_url": null,
+    "params": {
+      "auto_size": false,
+      "face_limit": 24000,
+      "folder_id": null,
+      "geometry_quality": "detailed",
+      "negative_prompt": null,
+      "pbr": true,
+      "prompt": "One isolated contemporary startup office tower, Flashpoint HQ. Tall compact asymmetric glass wedge 75 metres high, 36 metres wide and 28 metres deep. One side rises to a sharp sloped roof; the other steps down in two setbacks. Dark blue-grey glass, thin silver horizontal fins, one narrow burnt-orange vertical accent. Small attached two-storey entrance podium confined to tower width. A single modest blank inset panel beside the entrance, not a billboard. Minimal architectural model on empty background. Clean real architecture, energetic silhouette, ambitious fast-growing technology company, sophisticated modern design. No neighboring buildings, campus, street, road, vehicles, trees, terrain, pedestal landscape, giant screens, text, antennas, roof signs, floating parts, casino or neon. Entire model must be the one compact building with flat base and realistic proportions.",
+      "seed": null,
+      "texture": true,
+      "texture_quality": "detailed"
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_34Zg75AIkEw6PIkZBBxVr9v7DE7/hf_20260910_082156_e7476365-b291-41bb-ad9f-23dad0ca49ca.glb",
+    "status": "completed"
+  }
+]

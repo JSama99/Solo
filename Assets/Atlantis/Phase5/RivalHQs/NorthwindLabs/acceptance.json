@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "method": "Source-informed architectural reconstruction",
+  "day_night_reviewed": true,
+  "context_views_reviewed": [
+    "TheSpire_StartupSightline",
+    "Northwind_TechApproach",
+    "TechCore_Rivals_Aerial",
+    "Media_RivalSkyline",
+    "UnicornHeights_View"
+  ],
+  "note": "Research identity readable; distant occlusion retained within fixed Phase 4 city."
+}

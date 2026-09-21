@@ -1,0 +1,21 @@
+{
+  "created_at": "2026-09-09T21:53:12.82218Z",
+  "display_name": "Text to 3D",
+  "id": "3d8e69f7-727f-4949-ae1d-80fd2afb3973",
+  "job_type": "tripo_3d",
+  "min_result_url": null,
+  "params": {
+    "auto_size": false,
+    "face_limit": 18000,
+    "folder_id": null,
+    "geometry_quality": "standard",
+    "negative_prompt": null,
+    "pbr": true,
+    "prompt": "Standalone premium technology journalism headquarters Tech.com Tower for Atlantis. A 140 metre sophisticated tapered skyscraper with slender asymmetrical stepped crown, strong vertical brushed silver fins, blue glass facade, and a broad 70 by 65 metre three-storey public newsroom podium. Transparent newsroom glazing and a recessed blank media wall integrated in the south front podium, slim blank ticker band above entry. Architectural model, credible contemporary construction, elegant institutional presence, clear foundation, isolated single building, no surrounding city, no ground landscape, no text or logos. Preserve clean silhouette and mobile game friendly geometric detail. No neon cyberpunk, fantasy crown, excessive antennas or floating parts.",
+    "seed": null,
+    "texture": true,
+    "texture_quality": "standard"
+  },
+  "result_url": null,
+  "status": "nsfw"
+}

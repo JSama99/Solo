@@ -1,0 +1,32 @@
+{
+  "date": "2026-09-17",
+  "logs": {
+    "release": {
+      "path": "/tmp/founder-a1-release-final.log",
+      "sha256": "f2edb5eb14a773af3dcbcac5fecffa1c2481d9163e31f6cbfaa1c134a49277fd",
+      "result_lines": [
+        "** BUILD SUCCEEDED **"
+      ]
+    },
+    "debug_device": {
+      "path": "/tmp/founder-a1-device-build.log",
+      "sha256": "d090cbf9df59b8b665e7a938c31de6061b7f272e762c731d6aacddf74797a4a5",
+      "result_lines": [
+        "** BUILD SUCCEEDED **"
+      ]
+    },
+    "unit": {
+      "path": "/tmp/founder-a1-unit-final.log",
+      "sha256": "6dcfa9d3dbd2eb519e2ce049cd4095bfd1d939f50694e88cde76492664a11653",
+      "result_lines": [
+        "\t Executed 909 tests, with 0 failures (0 unexpected) in 56.690 (56.934) seconds",
+        "\t Executed 909 tests, with 0 failures (0 unexpected) in 56.690 (56.935) seconds",
+        "** TEST SUCCEEDED **"
+      ]
+    }
+  },
+  "git_diff_check_exit": 2,
+  "git_diff_check_output": "Tests/FounderDeskWorkspaceTests.swift:1184: trailing whitespace.\n+    \nTests/FounderDeskWorkspaceTests.swift:1194: trailing whitespace.\n+    \nTests/FounderDeskWorkspaceTests.swift:1198: trailing whitespace.\n+    \nTests/FounderDeskWorkspaceTests.swift:1202: trailing whitespace.\n+    \nTests/FounderDeskWorkspaceTests.swift:1383: trailing whitespace.\n+    \nTests/FounderDeskWorkspaceTests.swift:1388: trailing whitespace.\n+    \nTests/FounderDeskWorkspaceTests.swift:1391: trailing whitespace.\n+    \n",
+  "game_store_diff": "",
+  "note": "Physical UI and unit summaries are separate evidence files. No production promotion."
+}

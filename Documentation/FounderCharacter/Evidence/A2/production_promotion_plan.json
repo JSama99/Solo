@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "accepted_sha256": "6392eb1dea5f13506913feeb1a65bf84c97f9b61266ba027bd3b3377278171f5",
+  "surfaces": [
+    {"production_surface":"Runtime asset","current":"procedural Founder","accepted_candidate":"founder_candidate_a.usdz","required_change":"select accepted bundled resource"},
+    {"production_surface":"Character loader","current":"existing USDZ adapter available but not requested","accepted_candidate":"existing RealityKit loader","required_change":"request on production Garage task"},
+    {"production_surface":"Head masking","current":"procedural whole-root first-person hiding","accepted_candidate":"six independent accepted head modules","required_change":"mask head modules and retain body"},
+    {"production_surface":"Attachments","current":"adapter preserves hierarchy","accepted_candidate":"five authored slots","required_change":"UNCHANGED"},
+    {"production_surface":"Seated pose","current":"procedural transform","accepted_candidate":"accepted validation joint pose","required_change":"apply accepted pose through existing rig adapter"},
+    {"production_surface":"Locomotion","current":"camera-owned procedural graph","accepted_candidate":"standing rest plus accepted seated pose","required_change":"retain state graph; blend presentation joints only"},
+    {"production_surface":"Debug override","current":"separate QA launch route","accepted_candidate":"not required by production","required_change":"UNCHANGED"}
+  ],
+  "rollback": {
+    "previous_reference":"FounderVisualSource.procedural",
+    "changed_reference":"FounderVisualSource.bundledUSDZ(name: FounderCharacterContract.candidateResource)",
+    "restore_surface":["App/FounderGarageRealityView.swift","App/FounderGarageRealityScene.swift","App/FounderCharacterContract.swift"]
+  }
+}

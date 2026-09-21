@@ -1,0 +1,1452 @@
+{
+  "objects": [
+    {
+      "name": "Progression_Startup_00",
+      "type": "MESH",
+      "position": [
+        -535.0,
+        -445.0,
+        15.5
+      ],
+      "dimensions": [
+        26.0,
+        174.93141174316406,
+        0.699999988079071
+      ],
+      "collections": [
+        "PrimaryRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Progression_Startup"
+      },
+      "bounds": [
+        [
+          -616.690185546875,
+          -501.1484375,
+          14.650005340576172
+        ],
+        [
+          -453.3098449707031,
+          -388.8515625,
+          16.349994659423828
+        ]
+      ]
+    },
+    {
+      "name": "Progression_Startup_01",
+      "type": "MESH",
+      "position": [
+        -325.0,
+        -335.0,
+        15.0
+      ],
+      "dimensions": [
+        26.0,
+        299.6664733886719,
+        0.699999988079071
+      ],
+      "collections": [
+        "PrimaryRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Progression_Startup"
+      },
+      "bounds": [
+        [
+          -465.6396179199219,
+          -411.7130126953125,
+          14.649999618530273
+        ],
+        [
+          -184.3603973388672,
+          -258.2869873046875,
+          15.350000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Progression_Startup_02",
+      "type": "MESH",
+      "position": [
+        -180.0,
+        -175.0,
+        15.0
+      ],
+      "dimensions": [
+        26.0,
+        191.0497283935547,
+        0.699999988079071
+      ],
+      "collections": [
+        "PrimaryRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Progression_Startup"
+      },
+      "bounds": [
+        [
+          -202.92855834960938,
+          -271.36090087890625,
+          14.649999618530273
+        ],
+        [
+          -157.07144165039062,
+          -78.63909912109375,
+          15.350000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Progression_Startup_03",
+      "type": "MESH",
+      "position": [
+        -85.0,
+        10.0,
+        15.0
+      ],
+      "dimensions": [
+        26.0,
+        247.58836364746094,
+        0.699999988079071
+      ],
+      "collections": [
+        "PrimaryRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Progression_Startup"
+      },
+      "bounds": [
+        [
+          -179.45115661621094,
+          -88.92610168457031,
+          14.649999618530273
+        ],
+        [
+          9.451163291931152,
+          108.92610168457031,
+          15.350000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Progression_Startup_04",
+      "type": "MESH",
+      "position": [
+        25.0,
+        200.0,
+        15.0
+      ],
+      "dimensions": [
+        26.0,
+        206.15528869628906,
+        0.699999988079071
+      ],
+      "collections": [
+        "PrimaryRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Progression_Startup"
+      },
+      "bounds": [
+        [
+          -12.611860275268555,
+          96.84703826904297,
+          14.649999618530273
+        ],
+        [
+          62.61186218261719,
+          303.1529541015625,
+          15.350000381469727
+        ]
+      ]
+    },
+    {
+      "name": "StartupRow_CrossStreet_00",
+      "type": "MESH",
+      "position": [
+        -460.0,
+        -340.0,
+        14.800000190734863
+      ],
+      "dimensions": [
+        14.000001907348633,
+        468.00006103515625,
+        0.699999988079071
+      ],
+      "collections": [
+        "SecondaryRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "StartupRow_CrossStreet"
+      },
+      "bounds": [
+        [
+          -694.0000610351562,
+          -347.0000305175781,
+          14.449999809265137
+        ],
+        [
+          -225.99996948242188,
+          -332.9999694824219,
+          15.15000057220459
+        ]
+      ]
+    },
+    {
+      "name": "Startup_Link_00",
+      "type": "MESH",
+      "position": [
+        -460.0,
+        -370.0,
+        15.0
+      ],
+      "dimensions": [
+        14.0,
+        60.0,
+        0.699999988079071
+      ],
+      "collections": [
+        "SecondaryRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Startup_Link"
+      },
+      "bounds": [
+        [
+          -467.0,
+          -400.0,
+          14.649999618530273
+        ],
+        [
+          -453.0,
+          -340.0,
+          15.350000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Founder_Local_Spine_00",
+      "type": "MESH",
+      "position": [
+        -875.0,
+        -955.0,
+        8.699999809265137
+      ],
+      "dimensions": [
+        10.0,
+        210.0,
+        0.699999988079071
+      ],
+      "collections": [
+        "LocalRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Founder_Local_Spine"
+      },
+      "bounds": [
+        [
+          -880.0,
+          -1060.0,
+          8.34999942779541
+        ],
+        [
+          -870.0,
+          -850.0,
+          9.050000190734863
+        ]
+      ]
+    },
+    {
+      "name": "Founder_Local_Spine_01",
+      "type": "MESH",
+      "position": [
+        -832.5,
+        -755.0,
+        8.850000381469727
+      ],
+      "dimensions": [
+        10.0,
+        208.1468048095703,
+        0.699999988079071
+      ],
+      "collections": [
+        "LocalRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Founder_Local_Spine"
+      },
+      "bounds": [
+        [
+          -879.5643310546875,
+          -852.0422973632812,
+          8.350000381469727
+        ],
+        [
+          -785.4356689453125,
+          -657.9577026367188,
+          9.350000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Founder_Local_Spine_02",
+      "type": "MESH",
+      "position": [
+        -750.0,
+        -625.0,
+        12.5
+      ],
+      "dimensions": [
+        10.0,
+        106.53168487548828,
+        0.6999999284744263
+      ],
+      "collections": [
+        "LocalRoads"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "Founder_Local_Spine"
+      },
+      "bounds": [
+        [
+          -793.309814453125,
+          -663.7780151367188,
+          8.650755882263184
+        ],
+        [
+          -706.690185546875,
+          -586.2219848632812,
+          16.3492431640625
+        ]
+      ]
+    },
+    {
+      "name": "AtlantisBridge_Main_00",
+      "type": "MESH",
+      "position": [
+        -660.0,
+        -540.0,
+        16.0
+      ],
+      "dimensions": [
+        26.0,
+        141.42135620117188,
+        0.699999988079071
+      ],
+      "collections": [
+        "Bridges"
+      ],
+      "hidden": false,
+      "props": {
+        "route": "AtlantisBridge_Main"
+      },
+      "bounds": [
+        [
+          -719.1923828125,
+          -599.1923828125,
+          15.649999618530273
+        ],
+        [
+          -600.8076171875,
+          -480.8076171875,
+          16.350000381469727
+        ]
+      ]
+    },
+    {
+      "name": "AtlantisBridge_Main_Pier_0.2",
+      "type": "MESH",
+      "position": [
+        -690.0,
+        -570.0,
+        3.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        26.0
+      ],
+      "collections": [
+        "Bridges"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -694.5,
+          -577.0,
+          -10.0
+        ],
+        [
+          -685.5,
+          -563.0,
+          16.0
+        ]
+      ]
+    },
+    {
+      "name": "AtlantisBridge_Main_Pier_0.5",
+      "type": "MESH",
+      "position": [
+        -660.0,
+        -540.0,
+        3.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        26.0
+      ],
+      "collections": [
+        "Bridges"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -664.5,
+          -547.0,
+          -10.0
+        ],
+        [
+          -655.5,
+          -533.0,
+          16.0
+        ]
+      ]
+    },
+    {
+      "name": "AtlantisBridge_Main_Pier_0.8",
+      "type": "MESH",
+      "position": [
+        -630.0,
+        -510.0,
+        3.0
+      ],
+      "dimensions": [
+        9.0,
+        14.0,
+        26.0
+      ],
+      "collections": [
+        "Bridges"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -634.5,
+          -517.0,
+          -10.0
+        ],
+        [
+          -625.5,
+          -503.0,
+          16.0
+        ]
+      ]
+    },
+    {
+      "name": "StartupRow_Boundary_0",
+      "type": "MESH",
+      "position": [
+        -460.0,
+        -540.0,
+        14.119999885559082
+      ],
+      "dimensions": [
+        520.0,
+        2.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "StartupRow"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -720.0,
+          -541.0,
+          14.045000076293945
+        ],
+        [
+          -200.0,
+          -539.0,
+          14.194999694824219
+        ]
+      ]
+    },
+    {
+      "name": "StartupRow_Boundary_1",
+      "type": "MESH",
+      "position": [
+        -460.0,
+        -140.0,
+        14.119999885559082
+      ],
+      "dimensions": [
+        520.0,
+        2.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "StartupRow"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -720.0,
+          -141.0,
+          14.045000076293945
+        ],
+        [
+          -200.0,
+          -139.0,
+          14.194999694824219
+        ]
+      ]
+    },
+    {
+      "name": "StartupRow_Boundary_2",
+      "type": "MESH",
+      "position": [
+        -720.0,
+        -340.0,
+        14.119999885559082
+      ],
+      "dimensions": [
+        2.0,
+        400.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "StartupRow"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -721.0,
+          -540.0,
+          14.045000076293945
+        ],
+        [
+          -719.0,
+          -140.0,
+          14.194999694824219
+        ]
+      ]
+    },
+    {
+      "name": "StartupRow_Boundary_3",
+      "type": "MESH",
+      "position": [
+        -200.0,
+        -340.0,
+        14.119999885559082
+      ],
+      "dimensions": [
+        2.0,
+        400.0,
+        0.15000000596046448
+      ],
+      "collections": [
+        "StartupRow"
+      ],
+      "hidden": false,
+      "props": {},
+      "bounds": [
+        [
+          -201.0,
+          -540.0,
+          14.045000076293945
+        ],
+        [
+          -199.0,
+          -140.0,
+          14.194999694824219
+        ]
+      ]
+    },
+    {
+      "name": "StartupRow_Block_000",
+      "type": "MESH",
+      "position": [
+        -678.4000244140625,
+        -424.0,
+        28.730897903442383
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        29.461793899536133
+      ],
+      "collections": [
+        "StartupRow"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "height_m": "29.46179394632864"
+      },
+      "bounds": [
+        [
+          -694.4000244140625,
+          -437.6000061035156,
+          14.000000953674316
+        ],
+        [
+          -662.4000244140625,
+          -410.3999938964844,
+          43.461795806884766
+        ]
+      ]
+    },
+    {
+      "name": "StartupRow_Block_001",
+      "type": "MESH",
+      "position": [
+        -569.2000122070312,
+        -256.0,
+        21.519729614257812
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        15.039458274841309
+      ],
+      "collections": [
+        "StartupRow"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "height_m": "15.039457906360465"
+      },
+      "bounds": [
+        [
+          -585.2000122070312,
+          -269.6000061035156,
+          14.0
+        ],
+        [
+          -553.2000122070312,
+          -242.39999389648438,
+          29.039459228515625
+        ]
+      ]
+    },
+    {
+      "name": "StartupRow_Block_002",
+      "type": "MESH",
+      "position": [
+        -569.2000122070312,
+        -172.0,
+        21.00757598876953
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        14.015152931213379
+      ],
+      "collections": [
+        "StartupRow"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "height_m": "14.015152990334798"
+      },
+      "bounds": [
+        [
+          -585.2000122070312,
+          -185.60000610351562,
+          14.0
+        ],
+        [
+          -553.2000122070312,
+          -158.39999389648438,
+          28.015151977539062
+        ]
+      ]
+    },
+    {
+      "name": "StartupRow_Block_003",
+      "type": "MESH",
+      "position": [
+        -460.0,
+        -508.0,
+        22.72488784790039
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        17.44977569580078
+      ],
+      "collections": [
+        "StartupRow"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "height_m": "17.449775869160348"
+      },
+      "bounds": [
+        [
+          -476.0,
+          -521.5999755859375,
+          14.0
+        ],
+        [
+          -444.0,
+          -494.3999938964844,
+          31.44977569580078
+        ]
+      ]
+    },
+    {
+      "name": "StartupRow_Block_004",
+      "type": "MESH",
+      "position": [
+        -350.79998779296875,
+        -508.0,
+        28.984699249267578
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        29.96940040588379
+      ],
+      "collections": [
+        "StartupRow"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "height_m": "29.96939994512625"
+      },
+      "bounds": [
+        [
+          -366.79998779296875,
+          -521.5999755859375,
+          13.999999046325684
+        ],
+        [
+          -334.79998779296875,
+          -494.3999938964844,
+          43.969398498535156
+        ]
+      ]
+    },
+    {
+      "name": "StartupRow_Block_005",
+      "type": "MESH",
+      "position": [
+        -350.79998779296875,
+        -424.0,
+        23.573265075683594
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        19.14653205871582
+      ],
+      "collections": [
+        "StartupRow"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "height_m": "19.146531616065452"
+      },
+      "bounds": [
+        [
+          -366.79998779296875,
+          -437.6000061035156,
+          13.999999046325684
+        ],
+        [
+          -334.79998779296875,
+          -410.3999938964844,
+          33.14653015136719
+        ]
+      ]
+    },
+    {
+      "name": "StartupRow_Block_006",
+      "type": "MESH",
+      "position": [
+        -241.60000610351562,
+        -508.0,
+        20.91471290588379
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        13.829424858093262
+      ],
+      "collections": [
+        "StartupRow"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "height_m": "13.829424611000846"
+      },
+      "bounds": [
+        [
+          -257.6000061035156,
+          -521.5999755859375,
+          14.0
+        ],
+        [
+          -225.60000610351562,
+          -494.3999938964844,
+          27.829425811767578
+        ]
+      ]
+    },
+    {
+      "name": "StartupRow_Block_007",
+      "type": "MESH",
+      "position": [
+        -241.60000610351562,
+        -172.0,
+        21.820941925048828
+      ],
+      "dimensions": [
+        32.0,
+        27.200000762939453,
+        15.641883850097656
+      ],
+      "collections": [
+        "StartupRow"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "height_m": "15.641884117079325"
+      },
+      "bounds": [
+        [
+          -257.6000061035156,
+          -185.60000610351562,
+          14.0
+        ],
+        [
+          -225.60000610351562,
+          -158.39999389648438,
+          29.641883850097656
+        ]
+      ]
+    },
+    {
+      "name": "FounderGarage_Slot_Parcel",
+      "type": "MESH",
+      "position": [
+        -875.0,
+        -1030.0,
+        8.300000190734863
+      ],
+      "dimensions": [
+        32.0,
+        38.0,
+        0.6000000238418579
+      ],
+      "collections": [
+        "LandmarkPlaceholders"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "FounderDistrict",
+        "slot_id": "FounderGarage_Slot"
+      },
+      "bounds": [
+        [
+          -891.0,
+          -1049.0,
+          8.0
+        ],
+        [
+          -859.0,
+          -1011.0,
+          8.600000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Startup_Block_A_Parcel",
+      "type": "MESH",
+      "position": [
+        -650.0,
+        -220.0,
+        14.300000190734863
+      ],
+      "dimensions": [
+        55.0,
+        45.0,
+        0.6000000238418579
+      ],
+      "collections": [
+        "LandmarkPlaceholders"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "slot_id": "Startup_Block_A"
+      },
+      "bounds": [
+        [
+          -677.5,
+          -242.5,
+          14.0
+        ],
+        [
+          -622.5,
+          -197.5,
+          14.600000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Startup_Block_A_Massing",
+      "type": "MESH",
+      "position": [
+        -650.0,
+        -220.0,
+        25.0
+      ],
+      "dimensions": [
+        35.75,
+        29.25,
+        22.0
+      ],
+      "collections": [
+        "LandmarkPlaceholders"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "slot_id": "Startup_Block_A"
+      },
+      "bounds": [
+        [
+          -667.875,
+          -234.625,
+          14.0
+        ],
+        [
+          -632.125,
+          -205.375,
+          36.0
+        ]
+      ]
+    },
+    {
+      "name": "Startup_Block_B_Parcel",
+      "type": "MESH",
+      "position": [
+        -500.0,
+        -220.0,
+        14.300000190734863
+      ],
+      "dimensions": [
+        55.0,
+        45.0,
+        0.6000000238418579
+      ],
+      "collections": [
+        "LandmarkPlaceholders"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "slot_id": "Startup_Block_B"
+      },
+      "bounds": [
+        [
+          -527.5,
+          -242.5,
+          14.0
+        ],
+        [
+          -472.5,
+          -197.5,
+          14.600000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Startup_Block_B_Massing",
+      "type": "MESH",
+      "position": [
+        -500.0,
+        -220.0,
+        27.5
+      ],
+      "dimensions": [
+        35.75,
+        29.25,
+        27.0
+      ],
+      "collections": [
+        "LandmarkPlaceholders"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "slot_id": "Startup_Block_B"
+      },
+      "bounds": [
+        [
+          -517.875,
+          -234.625,
+          14.0
+        ],
+        [
+          -482.125,
+          -205.375,
+          41.0
+        ]
+      ]
+    },
+    {
+      "name": "Startup_Block_C_Parcel",
+      "type": "MESH",
+      "position": [
+        -350.0,
+        -220.0,
+        14.300000190734863
+      ],
+      "dimensions": [
+        55.0,
+        45.0,
+        0.6000000238418579
+      ],
+      "collections": [
+        "LandmarkPlaceholders"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "slot_id": "Startup_Block_C"
+      },
+      "bounds": [
+        [
+          -377.5,
+          -242.5,
+          14.0
+        ],
+        [
+          -322.5,
+          -197.5,
+          14.600000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Startup_Block_C_Massing",
+      "type": "MESH",
+      "position": [
+        -350.0,
+        -220.0,
+        30.0
+      ],
+      "dimensions": [
+        35.75,
+        29.25,
+        32.0
+      ],
+      "collections": [
+        "LandmarkPlaceholders"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "slot_id": "Startup_Block_C"
+      },
+      "bounds": [
+        [
+          -367.875,
+          -234.625,
+          14.0
+        ],
+        [
+          -332.125,
+          -205.375,
+          46.0
+        ]
+      ]
+    },
+    {
+      "name": "Startup_Block_D_Parcel",
+      "type": "MESH",
+      "position": [
+        -290.0,
+        -430.0,
+        14.300000190734863
+      ],
+      "dimensions": [
+        55.0,
+        45.0,
+        0.6000000238418579
+      ],
+      "collections": [
+        "LandmarkPlaceholders"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "slot_id": "Startup_Block_D"
+      },
+      "bounds": [
+        [
+          -317.5,
+          -452.5,
+          14.0
+        ],
+        [
+          -262.5,
+          -407.5,
+          14.600000381469727
+        ]
+      ]
+    },
+    {
+      "name": "Startup_Block_D_Massing",
+      "type": "MESH",
+      "position": [
+        -290.0,
+        -430.0,
+        32.5
+      ],
+      "dimensions": [
+        35.75,
+        29.25,
+        37.0
+      ],
+      "collections": [
+        "LandmarkPlaceholders"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "slot_id": "Startup_Block_D"
+      },
+      "bounds": [
+        [
+          -307.875,
+          -444.625,
+          14.0
+        ],
+        [
+          -272.125,
+          -415.375,
+          51.0
+        ]
+      ]
+    },
+    {
+      "name": "RivalHQ_Slot_01_Parcel",
+      "type": "MESH",
+      "position": [
+        -610.0,
+        -360.0,
+        14.300000190734863
+      ],
+      "dimensions": [
+        52.0,
+        60.0,
+        0.6000000238418579
+      ],
+      "collections": [
+        "RivalHQPlaceholders"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "slot_id": "RivalHQ_Slot_01"
+      },
+      "bounds": [
+        [
+          -636.0,
+          -390.0,
+          14.0
+        ],
+        [
+          -584.0,
+          -330.0,
+          14.600000381469727
+        ]
+      ]
+    },
+    {
+      "name": "RivalHQ_Slot_01_Massing",
+      "type": "MESH",
+      "position": [
+        -610.0,
+        -360.0,
+        26.0
+      ],
+      "dimensions": [
+        33.79999923706055,
+        39.0,
+        24.0
+      ],
+      "collections": [
+        "RivalHQPlaceholders"
+      ],
+      "hidden": false,
+      "props": {
+        "district": "StartupRow",
+        "slot_id": "RivalHQ_Slot_01"
+      },
+      "bounds": [
+        [
+          -626.9000244140625,
+          -379.5,
+          14.0
+        ],
+        [
+          -593.0999755859375,
+          -340.5,
+          38.0
+        ]
+      ]
+    },
+    {
+      "name": "FounderGarage_Slot",
+      "type": "EMPTY",
+      "position": [
+        -875.0,
+        -1030.0,
+        8.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "collections": [
+        "Atlantis_Anchors"
+      ],
+      "hidden": false,
+      "props": {
+        "id": "FounderGarage_Slot",
+        "district": "FounderDistrict",
+        "origin": "<bpy id property array [3]>",
+        "rotation_degrees": "<bpy id property array [3]>",
+        "forward": "-Y (Blender); +Z after glTF conversion",
+        "footprint_m": "<bpy id property array [2]>",
+        "target_height_m": "<bpy id property array [2]>",
+        "max_bbox_m": "<bpy id property array [3]>",
+        "placeholder_height_m": "0",
+        "kind": "hero"
+      }
+    },
+    {
+      "name": "RivalHQ_Slot_01",
+      "type": "EMPTY",
+      "position": [
+        -610.0,
+        -360.0,
+        14.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "collections": [
+        "Atlantis_Anchors"
+      ],
+      "hidden": false,
+      "props": {
+        "id": "RivalHQ_Slot_01",
+        "district": "StartupRow",
+        "origin": "<bpy id property array [3]>",
+        "rotation_degrees": "<bpy id property array [3]>",
+        "forward": "-Y (Blender); +Z after glTF conversion",
+        "footprint_m": "<bpy id property array [2]>",
+        "target_height_m": "<bpy id property array [2]>",
+        "max_bbox_m": "<bpy id property array [3]>",
+        "placeholder_height_m": "24",
+        "kind": "RivalHQ_Small"
+      }
+    },
+    {
+      "name": "Startup_Block_A",
+      "type": "EMPTY",
+      "position": [
+        -650.0,
+        -220.0,
+        14.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "collections": [
+        "Atlantis_Anchors"
+      ],
+      "hidden": false,
+      "props": {
+        "id": "Startup_Block_A",
+        "district": "StartupRow",
+        "origin": "<bpy id property array [3]>",
+        "rotation_degrees": "<bpy id property array [3]>",
+        "forward": "-Y (Blender); +Z after glTF conversion",
+        "footprint_m": "<bpy id property array [2]>",
+        "target_height_m": "<bpy id property array [2]>",
+        "max_bbox_m": "<bpy id property array [3]>",
+        "placeholder_height_m": "22",
+        "kind": "module"
+      }
+    },
+    {
+      "name": "Startup_Block_B",
+      "type": "EMPTY",
+      "position": [
+        -500.0,
+        -220.0,
+        14.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "collections": [
+        "Atlantis_Anchors"
+      ],
+      "hidden": false,
+      "props": {
+        "id": "Startup_Block_B",
+        "district": "StartupRow",
+        "origin": "<bpy id property array [3]>",
+        "rotation_degrees": "<bpy id property array [3]>",
+        "forward": "-Y (Blender); +Z after glTF conversion",
+        "footprint_m": "<bpy id property array [2]>",
+        "target_height_m": "<bpy id property array [2]>",
+        "max_bbox_m": "<bpy id property array [3]>",
+        "placeholder_height_m": "27",
+        "kind": "module"
+      }
+    },
+    {
+      "name": "Startup_Block_C",
+      "type": "EMPTY",
+      "position": [
+        -350.0,
+        -220.0,
+        14.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "collections": [
+        "Atlantis_Anchors"
+      ],
+      "hidden": false,
+      "props": {
+        "id": "Startup_Block_C",
+        "district": "StartupRow",
+        "origin": "<bpy id property array [3]>",
+        "rotation_degrees": "<bpy id property array [3]>",
+        "forward": "-Y (Blender); +Z after glTF conversion",
+        "footprint_m": "<bpy id property array [2]>",
+        "target_height_m": "<bpy id property array [2]>",
+        "max_bbox_m": "<bpy id property array [3]>",
+        "placeholder_height_m": "32",
+        "kind": "module"
+      }
+    },
+    {
+      "name": "Startup_Block_D",
+      "type": "EMPTY",
+      "position": [
+        -290.0,
+        -430.0,
+        14.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "collections": [
+        "Atlantis_Anchors"
+      ],
+      "hidden": false,
+      "props": {
+        "id": "Startup_Block_D",
+        "district": "StartupRow",
+        "origin": "<bpy id property array [3]>",
+        "rotation_degrees": "<bpy id property array [3]>",
+        "forward": "-Y (Blender); +Z after glTF conversion",
+        "footprint_m": "<bpy id property array [2]>",
+        "target_height_m": "<bpy id property array [2]>",
+        "max_bbox_m": "<bpy id property array [3]>",
+        "placeholder_height_m": "37",
+        "kind": "module"
+      }
+    },
+    {
+      "name": "Startup_ToVenture",
+      "type": "CAMERA",
+      "position": [
+        -535.0,
+        -265.0,
+        30.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "collections": [
+        "Reference"
+      ],
+      "hidden": false,
+      "props": {}
+    },
+    {
+      "name": "StartupRow_Flashpoint",
+      "type": "CAMERA",
+      "position": [
+        -220.0,
+        -500.0,
+        35.0
+      ],
+      "dimensions": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "collections": [
+        "Reference"
+      ],
+      "hidden": false,
+      "props": {}
+    }
+  ],
+  "visible_meshes": 368,
+  "visible_triangles": 8824,
+  "all_meshes": 423,
+  "all_triangles_including_staging": 127071
+}

@@ -1,0 +1,1 @@
+Candidate1 rejected after source inspection: at160m uniform height, footprint123.30×138.69m exceeds60×42m; ornate fantasy crown, detached sign and oversized ground/podium. Source retained unchanged. Source mesh21204tri,29non-manifold edges,3RGBA4K maps (192MiB decoded). Requires a fundamentally slimmer architectural concept, not minor cleanup.

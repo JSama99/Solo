@@ -1,0 +1,168 @@
+{
+  "checks": {
+    "only_six_authorized_original_blocks_changed": true,
+    "both_locators_unchanged": true,
+    "district_boundaries_preserved": true,
+    "spire_unchanged": true,
+    "venture_hall_unchanged": true,
+    "geography_roads_bridges_and_cameras_preserved": true,
+    "two_hero_placeholders_disabled": true,
+    "source_staged": true,
+    "founder_and_startup_spire_sightlines": true,
+    "TechComTower_fits_slot": true,
+    "TechComTower_clean_geometry": true,
+    "TechComTower_clean_origin": true,
+    "TechComTower_unit_scales": true,
+    "TechComTower_display_targets": true,
+    "TechComTower_no_missing_textures": true,
+    "SignalTV_fits_slot": true,
+    "SignalTV_clean_geometry": true,
+    "SignalTV_clean_origin": true,
+    "SignalTV_unit_scales": true,
+    "SignalTV_display_targets": true,
+    "SignalTV_no_missing_textures": true,
+    "protected_188_files_unchanged": true,
+    "techcom_below_spire": true,
+    "signal_source_preserved": true
+  },
+  "exports": {
+    "TechComTower": {
+      "bytes": 46272,
+      "geometry": [
+        {
+          "name": "TechCom_Display_Main",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 48.60000193119049
+        },
+        {
+          "name": "TechCom_Ticker",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 19.440001544952423
+        },
+        {
+          "name": "TechComTower_Media_BlueGlazing",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 176938.5
+        },
+        {
+          "name": "TechComTower_Media_BrushedSilver",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 2991.5014352788894
+        },
+        {
+          "name": "TechComTower_Media_Graphite",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 3326.2585884593973
+        },
+        {
+          "name": "TechComTower_Media_LobbyLight",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 0.7199991989109549
+        },
+        {
+          "name": "TechComTower_Media_PearlConcrete",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 18088.0
+        }
+      ],
+      "bounds": [
+        [
+          -36.5,
+          -34.0,
+          0.0
+        ],
+        [
+          36.5,
+          34.0,
+          145.0
+        ]
+      ]
+    },
+    "SignalTV": {
+      "bytes": 41224,
+      "geometry": [
+        {
+          "name": "SignalTV_Display_Main",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 82.80000329017639
+        },
+        {
+          "name": "SignalTV_Display_Secondary",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 52.500002086162546
+        },
+        {
+          "name": "SignalTV_Media_BlueGlazing",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 75522.66666666666
+        },
+        {
+          "name": "SignalTV_Media_BrushedSilver",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 14751.364511594787
+        },
+        {
+          "name": "SignalTV_Media_Graphite",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 128.0000000000001
+        },
+        {
+          "name": "SignalTV_Media_LobbyLight",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 1.1200115967076272
+        },
+        {
+          "name": "SignalTV_Media_PearlConcrete",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 31408.000000000007
+        },
+        {
+          "name": "SignalTV_Ticker",
+          "nonmanifold": 0,
+          "zero_area": 0,
+          "volume": 27.300000083446452
+        }
+      ],
+      "bounds": [
+        [
+          -46.0,
+          -31.0,
+          0.0
+        ],
+        [
+          46.0,
+          31.0,
+          47.0
+        ]
+      ]
+    }
+  },
+  "changed_original_objects": [
+    "MediaDistrict_Block_004",
+    "MediaDistrict_Block_005",
+    "MediaDistrict_Block_006",
+    "MediaDistrict_Block_007",
+    "MediaDistrict_Block_008",
+    "MediaDistrict_Block_009"
+  ],
+  "changed_protected_files": [],
+  "sightlines": {
+    "Founder_To_City": true,
+    "TheSpire_StartupSightline": true
+  },
+  "district_triangles": 1504
+}

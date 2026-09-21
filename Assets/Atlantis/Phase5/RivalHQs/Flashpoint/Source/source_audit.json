@@ -1,0 +1,95 @@
+{
+  "filename": "Flashpoint_Higgsfield_Raw.glb",
+  "bytes": 3337236,
+  "dimensions": [
+    0.9810532331466675,
+    0.6186449527740479,
+    0.5564637184143066
+  ],
+  "bounds": [
+    [
+      -0.4897460639476776,
+      -0.3092833161354065,
+      -0.2783094048500061
+    ],
+    [
+      0.4913071393966675,
+      0.30936160683631897,
+      0.27815428376197815
+    ]
+  ],
+  "meshes": 1,
+  "triangles": 20950,
+  "materials": 1,
+  "textures": 3,
+  "objects": [
+    {
+      "name": "tripo_node_7c9d2102-79bf-48cd-8d4f-03bce08ec625",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parent": null,
+      "nonmanifold": 83,
+      "zero_area": 0,
+      "components": [
+        10254
+      ]
+    }
+  ],
+  "texture_details": [
+    {
+      "name": "Color_7c9d2102-79bf-48cd-8d4f-03bce08ec625",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "decoded_bytes": 67108864,
+      "packed": true
+    },
+    {
+      "name": "NormalGL_7c9d2102-79bf-48cd-8d4f-03bce08ec625",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "decoded_bytes": 67108864,
+      "packed": true
+    },
+    {
+      "name": "ORM_7c9d2102-79bf-48cd-8d4f-03bce08ec625",
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "channels": 4,
+      "decoded_bytes": 67108864,
+      "packed": true
+    }
+  ],
+  "hierarchy": [
+    {
+      "name": "tripo_node_7c9d2102-79bf-48cd-8d4f-03bce08ec625",
+      "type": "MESH",
+      "parent": null,
+      "origin": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

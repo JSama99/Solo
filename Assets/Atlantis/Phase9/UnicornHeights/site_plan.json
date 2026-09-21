@@ -1,0 +1,162 @@
+{
+  "bounds": [
+    510,
+    760,
+    1130,
+    1160
+  ],
+  "terrain_polygon": [
+    [
+      510,
+      720
+    ],
+    [
+      730,
+      640
+    ],
+    [
+      1080,
+      720
+    ],
+    [
+      1240,
+      1030
+    ],
+    [
+      1090,
+      1270
+    ],
+    [
+      580,
+      1210
+    ],
+    [
+      410,
+      970
+    ]
+  ],
+  "sites": [
+    {
+      "id": "Unicorn_Campus_01",
+      "position": [
+        620,
+        990,
+        85.6
+      ],
+      "width": 52,
+      "depth": 44,
+      "height": 112,
+      "typology": "Unicorn_CampusTower_A"
+    },
+    {
+      "id": "Unicorn_Campus_02",
+      "position": [
+        810,
+        1070,
+        85.6
+      ],
+      "width": 54,
+      "depth": 44,
+      "height": 124,
+      "typology": "Unicorn_CampusTower_B"
+    },
+    {
+      "id": "Unicorn_Campus_03",
+      "position": [
+        1030,
+        1040,
+        85.6
+      ],
+      "width": 64,
+      "depth": 48,
+      "height": 76,
+      "typology": "Unicorn_PremiumMidrise_A"
+    },
+    {
+      "id": "Unicorn_Campus_04",
+      "position": [
+        650,
+        860,
+        85.6
+      ],
+      "width": 78,
+      "depth": 44,
+      "height": 44,
+      "typology": "Unicorn_ResearchCampus_A"
+    },
+    {
+      "id": "Unicorn_Campus_05",
+      "position": [
+        760,
+        950,
+        85.6
+      ],
+      "width": 60,
+      "depth": 42,
+      "height": 48,
+      "typology": "Unicorn_ExecutivePavilion_A"
+    },
+    {
+      "id": "Unicorn_Campus_06",
+      "position": [
+        940,
+        1120,
+        85.6
+      ],
+      "width": 64,
+      "depth": 38,
+      "height": 64,
+      "typology": "Unicorn_PrivateOffice_A"
+    },
+    {
+      "id": "Unicorn_Campus_07",
+      "position": [
+        1090,
+        950,
+        85.6
+      ],
+      "width": 48,
+      "depth": 40,
+      "height": 40,
+      "typology": "Unicorn_LandscapePodium_A"
+    },
+    {
+      "id": "Unicorn_Campus_08",
+      "position": [
+        560,
+        1100,
+        85.6
+      ],
+      "width": 52,
+      "depth": 44,
+      "height": 72,
+      "typology": "Unicorn_CampusTower_A"
+    }
+  ],
+  "public_spaces": [
+    {
+      "name": "Unicorn_FounderPlaza_Surface",
+      "center": [
+        850,
+        850,
+        85.6
+      ],
+      "size": [
+        80,
+        70
+      ]
+    },
+    {
+      "name": "Unicorn_ScenicOverlook_Surface",
+      "center": [
+        560,
+        825,
+        85.6
+      ],
+      "size": [
+        44,
+        32
+      ]
+    }
+  ]
+}

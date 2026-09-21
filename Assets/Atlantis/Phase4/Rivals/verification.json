@@ -1,0 +1,320 @@
+{
+  "checks": {
+    "all_original_geometry_transforms_properties_preserved": true,
+    "three_canonical_ids": true,
+    "one_distinct_slot_each": true,
+    "PallasAI_geometry_valid": true,
+    "PallasAI_fits_parcel": true,
+    "PallasAI_height": true,
+    "PallasAI_locator_traceable": true,
+    "PallasAI_signage": true,
+    "PallasAI_growth_road_clearance": true,
+    "NorthwindLabs_geometry_valid": true,
+    "NorthwindLabs_fits_parcel": true,
+    "NorthwindLabs_height": true,
+    "NorthwindLabs_locator_traceable": true,
+    "NorthwindLabs_signage": true,
+    "NorthwindLabs_growth_road_clearance": true,
+    "Flashpoint_geometry_valid": true,
+    "Flashpoint_fits_parcel": true,
+    "Flashpoint_height": true,
+    "Flashpoint_locator_traceable": true,
+    "Flashpoint_signage": true,
+    "Flashpoint_growth_road_clearance": true,
+    "all_protected_files_unchanged": true,
+    "founder_spire_crown_preserved": true,
+    "startup_spire_crown_preserved": true,
+    "all_six_established_spire_views_not_worsened": true,
+    "all_growth_envelopes_clear_neighbor_blocks": true,
+    "review_glb_reimport_preserves_world_positions": true
+  },
+  "metrics": {
+    "PallasAI": {
+      "dimensions": [
+        60.0,
+        42.0,
+        160.0
+      ],
+      "bounds": [
+        [
+          190.0,
+          279.0,
+          14.0
+        ],
+        [
+          250.0,
+          321.0,
+          174.0
+        ]
+      ],
+      "triangles": 128,
+      "meshes": 10,
+      "materials": 4,
+      "growth_road_edge_clearance": 1.0,
+      "nearest_rival": {
+        "name": "Northwind Labs",
+        "distance": 388.329756778952
+      },
+      "spire_distance": 208.08652046684813
+    },
+    "NorthwindLabs": {
+      "dimensions": [
+        58.0,
+        52.0,
+        115.0
+      ],
+      "bounds": [
+        [
+          -129.0,
+          494.0,
+          14.0
+        ],
+        [
+          -71.0,
+          546.0,
+          129.0
+        ]
+      ],
+      "triangles": 216,
+      "meshes": 18,
+      "materials": 4,
+      "growth_road_edge_clearance": 19.27973064381132,
+      "nearest_rival": {
+        "name": "Pallas AI",
+        "distance": 388.329756778952
+      },
+      "spire_distance": 180.27756377319946
+    },
+    "Flashpoint": {
+      "dimensions": [
+        40.0,
+        32.0,
+        75.0
+      ],
+      "bounds": [
+        [
+          410.0,
+          -256.0,
+          14.0
+        ],
+        [
+          450.0,
+          -224.0,
+          89.0
+        ]
+      ],
+      "triangles": 136,
+      "meshes": 10,
+      "materials": 4,
+      "growth_road_edge_clearance": 0.9820498738451153,
+      "nearest_rival": {
+        "name": "Pallas AI",
+        "distance": 579.3962374748389
+      },
+      "spire_distance": 761.5773105863908
+    }
+  },
+  "visibility": {
+    "Founder District": {
+      "Pallas AI": {
+        "rating": "Partial",
+        "visible_samples": 3,
+        "total_samples": 12,
+        "camera": "Founder_RivalSkyline"
+      },
+      "Northwind Labs": {
+        "rating": "Strong",
+        "visible_samples": 6,
+        "total_samples": 12,
+        "camera": "Founder_RivalSkyline"
+      },
+      "Flashpoint": {
+        "rating": "Strong",
+        "visible_samples": 12,
+        "total_samples": 12,
+        "camera": "Founder_RivalSkyline"
+      }
+    },
+    "Startup Row": {
+      "Pallas AI": {
+        "rating": "Hidden",
+        "visible_samples": 0,
+        "total_samples": 12,
+        "camera": "StartupRow_Flashpoint"
+      },
+      "Northwind Labs": {
+        "rating": "Hidden",
+        "visible_samples": 0,
+        "total_samples": 12,
+        "camera": "StartupRow_Flashpoint"
+      },
+      "Flashpoint": {
+        "rating": "Strong",
+        "visible_samples": 12,
+        "total_samples": 12,
+        "camera": "StartupRow_Flashpoint"
+      }
+    },
+    "Venture District": {
+      "Pallas AI": {
+        "rating": "Strong",
+        "visible_samples": 12,
+        "total_samples": 12,
+        "camera": "Venture_Pallas"
+      },
+      "Northwind Labs": {
+        "rating": "Hidden",
+        "visible_samples": 0,
+        "total_samples": 12,
+        "camera": "Venture_Pallas"
+      },
+      "Flashpoint": {
+        "rating": "Hidden",
+        "visible_samples": 0,
+        "total_samples": 12,
+        "camera": "Venture_Pallas"
+      }
+    },
+    "Tech Core": {
+      "Pallas AI": {
+        "rating": "Strong",
+        "visible_samples": 12,
+        "total_samples": 12,
+        "camera": "TechCore_Rivals_Aerial"
+      },
+      "Northwind Labs": {
+        "rating": "Strong",
+        "visible_samples": 10,
+        "total_samples": 12,
+        "camera": "TechCore_Rivals_Aerial"
+      },
+      "Flashpoint": {
+        "rating": "Hidden",
+        "visible_samples": 0,
+        "total_samples": 12,
+        "camera": "TechCore_Rivals_Aerial"
+      }
+    },
+    "Media District": {
+      "Pallas AI": {
+        "rating": "Strong",
+        "visible_samples": 12,
+        "total_samples": 12,
+        "camera": "Media_RivalSkyline"
+      },
+      "Northwind Labs": {
+        "rating": "Hidden",
+        "visible_samples": 0,
+        "total_samples": 12,
+        "camera": "Media_RivalSkyline"
+      },
+      "Flashpoint": {
+        "rating": "Hidden",
+        "visible_samples": 0,
+        "total_samples": 12,
+        "camera": "Media_RivalSkyline"
+      }
+    },
+    "Unicorn Heights": {
+      "Pallas AI": {
+        "rating": "Strong",
+        "visible_samples": 9,
+        "total_samples": 12,
+        "camera": "UnicornHeights_View"
+      },
+      "Northwind Labs": {
+        "rating": "Strong",
+        "visible_samples": 12,
+        "total_samples": 12,
+        "camera": "UnicornHeights_View"
+      },
+      "Flashpoint": {
+        "rating": "Strong",
+        "visible_samples": 12,
+        "total_samples": 12,
+        "camera": "UnicornHeights_View"
+      }
+    }
+  },
+  "spire_crown_visibility": {
+    "Founder_To_City": true,
+    "TheSpire_StartupSightline": true,
+    "VentureHall_ToSpire": false,
+    "MediaDistrict_ToSpire": false,
+    "TechCore_Skyline": true,
+    "UnicornHeights_View": false
+  },
+  "changed_original_objects": [],
+  "changed_protected_files": [],
+  "protected_file_count": 228,
+  "spire_crown_surface_samples": {
+    "Phase3": {
+      "Founder_To_City": 36,
+      "TheSpire_StartupSightline": 38,
+      "VentureHall_ToSpire": 43,
+      "MediaDistrict_ToSpire": 39,
+      "TechCore_Skyline": 39,
+      "UnicornHeights_View": 45
+    },
+    "Phase4": {
+      "Founder_To_City": 36,
+      "TheSpire_StartupSightline": 38,
+      "VentureHall_ToSpire": 43,
+      "MediaDistrict_ToSpire": 39,
+      "TechCore_Skyline": 39,
+      "UnicornHeights_View": 45
+    }
+  },
+  "growth_neighbor_clearance": {
+    "PallasAI": [
+      75.79998779296875,
+      "TechCore_Podium_016"
+    ],
+    "NorthwindLabs": [
+      57.0,
+      "TechCore_Podium_006"
+    ],
+    "Flashpoint": [
+      39.0,
+      "CommerceDistrict_Podium_012"
+    ]
+  },
+  "review_glb_bounds": {
+    "PallasAI": [
+      [
+        190.0,
+        279.0,
+        14.0
+      ],
+      [
+        250.0,
+        321.0,
+        174.0
+      ]
+    ],
+    "NorthwindLabs": [
+      [
+        -129.0,
+        494.0,
+        14.0
+      ],
+      [
+        -71.0,
+        546.0,
+        129.0
+      ]
+    ],
+    "Flashpoint": [
+      [
+        410.0,
+        -256.0,
+        14.0
+      ],
+      [
+        450.0,
+        -224.0,
+        89.0
+      ]
+    ]
+  }
+}

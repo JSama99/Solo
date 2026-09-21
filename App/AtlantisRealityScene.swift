@@ -1,4 +1,3 @@
-#if DEBUG
 import RealityKit
 import SwiftUI
 import Observation
@@ -950,6 +949,7 @@ final class AtlantisRealityWorld {
   var locomotion: AtlantisLocomotionState = .standing
   var isWalking: Bool { locomotion == .walking }
   var walkInput: Float = 0
+  var turnInput: Float = 0
   private(set) var movementStatus = "Standing"
   @ObservationIgnored private(set) var heading: Float = 0
   @ObservationIgnored private var subscription: EventSubscription?
@@ -959,6 +959,11 @@ final class AtlantisRealityWorld {
   @ObservationIgnored private var frameCounter = 0
   @ObservationIgnored private let createdAt = ContinuousClock.now
   @ObservationIgnored private let grounding: AtlantisGrounding
+  @ObservationIgnored private var founderRig: FounderPresentationRig?
+  @ObservationIgnored private var founderLocomotion: FounderLocomotionController?
+  @ObservationIgnored private var founderReduceMotion = false
+  @ObservationIgnored private var previousFounderPosition = SIMD3<Float>.zero
+  var hasFounderPresentation: Bool { founderRig != nil }
 
   init(manifest: AtlantisAssetManifest) {
     self.manifest=manifest;loader=AtlantisDistrictLoader(manifest:manifest);grounding=AtlantisGrounding(traversal:manifest.traversal);streaming=AtlantisStreamingCoordinator(loader:loader,manifest:manifest)
@@ -1003,7 +1008,25 @@ final class AtlantisRealityWorld {
   func subscribe(_ install: (@escaping (SceneEvents.Update)->Void)->EventSubscription) {
     subscription?.cancel();subscription=install { [weak self] event in self?.update(delta:event.deltaTime) }
   }
-  func stop() { subscription?.cancel();subscription=nil;benchmarkTask?.cancel();benchmarkTask=nil;walkInput=0;locomotion = .standing;loader.unloadAll() }
+  func stop() { subscription?.cancel();subscription=nil;benchmarkTask?.cancel();benchmarkTask=nil;walkInput=0;turnInput=0;locomotion = .standing;loader.unloadAll() }
+  func prepareFounderGarageExterior() async -> Bool {
+    let contextLoad = loader.loadContext()
+    let founderLoad = loader.load(.founderDistrict)
+    await contextLoad?.value
+    await founderLoad?.value
+    guard loader.contextState == .loaded, loader.states[.founderDistrict] == .loaded else {
+      error = "Context: \(loader.contextState.label); Founder: \(loader.states[.founderDistrict]?.label ?? "unknown")"
+      return false
+    }
+    refreshInteractionCandidate()
+    benchmarkStatus = "Founder ready"
+    return true
+  }
+  func prepareTraversalSupport() async {
+    streaming.prefetch(.startupRow)
+    await loader.loadSupport("TechUnicornBridge")?.value
+    await loader.loadSupport("SpireFarProxy")?.value
+  }
   func start() async {
     let startupStart = ContinuousClock.now
     print("Atlantis startup: loading context")
@@ -1055,8 +1078,52 @@ final class AtlantisRealityWorld {
       writeReport();benchmarkStatus="complete"
     }
   }
+  func enterFromFounderGarage(_ handoff: FounderAtlantisTraversalHandoff) {
+    let position = AtlantisSpatialContract.fromFounderGarage(handoff.garagePosition)
+    let horizontalFacing = SIMD2<Float>(handoff.facingDirection.x, handoff.facingDirection.z)
+    let facing = simd_length_squared(horizontalFacing) > 0.000_001
+      ? simd_normalize(horizontalFacing)
+      : SIMD2<Float>(0, 1)
+    playerRoot.position = position
+    heading = atan2(-facing.x, -facing.y)
+    bodyHeadingRoot.orientation = simd_quatf(angle: heading, axis: [0, 1, 0])
+    applyThirdPersonCamera()
+    locomotion = .walking
+    walkInput = 0
+    turnInput = 0
+    installCollision()
+    movementStatus = String(format: "Garage handoff · %.1f, %.2f, %.1f", position.x, position.y, position.z)
+    refreshInteractionCandidate()
+  }
+  func installFounderPresentation(
+    rig: FounderPresentationRig,
+    locomotion: FounderLocomotionController,
+    reduceMotion: Bool
+  ) {
+    founderRig?.anchor.removeFromParent()
+    founderRig = rig
+    founderLocomotion = locomotion
+    founderReduceMotion = reduceMotion
+    previousFounderPosition = playerRoot.position
+    root.addChild(rig.anchor)
+    rig.anchor.isEnabled = true
+    applyThirdPersonCamera()
+    updateFounderPresentation(delta: FounderGarageCameraConfiguration.fixedStep)
+  }
+  func removeFounderPresentation() {
+    founderRig?.anchor.removeFromParent()
+    founderRig = nil
+    founderLocomotion = nil
+  }
+  private func applyThirdPersonCamera() {
+    cameraRig.transform = .identity
+    camera.transform = .identity
+    let position = SIMD3<Float>(0.72, 1.72, 2.35)
+    camera.look(at: [0, 1.05, 0], from: position, relativeTo: bodyHeadingRoot)
+    camera.camera.fieldOfViewInDegrees = 58
+  }
   func selectCamera(_ value: AtlantisBenchmarkCamera) {
-    selectedCamera=value;locomotion = .standing;walkInput=0
+    selectedCamera=value;locomotion = .standing;walkInput=0;turnInput=0
     let r=value.recipe;playerRoot.position=r.position-[0,AtlantisSpatialContract.eyeHeight,0];cameraRig.transform = .identity;camera.transform = .identity
     camera.look(at:r.target,from:r.position,relativeTo:nil)
     let orientation=camera.orientation(relativeTo:nil);let forward=simd_normalize(r.target-r.position);heading=atan2(-forward.x,-forward.z)
@@ -1065,7 +1132,7 @@ final class AtlantisRealityWorld {
   func selectLivingWorldCamera(_ district: AtlantisDistrict) {
     guard let center=livingWorld.center(district:district) else{return}
     let target=center+[0,0.8,0],position=center+[12,2.5,32]
-    locomotion = .standing;walkInput=0;playerRoot.position=position-[0,AtlantisSpatialContract.eyeHeight,0];cameraRig.transform = .identity;camera.transform = .identity
+    locomotion = .standing;walkInput=0;turnInput=0;playerRoot.position=position-[0,AtlantisSpatialContract.eyeHeight,0];cameraRig.transform = .identity;camera.transform = .identity
     camera.look(at:target,from:position,relativeTo:nil);let orientation=camera.orientation(relativeTo:nil),forward=simd_normalize(target-position)
     heading=atan2(-forward.x,-forward.z);bodyHeadingRoot.orientation=simd_quatf(angle:heading,axis:[0,1,0]);cameraRig.orientation=bodyHeadingRoot.orientation.inverse*orientation;camera.orientation = .init();camera.position=[0,AtlantisSpatialContract.eyeHeight,0];camera.camera.fieldOfViewInDegrees=58;refreshInteractionCandidate()
   }
@@ -1084,8 +1151,13 @@ final class AtlantisRealityWorld {
   }
   var farLandmarkState: String { loader.supportEntity(named:"SpireFarProxy")?.isEnabled == true ? "Spire proxy" : "Spire full" }
   func toggleWalk() {
-    locomotion = isWalking ? .standing : .walking;walkInput=0
+    locomotion = isWalking ? .standing : .walking;walkInput=0;turnInput=0
     if isWalking { bodyHeadingRoot.orientation=simd_quatf(angle:heading,axis:[0,1,0]);installCollision() }
+  }
+  func setMovementIntent(forward: Float, turn: Float) {
+    if !isWalking { locomotion = .walking; installCollision() }
+    walkInput = max(-1, min(1, forward))
+    turnInput = max(-1, min(1, turn))
   }
   func turn(_ radians: Float) { heading += radians;bodyHeadingRoot.orientation=simd_quatf(angle:heading,axis:[0,1,0]) }
   func move(input: Float, delta: Double) {
@@ -1108,7 +1180,37 @@ final class AtlantisRealityWorld {
     else if isPresentingNamedEncounter {livingDirector.namedEncounters.advance(delta:delta)}
     frameCounter += 1
     if frameCounter % 30 == 0 {let value=AtlantisMemory.footprintMB();if value>report.sampledPeakMemoryMB {report.sampledPeakMemoryMB=value};refreshInteractionCandidate()}
-    if isWalking {move(input:walkInput,delta:delta)}
+    if isWalking {
+      let step = Float(min(max(delta, 0), 0.1))
+      if abs(turnInput) > 0.0001 { turn(turnInput * 1.8 * step) }
+      move(input:walkInput,delta:delta)
+    }
+    updateFounderPresentation(delta: Float(min(max(delta, 0), 0.1)))
+  }
+  private func updateFounderPresentation(delta: Float) {
+    guard let founderLocomotion else { return }
+    let dt = max(delta, 0.000_001)
+    let displacement = playerRoot.position - previousFounderPosition
+    let horizontalVelocity = SIMD2<Float>(displacement.x / dt, displacement.z / dt)
+    let facing = SIMD3<Float>(-sin(heading), 0, -cos(heading))
+    let magnitude = simd_length(horizontalVelocity)
+    founderLocomotion.update(
+      spatial: FounderCameraSpatialState(
+        position: playerRoot.position,
+        facingDirection: facing,
+        horizontalVelocity: horizontalVelocity,
+        movementMagnitude: magnitude,
+        stance: .standing,
+        navigationMode: .walking,
+        normalizedLocomotionIntent: magnitude > 0.0001 ? simd_normalize(horizontalVelocity) : nil,
+        stepPhase: nil
+      ),
+      collisionBlocked: false,
+      firstPerson: false,
+      reduceMotion: founderReduceMotion,
+      deltaTime: TimeInterval(dt)
+    )
+    previousFounderPosition = playerRoot.position
   }
   private func elapsed(since start: ContinuousClock.Instant) -> Double {
     let duration = start.duration(to: .now).components
@@ -1122,8 +1224,8 @@ final class AtlantisRealityWorld {
     }
     report.collisionEntityCount=collisionRoot.children.count
   }
-  func unload(_ district: AtlantisDistrict) {_=streaming.requestUnload(district);collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;syncSpireSwap()}
-  func unloadAll() {loader.unloadAll();for district in AtlantisDistrict.allCases{livingDirector.districtDidUnload(district)};collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;activeInteractionID=nil;activeNamedNPCID=nil;activeNamedEncounterID=nil;interactionReturnContext=nil;streaming.setFrozen(false)}
+  func unload(_ district: AtlantisDistrict) {_=streaming.requestUnload(district);collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;turnInput=0;syncSpireSwap()}
+  func unloadAll() {loader.unloadAll();for district in AtlantisDistrict.allCases{livingDirector.districtDidUnload(district)};collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;turnInput=0;activeInteractionID=nil;activeNamedNPCID=nil;activeNamedEncounterID=nil;interactionReturnContext=nil;streaming.setFrozen(false)}
 
   var activeInteraction: AtlantisInteractionTarget? {activeInteractionID.flatMap(interactionRegistry.target(id:))}
   var interactionPrompt: String {
@@ -1155,12 +1257,12 @@ final class AtlantisRealityWorld {
     if let npcID=activeNamedNPCID,let encounterID=activeNamedEncounterID,
        livingDirector.namedEncounters.begin(npcID:npcID,encounterID:encounterID,founderPosition:playerRoot.position) != nil {
       interactionReturnContext = .init(targetID:"atlantis.namedNPC.\(npcID)",position:playerRoot.position,heading:heading,phase:phase,previous:streaming.previous,current:streaming.current,next:streaming.next,residents:streaming.residents)
-      locomotion = .standing;walkInput=0;streaming.setFrozen(true);interactionStatus="Talking with named NPC"
+      locomotion = .standing;walkInput=0;turnInput=0;streaming.setFrozen(true);interactionStatus="Talking with named NPC"
       return .talkNamedNPC(npcID:npcID)
     }
     guard let target=activeInteraction,target.entity != nil else {interactionStatus="Interaction unavailable";return nil}
     interactionReturnContext = .init(targetID:target.definition.id,position:playerRoot.position,heading:heading,phase:phase,previous:streaming.previous,current:streaming.current,next:streaming.next,residents:streaming.residents)
-    locomotion = .standing;walkInput=0;streaming.setFrozen(true);interactionStatus="Opening \(target.definition.accessibilityLabel)"
+    locomotion = .standing;walkInput=0;turnInput=0;streaming.setFrozen(true);interactionStatus="Opening \(target.definition.accessibilityLabel)"
     return target.definition.intent
   }
 
@@ -1498,4 +1600,3 @@ final class AtlantisRealityWorld {
     } catch {self.error="Benchmark report: \(error.localizedDescription)"}
   }
 }
-#endif

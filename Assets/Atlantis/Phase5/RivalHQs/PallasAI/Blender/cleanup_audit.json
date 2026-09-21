@@ -1,0 +1,56 @@
+{
+  "geometry": [
+    {
+      "name": "PallasAI_TowerRetopology",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 162989.3333333333
+    },
+    {
+      "name": "PallasAI_PodiumStone",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 12607.999999999995
+    },
+    {
+      "name": "PallasAI_PodiumGlass",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 27216.0
+    },
+    {
+      "name": "PallasAI_Bronze",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 9920.589883956993
+    },
+    {
+      "name": "PallasAI_ArchitecturalGlow",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 0.4800009918180879
+    },
+    {
+      "name": "PallasAI_Signage_Main.001",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 6.0
+    },
+    {
+      "name": "PallasAI_LobbyDisplay",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 3.75
+    },
+    {
+      "name": "PallasAI_CrownMark",
+      "nonmanifold": 0,
+      "zero_area": 0,
+      "volume": 2.7000001072883606
+    }
+  ],
+  "source_tower_uniform_scale": 205.95774924713086,
+  "source_rotation_z_degrees": 90,
+  "source_cut_z": -0.2,
+  "authored_podium_height": 18
+}

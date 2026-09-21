@@ -1,0 +1,304 @@
+{
+  "assets": {
+    "TechComTower": {
+      "origin": [
+        835.0,
+        220.0,
+        14.0
+      ],
+      "dimensions": [
+        73.0,
+        68.0,
+        145.0
+      ],
+      "bounds": [
+        [
+          798.5,
+          186.0,
+          14.0
+        ],
+        [
+          871.5,
+          254.0,
+          159.0
+        ]
+      ],
+      "triangles": 556,
+      "mesh_count": 7,
+      "materials": [
+        "Media_BlueGlazing",
+        "Media_BrushedSilver",
+        "Media_Graphite",
+        "Media_LobbyLight",
+        "Media_PearlConcrete",
+        "TechCom_Display_Main",
+        "TechCom_Ticker"
+      ],
+      "textures": 0
+    },
+    "SignalTV": {
+      "origin": [
+        860.0,
+        460.0,
+        14.0
+      ],
+      "dimensions": [
+        92.0,
+        62.0,
+        47.0
+      ],
+      "bounds": [
+        [
+          814.0,
+          429.0,
+          14.0
+        ],
+        [
+          906.0,
+          491.0,
+          61.0
+        ]
+      ],
+      "triangles": 480,
+      "mesh_count": 8,
+      "materials": [
+        "Media_BlueGlazing",
+        "Media_BrushedSilver",
+        "Media_Graphite",
+        "Media_LobbyLight",
+        "Media_PearlConcrete",
+        "SignalTV_Display_Main",
+        "SignalTV_Display_Secondary",
+        "SignalTV_Ticker"
+      ],
+      "textures": 0
+    }
+  },
+  "support_changes": {
+    "MediaDistrict_Block_004": {
+      "before_position": [
+        851.7999877929688,
+        144.39999389648438,
+        48.41495132446289
+      ],
+      "before_dimensions": [
+        32.0,
+        27.200000762939453,
+        68.82990264892578
+      ],
+      "after_dimensions": [
+        28,
+        25,
+        28
+      ],
+      "after_position": [
+        790,
+        145,
+        28.0
+      ]
+    },
+    "MediaDistrict_Block_005": {
+      "before_position": [
+        851.7999877929688,
+        385.20001220703125,
+        41.64564895629883
+      ],
+      "before_dimensions": [
+        32.0,
+        27.200000762939453,
+        55.291297912597656
+      ],
+      "after_dimensions": [
+        28,
+        32,
+        24
+      ],
+      "after_position": [
+        790,
+        400,
+        26.0
+      ]
+    },
+    "MediaDistrict_Block_006": {
+      "before_position": [
+        955.4000244140625,
+        144.39999389648438,
+        57.440250396728516
+      ],
+      "before_dimensions": [
+        32.0,
+        27.200000762939453,
+        86.88050079345703
+      ],
+      "after_dimensions": [
+        32,
+        28,
+        35
+      ],
+      "after_position": [
+        945,
+        150,
+        31.5
+      ]
+    },
+    "MediaDistrict_Block_007": {
+      "before_position": [
+        955.4000244140625,
+        264.79998779296875,
+        38.95102310180664
+      ],
+      "before_dimensions": [
+        32.0,
+        27.200000762939453,
+        49.90204620361328
+      ],
+      "after_dimensions": [
+        36,
+        28,
+        28
+      ],
+      "after_position": [
+        945,
+        260,
+        28.0
+      ]
+    },
+    "MediaDistrict_Block_008": {
+      "before_position": [
+        955.4000244140625,
+        385.20001220703125,
+        53.02440643310547
+      ],
+      "before_dimensions": [
+        32.0,
+        27.200000762939453,
+        78.04881286621094
+      ],
+      "after_dimensions": [
+        28,
+        24,
+        20
+      ],
+      "after_position": [
+        950,
+        445,
+        24.0
+      ]
+    },
+    "MediaDistrict_Block_009": {
+      "before_position": [
+        955.4000244140625,
+        505.6000061035156,
+        46.73627853393555
+      ],
+      "before_dimensions": [
+        32.0,
+        27.200000762939453,
+        65.4725570678711
+      ],
+      "after_dimensions": [
+        38,
+        26,
+        32
+      ],
+      "after_position": [
+        945,
+        515,
+        30.0
+      ]
+    }
+  },
+  "public_spaces": [
+    {
+      "name": "TechCom_EntryWalk",
+      "position": [
+        835,
+        183,
+        14.55
+      ],
+      "dimensions": [
+        22,
+        6,
+        0.3
+      ]
+    },
+    {
+      "name": "SignalTV_EntryWalk",
+      "position": [
+        860,
+        428,
+        14.55
+      ],
+      "dimensions": [
+        36,
+        2,
+        0.3
+      ]
+    },
+    {
+      "name": "TechCom_Forecourt",
+      "position": [
+        840,
+        165,
+        14.55
+      ],
+      "dimensions": [
+        68,
+        30,
+        0.3
+      ]
+    },
+    {
+      "name": "SignalTV_BroadcastPlaza",
+      "position": [
+        859,
+        395,
+        14.55
+      ],
+      "dimensions": [
+        90,
+        64,
+        0.3
+      ]
+    },
+    {
+      "name": "Media_EsplanadeSouth",
+      "position": [
+        978,
+        220,
+        14.55
+      ],
+      "dimensions": [
+        10,
+        176,
+        0.3
+      ]
+    },
+    {
+      "name": "Media_EsplanadeNorth",
+      "position": [
+        978,
+        429,
+        14.55
+      ],
+      "dimensions": [
+        10,
+        190,
+        0.3
+      ]
+    },
+    {
+      "name": "Broadcast_WaterfrontWalk",
+      "position": [
+        935,
+        414,
+        14.55
+      ],
+      "dimensions": [
+        70,
+        10,
+        0.3
+      ]
+    }
+  ]
+}

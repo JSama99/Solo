@@ -1,40 +1,190 @@
-#if DEBUG
 import RealityKit
 import SwiftUI
 
+@MainActor
 struct AtlantisRealityView: View {
   @State private var world: AtlantisRealityWorld?
   @State private var failure: String?
-  @State private var store = GameStore()
-  @State private var presentation = PresentationCoordinator()
+  var store: GameStore
+  var presentation: PresentationCoordinator
+  var ingress: FounderAtlantisTraversalHandoff?
+  var onReturnToGarage: (() -> Void)?
   @State private var route: AtlantisCanonicalRoute?
   @Environment(SubscriptionStore.self) private var subscriptions
   @Environment(FounderProgressionStore.self) private var progression
   @Environment(AchievementStore.self) private var achievements
   private var worldSignals: AtlantisWorldSignalSnapshot { .read(store) }
+
+  init() {
+    self.init(store: GameStore(), presentation: PresentationCoordinator())
+  }
+
+  init(
+    store: GameStore,
+    presentation: PresentationCoordinator,
+    ingress: FounderAtlantisTraversalHandoff? = nil,
+    onReturnToGarage: (() -> Void)? = nil
+  ) {
+    self.store = store
+    self.presentation = presentation
+    self.ingress = ingress
+    self.onReturnToGarage = onReturnToGarage
+  }
+
   var body: some View {
     Group {
-      if let world { AtlantisDebugContent(world:world,onActivate:{ intent in open(intent,world:world) }) }
+      if let world {
+        if ingress != nil {
+          AtlantisTraversalContent(world: world, onActivate: { intent in open(intent, world: world) })
+        } else {
+          AtlantisDebugContent(world:world,onActivate:{ intent in open(intent,world:world) })
+        }
+      }
       else if let failure { ContentUnavailableView("Atlantis unavailable",systemImage:"exclamationmark.triangle",description:Text(failure)) }
       else { ProgressView("Reading Atlantis manifest") }
     }
     .task {
       guard world == nil else{return}
-      do {world=AtlantisRealityWorld(manifest:try .load());world?.livingDirector.receive(worldSignals)} catch {failure=error.localizedDescription}
+      do {
+        let created = AtlantisRealityWorld(manifest: try .load())
+        if let ingress { created.enterFromFounderGarage(ingress) }
+        world = created
+        if ProcessInfo.processInfo.arguments.contains("--founder-traversal-diagnostics") {
+          print("TRAVERSAL_DIAG event=atlantis-loader-ready current=\(created.streaming.current.rawValue) loaded=\(created.loader.loaded.map(\.rawValue).sorted())")
+        }
+        created.livingDirector.receive(worldSignals)
+      } catch {failure=error.localizedDescription}
     }
     .onChange(of:worldSignals) {_,value in world?.livingDirector.receive(value)}
     .onAppear {store.entitlements=subscriptions;store.progressionStore=progression;store.achievementStore=achievements}
     .fullScreenCover(item:$route,onDismiss:{_ = world?.returnFromInteraction()}) { destination in
       AtlantisCanonicalDestination(destination:destination,store:store,presentation:presentation) {route=nil}
     }
-    .accessibilityIdentifier("atlantis.debug.root")
   }
 
   private func open(_ intent: AtlantisInteractionIntent,world: AtlantisRealityWorld) {
     if case .talkNamedNPC = intent {return}
+    if case .enterFounderGarage = intent, let onReturnToGarage {
+      _ = world.returnFromInteraction()
+      onReturnToGarage()
+      return
+    }
     let rivalIDs=Set(ContentLibrary.rivalCompanies.map(\.id))
     guard let destination=AtlantisCanonicalRoute.resolve(intent,availableRivalIDs:rivalIDs) else {world.cancelInteraction(reason:"Canonical route unavailable");return}
     route=destination
+  }
+}
+
+private struct AtlantisTraversalContent: View {
+  @Bindable var world: AtlantisRealityWorld
+  var onActivate: (AtlantisInteractionIntent) -> Void
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.scenePhase) private var scenePhase
+
+  var body: some View {
+    ZStack {
+      Color.black.opacity(0.001)
+        .frame(width: 1, height: 1)
+        .accessibilityElement()
+        .accessibilityLabel("Atlantis traversal")
+        .accessibilityIdentifier("atlantis.traversal.root")
+
+      RealityView { content in
+        content.add(world.root)
+        world.subscribe { handler in
+          content.subscribe(to: SceneEvents.Update.self, on: nil, handler)
+        }
+      }
+      .accessibilityHidden(true)
+      .background(Color(red: 0.15, green: 0.25, blue: 0.35))
+
+      VStack(alignment: .leading, spacing: 12) {
+        HStack {
+          VStack(alignment: .leading, spacing: 2) {
+            Text("ATLANTIS")
+              .font(.caption.bold())
+            Text(world.streaming.current.title)
+              .font(.headline)
+          }
+          .padding(.horizontal, 14)
+          .padding(.vertical, 10)
+          .background(.black.opacity(0.68), in: .rect(cornerRadius: 12))
+          Spacer()
+        }
+
+        Spacer()
+
+        HStack(alignment: .bottom) {
+          AtlantisMovementPad { lateral, forward in
+            world.setMovementIntent(forward: forward, turn: -lateral)
+          }
+
+          Spacer()
+
+          Button {
+            if let intent = world.beginInteraction() { onActivate(intent) }
+          } label: {
+            Label(world.interactionPrompt, systemImage: "hand.tap.fill")
+              .font(.caption.bold())
+              .padding(.horizontal, 14)
+              .frame(minHeight: 48)
+              .background(.black.opacity(0.72), in: .capsule)
+          }
+          .buttonStyle(.plain)
+          .disabled(world.activeInteractionID == nil)
+          .opacity(world.activeInteractionID == nil ? 0.45 : 1)
+          .accessibilityIdentifier("atlantis.traversal.interact")
+        }
+      }
+      .foregroundStyle(.white)
+      .padding(18)
+    }
+    .task {
+      world.livingWorld.reduceMotion = reduceMotion
+      world.livingDirector.namedEncounters.reduceMotion = reduceMotion
+      world.livingDirector.consequences.reduceMotion = reduceMotion
+      await world.start()
+    }
+    .onChange(of: reduceMotion) { _, value in
+      world.livingWorld.reduceMotion = value
+      world.livingDirector.namedEncounters.reduceMotion = value
+      world.livingDirector.consequences.reduceMotion = value
+    }
+    .onChange(of: scenePhase) { _, phase in
+      if phase != .active { world.setMovementIntent(forward: 0, turn: 0) }
+    }
+    .onDisappear { world.stop() }
+  }
+}
+
+struct AtlantisMovementPad: View {
+  var onIntent: (Float, Float) -> Void
+
+  var body: some View {
+    GeometryReader { geometry in
+      let center = CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2)
+      ZStack {
+        Circle().fill(.black.opacity(0.72))
+        Circle().stroke(.white.opacity(0.34), lineWidth: 1)
+        Image(systemName: "move.3d")
+      }
+      .contentShape(.circle)
+      .gesture(
+        DragGesture(minimumDistance: 0)
+          .onChanged { value in
+            let radius = max(min(geometry.size.width, geometry.size.height) / 2, 1)
+            let lateral = Float((value.location.x - center.x) / radius)
+            let forward = Float((center.y - value.location.y) / radius)
+            onIntent(max(-1, min(1, lateral)), max(-1, min(1, forward)))
+          }
+          .onEnded { _ in onIntent(0, 0) }
+      )
+    }
+    .frame(width: 88, height: 88)
+    .accessibilityElement()
+    .accessibilityLabel("Atlantis movement")
+    .accessibilityHint("Drag up or down to walk and left or right to turn.")
+    .accessibilityIdentifier("atlantis.traversal.movementPad")
   }
 }
 
@@ -370,7 +520,7 @@ private struct AtlantisNamedDialogueCard: View {
   }
 }
 
-private struct AtlantisCanonicalDestination: View {
+struct AtlantisCanonicalDestination: View {
   let destination: AtlantisCanonicalRoute
   var store: GameStore
   var presentation: PresentationCoordinator
@@ -404,4 +554,3 @@ private struct AtlantisDebugButtonStyle: ButtonStyle {
       .background(.white.opacity(configuration.isPressed ? 0.22 : 0.1),in:RoundedRectangle(cornerRadius:8))
   }
 }
-#endif

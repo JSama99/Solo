@@ -1,4 +1,3 @@
-#if DEBUG
 import Foundation
 import simd
 
@@ -718,9 +717,17 @@ enum AtlantisSpatialContract {
   static let eyeHeight: Float = 1.7
   static let walkingSpeed: Float = 1.4
   static let founderGarage: SIMD3<Float> = [-875, 8, 1030]
+  static let founderGarageFloorY: Float = 8.03
   static let spire: SIMD3<Float> = [50, 14, -420]
   static let playerHQ: SIMD3<Float> = [970, 85, -850]
   static func fromBlender(_ p: SIMD3<Float>) -> SIMD3<Float> { [p.x, p.z, -p.y] }
+
+  /// Facility Tier 0 shares metre units and its +Z doorway axis with the
+  /// Founder District Garage parcel. This keeps the driveway crossing spatially
+  /// continuous while the existing district runtime assumes rendering authority.
+  static func fromFounderGarage(_ local: SIMD3<Float>) -> SIMD3<Float> {
+    [founderGarage.x + local.x, founderGarageFloorY, founderGarage.z + local.z]
+  }
 }
 
 enum AtlantisBenchmarkCamera: String, CaseIterable, Identifiable, Codable {
@@ -785,4 +792,3 @@ struct AtlantisAssetManifest: Decodable {
 extension Array where Element == Float {
   var vector3: SIMD3<Float> { precondition(count == 3); return [self[0],self[1],self[2]] }
 }
-#endif

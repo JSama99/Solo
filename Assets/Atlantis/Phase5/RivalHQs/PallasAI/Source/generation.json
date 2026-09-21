@@ -1,0 +1,23 @@
+[
+  {
+    "created_at": "2026-09-09T23:30:59.951579Z",
+    "display_name": "Text to 3D",
+    "id": "a4b979e4-df7a-414a-a1ca-ff799898b6de",
+    "job_type": "tripo_3d",
+    "min_result_url": null,
+    "params": {
+      "auto_size": false,
+      "face_limit": 24000,
+      "folder_id": null,
+      "geometry_quality": "detailed",
+      "negative_prompt": null,
+      "pbr": true,
+      "prompt": "Standalone flagship Pallas AI headquarters in Atlantis. Prestigious contemporary skyscraper 160 metres tall, entire footprint 60 metres wide by 42 metres deep including podium. Elegant disciplined taper, premium blue glazing, refined pale metal and bronze accents, substantial compact podium, formal public entrance, distinctive restrained crown. Convey global influence, institutional confidence, technical excellence and long-term stability. Sophisticated light neutral facade with subtle integrated illumination. Reserve blank integrated podium signage, small lobby display and restrained crown mark. Entrance on south front. Clean ground-centred pivot, credible construction, efficient mobile-game geometry. Isolated single building without city, landscape or streets. Avoid giant logos, fantasy forms, floating parts, neon clutter, hostile fortress styling and generic rectangular office massing.",
+      "seed": null,
+      "texture": true,
+      "texture_quality": "detailed"
+    },
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_34Zg75AIkEw6PIkZBBxVr9v7DE7/hf_20260909_233059_a4b979e4-df7a-414a-a1ca-ff799898b6de.glb",
+    "status": "completed"
+  }
+]
