@@ -1,0 +1,266 @@
+{
+  "name": "Founder locomotion library",
+  "status": "OWNER_ACCEPTED_MOTION_ONLY",
+  "production_transfer": "NOT_YET_APPROVED",
+  "actions": [
+    {
+      "semantic_state": "standingIdle",
+      "action": "STUDY_Founder_StandingIdle_01",
+      "source_blend": "/private/tmp/solo-shipathon-recovery-s3/Documentation/FounderCharacter/AnimationLibrary/OriginalFounder/Transitions02/Founder_LocomotionTransitions_Candidate02.blend",
+      "source_sha256": "c9b2924556e79e75004d3a9aa15a7bb14d1a539195f13bb68c8eaa96ff56c7d0",
+      "fps": 30,
+      "frame_range": [
+        1,
+        121
+      ],
+      "duration_s": 4.0,
+      "loop": true,
+      "contact_frames": {
+        "L": [
+          [
+            1,
+            121
+          ]
+        ],
+        "R": [
+          [
+            1,
+            121
+          ]
+        ]
+      },
+      "entry_compatible_states": [
+        "initial",
+        "standingIdle",
+        "walkStop",
+        "turnInPlaceLeft",
+        "turnInPlaceRight"
+      ],
+      "exit_compatible_states": [
+        "walkStart",
+        "turnInPlaceLeft",
+        "turnInPlaceRight"
+      ],
+      "expected_heading_behavior": "none",
+      "root_motion_policy": "zero authored root translation and rotation; simulation owns world movement",
+      "owner_acceptance_date": "2026-09-28"
+    },
+    {
+      "semantic_state": "walkStart",
+      "action": "STUDY_Founder_WalkStart_01",
+      "source_blend": "/private/tmp/solo-shipathon-recovery-s3/Documentation/FounderCharacter/AnimationLibrary/OriginalFounder/Transitions02/Founder_LocomotionTransitions_Candidate02.blend",
+      "source_sha256": "c9b2924556e79e75004d3a9aa15a7bb14d1a539195f13bb68c8eaa96ff56c7d0",
+      "fps": 30,
+      "frame_range": [
+        1,
+        37
+      ],
+      "duration_s": 1.2,
+      "loop": false,
+      "contact_frames": {
+        "L": [
+          [
+            1,
+            13
+          ],
+          [
+            37,
+            37
+          ]
+        ],
+        "R": [
+          [
+            1,
+            37
+          ]
+        ]
+      },
+      "entry_compatible_states": [
+        "standingIdle",
+        "turnInPlaceLeft",
+        "turnInPlaceRight"
+      ],
+      "exit_compatible_states": [
+        "walking"
+      ],
+      "expected_heading_behavior": "preserve incoming heading",
+      "root_motion_policy": "zero authored root translation and rotation; simulation owns world movement",
+      "owner_acceptance_date": "2026-09-28"
+    },
+    {
+      "semantic_state": "walking",
+      "action": "Founder_NaturalWalk_Candidate_02",
+      "source_blend": "/private/tmp/solo-shipathon-recovery-s3/Documentation/FounderCharacter/AnimationLibrary/OriginalFounder/Combined02/Founder_NaturalWalk_Candidate_02.blend",
+      "source_sha256": "fa705b09bd550b17266a5ecc74869e52f1db51759dfcf80afafe7fa4390f757e",
+      "fps": 30,
+      "frame_range": [
+        1,
+        31
+      ],
+      "duration_s": 1.0,
+      "loop": true,
+      "contact_frames": {
+        "L": [
+          [
+            1,
+            1
+          ]
+        ],
+        "R": [
+          [
+            16,
+            16
+          ]
+        ]
+      },
+      "entry_compatible_states": [
+        "walkStart",
+        "walking"
+      ],
+      "exit_compatible_states": [
+        "walking",
+        "walkStop"
+      ],
+      "expected_heading_behavior": "simulation-owned heading",
+      "root_motion_policy": "zero authored root translation and rotation; simulation owns world movement",
+      "owner_acceptance_date": "2026-09-28"
+    },
+    {
+      "semantic_state": "walkStop",
+      "action": "STUDY_Founder_WalkStop_Revision02",
+      "source_blend": "/private/tmp/solo-shipathon-recovery-s3/Documentation/FounderCharacter/AnimationLibrary/OriginalFounder/Transitions02/Founder_LocomotionTransitions_Candidate02.blend",
+      "source_sha256": "c9b2924556e79e75004d3a9aa15a7bb14d1a539195f13bb68c8eaa96ff56c7d0",
+      "fps": 30,
+      "frame_range": [
+        1,
+        37
+      ],
+      "duration_s": 1.2,
+      "loop": false,
+      "contact_frames": {
+        "L": [
+          [
+            1,
+            37
+          ]
+        ],
+        "R": [
+          [
+            1,
+            4
+          ],
+          [
+            22,
+            37
+          ]
+        ]
+      },
+      "entry_compatible_states": [
+        "walking"
+      ],
+      "exit_compatible_states": [
+        "standingIdle"
+      ],
+      "expected_heading_behavior": "preserve incoming heading",
+      "root_motion_policy": "zero authored root translation and rotation; simulation owns world movement",
+      "owner_acceptance_date": "2026-09-28"
+    },
+    {
+      "semantic_state": "turnInPlaceLeft",
+      "action": "STUDY_Founder_TurnInPlace_Revision02_Left",
+      "source_blend": "/private/tmp/solo-shipathon-recovery-s3/Documentation/FounderCharacter/AnimationLibrary/OriginalFounder/Transitions02/Founder_LocomotionTransitions_Candidate02.blend",
+      "source_sha256": "c9b2924556e79e75004d3a9aa15a7bb14d1a539195f13bb68c8eaa96ff56c7d0",
+      "fps": 30,
+      "frame_range": [
+        1,
+        46
+      ],
+      "duration_s": 1.5,
+      "loop": false,
+      "contact_frames": {
+        "L": [
+          [
+            1,
+            7
+          ],
+          [
+            21,
+            46
+          ]
+        ],
+        "R": [
+          [
+            1,
+            22
+          ],
+          [
+            36,
+            46
+          ]
+        ]
+      },
+      "entry_compatible_states": [
+        "standingIdle"
+      ],
+      "exit_compatible_states": [
+        "standingIdle",
+        "walkStart"
+      ],
+      "expected_heading_behavior": "external +90 degree heading handoff",
+      "root_motion_policy": "zero authored root translation and rotation; simulation owns world movement",
+      "owner_acceptance_date": "2026-09-28"
+    },
+    {
+      "semantic_state": "turnInPlaceRight",
+      "action": "STUDY_Founder_TurnInPlace_Revision02_Right",
+      "source_blend": "/private/tmp/solo-shipathon-recovery-s3/Documentation/FounderCharacter/AnimationLibrary/OriginalFounder/Transitions02/Founder_LocomotionTransitions_Candidate02.blend",
+      "source_sha256": "c9b2924556e79e75004d3a9aa15a7bb14d1a539195f13bb68c8eaa96ff56c7d0",
+      "fps": 30,
+      "frame_range": [
+        1,
+        46
+      ],
+      "duration_s": 1.5,
+      "loop": false,
+      "contact_frames": {
+        "R": [
+          [
+            1,
+            7
+          ],
+          [
+            21,
+            46
+          ]
+        ],
+        "L": [
+          [
+            1,
+            22
+          ],
+          [
+            36,
+            46
+          ]
+        ]
+      },
+      "entry_compatible_states": [
+        "standingIdle"
+      ],
+      "exit_compatible_states": [
+        "standingIdle",
+        "walkStart"
+      ],
+      "expected_heading_behavior": "external -90 degree heading handoff",
+      "root_motion_policy": "zero authored root translation and rotation; simulation owns world movement",
+      "owner_acceptance_date": "2026-09-28"
+    }
+  ],
+  "review_fixture": {
+    "walk_speed_m_s": 1.4,
+    "walk_distance_per_cycle_m": 1.4,
+    "start_distance_m": 0.31500019133090973,
+    "stop_distance_m": 0.3850009888410568,
+    "heading": "external container only; Actions keep Root rotation zero"
+  }
+}
