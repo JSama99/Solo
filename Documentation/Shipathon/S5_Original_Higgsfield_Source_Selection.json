@@ -1,0 +1,43 @@
+{
+  "decision": "Use original Higgsfield models; procedural RetopoA/B/C rejected",
+  "owner_instruction": "let's just go with the originals",
+  "characters": {
+    "Mara": {
+      "original_visual_source": "Assets/Atlantis/Characters/MaraChen/Blender/MaraChen_Gate1_Source.blend",
+      "device_free_original_derivative": "Assets/Atlantis/Characters/MaraChen/Blender/MaraChen_Gate2_DeviceFreeLOD.blend"
+    },
+    "Founder": {
+      "original_visual_source": "Documentation/FounderCharacter/ReferenceRevision/Blender/Founder_Gate1_HairRevision_D.blend",
+      "device_free_original_derivative": "Documentation/FounderCharacter/ReferenceRevision/Blender/Founder_Gate2_DeviceFreeLODUV.blend"
+    }
+  },
+  "retopo_studies": "RetopoA, RetopoB and RetopoC rejected for both; historical only",
+  "scope": "Visual source selection only; no production runtime asset substitution or animation acceptance",
+  "protected_hashes_verified": [
+    {
+      "path": "Assets/Atlantis/Characters/MaraChen/Blender/MaraChen_Gate2_DeviceFreeLOD.blend",
+      "sha256": "535b01a7a72aca32485fe3c24ff4b1a503687b347faa7ecb5d8734d49adb02c5",
+      "preserved": true
+    },
+    {
+      "path": "Documentation/FounderCharacter/ReferenceRevision/Blender/Founder_Gate2_DeviceFreeLODUV.blend",
+      "sha256": "98d208c326515bcb5e9a968b8ffd35334f67295b088e82ad688d3127d1b40dfa",
+      "preserved": true
+    },
+    {
+      "path": "Documentation/FounderCharacter/ReferenceRevision/Blender/Founder_Gate1_HairRevision_D.blend",
+      "sha256": "e8d96aa10d2524741e0cbc74d87bd5fd52440d1e5d4c81c98de87b6a0e02e00b",
+      "preserved": true
+    },
+    {
+      "path": "Assets/Atlantis/Characters/MaraChen/Blender/MaraChen_Gate1_Source.blend",
+      "sha256": "de5da5d7918af269791d29ca256f76cc92aca2043b279d9e34cca2cc95e98304",
+      "preserved": true
+    },
+    {
+      "path": "App/RealityKit/FounderCharacter/founder_candidate_a.usdz",
+      "sha256": "6392eb1dea5f13506913feeb1a65bf84c97f9b61266ba027bd3b3377278171f5",
+      "preserved": true
+    }
+  ]
+}

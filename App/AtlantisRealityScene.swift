@@ -78,6 +78,103 @@ struct AtlantisLivingWorldTransitionMeasurement: Codable {
 
 struct AtlantisDayPhaseComponent: Component, Codable { var phase: String }
 
+/// S3 daylight choices. Time of day remains the shared lighting authority;
+/// these values resolve only the Atlantis daylight key and environment fill.
+enum AtlantisDayLightingVariant: String, CaseIterable {
+  case baseline, clearAspirationalDay, clearAspirationalDayNoShadows, founderGoldenDay, premiumTechDay
+
+  static var launchSelection: Self {
+    let arguments = ProcessInfo.processInfo.arguments
+    if arguments.contains("--s3-lighting-baseline") { return .baseline }
+    if arguments.contains("--s3-lighting-a2") { return .clearAspirationalDayNoShadows }
+    if arguments.contains("--s3-lighting-a") { return .clearAspirationalDay }
+    if arguments.contains("--s3-lighting-b") { return .founderGoldenDay }
+    if arguments.contains("--s3-lighting-c") { return .premiumTechDay }
+    return .clearAspirationalDayNoShadows
+  }
+
+  var key: (position: SIMD3<Float>, intensity: Float, color: SIMD3<Float>, environmentExponent: Float)? {
+    switch self {
+    case .baseline: return nil
+    case .clearAspirationalDay, .clearAspirationalDayNoShadows:
+      return ([-4.6, 7.0, 9.0], 5_200, [1.00, 0.96, 0.89], -1.25)
+    case .founderGoldenDay: return ([-7.4, 4.4, 9.0], 4_750, [1.00, 0.87, 0.73], -1.35)
+    case .premiumTechDay: return ([-3.5, 8.0, 10.0], 5_350, [0.98, 0.98, 1.00], -1.45)
+    }
+  }
+}
+
+/// S3 atmosphere only affects the exterior sky and existing far Spire proxy.
+/// The accepted A2 key and district IBL remain authoritative.
+enum AtlantisAtmosphereVariant: String {
+  case a2Unmodified, minimal, moderate
+
+  static func resolve(arguments: [String]) -> Self {
+    if arguments.contains("--s3-atmosphere-baseline") { return .a2Unmodified }
+    if arguments.contains("--s3-atmosphere-a") { return .minimal }
+    if arguments.contains("--s3-atmosphere-b") { return .moderate }
+    return .minimal
+  }
+
+  static var launchSelection: Self { resolve(arguments: ProcessInfo.processInfo.arguments) }
+
+  var sky: (top: SIMD3<Float>, bottom: SIMD3<Float>)? {
+    switch self {
+    case .a2Unmodified: return nil
+    case .minimal: return ([0.22, 0.51, 0.77], [0.68, 0.82, 0.93])
+    case .moderate: return ([0.25, 0.52, 0.75], [0.72, 0.83, 0.90])
+    }
+  }
+
+  var farProxyIBL: (rgb: SIMD3<Float>, exponent: Float)? {
+    switch self {
+    case .a2Unmodified: return nil
+    case .minimal: return ([0.98, 0.99, 1.00], -1.40)
+    case .moderate: return ([0.90, 0.95, 1.00], -1.65)
+    }
+  }
+
+  var farProxyTint: SIMD3<Float>? {
+    self == .moderate ? [0.35, 0.50, 0.56] : nil
+  }
+}
+
+/// Adapts Atlantis movement coordinates to the accepted Founder rig's visual
+/// yaw convention. The Atlantis heading remains the sole movement authority.
+enum FounderAtlantisVisualHeading {
+  static func facing(_ heading: Float) -> SIMD3<Float> {
+    [sin(heading), 0, -cos(heading)]
+  }
+  static func velocity(_ displacement: SIMD3<Float>, delta: Float) -> SIMD2<Float> {
+    let dt = max(delta, 0.000_001)
+    return [-displacement.x / dt, displacement.z / dt]
+  }
+}
+
+/// Shipathon camera presentation. Player heading and traversal remain authoritative.
+enum AtlantisS4CameraBias {
+  static let boundedYaw: Float = 0.52 // 30 degrees.
+  static let contextualYaw: Float = 0.75 // D's kept composition, at a pause.
+
+  static func target(positionX: Float, heading: Float, forward: Float,
+                     turn: Float, idleSeconds: Float, reduceMotion: Bool) -> Float {
+    guard !reduceMotion, forward >= -0.1, abs(turn) < 0.08,
+          idleSeconds < 0.6, positionX < -840 else { return 0 }
+    let eastError = atan2(sin(heading + .pi / 2), cos(heading + .pi / 2))
+    guard abs(eastError) < 0.32 else { return 0 }
+    let streetProgress = max(0, min(1, (positionX + 873) / 13))
+    return streetProgress * boundedYaw
+  }
+
+  static func heroPauseWindow(position: SIMD3<Float>, heading: Float,
+                              reduceMotion: Bool) -> Bool {
+    guard !reduceMotion, (-858 ... -848).contains(position.x),
+          abs(position.z - 1040.7) < 3 else { return false }
+    let eastError = atan2(sin(heading + .pi / 2), cos(heading + .pi / 2))
+    return abs(eastError) < 0.25
+  }
+}
+
 /// Exact exported upward-facing triangles provide a bounded grounding query.
 /// This is not a navmesh, simulation authority, or complete character controller.
 struct AtlantisGrounding {
@@ -194,21 +291,29 @@ final class AtlantisAmbientActor {
   var speed: Float = 0
   var animationPhase: Float = 0
   private var animationElapsed: Float = 0
-  private static let pedestrianBody = MeshResource.generateBox(size:[0.34,0.86,0.24])
-  private static let pedestrianLeg = MeshResource.generateBox(size:[0.12,0.4,0.15])
-  private static let pedestrianHead = MeshResource.generateSphere(radius:0.20)
+  private static let pedestrianBody = MeshResource.generateBox(size:[0.40,0.84,0.24])
+  private static let pedestrianLeg = MeshResource.generateBox(size:[0.12,0.43,0.15])
+  private static let pedestrianArm = MeshResource.generateBox(size:[0.11,0.62,0.12])
+  private static let pedestrianHead = MeshResource.generateSphere(radius:0.17)
   private static let vehicleBody = MeshResource.generateBox(size:[1.65,0.48,3.5])
   private static let vehicleCabin = MeshResource.generateBox(size:[1.35,0.42,1.65])
 
   init(kind: AtlantisAmbientActorKind,index: Int) {
     self.kind=kind;entity.name="AtlantisAmbientPool.\(kind.rawValue).\(index)"
     if kind == .pedestrian {
-      let palette:[UIColor]=[.systemTeal,.systemOrange,.systemPurple,.systemBlue]
-      let material=SimpleMaterial(color:palette[index%palette.count],roughness:0.8,isMetallic:false)
+      let palette:[UIColor]=[
+        UIColor(red:0.20,green:0.36,blue:0.38,alpha:1),
+        UIColor(red:0.48,green:0.36,blue:0.30,alpha:1),
+        UIColor(red:0.30,green:0.32,blue:0.42,alpha:1),
+        UIColor(red:0.38,green:0.39,blue:0.34,alpha:1)
+      ]
+      let material=SimpleMaterial(color:palette[index%palette.count],roughness:0.85,isMetallic:false)
+      let trouser=SimpleMaterial(color:UIColor(red:0.27,green:0.31,blue:0.34,alpha:1),roughness:0.9,isMetallic:false)
       let body=ModelEntity(mesh:Self.pedestrianBody,materials:[material]);body.position.y=0.82
-      let head=ModelEntity(mesh:Self.pedestrianHead,materials:[SimpleMaterial(color:.systemBrown,roughness:0.9,isMetallic:false)]);head.position.y=1.47
+      let head=ModelEntity(mesh:Self.pedestrianHead,materials:[SimpleMaterial(color:UIColor(red:0.68,green:0.49,blue:0.38,alpha:1),roughness:0.9,isMetallic:false)]);head.position.y=1.46
       entity.addChild(body);entity.addChild(head)
-      for x:Float in [-0.1,0.1] {let leg=ModelEntity(mesh:Self.pedestrianLeg,materials:[material]);leg.position=[x,0.2,0];entity.addChild(leg)}
+      for x:Float in [-0.10,0.10] {let leg=ModelEntity(mesh:Self.pedestrianLeg,materials:[trouser]);leg.position=[x,0.22,0];entity.addChild(leg)}
+      for x:Float in [-0.27,0.27] {let arm=ModelEntity(mesh:Self.pedestrianArm,materials:[material]);arm.position=[x,0.88,0];entity.addChild(arm)}
     } else {
       let palette:[UIColor]=[.systemRed,.systemIndigo,.systemGray]
       let body=ModelEntity(mesh:Self.vehicleBody,materials:[SimpleMaterial(color:palette[index%palette.count],roughness:0.55,isMetallic:true)]);body.position.y=0.45
@@ -225,6 +330,11 @@ final class AtlantisAmbientActor {
     animationElapsed=0;progress=unit;animationPhase=AtlantisPresentationSeed.unit(route.id,index:index+71,seed:seed)*(.pi*2)
     speed=kind == .vehicle ? 4.5+unit*1.5 : 0.72+unit*0.32
     behavior=kind == .vehicle ? .walk : AtlantisAmbientBehavior.allCases[Int(AtlantisPresentationSeed.value(route.id,index:index,seed:seed)%UInt64(AtlantisAmbientBehavior.allCases.count))]
+    switch route.id {
+    case "S5_Frontage": behavior = .phoneIdle
+    case "S5_StreetWalk": behavior = .walk
+    default: break
+    }
     let scale:Float=kind == .vehicle ? 0.92+unit*0.12 : 0.92+unit*0.10
     entity.scale=[scale,scale,scale];entity.isEnabled=true;update(delta:0,reduceMotion:false)
   }
@@ -234,7 +344,7 @@ final class AtlantisAmbientActor {
   func update(delta: Double,reduceMotion: Bool) {
     guard let route,route.points.count>1 else{return}
     let moving=kind == .vehicle || behavior == .walk
-    if moving {progress += speed*Float(delta)/max(1,routeLength(route));progress.formTruncatingRemainder(dividingBy:2)}
+    if moving && !reduceMotion {progress += speed*Float(delta)/max(1,routeLength(route));progress.formTruncatingRemainder(dividingBy:2)}
     let routeProgress=progress<=1 ? progress:2-progress
     let scaled=max(0,routeProgress)*Float(route.points.count-1),segment=min(route.points.count-2,Int(scaled)),t=scaled-Float(segment)
     let a=route.points[segment],b=route.points[segment+1];entity.position=simd_mix(a,b,SIMD3<Float>(repeating:t))
@@ -272,6 +382,7 @@ final class AtlantisLivingWorldDistrictPopulation {
   @ObservationIgnored private var vehiclePool:[AtlantisAmbientActor]=[]
   @ObservationIgnored private var benchmarkOverride:(district:AtlantisDistrict,pedestrians:Int,vehicles:Int)?
   var isEnabled=false
+  var shipathonHeroRouteOnly=false
   var reduceMotion=false
   var reactions:[AtlantisDistrict:AtlantisDistrictReaction]=[:]
   private var lods:[AtlantisDistrict:AtlantisLivingWorldLOD]=[:]
@@ -313,7 +424,11 @@ final class AtlantisLivingWorldDistrictPopulation {
       lods[district]=lod
       let profile=AtlantisLivingWorldPresentationAdapter.profile(district:district,phase:phase)
       let requestedPedestrians:Int,requestedVehicles:Int
-      if let value=benchmarkOverride {
+      if shipathonHeroRouteOnly {
+        requestedPedestrians=district == .founderDistrict &&
+          AtlantisLivingWorldPresentationAdapter.shipathonHeroRouteContains(playerPosition) ? 2:0
+        requestedVehicles=0
+      } else if let value=benchmarkOverride {
         requestedPedestrians=value.district==district ? value.pedestrians:0;requestedVehicles=value.district==district ? value.vehicles:0
       } else {
         let desired=reactions[district]?.pedestrians ?? profile.pedestrians
@@ -378,7 +493,10 @@ final class AtlantisLivingWorldDistrictPopulation {
     } else if count>target {release(district:district,kind:kind,count:min(count-target,maximumChange))}
   }
   private func spawn(district:AtlantisDistrict,kind:AtlantisAmbientActorKind,index:Int) {
-    let routes=AtlantisLivingWorldPresentationAdapter.routes(district:district,kind:kind);guard !routes.isEmpty else{return}
+    let routes=shipathonHeroRouteOnly && district == .founderDistrict
+      ? AtlantisLivingWorldPresentationAdapter.shipathonHeroRoutes
+      : AtlantisLivingWorldPresentationAdapter.routes(district:district,kind:kind)
+    guard !routes.isEmpty else{return}
     let actor:AtlantisAmbientActor
     if kind == .pedestrian,let pooled=pedestrianPool.popLast(){actor=pooled;reusedPedestrians+=1}
     else if kind == .vehicle,let pooled=vehiclePool.popLast(){actor=pooled;reusedVehicles+=1}
@@ -416,21 +534,65 @@ final class AtlantisNamedNPCEntity {
   let definition: AtlantisNamedNPCDefinition
   let root=Entity()
   private let torso:ModelEntity,head:ModelEntity,glyph:ModelEntity,nameplate=ModelEntity(),subtitle=ModelEntity()
+  private let shipathonStagingOnly:Bool
+  private static let roundedPart=MeshResource.generateSphere(radius:1)
   var lifecycle=AtlantisNamedNPCLifecycle.despawned
   private var phase:Float=0
 
-  init(definition:AtlantisNamedNPCDefinition,index:Int) {
+  init(definition:AtlantisNamedNPCDefinition,index:Int,shipathonStagingOnly:Bool=false) {
     self.definition=definition
+    self.shipathonStagingOnly=shipathonStagingOnly
     let palette:[UIColor]=[.systemCyan,.systemMint,.systemIndigo,.systemOrange,.systemGreen,.systemPurple]
-    torso=ModelEntity(mesh:.generateBox(size:[0.46,0.92,0.3]),materials:[SimpleMaterial(color:palette[index%palette.count],roughness:0.55,isMetallic:false)])
-    head=ModelEntity(mesh:.generateSphere(radius:0.22),materials:[SimpleMaterial(color:.systemBrown,roughness:0.85,isMetallic:false)])
+    let clothing=shipathonStagingOnly ? UIColor(red:0.25,green:0.34,blue:0.38,alpha:1):palette[index%palette.count]
+    let jacket=SimpleMaterial(color:clothing,roughness:0.86,isMetallic:false)
+    let skin=SimpleMaterial(color:UIColor(red:0.59,green:0.39,blue:0.29,alpha:1),roughness:0.92,isMetallic:false)
+    torso=ModelEntity(mesh:shipathonStagingOnly ? Self.roundedPart:.generateBox(size:[0.46,0.92,0.3]),materials:[jacket])
+    head=ModelEntity(mesh:Self.roundedPart,materials:[skin])
     glyph=ModelEntity(mesh:.generateSphere(radius:0.09),materials:[UnlitMaterial(color:.white)])
     root.name=definition.interactionID;root.position=definition.position
-    torso.position.y=0.86;head.position.y=1.55;glyph.position=[0,2.06,0]
+    torso.position.y=shipathonStagingOnly ? 1.08:0.86
+    head.position.y=shipathonStagingOnly ? 1.72:1.55
+    if shipathonStagingOnly {torso.scale=[0.31,0.46,0.21];head.scale=[0.21,0.26,0.20]}
+    else {head.scale=[0.22,0.22,0.22]}
+    torso.name="AtlantisNamedNPC.Torso";head.name="AtlantisNamedNPC.Head";glyph.position=[0,2.06,0]
     nameplate.position=[-0.7,1.96,0.03];subtitle.position=[-0.7,1.72,0.03]
     root.addChild(torso);root.addChild(head);root.addChild(glyph);root.addChild(nameplate);root.addChild(subtitle)
-    setText(nameplate,definition.displayName,size:0.14)
-    setText(subtitle,"\(definition.role.title) · \(definition.affiliation)",size:0.085)
+    if shipathonStagingOnly {
+      nameplate.isEnabled=false;subtitle.isEnabled=false
+      let trousers=SimpleMaterial(color:UIColor(red:0.16,green:0.19,blue:0.22,alpha:1),roughness:0.92,isMetallic:false)
+      let shoes=SimpleMaterial(color:UIColor(red:0.25,green:0.22,blue:0.20,alpha:1),roughness:0.9,isMetallic:false)
+      let hair=SimpleMaterial(color:UIColor(red:0.10,green:0.08,blue:0.07,alpha:1),roughness:0.9,isMetallic:false)
+      func rounded(_ name:String,_ size:SIMD3<Float>,_ at:SIMD3<Float>,_ material:SimpleMaterial)->ModelEntity {
+        let part=ModelEntity(mesh:Self.roundedPart,materials:[material]);part.name=name;part.scale=size;part.position=at;root.addChild(part);return part
+      }
+      rounded("Hips",[0.27,0.18,0.20],[0,0.71,0],trousers)
+      rounded("Neck",[0.09,0.12,0.09],[0,1.54,0],skin)
+      let collar=SimpleMaterial(color:UIColor(red:0.76,green:0.73,blue:0.65,alpha:1),roughness:0.9,isMetallic:false)
+      rounded("Collar",[0.075,0.09,0.035],[0,1.47,0.205],collar)
+      let leftLapel=rounded("LapelL",[0.045,0.16,0.025],[-0.10,1.34,0.20],jacket)
+      let rightLapel=rounded("LapelR",[0.045,0.16,0.025],[0.10,1.34,0.20],jacket)
+      leftLapel.orientation=simd_quatf(angle:-0.27,axis:[0,0,1])
+      rightLapel.orientation=simd_quatf(angle:0.27,axis:[0,0,1])
+      for side:Float in [-1,1] {
+        rounded("Shoulder",[0.125,0.12,0.15],[side*0.27,1.38,0],jacket)
+        rounded("UpperArm",[0.09,0.25,0.09],[side*0.34,1.15,0],jacket)
+        let forearm=rounded("Forearm",[0.08,0.21,0.08],[side*0.37,0.90,0.03],jacket)
+        if side > 0 {forearm.position=[0.24,1.01,0.18];forearm.orientation=simd_quatf(angle:0.65,axis:[0,0,1])}
+        rounded("Hand",[0.075,0.09,0.065],side > 0 ? [0.10,1.12,0.22]:[side*0.37,0.70,0.03],skin)
+        rounded("Thigh",[0.115,0.28,0.12],[side*0.14,0.49,0],trousers)
+        rounded("Calf",[0.09,0.22,0.10],[side*0.14,0.22,0.02],trousers)
+        rounded("Shoe",[0.13,0.08,0.23],[side*0.14,0.07,0.10],shoes)
+      }
+      rounded("HairCrown",[0.23,0.13,0.22],[0,1.89,-0.015],hair)
+      rounded("HairBack",[0.20,0.23,0.11],[0,1.72,-0.15],hair)
+      rounded("HairBun",[0.14,0.13,0.13],[0,1.72,-0.26],hair)
+      rounded("Nose",[0.035,0.045,0.055],[0,1.70,0.21],skin)
+      let phone=ModelEntity(mesh:.generateBox(size:[0.14,0.22,0.025]),materials:[SimpleMaterial(color:UIColor(red:0.10,green:0.16,blue:0.19,alpha:1),roughness:0.38,isMetallic:false)])
+      phone.position=[0.03,1.15,0.27];root.addChild(phone)
+    } else {
+      setText(nameplate,definition.displayName,size:0.14)
+      setText(subtitle,"\(definition.role.title) · \(definition.affiliation)",size:0.085)
+    }
     root.components.remove(CollisionComponent.self)
   }
 
@@ -441,14 +603,20 @@ final class AtlantisNamedNPCEntity {
       root.orientation=simd_quatf(angle:atan2(offset.x,offset.z),axis:[0,1,0])
     }
     glyph.isEnabled=value == .available || value == .engaged
-    torso.scale=value == .engaged && !reduceMotion ? [1.03,1.03,1.03]:[1,1,1]
+    torso.scale=shipathonStagingOnly ? [0.31,0.46,0.21]
+      : (value == .engaged && !reduceMotion ? [1.03,1.03,1.03]:[1,1,1])
   }
 
   func update(delta:Double,reduceMotion:Bool) {
-    guard !reduceMotion else{head.orientation = .init();return}
+    guard !reduceMotion else {
+      head.orientation=shipathonStagingOnly ? simd_quatf(angle:0.08,axis:[1,0,0]):.init()
+      return
+    }
     phase += Float(max(0,min(delta,0.25)))
-    let amount:Float=lifecycle == .engaged ? 0.08:0.035
-    head.orientation=simd_quatf(angle:sin(phase*1.4)*amount,axis:[0,1,0])
+    let amount:Float=shipathonStagingOnly ? 0.045:(lifecycle == .engaged ? 0.08:0.035)
+    let glance=shipathonStagingOnly ? sin(phase*0.42):sin(phase*1.4)
+    head.orientation=simd_quatf(angle:glance*amount,axis:[0,1,0]) *
+      simd_quatf(angle:shipathonStagingOnly ? 0.08:0,axis:[1,0,0])
     glyph.position.y=2.06+sin(phase*1.8)*0.025
   }
 
@@ -463,6 +631,8 @@ final class AtlantisNamedNPCEntity {
 final class AtlantisNamedEncounterDirector {
   let root=Entity()
   var isEnabled=false
+  var shipathonStagingOnly=false
+  var shipathonMarkerEnabled=false
   var reduceMotion=false
   var fixture:AtlantisNamedEncounterFixture? {didSet {if oldValue != fixture {cooldownUntil=[:];activeSession=nil}}}
   private(set) var activeSession:AtlantisNamedEncounterSession?
@@ -474,6 +644,7 @@ final class AtlantisNamedEncounterDirector {
   private(set) var reusedEntityCount=0
   private(set) var decisionCostMS=0.0
   @ObservationIgnored private var entities:[String:AtlantisNamedNPCEntity]=[:]
+  @ObservationIgnored private var shipathonMarker:Entity?
   @ObservationIgnored private var cooldownUntil:[String:Double]=[:]
   @ObservationIgnored private var elapsed=0.0
   @ObservationIgnored private var latestSignals=AtlantisLivingWorldFixture.baseline.snapshot
@@ -483,6 +654,7 @@ final class AtlantisNamedEncounterDirector {
   init(){root.name="AtlantisNamedEncounterDirector"}
   var activeNPCIDs:[String]{entities.values.filter{$0.root.parent != nil}.map{$0.definition.id}.sorted()}
   var namedNPCCount:Int{activeNPCIDs.count}
+  var shipathonMarkerVisible:Bool{shipathonMarker?.parent != nil}
   var cooldownCount:Int{cooldownUntil.values.filter{$0>elapsed}.count}
   var cooldownSummary:String {
     let active=cooldownUntil.filter{$0.value>elapsed}.map{"\($0.key) \(Int(ceil($0.value-elapsed)))s"}.sorted()
@@ -508,12 +680,15 @@ final class AtlantisNamedEncounterDirector {
     let start=DispatchTime.now().uptimeNanoseconds
     latestSignals=fixture?.snapshot ?? signals;latestPhase=phase;latestResidents=residents
     let cooling=Set(cooldownUntil.filter{$0.value>elapsed}.map(\.key))
-    let residentNPCs=AtlantisNamedNPCDefinition.all.filter{residents.contains($0.homeDistrict)}
+    let residentNPCs=AtlantisNamedNPCDefinition.all.filter{residents.contains($0.homeDistrict) &&
+      (!shipathonStagingOnly || ($0.id == "mara-chen" &&
+       AtlantisLivingWorldPresentationAdapter.shipathonPeerCueVisible(position:position,residents:residents)))}
     let baseEligible=AtlantisNamedEncounterDefinition.all.filter { encounter in
+      !shipathonStagingOnly &&
       residentNPCs.contains{$0.id==encounter.npcID} && AtlantisNamedEncounterPolicy.eligible(encounter,signals:latestSignals,phase:phase,fixture:fixture)
     }
     eligibleEncounterCount=baseEligible.filter{!cooling.contains($0.id)}.count
-    let desired=Set(baseEligible.map(\.npcID))
+    let desired=shipathonStagingOnly ? Set(residentNPCs.map(\.id)):Set(baseEligible.map(\.npcID))
     for (id,entity) in entities where !isEnabled || !desired.contains(id) {
       if entity.root.parent != nil {entity.root.removeFromParent()}
       entity.lifecycle = .despawned
@@ -523,24 +698,31 @@ final class AtlantisNamedEncounterDirector {
         let entity:AtlantisNamedNPCEntity
         let wasExisting=entities[npc.id] != nil
         if let existing=entities[npc.id] {entity=existing} else {
-          entity=AtlantisNamedNPCEntity(definition:npc,index:entities.count);entities[npc.id]=entity
+          entity=AtlantisNamedNPCEntity(definition:npc,index:entities.count,shipathonStagingOnly:shipathonStagingOnly);entities[npc.id]=entity
         }
+        if shipathonStagingOnly {entity.root.position=npc.position+SIMD3<Float>(-1.5,0,-5)}
         if entity.root.parent == nil {if wasExisting{reusedEntityCount += 1};root.addChild(entity.root)}
         let encounters=baseEligible.filter{$0.npcID==npc.id}
         let lifecycle:AtlantisNamedNPCLifecycle
-        if activeSession?.npc.id == npc.id {lifecycle = .engaged}
+        if shipathonStagingOnly {lifecycle = .spawned}
+        else if activeSession?.npc.id == npc.id {lifecycle = .engaged}
         else if encounters.allSatisfy({cooling.contains($0.id)}) {lifecycle = .coolingDown}
         else {lifecycle = .available}
         entity.setLifecycle(lifecycle,founderPosition:position,reduceMotion:reduceMotion)
       }
     }
+    if shipathonStagingOnly && shipathonMarkerEnabled && isEnabled,
+       let peer=residentNPCs.first(where:{$0.id == "mara-chen"}) {
+      if shipathonMarker == nil {shipathonMarker=makeShipathonMarker(affiliation:peer.affiliation)}
+      if let shipathonMarker,shipathonMarker.parent == nil {root.addChild(shipathonMarker)}
+    } else {shipathonMarker?.removeFromParent()}
     let ids=root.children.map(\.name),duplicates=ids.count-Set(ids).count
     if duplicates>0{duplicateViolations += duplicates}
     decisionCostMS=Double(DispatchTime.now().uptimeNanoseconds-start)/1_000_000
   }
 
   func candidate(position:SIMD3<Float>,forward:SIMD3<Float>)->AtlantisNamedInteractionCandidate? {
-    guard isEnabled,activeSession == nil else{return nil}
+    guard isEnabled,!shipathonStagingOnly,activeSession == nil else{return nil}
     let cooling=Set(cooldownUntil.filter{$0.value>elapsed}.map(\.key))
     return entities.values.compactMap {entity -> AtlantisNamedInteractionCandidate? in
       let npc=entity.definition
@@ -558,7 +740,7 @@ final class AtlantisNamedEncounterDirector {
   }
 
   func begin(npcID:String,encounterID:String,founderPosition:SIMD3<Float>)->AtlantisNamedEncounterSession? {
-    guard activeSession == nil,let npc=AtlantisNamedNPCDefinition.all.first(where:{$0.id==npcID}),
+    guard !shipathonStagingOnly,activeSession == nil,let npc=AtlantisNamedNPCDefinition.all.first(where:{$0.id==npcID}),
           let encounter=AtlantisNamedEncounterDefinition.all.first(where:{$0.id==encounterID && $0.npcID==npcID}),
           entity(npcID:npcID)?.root.parent != nil else{return nil}
     let session=AtlantisNamedEncounterSession(npc:npc,encounter:encounter,selectedResponse:nil);activeSession=session
@@ -590,6 +772,22 @@ final class AtlantisNamedEncounterDirector {
       entity.root.removeFromParent();entity.lifecycle = .despawned
     }
     if activeSession?.npc.homeDistrict==district {activeSession=nil}
+    if district == .founderDistrict {shipathonMarker?.removeFromParent()}
+  }
+
+  private func makeShipathonMarker(affiliation:String)->Entity {
+    let marker=Entity();marker.name="AtlantisPeerWorldMarker";marker.position=[-827.1,8.375,932]
+    let stone=SimpleMaterial(color:UIColor(red:0.28,green:0.31,blue:0.31,alpha:1),roughness:0.86,isMetallic:false)
+    let plaqueColor=SimpleMaterial(color:UIColor(red:0.14,green:0.23,blue:0.26,alpha:1),roughness:0.62,isMetallic:false)
+    let post=ModelEntity(mesh:.generateBox(size:[0.12,2.34,0.12]),materials:[stone]);post.position=[0,1.17,0]
+    let plaque=ModelEntity(mesh:.generateBox(size:[1.42,0.42,0.09]),materials:[plaqueColor]);plaque.position=[0,2.33,0]
+    let text=ModelEntity(mesh:.generateText(affiliation.uppercased(),extrusionDepth:0.002,
+      font:.systemFont(ofSize:0.145,weight:.semibold),containerFrame:.zero,
+      alignment:.left,lineBreakMode:.byClipping),materials:[UnlitMaterial(color:UIColor(red:0.93,green:0.90,blue:0.79,alpha:1))])
+    text.position=[-0.57,2.28,0.055]
+    for child in [post,plaque,text] {child.components.remove(CollisionComponent.self);marker.addChild(child)}
+    marker.components.remove(CollisionComponent.self)
+    return marker
   }
 }
 
@@ -776,7 +974,7 @@ final class AtlantisLivingWorldDirector {
     }
     activeDisplays=0
     for district in AtlantisDistrict.allCases {
-      let visible=population.isEnabled && residents.contains(district)
+      let visible=population.isEnabled && !population.shipathonHeroRouteOnly && residents.contains(district)
       guard visible,let reaction=reactions[district] else {displays[district]?.root.isEnabled=false;continue}
       let display:AtlantisPublicDisplay
       if let existing=displays[district] {display=existing} else {
@@ -929,7 +1127,7 @@ final class AtlantisRealityWorld {
   let manifest: AtlantisAssetManifest
   let loader: AtlantisDistrictLoader
   let root = Entity(), playerRoot = Entity(), bodyHeadingRoot = Entity(), cameraRig = Entity(), camera = PerspectiveCamera()
-  let sun = DirectionalLight(), environment = Entity(), collisionRoot = Entity()
+  let sun = DirectionalLight(), environment = Entity(), atmosphereEnvironment = Entity(), collisionRoot = Entity()
   let semanticAnchors = AtlantisSemanticAnchorRegistry()
   let interactionRegistry = AtlantisInteractionRegistry()
   let livingDirector = AtlantisLivingWorldDirector()
@@ -945,13 +1143,37 @@ final class AtlantisRealityWorld {
   private(set) var interactionStatus = "No nearby interaction"
   var selectedCamera = AtlantisBenchmarkCamera.founderStreet
   var phase = FounderEnvironmentTimeState.day
-  var shadowMode = 0
+  var lightingVariant = AtlantisDayLightingVariant.launchSelection
+  let atmosphereVariant = AtlantisAtmosphereVariant.launchSelection
+  var shadowMode = [AtlantisDayLightingVariant.baseline, .clearAspirationalDayNoShadows].contains(AtlantisDayLightingVariant.launchSelection) ? 0 : 1
+  var exteriorShadowsActive = true
+  var configuredShadowDistance: Float? {
+    guard phase == .day, lightingVariant != .clearAspirationalDayNoShadows,
+          shadowMode != 0, exteriorShadowsActive else { return nil }
+    return shadowMode == 1 ? 30 : 500
+  }
   var locomotion: AtlantisLocomotionState = .standing
   var isWalking: Bool { locomotion == .walking }
   var walkInput: Float = 0
   var turnInput: Float = 0
   private(set) var movementStatus = "Standing"
+  private(set) var shipathonPeerCueVisible = false
+  private let shipathonPeerCueEnabled = ProcessInfo.processInfo.arguments.contains("--shipathon-s5-peer-cue") ||
+    ProcessInfo.processInfo.arguments.contains("--shipathon-s5-candidate") ||
+    ProcessInfo.processInfo.arguments.contains(where:{$0.hasPrefix("--shipathon-s5-revision-")})
   @ObservationIgnored private(set) var heading: Float = 0
+  private(set) var cameraYawOffset: Float = 0
+  @ObservationIgnored private var cameraIdleSeconds: Float = 0
+  @ObservationIgnored private var heroPauseArmed = false
+  @ObservationIgnored private var heroPauseActive = false
+  @ObservationIgnored private var heroPauseConsumed = false
+  private var usesContextualCamera: Bool {
+    let arguments = ProcessInfo.processInfo.arguments
+    return arguments.contains("--shipathon-s4-camera-c") ||
+      (!arguments.contains("--shipathon-s4-camera-a") &&
+       !arguments.contains("--shipathon-s4-camera-b") &&
+       !arguments.contains("--shipathon-s2-camera-d"))
+  }
   @ObservationIgnored private var subscription: EventSubscription?
   @ObservationIgnored private var benchmarkTask: Task<Void,Never>?
   @ObservationIgnored private var frameSamples: [Double] = []
@@ -963,24 +1185,73 @@ final class AtlantisRealityWorld {
   @ObservationIgnored private var founderLocomotion: FounderLocomotionController?
   @ObservationIgnored private var founderReduceMotion = false
   @ObservationIgnored private var previousFounderPosition = SIMD3<Float>.zero
+  @ObservationIgnored private var thresholdFollowClearanceZ: Float?
+  @ObservationIgnored private var originalSpireProxyMaterials: [any RealityKit.Material]?
+  @ObservationIgnored private var shipathonRouteFrames: [Double] = []
+  @ObservationIgnored private var shipathonRouteMemoryStartMB: Double = 0
+  @ObservationIgnored private var shipathonRoutePeakMemoryMB: Double = 0
+  @ObservationIgnored var onThresholdFollowClear: (() -> Void)?
   var hasFounderPresentation: Bool { founderRig != nil }
+
+  var shipathonRoutePerformance: String {
+    let frames = shipathonRouteFrames.sorted()
+    let load = loader.measurements.last { $0.district == AtlantisDistrict.founderDistrict.rawValue && $0.outcome == "loaded" }
+    guard !frames.isEmpty else { return "route frames pending" }
+    return String(format: "route samples %d · load %.3fs · load memory %.1f→%.1f MB · route memory %.1f→%.1f MB peak %.1f MB · mean %.2f ms · p95 %.2f ms · longest %.2f ms · hitches >50ms %d",
+                  frames.count, load?.seconds ?? -1, load?.memoryBeforeMB ?? -1,
+                  load?.memoryAfterMB ?? -1, shipathonRouteMemoryStartMB,
+                  AtlantisMemory.footprintMB(), shipathonRoutePeakMemoryMB,
+                  frames.reduce(0, +) / Double(frames.count),
+                  frames[min(frames.count - 1, Int(Double(frames.count) * 0.95))],
+                  frames.last ?? 0, frames.filter { $0 > 50 }.count)
+  }
 
   init(manifest: AtlantisAssetManifest) {
     self.manifest=manifest;loader=AtlantisDistrictLoader(manifest:manifest);grounding=AtlantisGrounding(traversal:manifest.traversal);streaming=AtlantisStreamingCoordinator(loader:loader,manifest:manifest)
     root.name="AtlantisPresentation";playerRoot.name="AtlantisPlayerRoot";bodyHeadingRoot.name="BodyHeadingRoot";cameraRig.name="CameraRig";camera.name="Camera";collisionRoot.name="TraversalCollision"
-    root.addChild(loader.root);root.addChild(livingDirector.root);root.addChild(playerRoot);playerRoot.addChild(bodyHeadingRoot);bodyHeadingRoot.addChild(cameraRig);cameraRig.addChild(camera);root.addChild(sun);root.addChild(environment);root.addChild(collisionRoot)
-    livingWorld.isEnabled=ProcessInfo.processInfo.arguments.contains("--atlantis-living-world") || ProcessInfo.processInfo.arguments.contains("--atlantis-living-world-profile")
-    livingDirector.namedEncounters.isEnabled=livingWorld.isEnabled || ProcessInfo.processInfo.arguments.contains("--atlantis-named-encounters")
-    livingDirector.consequences.isEnabled=livingWorld.isEnabled || ProcessInfo.processInfo.arguments.contains("--atlantis-world-consequences")
+    root.addChild(loader.root);root.addChild(livingDirector.root);root.addChild(playerRoot);playerRoot.addChild(bodyHeadingRoot);bodyHeadingRoot.addChild(cameraRig);cameraRig.addChild(camera);root.addChild(sun);root.addChild(environment);root.addChild(atmosphereEnvironment);root.addChild(collisionRoot)
+    let arguments=ProcessInfo.processInfo.arguments
+    let broadLivingWorld=arguments.contains("--atlantis-living-world") || arguments.contains("--atlantis-living-world-profile")
+    let s5RevisionStudy=arguments.contains(where:{$0.hasPrefix("--shipathon-s5-revision-")})
+    let s5HeroStudy=arguments.contains("--shipathon-s5-ambient") ||
+      arguments.contains("--shipathon-s5-peer-cue") || arguments.contains("--shipathon-s5-candidate") || s5RevisionStudy
+    livingWorld.isEnabled=broadLivingWorld || s5HeroStudy
+    livingWorld.shipathonHeroRouteOnly=s5HeroStudy && !broadLivingWorld
+    livingDirector.namedEncounters.isEnabled=broadLivingWorld || arguments.contains("--atlantis-named-encounters")
+    if (arguments.contains("--shipathon-s5-candidate") || s5RevisionStudy) && !broadLivingWorld {
+      livingDirector.namedEncounters.isEnabled=true
+      livingDirector.namedEncounters.shipathonStagingOnly=true
+      livingDirector.namedEncounters.shipathonMarkerEnabled=arguments.contains("--shipathon-s5-revision-b") ||
+        arguments.contains("--shipathon-s5-revision-c")
+    }
+    livingDirector.consequences.isEnabled=broadLivingWorld || arguments.contains("--atlantis-world-consequences")
     camera.camera.near=0.2;camera.camera.far=8000
     let image=UIGraphicsImageRenderer(size:CGSize(width:32,height:16)).image { c in UIColor.white.setFill();c.fill(CGRect(x:0,y:0,width:32,height:16)) }
     if let cg=image.cgImage {
       do { let resource=try EnvironmentResource(equirectangular:cg);environment.components.set(ImageBasedLightComponent(source:.single(resource))) }
       catch { self.error="Environment: \(error.localizedDescription)" }
     }
+    if let far = atmosphereVariant.farProxyIBL {
+      let image = UIGraphicsImageRenderer(size: CGSize(width: 32, height: 16)).image { context in
+        UIColor(red: CGFloat(far.rgb.x), green: CGFloat(far.rgb.y), blue: CGFloat(far.rgb.z), alpha: 1).setFill()
+        context.fill(CGRect(x: 0, y: 0, width: 32, height: 16))
+      }
+      if let cg = image.cgImage {
+        do {
+          let resource = try EnvironmentResource(equirectangular: cg)
+          var light = ImageBasedLightComponent(source: .single(resource))
+          light.intensityExponent = far.exponent
+          atmosphereEnvironment.components.set(light)
+        } catch { self.error = "Far proxy environment: \(error.localizedDescription)" }
+      }
+    }
     loader.onInstall={ [weak self] district,entity in
       guard let self else{return}
-      entity.components.set(ImageBasedLightReceiverComponent(imageBasedLight:self.environment))
+      let ibl = entity.name == "SpireFarProxy" && self.phase == .day &&
+        self.atmosphereEnvironment.components[ImageBasedLightComponent.self] != nil
+        ? self.atmosphereEnvironment : self.environment
+      entity.components.set(ImageBasedLightReceiverComponent(imageBasedLight:ibl))
+      if entity.name == "SpireFarProxy" { self.updateFarProxyAtmosphere(entity) }
       entity.components.set(AtlantisDayPhaseComponent(phase:self.phase.rawValue))
       if let district {
         self.semanticAnchors.register(district:district,root:entity,manifest:self.manifest)
@@ -1079,6 +1350,9 @@ final class AtlantisRealityWorld {
     }
   }
   func enterFromFounderGarage(_ handoff: FounderAtlantisTraversalHandoff) {
+    shipathonRouteFrames = []
+    shipathonRouteMemoryStartMB = AtlantisMemory.footprintMB()
+    shipathonRoutePeakMemoryMB = shipathonRouteMemoryStartMB
     let position = AtlantisSpatialContract.fromFounderGarage(handoff.garagePosition)
     let horizontalFacing = SIMD2<Float>(handoff.facingDirection.x, handoff.facingDirection.z)
     let facing = simd_length_squared(horizontalFacing) > 0.000_001
@@ -1095,6 +1369,15 @@ final class AtlantisRealityWorld {
     movementStatus = String(format: "Garage handoff · %.1f, %.2f, %.1f", position.x, position.y, position.z)
     refreshInteractionCandidate()
   }
+  func waitForThresholdFollowClearance(garageFrontZ: Float, sideClearance: Float) {
+    // Clear the front corner from the follow camera's wide view as well as
+    // placing the camera itself outside the Garage enclosure.
+    thresholdFollowClearanceZ = garageFrontZ + sideClearance
+  }
+  func cancelThresholdFollowClearance() {
+    thresholdFollowClearanceZ = nil
+    onThresholdFollowClear = nil
+  }
   func installFounderPresentation(
     rig: FounderPresentationRig,
     locomotion: FounderLocomotionController,
@@ -1104,6 +1387,9 @@ final class AtlantisRealityWorld {
     founderRig = rig
     founderLocomotion = locomotion
     founderReduceMotion = reduceMotion
+    livingWorld.reduceMotion = reduceMotion
+    livingDirector.namedEncounters.reduceMotion = reduceMotion
+    livingDirector.consequences.reduceMotion = reduceMotion
     previousFounderPosition = playerRoot.position
     root.addChild(rig.anchor)
     rig.anchor.isEnabled = true
@@ -1115,12 +1401,51 @@ final class AtlantisRealityWorld {
     founderRig = nil
     founderLocomotion = nil
   }
+  func setFounderReduceMotion(_ reduced: Bool) {
+    founderReduceMotion = reduced
+    livingWorld.reduceMotion = reduced
+    livingDirector.namedEncounters.reduceMotion = reduced
+    livingDirector.consequences.reduceMotion = reduced
+    if reduced, ProcessInfo.processInfo.arguments.contains("--shipathon-s4-camera-b") ||
+                usesContextualCamera {
+      cameraYawOffset = 0
+      cameraRig.orientation = .init()
+      heroPauseArmed = false
+      heroPauseActive = false
+      heroPauseConsumed = true
+    }
+  }
   private func applyThirdPersonCamera() {
     cameraRig.transform = .identity
     camera.transform = .identity
-    let position = SIMD3<Float>(0.72, 1.72, 2.35)
+    cameraYawOffset = 0
+    cameraIdleSeconds = 0
+    heroPauseArmed = false
+    heroPauseActive = false
+    heroPauseConsumed = false
+    // The accepted S2C threshold framing is the standard exterior camera.
+    let arguments = ProcessInfo.processInfo.arguments
+    let position: SIMD3<Float>
+    let fieldOfView: Float
+    if arguments.contains("--shipathon-s2-camera-a") {
+      position = [0.95, 2.05, 3.55]
+      fieldOfView = 62
+    } else if arguments.contains("--shipathon-s2-camera-b") {
+      position = [1.20, 2.25, 4.15]
+      fieldOfView = 66
+    } else if arguments.contains("--shipathon-s2-camera-d") {
+      position = [0.72, 1.72, 2.35]
+      fieldOfView = 70
+    } else if arguments.contains("--shipathon-s2-threshold-a")
+                || arguments.contains("--shipathon-s2-threshold-baseline") {
+      position = [0.72, 1.72, 2.35]
+      fieldOfView = 58
+    } else {
+      position = [0.72, 1.72, 2.35]
+      fieldOfView = 70
+    }
     camera.look(at: [0, 1.05, 0], from: position, relativeTo: bodyHeadingRoot)
-    camera.camera.fieldOfViewInDegrees = 58
+    camera.camera.fieldOfViewInDegrees = fieldOfView
   }
   func selectCamera(_ value: AtlantisBenchmarkCamera) {
     selectedCamera=value;locomotion = .standing;walkInput=0;turnInput=0
@@ -1138,12 +1463,33 @@ final class AtlantisRealityWorld {
   }
   func applyLighting() {
     let p=FounderEnvironmentLightingConfiguration.preset(for:phase)
-    sun.look(at:[0,0,0],from:p.directionalPosition*100,relativeTo:nil)
-    sun.light.intensity=p.directionalIntensity;sun.light.color=UIColor(red:CGFloat(p.directionalColor.x),green:CGFloat(p.directionalColor.y),blue:CGFloat(p.directionalColor.z),alpha:1)
-    sun.shadow=shadowMode == 0 ? nil : .init(maximumDistance:shadowMode == 1 ? 120 : 500,depthBias:1)
-    if var light=environment.components[ImageBasedLightComponent.self] { light.intensityExponent=phase == .night ? -5 : phase == .evening ? -3 : -1;environment.components.set(light) }
+    let daylight = phase == .day ? lightingVariant.key : nil
+    let position = daylight?.position ?? p.directionalPosition
+    let color = daylight?.color ?? p.directionalColor
+    sun.look(at:[0,0,0],from:position*100,relativeTo:nil)
+    sun.light.intensity=daylight?.intensity ?? p.directionalIntensity
+    sun.light.color=UIColor(red:CGFloat(color.x),green:CGFloat(color.y),blue:CGFloat(color.z),alpha:1)
+    sun.shadow=configuredShadowDistance.map { .init(maximumDistance:$0,depthBias:1) }
+    if var light=environment.components[ImageBasedLightComponent.self] { light.intensityExponent=daylight?.environmentExponent ?? (phase == .night ? -5 : phase == .evening ? -3 : -1);environment.components.set(light) }
+    if let proxy = loader.supportEntity(named: "SpireFarProxy") {
+      let useAtmosphere = phase == .day && atmosphereEnvironment.components[ImageBasedLightComponent.self] != nil
+      proxy.components.set(ImageBasedLightReceiverComponent(imageBasedLight: useAtmosphere ? atmosphereEnvironment : environment))
+      updateFarProxyAtmosphere(proxy)
+    }
     for district in loader.loaded {loader.entity(for:district)?.components.set(AtlantisDayPhaseComponent(phase:phase.rawValue))}
     livingDirector.reconcile(residents:streaming.residents,current:streaming.current,phase:phase,position:playerRoot.position)
+  }
+  private func updateFarProxyAtmosphere(_ proxy: Entity) {
+    guard let silhouette = proxy.findEntity(named: "SpireSilhouette"),
+          var model = silhouette.components[ModelComponent.self] else { return }
+    if originalSpireProxyMaterials == nil { originalSpireProxyMaterials = model.materials }
+    if phase == .day, let rgb = atmosphereVariant.farProxyTint {
+      let color = UIColor(red: CGFloat(rgb.x), green: CGFloat(rgb.y), blue: CGFloat(rgb.z), alpha: 1)
+      model.materials = [SimpleMaterial(color: color, roughness: .float(0.9), isMetallic: false)]
+    } else if let originalSpireProxyMaterials {
+      model.materials = originalSpireProxyMaterials
+    }
+    silhouette.components.set(model)
   }
   var loadedNames: Set<String> {
     var names=Set(loader.loaded.map(\.rawValue));if loader.contextState == .loaded {names.insert("WorldContext")}
@@ -1176,6 +1522,13 @@ final class AtlantisRealityWorld {
       report.startupMilestones["timeToFirstSceneUpdate"] = elapsed(since: createdAt)
     }
     if collectingFrames {frameSamples.append(delta*1000)}
+    if ProcessInfo.processInfo.arguments.contains("--shipathon-s2c-route-performance"),
+       isWalking, abs(walkInput) > 0.01 {
+      shipathonRouteFrames.append(delta * 1000)
+      if frameCounter % 30 == 0 {
+        shipathonRoutePeakMemoryMB = max(shipathonRoutePeakMemoryMB, AtlantisMemory.footprintMB())
+      }
+    }
     if !isPresentingInteraction {livingDirector.advance(delta:delta,residents:streaming.residents,current:streaming.current,phase:phase,position:playerRoot.position)}
     else if isPresentingNamedEncounter {livingDirector.namedEncounters.advance(delta:delta)}
     frameCounter += 1
@@ -1185,14 +1538,70 @@ final class AtlantisRealityWorld {
       if abs(turnInput) > 0.0001 { turn(turnInput * 1.8 * step) }
       move(input:walkInput,delta:delta)
     }
+    if shipathonPeerCueEnabled && frameCounter.isMultiple(of:15) {
+      shipathonPeerCueVisible=AtlantisLivingWorldPresentationAdapter.shipathonPeerCueVisible(
+        position:playerRoot.position,residents:streaming.residents
+      )
+    }
+    if ProcessInfo.processInfo.arguments.contains("--shipathon-s2-camera-d") {
+      // Composition study: orbit toward the city only after clearing the Garage.
+      let streetProgress = max(0, min(1, (playerRoot.position.x + 873) / 13))
+      cameraYawOffset = streetProgress * 0.75
+      cameraRig.orientation = simd_quatf(angle: cameraYawOffset, axis: [0, 1, 0])
+    } else if ProcessInfo.processInfo.arguments.contains("--shipathon-s4-camera-b") ||
+              usesContextualCamera {
+      let contextual = usesContextualCamera
+      let step = Float(min(max(delta, 0), 0.1))
+      cameraIdleSeconds = abs(walkInput) < 0.1 ? cameraIdleSeconds + step : 0
+      let target: Float
+      if contextual {
+        let inWindow = AtlantisS4CameraBias.heroPauseWindow(
+          position: playerRoot.position, heading: heading, reduceMotion: founderReduceMotion
+        )
+        if !inWindow {
+          heroPauseArmed = false
+          heroPauseActive = false
+          heroPauseConsumed = false
+        } else if abs(turnInput) >= 0.08 || walkInput < -0.1 {
+          heroPauseArmed = false
+          heroPauseActive = false
+          heroPauseConsumed = true
+        } else if walkInput > 0.1 {
+          if heroPauseActive { heroPauseActive = false }
+          if !heroPauseConsumed { heroPauseArmed = true }
+        } else if cameraIdleSeconds >= 0.35 && heroPauseArmed && !heroPauseConsumed {
+          heroPauseActive = true
+          heroPauseArmed = false
+          heroPauseConsumed = true
+        }
+        target = heroPauseActive ? AtlantisS4CameraBias.contextualYaw : 0
+      } else {
+        target = AtlantisS4CameraBias.target(
+          positionX: playerRoot.position.x, heading: heading, forward: walkInput,
+          turn: turnInput, idleSeconds: cameraIdleSeconds, reduceMotion: founderReduceMotion
+        )
+      }
+      let maximumStep = (target == 0 ? (contextual ? 2.4 : 1.8) : contextual ? 1.0 : 0.65) * step
+      cameraYawOffset += max(-maximumStep, min(maximumStep, target - cameraYawOffset))
+      cameraRig.orientation = simd_quatf(angle: cameraYawOffset, axis: [0, 1, 0])
+    }
+    if let thresholdFollowClearanceZ,
+       camera.position(relativeTo: root).z >= thresholdFollowClearanceZ {
+      self.thresholdFollowClearanceZ = nil
+      let completion = onThresholdFollowClear
+      onThresholdFollowClear = nil
+      completion?()
+    }
     updateFounderPresentation(delta: Float(min(max(delta, 0), 0.1)))
   }
   private func updateFounderPresentation(delta: Float) {
     guard let founderLocomotion else { return }
     let dt = max(delta, 0.000_001)
     let displacement = playerRoot.position - previousFounderPosition
-    let horizontalVelocity = SIMD2<Float>(displacement.x / dt, displacement.z / dt)
-    let facing = SIMD3<Float>(-sin(heading), 0, -cos(heading))
+    // The Garage Founder rig's visual yaw convention mirrors Atlantis's X heading.
+    // Adapt presentation vectors only; playerRoot movement/collision stay authoritative.
+    let horizontalVelocity = FounderAtlantisVisualHeading.velocity(displacement, delta: dt)
+    let facing = FounderAtlantisVisualHeading.facing(heading)
     let magnitude = simd_length(horizontalVelocity)
     founderLocomotion.update(
       spatial: FounderCameraSpatialState(
@@ -1225,7 +1634,7 @@ final class AtlantisRealityWorld {
     report.collisionEntityCount=collisionRoot.children.count
   }
   func unload(_ district: AtlantisDistrict) {_=streaming.requestUnload(district);collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;turnInput=0;syncSpireSwap()}
-  func unloadAll() {loader.unloadAll();for district in AtlantisDistrict.allCases{livingDirector.districtDidUnload(district)};collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;turnInput=0;activeInteractionID=nil;activeNamedNPCID=nil;activeNamedEncounterID=nil;interactionReturnContext=nil;streaming.setFrozen(false)}
+  func unloadAll() {loader.unloadAll();for district in AtlantisDistrict.allCases{livingDirector.districtDidUnload(district)};collisionRoot.children.removeAll();locomotion = .standing;walkInput=0;turnInput=0;activeInteractionID=nil;activeNamedNPCID=nil;activeNamedEncounterID=nil;interactionReturnContext=nil;shipathonPeerCueVisible=false;streaming.setFrozen(false)}
 
   var activeInteraction: AtlantisInteractionTarget? {activeInteractionID.flatMap(interactionRegistry.target(id:))}
   var interactionPrompt: String {
@@ -1518,7 +1927,7 @@ final class AtlantisRealityWorld {
     for view in AtlantisBenchmarkCamera.allCases {guard !Task.isCancelled else{return};benchmarkStatus=view.rawValue;selectCamera(view);await sample(view.rawValue)}
     selectCamera(.commerceFlashpoint)
     for mode in 0...2 {guard !Task.isCancelled else{return};shadowMode=mode;applyLighting();await sample("shadows-\(mode)")}
-    shadowMode=0
+    shadowMode=[AtlantisDayLightingVariant.baseline, .clearAspirationalDayNoShadows].contains(lightingVariant) ? 0 : 1
     for state in FounderEnvironmentTimeState.allCases {guard !Task.isCancelled else{return};phase=state;applyLighting();await sample("lighting-\(state.rawValue)",seconds:1)}
     phase = .day;applyLighting()
     for cycle in 1...3 {

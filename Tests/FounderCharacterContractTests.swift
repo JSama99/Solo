@@ -170,7 +170,7 @@ final class FounderCharacterContractTests: XCTestCase {
   }
 
   func testPassB2SupportAndLagSignalsAreContinuousFiniteAndBounded() {
-    let phaseRate = FounderGarageCameraConfiguration.walkingSpeed / 0.78 * 2 * Float.pi
+    let phaseRate = FounderGarageCameraConfiguration.walkingSpeed / FounderLocomotionController.gaitCycleDistance * 2 * Float.pi
     var previous: FounderKineticChainFrame?
     var transitionTotal: Float = 0
     for index in 0...720 {
@@ -231,6 +231,31 @@ final class FounderCharacterContractTests: XCTestCase {
         FounderFootPhase.resolve(gaitPhase: phase, offset: .pi)
       )
     }
+  }
+
+  func testWalkPoseHasContactLoadingPassingAndSeamlessContralateralCycle() {
+    let contact = FounderWalkPose.resolve(phase: 0)
+    let down = FounderWalkPose.resolve(phase: .pi / 4)
+    let pushOff = FounderWalkPose.resolve(phase: .pi / 2)
+    let swing = FounderWalkPose.resolve(phase: .pi)
+    let passing = FounderWalkPose.resolve(phase: 5 * .pi / 4)
+    XCTAssertLessThan(down.pelvisHeight, contact.pelvisHeight)
+    XCTAssertGreaterThan(pushOff.toe, contact.toe)
+    XCTAssertGreaterThan(swing.knee, contact.knee)
+    XCTAssertGreaterThan(passing.knee, contact.knee)
+    XCTAssertEqual(contact, FounderWalkPose.resolve(phase: 2 * .pi))
+    XCTAssertEqual(swing, FounderWalkPose.resolve(phase: 0 + .pi))
+
+    let beforeLoop = FounderWalkPose.resolve(phase: 2 * .pi - 0.001)
+    XCTAssertLessThan(abs(beforeLoop.thigh - contact.thigh), 0.001)
+    XCTAssertLessThan(abs(beforeLoop.foot - contact.foot), 0.001)
+  }
+
+  func testWalkCadenceUsesTwoStepsPerDistanceDrivenCycle() {
+    let cycle = FounderLocomotionController.gaitCycleDistance
+    XCTAssertEqual(2 * AtlantisSpatialContract.walkingSpeed / cycle * 60, 120, accuracy: 0.001)
+    XCTAssertGreaterThan(2 * FounderGarageCameraConfiguration.walkingSpeed / cycle * 60, 100)
+    XCTAssertLessThan(2 * FounderGarageCameraConfiguration.walkingSpeed / cycle * 60, 120)
   }
 
   func testProductionSeatedIdleAddsBoundedMicroMotionWithoutContactDrift() async throws {
@@ -321,6 +346,9 @@ final class FounderCharacterContractTests: XCTestCase {
     var sample = try XCTUnwrap(locomotion.latestMotionSample)
     assertTransform(sample.jointTransforms["Hips"], isCloseTo: try XCTUnwrap(authored.baselineTransform(named: "Hips", standing: true)))
     assertTransform(sample.jointTransforms["Foot_L"], isCloseTo: try XCTUnwrap(authored.baselineTransform(named: "Foot_L", standing: true)))
+    let standingArm = try XCTUnwrap(sample.jointTransforms["UpperArm_L"])
+    let neutralArm = try XCTUnwrap(authored.baselineTransform(named: "UpperArm_L", standing: true))
+    XCTAssertEqual(angularDistance(standingArm.rotation, neutralArm.rotation), 0.50, accuracy: 0.001)
     for _ in 0..<8 {
       locomotion.update(spatial: seated, collisionBlocked: false, firstPerson: true, reduceMotion: true, deltaTime: 1.0 / 60)
     }
@@ -328,6 +356,7 @@ final class FounderCharacterContractTests: XCTestCase {
     sample = try XCTUnwrap(locomotion.latestMotionSample)
     assertTransform(sample.jointTransforms["Hips"], isCloseTo: try XCTUnwrap(authored.baselineTransform(named: "Hips", standing: false)))
     assertTransform(sample.jointTransforms["Foot_L"], isCloseTo: try XCTUnwrap(authored.baselineTransform(named: "Foot_L", standing: false)))
+    assertTransform(sample.jointTransforms["UpperArm_L"], isCloseTo: try XCTUnwrap(authored.baselineTransform(named: "UpperArm_L", standing: false)))
     XCTAssertEqual(locomotion.diagnostics.seatedAnchorError, 0, accuracy: 0.0001)
     XCTAssertEqual(world.cameraController.spatialState, cameraBefore)
     XCTAssertEqual(GameStore.saveVersion, 20)
@@ -360,7 +389,15 @@ final class FounderCharacterContractTests: XCTestCase {
     }
     let laterWalk = try XCTUnwrap(locomotion.latestMotionSample?.jointTransforms["Foot_L"])
     XCTAssertNotEqual(firstWalk.rotation, laterWalk.rotation)
-    XCTAssertEqual(locomotion.diagnostics.gaitCycleDistance, 0.78, accuracy: 0.001)
+    XCTAssertEqual(locomotion.diagnostics.gaitCycleDistance, 1.40, accuracy: 0.001)
+    let authored = try XCTUnwrap((world.activeFounderVisualAdapter as? USDZFounderVisualAdapter)?.rig.authoredPose)
+    for side in ["L", "R"] {
+      let armName = "UpperArm_\(side)"
+      let walkingArm = try XCTUnwrap(locomotion.latestMotionSample?.jointTransforms[armName])
+      let standingArm = try XCTUnwrap(authored.baselineTransform(named: armName, standing: true))
+      XCTAssertGreaterThan(angularDistance(walkingArm.rotation, standingArm.rotation), 0.35)
+      XCTAssertLessThan(angularDistance(walkingArm.rotation, standingArm.rotation), 0.80)
+    }
 
     spatial.horizontalVelocity = .zero
     spatial.movementMagnitude = 0
@@ -401,7 +438,7 @@ final class FounderCharacterContractTests: XCTestCase {
       locomotion.configurePhaseVariantForReview(variant)
       var observedLeft: Set<FounderFootPhase> = []
       var observedRight: Set<FounderFootPhase> = []
-      for _ in 0..<60 {
+      for _ in 0..<90 {
         spatial.position.z += spatial.horizontalVelocity.y * delta
         locomotion.update(
           spatial: spatial,
@@ -418,7 +455,7 @@ final class FounderCharacterContractTests: XCTestCase {
           FounderGarageCameraConfiguration.walkingSpeed,
           accuracy: 0.000_001
         )
-        XCTAssertEqual(locomotion.diagnostics.gaitCycleDistance, 0.78, accuracy: 0.001)
+        XCTAssertEqual(locomotion.diagnostics.gaitCycleDistance, 1.40, accuracy: 0.001)
         XCTAssertLessThanOrEqual(locomotion.diagnostics.footSlideRatio, 0.02)
         XCTAssertTrue(sampleTransformsAreFinite(sample), variant.reviewLabel)
         observedLeft.insert(locomotion.diagnostics.leftFootPhase)
@@ -491,7 +528,7 @@ final class FounderCharacterContractTests: XCTestCase {
       XCTAssertLessThanOrEqual(abs(locomotion.diagnostics.weightTransfer.pelvisLateral), 0.022_001)
       XCTAssertTrue(sampleTransformsAreFinite(try XCTUnwrap(locomotion.latestMotionSample)))
     }
-    XCTAssertEqual(locomotion.diagnostics.gaitCycleDistance, 0.78, accuracy: 0.001)
+    XCTAssertEqual(locomotion.diagnostics.gaitCycleDistance, 1.40, accuracy: 0.001)
     XCTAssertEqual(GameStore.saveVersion, 20)
   }
 
@@ -685,7 +722,12 @@ final class FounderCharacterContractTests: XCTestCase {
     XCTAssertEqual(frame.armPresentedAngle, 0)
     let sample = try XCTUnwrap(locomotion.latestMotionSample)
     assertTransform(sample.jointTransforms["Hips"], isCloseTo: try XCTUnwrap(adapter.rig.authoredPose?.baselineTransform(named: "Hips", standing: true)))
-    assertTransform(sample.jointTransforms["UpperArm_L"], isCloseTo: try XCTUnwrap(adapter.rig.authoredPose?.baselineTransform(named: "UpperArm_L", standing: true)))
+    for side in ["L", "R"] {
+      let name = "UpperArm_\(side)"
+      let arm = try XCTUnwrap(sample.jointTransforms[name])
+      let authoredRest = try XCTUnwrap(adapter.rig.authoredPose?.baselineTransform(named: name, standing: true))
+      XCTAssertEqual(angularDistance(arm.rotation, authoredRest.rotation), 0.50, accuracy: 0.001)
+    }
   }
 
   func testGK04MildTurnKeepsKineticChainAndFacingBounded() async throws {
@@ -748,7 +790,7 @@ final class FounderCharacterContractTests: XCTestCase {
       XCTAssertLessThanOrEqual(abs(locomotion.diagnostics.kineticChain.armPresentedAngle), 0.250_001)
       XCTAssertTrue(sampleTransformsAreFinite(try XCTUnwrap(locomotion.latestMotionSample)))
     }
-    XCTAssertEqual(locomotion.diagnostics.gaitCycleDistance, 0.78, accuracy: 0.001)
+    XCTAssertEqual(locomotion.diagnostics.gaitCycleDistance, 1.40, accuracy: 0.001)
     XCTAssertEqual(GameStore.saveVersion, 20)
   }
 

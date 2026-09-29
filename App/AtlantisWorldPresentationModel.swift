@@ -212,6 +212,26 @@ enum AtlantisLivingWorldPresentationAdapter {
   static let pedestrianBudget = 10
   static let vehicleBudget = 2
 
+  // Presentation-only S5 study, kept separate from the wider debug district routes.
+  static let shipathonHeroRoutes: [AtlantisAmbientRoute] = [
+    .init(id:"S5_Frontage",district:.founderDistrict,kind:.pedestrian,
+          points:[[-867,8.03,1048],[-866,8.03,1048]]),
+    .init(id:"S5_StreetWalk",district:.founderDistrict,kind:.pedestrian,
+          points:[[-842,8.03,1041],[-830,8.03,1041]])
+  ]
+
+  static func shipathonHeroRouteContains(_ position: SIMD3<Float>) -> Bool {
+    (-905 ... -805).contains(position.x) && (990 ... 1060).contains(position.z)
+  }
+
+  static func shipathonPeerCueVisible(position: SIMD3<Float>,
+                                     residents: Set<AtlantisDistrict>) -> Bool {
+    guard residents.contains(.founderDistrict),
+          let peer=AtlantisNamedNPCDefinition.all.first(where:{$0.id == "mara-chen"}) else { return false }
+    return simd_distance(SIMD2(position.x,position.z),
+                         SIMD2(peer.position.x,peer.position.z)) <= 45
+  }
+
   static func profile(district: AtlantisDistrict, phase: FounderEnvironmentTimeState) -> AtlantisLivingWorldProfile {
     let counts: [FounderEnvironmentTimeState:(Int,Int)]
     let language: String
@@ -366,7 +386,7 @@ struct AtlantisNamedNPCDefinition: Identifiable, Equatable, Sendable {
   var interactionID: String { "atlantis.namedNPC.\(id)" }
 
   static let all: [Self] = [
-    .init(id:"mara-chen",displayName:"Mara Chen",role:.founder,affiliation:"Quarry Labs",homeDistrict:.founderDistrict,presentationArchetype:.peerFounder,position:[-840,8.03,940],interactionRadius:7,encounterCategories:[.founderAdvice],publicKnowledgeScope:"Public company progress and founder ecosystem context"),
+    .init(id:"mara-chen",displayName:"Mara Chen",role:.founder,affiliation:"Quarry Labs",homeDistrict:.founderDistrict,presentationArchetype:.peerFounder,position:[-825,8.375,940],interactionRadius:7,encounterCategories:[.founderAdvice],publicKnowledgeScope:"Public company progress and founder ecosystem context"),
     .init(id:"eli-navarro",displayName:"Eli Navarro",role:.founder,affiliation:"Relay Foundry",homeDistrict:.startupRow,presentationArchetype:.peerFounder,position:[-460,14.45,340],interactionRadius:7,encounterCategories:[.founderRumor,.founderAdvice],publicKnowledgeScope:"Public rival claims and public Momentum"),
     .init(id:"nia-okafor",displayName:"Nia Okafor",role:.investor,affiliation:"Tideglass Ventures",homeDistrict:.ventureDistrict,presentationArchetype:.capitalPartner,position:[-490,14.45,-180],interactionRadius:7,encounterCategories:[.investorInterest,.investorSkepticism],publicKnowledgeScope:"Public Momentum, Coverage, Trust consequences, and Venture progression"),
     .init(id:"sloane-park",displayName:"Sloane Park",role:.reporter,affiliation:"Signal TV",homeDistrict:.mediaDistrict,presentationArchetype:.fieldReporter,position:[800,14.45,-325],interactionRadius:7,encounterCategories:[.reporterQuestion],publicKnowledgeScope:"Public Coverage and Trust consequences"),

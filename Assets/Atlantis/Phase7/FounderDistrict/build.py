@@ -7,7 +7,16 @@ s=bpy.context.scene
 for file,names in [('Assets/Atlantis/Phase3/MediaDistrict/build_media.py',['col','mat']),('Assets/Atlantis/Phase6/StartupRow/build.py',['box'])]:
  tree=ast.parse(open(file).read());exec(compile(ast.Module(body=[n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name in names],type_ignores=[]),file,'exec')) if 'box' not in names else None
 C=col('Phase7_FounderProduction',bpy.data.collections['FounderDistrict']);U=col('Founder_PublicRealm',C);B=col('Founder_Buildings',C);V=col('Founder_Phase7_ReviewCameras',C);K=col('Founder_KitLibrary',C);K.hide_render=True;K.hide_viewport=True
-mats={k:mat('Founder_'+k,c,0,.8) for k,c in {'siding':(.58,.62,.54),'cream':(.74,.7,.58),'brick':(.40,.22,.16),'paving':(.52,.52,.47),'asphalt':(.12,.14,.15),'glass':(.09,.19,.22),'wood':(.39,.26,.15),'metal':(.22,.27,.28),'lawn':(.22,.33,.16),'leaf':(.12,.26,.13),'paint':(.8,.78,.67)}.items()}
+# Shared material family: road, walk, planting, walls, glazing and metal respond
+# differently under the existing day rig without adding texture or draw calls.
+mats={k:mat('Founder_'+k,c,metal,rough) for k,c,metal,rough in [
+ ('siding',(.43,.50,.48),0,.64),('cream',(.63,.61,.55),0,.69),
+ ('brick',(.39,.23,.19),0,.90),('paving',(.43,.44,.41),0,.78),
+ ('asphalt',(.075,.095,.105),0,.96),('glass',(.035,.12,.18),.18,.24),
+ ('wood',(.35,.24,.16),0,.72),('metal',(.30,.35,.37),.62,.40),
+ ('lawn',(.105,.23,.14),0,.98),('leaf',(.075,.19,.12),0,.88),
+ ('paint',(.67,.67,.59),0,.67)
+]}
 mats['glow']=mat('Founder_OccupiedWindow',(.9,.63,.3),0,.6,.25)
 cache={}
 tree=ast.parse(open('Assets/Atlantis/Phase6/StartupRow/build.py').read());exec(compile(ast.Module(body=[n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='box'],type_ignores=[]),'box','exec'))
@@ -33,6 +42,10 @@ ribbon('Founder_GarageSeam',[[-895,-1040.1,8.03],[-855,-1040.1,8.03]],2.0)
 ribbon('Founder_OriginStreetWest',[[-1080,-1044,8.16],[-876.75,-1044,8.16]],5.9,'asphalt',False)
 ribbon('Founder_OriginStreetEast',[[-873.25,-1044,8.16],[-820,-1044,8.16]],5.9,'asphalt',False)
 ribbon('Founder_OriginStreetApronLanding',[[-875,-1043.6,8.16],[-875,-1046.95,8.16]],3.5,'asphalt',False)
+# Low visual kerbs frame the street while leaving the Garage apron and crossing flush.
+for start,end in [(-1080,-878),(-872,-820)]:
+ ribbon('Founder_OriginKerb',[[start,-1041.02,8.205],[end,-1041.02,8.205]],.12,'paving',False)
+ ribbon('Founder_OriginKerb',[[start,-1046.98,8.205],[end,-1046.98,8.205]],.12,'paving',False)
 # Bypass the full reservation on its east side; progressively denser northern streets.
 ribbon('Founder_LocalBypass',[[-820,-1044,8.16],[-820,-920,8.45],[-875,-850,9.15]],6,'asphalt',False)
 ribbon('Founder_Connector',[[-875,-850,9.15],[-790,-660,9.35],[-710,-590,16.35]],10,'asphalt',False)

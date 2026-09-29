@@ -29,6 +29,7 @@ struct FounderGarageRealityView: View {
   @State private var atlantisWorld = try? AtlantisRealityWorld(manifest: .load())
   @State private var atlantisReady = false
   @State private var isTraversingAtlantis = false
+  @State private var exteriorAtmosphereActive = false
   @State private var atlantisSupportTask: Task<Void, Never>?
   @State private var viewportWidth: CGFloat = 390
   @State private var computerActivationStartedAt: TimeInterval?
@@ -147,6 +148,7 @@ struct FounderGarageRealityView: View {
       if active && presentation.cameraState == .founderPOV { recenterFounderView() }
     }
     .onChange(of: reduceMotion) { _, reduced in
+      atlantisWorld?.setFounderReduceMotion(reduced)
       if reduced { selectCamera(presentation.cameraState) }
     }
     .onChange(of: atlantisSignals) { _, signals in
@@ -193,8 +195,11 @@ struct FounderGarageRealityView: View {
 
   private var environmentBackground: LinearGradient {
     let preset = FounderEnvironmentLightingConfiguration.preset(for: world.environmentTimeState)
+    let atmosphere = exteriorAtmosphereActive && world.environmentTimeState == .day
+      ? atlantisWorld?.atmosphereVariant.sky : nil
     return LinearGradient(
-      colors: [color(preset.backgroundTop), color(preset.backgroundBottom)],
+      colors: [color(atmosphere?.top ?? preset.backgroundTop),
+               color(atmosphere?.bottom ?? preset.backgroundBottom)],
       startPoint: .top,
       endPoint: .bottom
     )
@@ -215,6 +220,8 @@ struct FounderGarageRealityView: View {
       -AtlantisSpatialContract.founderGarage.z
     ]
     atlantis.camera.isEnabled = false
+    atlantis.exteriorShadowsActive = false
+    atlantis.applyLighting()
   }
 
   private func prepareAtlantisExterior() async -> Bool {
@@ -225,20 +232,68 @@ struct FounderGarageRealityView: View {
 
   private func enterAtlantis(_ handoff: FounderAtlantisTraversalHandoff) {
     guard atlantisReady, let atlantisWorld else { return }
+    let useSpatialHandoff = !ProcessInfo.processInfo.arguments.contains("--shipathon-s2-threshold-baseline")
     world.cameraController.setMovementIntent(.idle)
     atlantisWorld.enterFromFounderGarage(handoff)
     world.transferFounderPresentation(to: atlantisWorld, reduceMotion: reduceMotion)
-    world.entities.camera.isEnabled = false
-    atlantisWorld.camera.isEnabled = true
+    if useSpatialHandoff {
+      // Keep the camera at the crossing until the canonical follow point has
+      // passed the authored Garage front plane. Atlantis still owns movement.
+      world.deferAtlantisCameraParking(true)
+      world.setGarageExteriorBackgroundVisible(false)
+      atlantisWorld.waitForThresholdFollowClearance(
+        garageFrontZ: AtlantisSpatialContract.founderGarage.z + world.spatialSpecification.room.depth / 2,
+        sideClearance: world.spatialSpecification.room.width / 2
+      )
+      atlantisWorld.onThresholdFollowClear = { finishThresholdCameraHandoff() }
+    } else {
+      atlantisWorld.exteriorShadowsActive = true
+      atlantisWorld.applyLighting()
+      world.setGarageExteriorGroundVisible(false)
+      world.entities.camera.isEnabled = false
+      atlantisWorld.camera.isEnabled = true
+      exteriorAtmosphereActive = true
+    }
     walkingEnabled = false
     isTraversingAtlantis = true
     onExitToAtlantis(handoff)
   }
 
+  private func finishThresholdCameraHandoff() {
+    guard isTraversingAtlantis, let atlantisWorld else { return }
+    let activate = {
+      guard isTraversingAtlantis else { return }
+      atlantisWorld.exteriorShadowsActive = true
+      atlantisWorld.applyLighting()
+      world.setGarageExteriorGroundVisible(false)
+      world.entities.camera.isEnabled = false
+      atlantisWorld.camera.isEnabled = true
+      exteriorAtmosphereActive = true
+      world.restoreFromAtlantis()
+    }
+    if reduceMotion {
+      activate()
+    } else {
+      withAnimation(.easeInOut(duration: 0.12), completionCriteria: .removed) {
+        cameraOpacity = 0
+      } completion: {
+        activate()
+        withAnimation(.easeInOut(duration: 0.12)) { cameraOpacity = 1 }
+      }
+    }
+  }
+
   private func returnFromAtlantis() {
+    atlantisWorld?.cancelThresholdFollowClearance()
+    atlantisWorld?.exteriorShadowsActive = false
+    atlantisWorld?.applyLighting()
+    cameraOpacity = 1
+    world.setGarageExteriorBackgroundVisible(true)
+    world.setGarageExteriorGroundVisible(true)
     atlantisWorld?.setMovementIntent(forward: 0, turn: 0)
     _ = atlantisWorld?.returnFromInteraction()
     atlantisWorld?.camera.isEnabled = false
+    exteriorAtmosphereActive = false
     if let atlantisWorld {
       world.restoreFounderPresentation(from: atlantisWorld)
     } else {
@@ -251,18 +306,44 @@ struct FounderGarageRealityView: View {
 
   @ViewBuilder
   private func atlantisHUD(_ atlantis: AtlantisRealityWorld) -> some View {
+    let compactPeerCue=atlantis.shipathonPeerCueVisible &&
+      ProcessInfo.processInfo.arguments.contains("--shipathon-s5-revision-c")
     VStack(alignment: .leading, spacing: 12) {
       HStack {
-        VStack(alignment: .leading, spacing: 2) {
-          Text("ATLANTIS")
-            .font(.caption.bold())
-          Text(atlantis.streaming.current.title)
-            .font(.headline)
+        if !compactPeerCue {
+          VStack(alignment: .leading, spacing: 2) {
+            Text("ATLANTIS")
+              .font(.caption.bold())
+            Text(atlantis.streaming.current.title)
+              .font(.headline)
+          }
+          .padding(.horizontal, 14)
+          .padding(.vertical, 10)
+          .background(.black.opacity(0.68), in: .rect(cornerRadius: 12))
+          .accessibilityIdentifier("atlantis.hud.districtCard")
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(.black.opacity(0.68), in: .rect(cornerRadius: 12))
         Spacer()
+        if atlantis.shipathonPeerCueVisible,
+           let peer = AtlantisNamedNPCDefinition.all.first(where: { $0.id == "mara-chen" }) {
+          VStack(alignment: .trailing, spacing: 2) {
+            if compactPeerCue {
+              Text(peer.displayName).font(.subheadline.weight(.semibold))
+              Text(peer.role.title).font(.caption2).foregroundStyle(.white.opacity(0.82))
+            } else {
+              Text(peer.affiliation.uppercased())
+                .font(.caption.bold())
+              Text("\(peer.displayName) · \(peer.role.title)")
+                .font(.caption2)
+                .foregroundStyle(.white.opacity(0.82))
+            }
+          }
+          .lineLimit(1)
+          .padding(.horizontal, compactPeerCue ? 10:12)
+          .padding(.vertical, compactPeerCue ? 7:10)
+          .background(.black.opacity(compactPeerCue ? 0.50:0.68), in: .rect(cornerRadius: 10))
+          .accessibilityElement(children: .combine)
+          .accessibilityIdentifier("atlantis.shipathon.peerCue")
+        }
       }
 
       Spacer()
@@ -305,6 +386,29 @@ struct FounderGarageRealityView: View {
         .accessibilityElement()
         .accessibilityLabel("Atlantis traversal")
         .accessibilityIdentifier("atlantis.traversal.root")
+        .accessibilityValue(ProcessInfo.processInfo.arguments.contains("--founder-traversal-diagnostics")
+          ? String(format: "%.1f, %.2f, %.1f · heading %.2f · %@ · camera %@ %.1f",
+                   atlantis.playerRoot.position.x, atlantis.playerRoot.position.y,
+                   atlantis.playerRoot.position.z, atlantis.heading, atlantis.movementStatus,
+                   atlantis.camera.isEnabled ? "Atlantis" : "Garage",
+                   atlantis.camera.position(relativeTo: atlantis.root).z)
+            + (ProcessInfo.processInfo.arguments.contains("--shipathon-s2c-route-performance")
+               ? " · " + atlantis.shipathonRoutePerformance : "")
+            + (ProcessInfo.processInfo.arguments.contains("--shipathon-s4-camera-diagnostics")
+               ? String(format: " · camera heading %.2f yaw %.2f · camera xyz %.1f, %.2f, %.1f · Founder visual heading %.2f",
+                        atlantis.heading + atlantis.cameraYawOffset, atlantis.cameraYawOffset,
+                        atlantis.camera.position(relativeTo: atlantis.root).x,
+                        atlantis.camera.position(relativeTo: atlantis.root).y,
+                        atlantis.camera.position(relativeTo: atlantis.root).z,
+                        atan2(FounderAtlantisVisualHeading.facing(atlantis.heading).x,
+                              -FounderAtlantisVisualHeading.facing(atlantis.heading).z)) : "")
+            + (ProcessInfo.processInfo.arguments.contains("--shipathon-s5-diagnostics")
+               ? String(format: " · S5 ambient %d peer %d cue %d entities %d",
+                        atlantis.livingWorld.activeActorCount,
+                        atlantis.livingDirector.namedEncounters.namedNPCCount,
+                        atlantis.shipathonPeerCueVisible ? 1:0,
+                        atlantis.livingDirector.entityCount) : "")
+          : "")
     }
   }
 
@@ -605,6 +709,8 @@ struct FounderGarageRealityView: View {
           ForEach(FounderEnvironmentTimeState.allCases, id: \.self) { state in
             Button(state.accessibilityLabel) {
               world.setEnvironmentTimeState(state, reduceMotion: reduceMotion)
+              atlantisWorld?.phase = state
+              atlantisWorld?.applyLighting()
             }
             .accessibilityIdentifier(FounderGarageAccessibilityID.environmentTime(state))
             .accessibilityAddTraits(state == world.environmentTimeState ? [.isSelected] : [])
