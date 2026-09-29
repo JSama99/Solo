@@ -68,6 +68,29 @@ struct PublicMediaEvent: Codable, Hashable, Identifiable, Sendable {
   }
 }
 
+/// Public projection of a defect only after the canonical delayed consequence
+/// has surfaced. Latent task truth never enters the public event ledger.
+enum LatentDefectPublicMediaProjection {
+  static func surfaced(
+    _ defect: LatentDefect,
+    venture: Int,
+    sprint: Int
+  ) -> PublicMediaEvent {
+    PublicMediaEvent(
+      id: "latent-\(defect.id)-surfaced",
+      program: .breaking,
+      tone: .critical,
+      headline: "SOLO launch hits a production defect",
+      summary: "A delayed issue from \(defect.originTaskTitle) surfaced in production.",
+      tickerItems: ["SOLO PRODUCTION DEFECT", "LAUNCH RELIABILITY UNDER REVIEW"],
+      coverageDelta: -min(10, max(4, defect.severity / 2)),
+      venture: venture,
+      sprint: sprint,
+      concernsPlayerCompany: true
+    )
+  }
+}
+
 /// Projects only completed, founder-visible funding successes into the shared
 /// public media ledger. Declines, applications, and missed obligations remain
 /// private company records on their canonical surfaces.

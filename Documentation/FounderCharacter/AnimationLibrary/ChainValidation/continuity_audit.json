@@ -1,0 +1,480 @@
+{
+  "fps": 30,
+  "method": "local bone samples; speed at last and first intervals, not visual acceptance",
+  "boundaries": {
+    "idle_to_start": {
+      "groups": {
+        "pelvis": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.0015712984220169995
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.011240122126276167
+          },
+          "angular_rate_change_rad_s": 0.0,
+          "location_rate_change_m_s": 0.009668823704259167
+        },
+        "torso": {
+          "incoming": {
+            "max_angular_rad_s": 5.298447271596027e-05,
+            "max_location_m_s": 4.47253061279155e-07
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.020716019082972215,
+            "max_location_m_s": 1.3969838619232178e-08
+          },
+          "angular_rate_change_rad_s": 0.020663034610256256,
+          "location_rate_change_m_s": -4.332832226599228e-07
+        },
+        "shoulders": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 3.6041100688123178e-06
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": 0.0,
+          "location_rate_change_m_s": -3.6041100688123178e-06
+        },
+        "arms": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 7.386227686043816e-06
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": 0.0,
+          "location_rate_change_m_s": -7.386227686043816e-06
+        },
+        "support_legs": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 2.6446937545089197e-06
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.03611121318927322,
+            "max_location_m_s": 5.4578999193347e-06
+          },
+          "angular_rate_change_rad_s": 0.03611121318927322,
+          "location_rate_change_m_s": 2.8132061648257804e-06
+        },
+        "head": {
+          "incoming": {
+            "max_angular_rad_s": 0.007857141914022085,
+            "max_location_m_s": 3.5762786865234375e-06
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 2.2395354986956434e-07
+          },
+          "angular_rate_change_rad_s": -0.007857141914022085,
+          "location_rate_change_m_s": -3.352325136653873e-06
+        }
+      },
+      "local_pose_delta_max_rad": 0.0005386217571566749,
+      "local_location_delta_max_m": 2.388837865275353e-07,
+      "heading_note": "constant heading"
+    },
+    "start_to_walk": {
+      "groups": {
+        "pelvis": {
+          "incoming": {
+            "max_angular_rad_s": 0.18986552987622385,
+            "max_location_m_s": 0.28170047041633234
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.18986552987832894,
+            "max_location_m_s": 0.3428533834354432
+          },
+          "angular_rate_change_rad_s": 2.1050938769917593e-12,
+          "location_rate_change_m_s": 0.061152913019110855
+        },
+        "torso": {
+          "incoming": {
+            "max_angular_rad_s": 0.3130858346140383,
+            "max_location_m_s": 3.57628550564569e-06
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.32542453275300226,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": 0.012338698138963933,
+          "location_rate_change_m_s": -3.57628550564569e-06
+        },
+        "shoulders": {
+          "incoming": {
+            "max_angular_rad_s": 0.1208198520009239,
+            "max_location_m_s": 6.9503812515391235e-09
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.10698310808991957,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": -0.01383674391100434,
+          "location_rate_change_m_s": -6.9503812515391235e-09
+        },
+        "arms": {
+          "incoming": {
+            "max_angular_rad_s": 0.6156448191158791,
+            "max_location_m_s": 9.940011463225244e-09
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.4572768398458024,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": -0.15836797927007668,
+          "location_rate_change_m_s": -9.940011463225244e-09
+        },
+        "support_legs": {
+          "incoming": {
+            "max_angular_rad_s": 6.012385456403072,
+            "max_location_m_s": 5.990308500792412e-06
+          },
+          "outgoing": {
+            "max_angular_rad_s": 4.691793745106925,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": -1.3205917112961467,
+          "location_rate_change_m_s": -5.990308500792412e-06
+        },
+        "head": {
+          "incoming": {
+            "max_angular_rad_s": 0.17850722870048785,
+            "max_location_m_s": 2.2358945533265068e-07
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.19418635293930922,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": 0.015679124238821368,
+          "location_rate_change_m_s": -2.2358945533265068e-07
+        }
+      },
+      "local_pose_delta_max_rad": 0.000647911480841288,
+      "local_location_delta_max_m": 0.0,
+      "heading_note": "constant heading"
+    },
+    "walk_to_stop": {
+      "groups": {
+        "pelvis": {
+          "incoming": {
+            "max_angular_rad_s": 0.18986552987622385,
+            "max_location_m_s": 0.2826636781716931
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.18412807699401354,
+            "max_location_m_s": 0.32171135221753466
+          },
+          "angular_rate_change_rad_s": -0.005737452882210309,
+          "location_rate_change_m_s": 0.039047674045841585
+        },
+        "torso": {
+          "incoming": {
+            "max_angular_rad_s": 0.3128824352908956,
+            "max_location_m_s": 0.0
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.3153674488051995,
+            "max_location_m_s": 5.892141405923433e-09
+          },
+          "angular_rate_change_rad_s": 0.002485013514303913,
+          "location_rate_change_m_s": 5.892141405923433e-09
+        },
+        "shoulders": {
+          "incoming": {
+            "max_angular_rad_s": 0.12024640246962653,
+            "max_location_m_s": 0.0
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.10698310808991957,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": -0.013263294379706969,
+          "location_rate_change_m_s": 0.0
+        },
+        "arms": {
+          "incoming": {
+            "max_angular_rad_s": 0.6151424151105811,
+            "max_location_m_s": 0.0
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.4572768398458024,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": -0.15786557526477868,
+          "location_rate_change_m_s": 0.0
+        },
+        "support_legs": {
+          "incoming": {
+            "max_angular_rad_s": 7.7743206606209005,
+            "max_location_m_s": 0.0
+          },
+          "outgoing": {
+            "max_angular_rad_s": 6.931088160976758,
+            "max_location_m_s": 1.649189002427165e-05
+          },
+          "angular_rate_change_rad_s": -0.8432324996441425,
+          "location_rate_change_m_s": 1.649189002427165e-05
+        },
+        "head": {
+          "incoming": {
+            "max_angular_rad_s": 0.1759416900224122,
+            "max_location_m_s": 0.0
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.19418635293930922,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": 0.018244662916897025,
+          "location_rate_change_m_s": 0.0
+        }
+      },
+      "local_pose_delta_max_rad": 0.0006476663658636054,
+      "local_location_delta_max_m": 0.0,
+      "heading_note": "constant heading"
+    },
+    "stop_to_idle": {
+      "groups": {
+        "pelvis": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.0013684722167030354
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.0015712844629742816
+          },
+          "angular_rate_change_rad_s": 0.0,
+          "location_rate_change_m_s": 0.00020281224627124615
+        },
+        "torso": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 5.892141239201154e-09
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": 0.0,
+          "location_rate_change_m_s": -5.892141239201154e-09
+        },
+        "shoulders": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 6.743461419668434e-09
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 3.693113843021908e-06
+          },
+          "angular_rate_change_rad_s": 0.0,
+          "location_rate_change_m_s": 3.6863703816022396e-06
+        },
+        "arms": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 9.645098543800633e-09
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 3.6863436927953308e-06
+          },
+          "angular_rate_change_rad_s": 0.0,
+          "location_rate_change_m_s": 3.6766985942515303e-06
+        },
+        "support_legs": {
+          "incoming": {
+            "max_angular_rad_s": 0.009396022568038297,
+            "max_location_m_s": 1.1002984027027895e-05
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.014207529332961221,
+            "max_location_m_s": 4.4926444982532665e-06
+          },
+          "angular_rate_change_rad_s": 0.004811506764922924,
+          "location_rate_change_m_s": -6.510339528774629e-06
+        },
+        "head": {
+          "incoming": {
+            "max_angular_rad_s": 0.0010981887292773696,
+            "max_location_m_s": 5.7148759338980025e-09
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": -0.0010981887292773696,
+          "location_rate_change_m_s": -5.7148759338980025e-09
+        }
+      },
+      "local_pose_delta_max_rad": 0.0005386217571566749,
+      "local_location_delta_max_m": 7.450580596923828e-09,
+      "heading_note": "constant heading"
+    },
+    "left_turn_to_start": {
+      "groups": {
+        "pelvis": {
+          "incoming": {
+            "max_angular_rad_s": 0.003510241869936403,
+            "max_location_m_s": 0.001815944101234738
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.011240122126276167
+          },
+          "angular_rate_change_rad_s": -0.003510241869936403,
+          "location_rate_change_m_s": 0.009424178025041429
+        },
+        "torso": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 3.686360633674615e-06
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.020716019082972215,
+            "max_location_m_s": 1.3969838619232178e-08
+          },
+          "angular_rate_change_rad_s": 0.020716019082972215,
+          "location_rate_change_m_s": -3.6723907950553828e-06
+        },
+        "shoulders": {
+          "incoming": {
+            "max_angular_rad_s": 0.014453594417880227,
+            "max_location_m_s": 2.175365484209988e-06
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": -0.014453594417880227,
+          "location_rate_change_m_s": -2.175365484209988e-06
+        },
+        "arms": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.0
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": 0.0,
+          "location_rate_change_m_s": 0.0
+        },
+        "support_legs": {
+          "incoming": {
+            "max_angular_rad_s": 0.01734153662981805,
+            "max_location_m_s": 2.6437414846111708e-05
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.03611121318927322,
+            "max_location_m_s": 5.4578999193347e-06
+          },
+          "angular_rate_change_rad_s": 0.01876967655945517,
+          "location_rate_change_m_s": -2.097951492677701e-05
+        },
+        "head": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 6.4374663847914394e-06
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 2.2395354986956434e-07
+          },
+          "angular_rate_change_rad_s": 0.0,
+          "location_rate_change_m_s": -6.213512834921875e-06
+        }
+      },
+      "local_pose_delta_max_rad": 1.57079619243604,
+      "local_location_delta_max_m": 0.014052461726905208,
+      "heading_note": "external heading handoff"
+    },
+    "right_turn_to_start": {
+      "groups": {
+        "pelvis": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.0018155429878892895
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.011240122126276167
+          },
+          "angular_rate_change_rad_s": 0.0,
+          "location_rate_change_m_s": 0.009424579138386877
+        },
+        "torso": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 7.160424297668038e-07
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.020716019082972215,
+            "max_location_m_s": 1.3969838619232178e-08
+          },
+          "angular_rate_change_rad_s": 0.020716019082972215,
+          "location_rate_change_m_s": -7.020725911475716e-07
+        },
+        "shoulders": {
+          "incoming": {
+            "max_angular_rad_s": 0.01445149186107187,
+            "max_location_m_s": 5.727107811566363e-06
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": -0.01445149186107187,
+          "location_rate_change_m_s": -5.727107811566363e-06
+        },
+        "arms": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.0
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 0.0
+          },
+          "angular_rate_change_rad_s": 0.0,
+          "location_rate_change_m_s": 0.0
+        },
+        "support_legs": {
+          "incoming": {
+            "max_angular_rad_s": 0.018761491272654536,
+            "max_location_m_s": 3.370029087643703e-05
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.03611121318927322,
+            "max_location_m_s": 5.4578999193347e-06
+          },
+          "angular_rate_change_rad_s": 0.017349721916618682,
+          "location_rate_change_m_s": -2.824239095710233e-05
+        },
+        "head": {
+          "incoming": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 7.493668960322665e-07
+          },
+          "outgoing": {
+            "max_angular_rad_s": 0.0,
+            "max_location_m_s": 2.2395354986956434e-07
+          },
+          "angular_rate_change_rad_s": 0.0,
+          "location_rate_change_m_s": -5.254133461627021e-07
+        }
+      },
+      "local_pose_delta_max_rad": 1.5707963610234383,
+      "local_location_delta_max_m": 0.01405242467616951,
+      "heading_note": "external heading handoff"
+    }
+  }
+}

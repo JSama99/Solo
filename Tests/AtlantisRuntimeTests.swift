@@ -180,11 +180,138 @@ final class AtlantisRuntimeTests: XCTestCase {
     XCTAssertEqual(world.playerRoot.name,"AtlantisPlayerRoot");XCTAssertTrue(world.bodyHeadingRoot.parent === world.playerRoot);XCTAssertTrue(world.cameraRig.parent === world.bodyHeadingRoot);XCTAssertTrue(world.camera.parent === world.cameraRig)
     world.stop()
   }
+  func testS3DayLightingVariantsPreserveBaselineAndOtherTimePresets() throws {
+    let world = AtlantisRealityWorld(manifest: try .load())
+    XCTAssertEqual(world.lightingVariant, .clearAspirationalDayNoShadows)
+    XCTAssertEqual(world.shadowMode, 0)
+    XCTAssertNil(world.configuredShadowDistance)
+    XCTAssertEqual(world.lightingVariant.key?.position, SIMD3<Float>(-4.6, 7.0, 9.0))
+    XCTAssertEqual(world.lightingVariant.key?.intensity, 5_200)
+    XCTAssertEqual(world.lightingVariant.key?.color, SIMD3<Float>(1.00, 0.96, 0.89))
+    XCTAssertEqual(world.lightingVariant.key?.environmentExponent, -1.25)
+    XCTAssertEqual(world.atmosphereVariant, .minimal)
+    XCTAssertEqual(AtlantisAtmosphereVariant.resolve(arguments: ["--s3-atmosphere-a"]), .minimal)
+    XCTAssertEqual(AtlantisAtmosphereVariant.resolve(arguments: ["--s3-atmosphere-b"]), .moderate)
+    XCTAssertEqual(AtlantisAtmosphereVariant.resolve(arguments: ["--s3-atmosphere-baseline"]), .a2Unmodified)
+    XCTAssertEqual(AtlantisAtmosphereVariant.resolve(arguments: []), .minimal)
+    XCTAssertEqual(world.atmosphereVariant.sky?.top, SIMD3<Float>(0.22, 0.51, 0.77))
+    XCTAssertEqual(world.atmosphereVariant.sky?.bottom, SIMD3<Float>(0.68, 0.82, 0.93))
+    XCTAssertEqual(world.atmosphereVariant.farProxyIBL?.rgb, SIMD3<Float>(0.98, 0.99, 1.00))
+    XCTAssertEqual(world.atmosphereVariant.farProxyIBL?.exponent, -1.40)
+    let day = FounderEnvironmentLightingConfiguration.preset(for: .day)
+    world.phase = .day
+    world.lightingVariant = .baseline
+    world.shadowMode = 0
+    world.applyLighting()
+    XCTAssertEqual(world.sun.light.intensity, day.directionalIntensity)
+    XCTAssertNil(world.configuredShadowDistance)
+
+    for variant in AtlantisDayLightingVariant.allCases where variant != .baseline {
+      world.lightingVariant = variant
+      world.shadowMode = 1
+      world.applyLighting()
+      XCTAssertEqual(world.sun.light.intensity, variant.key?.intensity)
+      if variant == .clearAspirationalDayNoShadows {
+        XCTAssertNil(world.configuredShadowDistance)
+        XCTAssertEqual(variant.key?.position, AtlantisDayLightingVariant.clearAspirationalDay.key?.position)
+        XCTAssertEqual(variant.key?.color, AtlantisDayLightingVariant.clearAspirationalDay.key?.color)
+      } else {
+        XCTAssertEqual(world.configuredShadowDistance, 30)
+      }
+      XCTAssertEqual(world.environment.components[ImageBasedLightComponent.self]?.intensityExponent,
+                     variant.key?.environmentExponent)
+    }
+
+    world.exteriorShadowsActive = false
+    XCTAssertNil(world.configuredShadowDistance)
+    world.exteriorShadowsActive = true
+
+    world.phase = .evening
+    world.applyLighting()
+    XCTAssertEqual(world.sun.light.intensity,
+                   FounderEnvironmentLightingConfiguration.preset(for: .evening).directionalIntensity)
+    XCTAssertEqual(world.environment.components[ImageBasedLightComponent.self]?.intensityExponent, -3)
+    XCTAssertNil(world.configuredShadowDistance)
+    world.stop()
+  }
+  func testS4BoundedCameraBiasOnlyTargetsForwardEastStreetMovement() {
+    let east: Float = -.pi / 2
+    XCTAssertEqual(AtlantisS4CameraBias.target(positionX: -874, heading: east,
+                   forward: 1, turn: 0, idleSeconds: 0, reduceMotion: false), 0)
+    XCTAssertEqual(AtlantisS4CameraBias.target(positionX: -853, heading: east,
+                   forward: 1, turn: 0, idleSeconds: 0, reduceMotion: false),
+                   AtlantisS4CameraBias.boundedYaw)
+    XCTAssertEqual(AtlantisS4CameraBias.target(positionX: -839, heading: east,
+                   forward: 1, turn: 0, idleSeconds: 0, reduceMotion: false), 0)
+    XCTAssertEqual(AtlantisS4CameraBias.target(positionX: -853, heading: east,
+                   forward: -1, turn: 0, idleSeconds: 0, reduceMotion: false), 0)
+    XCTAssertEqual(AtlantisS4CameraBias.target(positionX: -853, heading: east,
+                   forward: 1, turn: 0.2, idleSeconds: 0, reduceMotion: false), 0)
+    XCTAssertEqual(AtlantisS4CameraBias.target(positionX: -853, heading: 0,
+                   forward: 1, turn: 0, idleSeconds: 0, reduceMotion: false), 0)
+    XCTAssertEqual(AtlantisS4CameraBias.target(positionX: -853, heading: east,
+                   forward: 0, turn: 0, idleSeconds: 0.7, reduceMotion: false), 0)
+    XCTAssertEqual(AtlantisS4CameraBias.target(positionX: -853, heading: east,
+                   forward: 1, turn: 0, idleSeconds: 0, reduceMotion: true), 0)
+  }
+  func testS4HeroPauseOnlyOpensAtTheRealStreetReveal() {
+    let point = SIMD3<Float>(-853, 8.03, 1040.7)
+    XCTAssertTrue(AtlantisS4CameraBias.heroPauseWindow(position: point,
+                  heading: -.pi / 2, reduceMotion: false))
+    XCTAssertFalse(AtlantisS4CameraBias.heroPauseWindow(position: [-874.8, 8.03, 1037.9],
+                   heading: -.pi / 2, reduceMotion: false))
+    XCTAssertFalse(AtlantisS4CameraBias.heroPauseWindow(position: [-853, 8.03, 1035],
+                   heading: -.pi / 2, reduceMotion: false))
+    XCTAssertFalse(AtlantisS4CameraBias.heroPauseWindow(position: point,
+                   heading: 0, reduceMotion: false))
+    XCTAssertFalse(AtlantisS4CameraBias.heroPauseWindow(position: point,
+                   heading: -.pi / 2, reduceMotion: true))
+  }
   func testWalkingSpeedBoundAndMissingGroundRejection() throws {
     XCTAssertEqual(AtlantisSpatialContract.walkingSpeed,1.4)
     let w=AtlantisRealityWorld(manifest:try .load());let p=w.playerRoot.position;w.toggleWalk();w.move(input:1,delta:100)
     XCTAssertEqual(w.playerRoot.position,p,"No district loaded: movement must reject missing ground")
     w.stop()
+  }
+  func testFounderVisualHeadingAdapterAndGarageHandoff() throws {
+    let cardinal: [(Float, SIMD3<Float>)] = [
+      (0, [0, 0, -1]), (.pi / 2, [1, 0, 0]),
+      (.pi, [0, 0, 1]), (-.pi / 2, [-1, 0, 0])
+    ]
+    for (heading, expected) in cardinal {
+      let actual = FounderAtlantisVisualHeading.facing(heading)
+      XCTAssertLessThan(simd_distance(actual, expected), 0.0001)
+    }
+    XCTAssertEqual(FounderAtlantisVisualHeading.velocity([1, 0, 0], delta: 1), [-1, 0])
+    XCTAssertEqual(FounderAtlantisVisualHeading.velocity([-1, 0, 0], delta: 1), [1, 0])
+    let world = AtlantisRealityWorld(manifest: try .load())
+    world.enterFromFounderGarage(.init(garagePosition: [0, 0, 3.9], facingDirection: [0, 0, 1]))
+    XCTAssertLessThan(simd_distance(FounderAtlantisVisualHeading.facing(world.heading), SIMD3<Float>(0, 0, 1)), 0.0001)
+    let originalPosition = world.playerRoot.position
+    world.turn(.pi / 2)
+    XCTAssertLessThan(simd_distance(FounderAtlantisVisualHeading.facing(world.heading), SIMD3<Float>(-1, 0, 0)), 0.0001)
+    XCTAssertEqual(world.playerRoot.position, originalPosition, "Visual turn must not move the player")
+    world.stop()
+  }
+  func testFounderLODRepresentativeRuntimeLookup() async throws {
+    let world = AtlantisRealityWorld(manifest: try .load())
+    await world.loader.load(.founderDistrict)?.value
+    XCTAssertEqual(world.loader.states[.founderDistrict], .loaded)
+    XCTAssertNotNil(world.loader.root.findEntity(named: "Founder_Building_00"))
+    world.stop()
+  }
+  func testFounderPeerStagingIsOnWalkableMainRoute() throws {
+    let manifest = try AtlantisAssetManifest.load()
+    let peer = try XCTUnwrap(AtlantisNamedNPCDefinition.all.first { $0.id == "mara-chen" })
+    XCTAssertEqual(peer.position.x, -825, accuracy: 0.001)
+    XCTAssertEqual(peer.position.z, 940, accuracy: 0.001)
+    let ground = AtlantisGrounding(traversal: manifest.traversal)
+    let height = try XCTUnwrap(ground.height(at: peer.position, loaded: ["FounderDistrict"]))
+    XCTAssertEqual(peer.position.y, height, accuracy: 0.001)
+    XCTAssertFalse(ground.blocked(peer.position, loaded: ["FounderDistrict"]))
+    for z: Float in [946, 940, 934] {
+      XCTAssertNotNil(ground.height(at: [-825, peer.position.y, z], loaded: ["FounderDistrict"]), "Main walkway missing at z=\(z)")
+    }
   }
   func testSourceGroundingAndRouteMetadata() throws {
     let m=try AtlantisAssetManifest.load(),g=AtlantisGrounding(traversal:m.traversal)
@@ -345,6 +472,37 @@ final class AtlantisRuntimeTests: XCTestCase {
     XCTAssertTrue(routes.allSatisfy{$0.points.count>1});XCTAssertEqual(Set(routes.filter{$0.kind == .vehicle}.map(\.district)),[.commerceDistrict])
     XCTAssertEqual(routes.filter{$0.district == .startupRow && $0.kind == .pedestrian}.count,2)
   }
+  func testShipathonS5HeroAmbientIsBoundedAndReduceMotionFreezesTravel() {
+    let routes=AtlantisLivingWorldPresentationAdapter.shipathonHeroRoutes
+    XCTAssertEqual(routes.count,2)
+    XCTAssertEqual(Set(routes.map(\.district)),[.founderDistrict])
+    XCTAssertTrue(AtlantisLivingWorldPresentationAdapter.shipathonHeroRouteContains([-875,8.03,1038]))
+    XCTAssertFalse(AtlantisLivingWorldPresentationAdapter.shipathonHeroRouteContains([-825,8.375,940]))
+    XCTAssertFalse(AtlantisLivingWorldPresentationAdapter.shipathonHeroRouteContains([-460,15,340]))
+    let population=AtlantisLivingWorldDistrictPopulation()
+    population.isEnabled=true;population.shipathonHeroRouteOnly=true
+    population.reconcile(residents:[.founderDistrict,.startupRow],current:.founderDistrict,
+                         phase:.day,playerPosition:[-875,8.03,1038],immediate:true)
+    XCTAssertEqual(population.activePedestrians,2)
+    XCTAssertEqual(population.activeVehicles,0)
+    XCTAssertEqual(population.count(district:.startupRow),0)
+    XCTAssertTrue(population.root.children.allSatisfy{$0.components[CollisionComponent.self] == nil})
+    population.reconcile(residents:[.founderDistrict,.startupRow],current:.startupRow,
+                         phase:.day,playerPosition:[-460,15,340],immediate:true)
+    XCTAssertEqual(population.activeActorCount,0)
+    let actor=AtlantisAmbientActor(kind:.pedestrian,index:1)
+    actor.configure(district:.founderDistrict,route:routes[1],index:1,seed:population.seed)
+    let initial=actor.progress
+    actor.update(delta:3,reduceMotion:true)
+    XCTAssertEqual(actor.progress,initial)
+  }
+  func testShipathonS5PublicPeerCueIsProximityBound() {
+    let visible=AtlantisLivingWorldPresentationAdapter.shipathonPeerCueVisible
+    XCTAssertTrue(visible([-825,8.375,940],[.founderDistrict]))
+    XCTAssertTrue(visible([-825,8.375,978],[.founderDistrict]))
+    XCTAssertFalse(visible([-825,8.375,986],[.founderDistrict]))
+    XCTAssertFalse(visible([-825,8.375,940],[.startupRow]))
+  }
   func testLivingWorldResidencyActivationUnloadAndPoolReuse() {
     let population=AtlantisLivingWorldDistrictPopulation();population.isEnabled=true
     population.setBenchmarkPopulation(district:.startupRow,pedestrians:10,vehicles:0)
@@ -481,15 +639,55 @@ final class AtlantisRuntimeTests: XCTestCase {
   }
   func testNamedDirectorPreventsDuplicatesReusesEntitiesAndHonorsUnload() {
     let director=AtlantisNamedEncounterDirector();director.isEnabled=true;director.fixture = .founderPeer
-    for _ in 0..<4 {director.reconcile(residents:[.founderDistrict],phase:.day,position:[-840,8.03,940],signals:AtlantisLivingWorldFixture.baseline.snapshot,immediate:true)}
+    for _ in 0..<4 {director.reconcile(residents:[.founderDistrict],phase:.day,position:[-825,8.375,940],signals:AtlantisLivingWorldFixture.baseline.snapshot,immediate:true)}
     XCTAssertEqual(director.namedNPCCount,1);XCTAssertEqual(director.activeNPCIDs,["mara-chen"]);XCTAssertEqual(director.root.children.count,1);XCTAssertEqual(director.duplicateViolations,0)
     director.districtDidUnload(.founderDistrict);XCTAssertEqual(director.namedNPCCount,0);XCTAssertEqual(director.state(npcID:"mara-chen"),.despawned)
-    director.reconcile(residents:[.founderDistrict],phase:.day,position:[-840,8.03,940],signals:AtlantisLivingWorldFixture.baseline.snapshot,immediate:true)
+    director.reconcile(residents:[.founderDistrict],phase:.day,position:[-825,8.375,940],signals:AtlantisLivingWorldFixture.baseline.snapshot,immediate:true)
     XCTAssertEqual(director.namedNPCCount,1);XCTAssertEqual(director.reusedEntityCount,1)
+  }
+  func testShipathonS5PeerStagingIsProximityBoundAndNoninteractive() {
+    let director=AtlantisNamedEncounterDirector()
+    director.isEnabled=true;director.shipathonStagingOnly=true
+    let signals=AtlantisLivingWorldFixture.baseline.snapshot
+    director.reconcile(residents:[.founderDistrict],phase:.day,position:[-825,8.375,990],signals:signals,immediate:true)
+    XCTAssertEqual(director.namedNPCCount,0)
+    director.reconcile(residents:[.founderDistrict],phase:.day,position:[-825,8.375,940],signals:signals,immediate:true)
+    XCTAssertEqual(director.activeNPCIDs,["mara-chen"])
+    XCTAssertEqual(director.state(npcID:"mara-chen"),.spawned)
+    let torso=director.entity(npcID:"mara-chen")?.root.findEntity(named:"AtlantisNamedNPC.Torso")
+    XCTAssertEqual(torso?.scale, SIMD3<Float>(0.31,0.46,0.21))
+    XCTAssertEqual(director.eligibleEncounterCount,0)
+    XCTAssertNil(director.candidate(position:[-825,8.375,940],forward:[0,0,-1]))
+    XCTAssertNil(director.begin(npcID:"mara-chen",encounterID:"mara.peer-advice",founderPosition:[-825,8.375,940]))
+    XCTAssertEqual(director.canonicalWritebackCount,0)
+    director.reconcile(residents:[],phase:.day,position:[-825,8.375,940],signals:signals,immediate:true)
+    XCTAssertEqual(director.namedNPCCount,0)
+  }
+  func testShipathonS5RevisionMarkerAndReduceMotionStayPresentationOnly() throws {
+    let director=AtlantisNamedEncounterDirector()
+    director.isEnabled=true;director.shipathonStagingOnly=true;director.shipathonMarkerEnabled=true
+    director.reduceMotion=true
+    let signals=AtlantisLivingWorldFixture.baseline.snapshot
+    director.reconcile(residents:[.founderDistrict],phase:.day,position:[-825,8.375,940],signals:signals,immediate:true)
+    let marker=try XCTUnwrap(director.root.findEntity(named:"AtlantisPeerWorldMarker"))
+    XCTAssertTrue(director.shipathonMarkerVisible)
+    XCTAssertNil(marker.components[CollisionComponent.self])
+    XCTAssertTrue(marker.children.allSatisfy{$0.components[CollisionComponent.self] == nil})
+    let head=try XCTUnwrap(director.entity(npcID:"mara-chen")?.root.findEntity(named:"AtlantisNamedNPC.Head"))
+    director.advance(delta:0.25)
+    let orientation=head.orientation.vector
+    director.advance(delta:0.25)
+    XCTAssertEqual(simd_length(head.orientation.vector-orientation),0,accuracy:0.0001)
+    XCTAssertNil(director.candidate(position:[-825,8.375,940],forward:[0,0,-1]))
+    XCTAssertEqual(director.canonicalWritebackCount,0)
+    director.reconcile(residents:[.founderDistrict],phase:.day,position:[-825,8.375,990],signals:signals,immediate:true)
+    XCTAssertFalse(director.shipathonMarkerVisible)
+    director.districtDidUnload(.founderDistrict)
+    XCTAssertEqual(director.namedNPCCount,0)
   }
   func testNamedDirectorAllowsOneActiveEncounterAndAppliesSessionCooldown() throws {
     let director=AtlantisNamedEncounterDirector();director.isEnabled=true;director.fixture = .founderPeer
-    let position=SIMD3<Float>(-840,8.03,946)
+    let position=SIMD3<Float>(-825,8.3375,946)
     director.reconcile(residents:[.founderDistrict],phase:.day,position:position,signals:AtlantisLivingWorldFixture.baseline.snapshot,immediate:true)
     let candidate=try XCTUnwrap(director.candidate(position:position,forward:[0,0,-1]))
     XCTAssertNotNil(director.begin(npcID:candidate.npc.id,encounterID:candidate.encounter.id,founderPosition:position))

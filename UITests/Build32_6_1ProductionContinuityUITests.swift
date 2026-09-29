@@ -785,6 +785,515 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     app.terminate()
   }
 
+  func testShipathonS2ProductionExitCameraComparison() throws {
+    for variant in ["baseline", "a", "b", "c"] {
+      let app = XCUIApplication()
+      app.launchArguments = ["--founder-desk-production-proof", "--founder-traversal-diagnostics"]
+      if variant != "baseline" { app.launchArguments.append("--shipathon-s2-camera-\(variant)") }
+      app.launch()
+      enterFreshProductionCareer(in: app)
+
+      let explore = app.buttons["founderGarage.camera.toggleWalking"]
+      XCTAssertTrue(explore.waitForExistence(timeout: 8))
+      explore.tap()
+      let door = app.buttons["founderGarage.realityKit.garageDoor.toggle"]
+      XCTAssertTrue(door.waitForExistence(timeout: 5))
+      door.tap()
+      capture("S2_\(variant)_threshold", in: app)
+
+      let movement = app.descendants(matching: .any)["founderGarage.camera.movementPad"]
+      XCTAssertTrue(movement.waitForExistence(timeout: 5))
+      let start = movement.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+      let forward = movement.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02))
+      start.press(forDuration: 0.1, thenDragTo: forward, withVelocity: .fast, thenHoldForDuration: 5)
+
+      let atlantis = app.descendants(matching: .any)["atlantis.traversal.root"]
+      XCTAssertTrue(atlantis.waitForExistence(timeout: 12))
+      capture("S2_\(variant)_firstExterior", in: app)
+      app.terminate()
+    }
+  }
+
+  func testShipathonS2CThresholdCameraComparison() throws {
+    captureShipathonS2CThreshold(variants: ["baseline", "a", "b"])
+  }
+
+  func testShipathonS2CSelectedThresholdB() throws {
+    captureShipathonS2CThreshold(variants: ["b"])
+  }
+
+  func testShipathonS2DShot4AcceptedBaseline() throws {
+    for variant in ["a"] {
+      let app = XCUIApplication()
+      app.launchArguments = ["--founder-desk-production-proof", "--founder-traversal-diagnostics"]
+      app.launch()
+      enterFreshProductionCareer(in: app)
+
+      let explore = app.buttons["founderGarage.camera.toggleWalking"]
+      XCTAssertTrue(explore.waitForExistence(timeout: 8))
+      explore.tap()
+      let door = app.buttons["founderGarage.realityKit.garageDoor.toggle"]
+      XCTAssertTrue(door.waitForExistence(timeout: 5))
+      door.tap()
+      let garagePad = app.descendants(matching: .any)["founderGarage.camera.movementPad"]
+      XCTAssertTrue(garagePad.waitForExistence(timeout: 5))
+      garagePad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        .press(forDuration: 0.1,
+               thenDragTo: garagePad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02)),
+               withVelocity: .fast, thenHoldForDuration: 5)
+
+      let atlantis = app.descendants(matching: .any)["atlantis.traversal.root"]
+      XCTAssertTrue(atlantis.waitForExistence(timeout: 12))
+      let exteriorPad = app.descendants(matching: .any)["atlantis.traversal.movementPad"]
+      XCTAssertTrue(exteriorPad.waitForExistence(timeout: 5))
+      exteriorPad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        .press(forDuration: 0.1,
+               thenDragTo: exteriorPad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02)),
+               withVelocity: .fast, thenHoldForDuration: 3)
+      capture("S2D_\(variant)_shot4", in: app)
+      captureS2Diagnostics("S2D_\(variant)_shot4Position", from: atlantis)
+      app.terminate()
+    }
+  }
+
+  func testShipathonS3LightingComparison() throws {
+    captureShipathonS3Lighting(variants: ["baseline", "a", "b", "c"], fullRoute: [])
+  }
+
+  func testShipathonS3LightingAKeyFrames() throws {
+    captureShipathonS3Lighting(variants: ["a"], fullRoute: [])
+  }
+
+  func testShipathonS3LightingFullRoute() throws {
+    captureShipathonS3Lighting(variants: ["baseline", "a"], fullRoute: ["baseline", "a"])
+  }
+
+  func testShipathonS3Shot5DirectionComparison() throws {
+    captureShipathonS3Lighting(variants: ["baseline", "a", "b", "c"], fullRoute: [], shot5Direction: true)
+  }
+
+  func testShipathonS4CameraMovementComparison() throws {
+    for variant in ["b", "c"] {
+      captureShipathonS4CameraMovement(variant: variant)
+    }
+  }
+
+  func testShipathonS4BoundedCameraKeyframes() throws {
+    captureShipathonS4CameraMovement(variant: "b")
+  }
+
+  func testShipathonS4ContextualCameraKeyframes() throws {
+    captureShipathonS4CameraMovement(variant: "c")
+  }
+
+  func testShipathonS4AcceptedProductionCameraKeyframes() throws {
+    captureShipathonS4CameraMovement(variant: "production")
+  }
+
+  func testShipathonS5AmbientKeyframes() throws {
+    captureShipathonS4CameraMovement(variant: "s5ambient")
+  }
+
+  func testShipathonS5CandidateKeyframes() throws {
+    captureShipathonS4CameraMovement(variant: "s5candidate")
+  }
+
+  func testShipathonS5RevisionCKeyframes() throws {
+    captureShipathonS4CameraMovement(variant: "s5revisionc")
+  }
+
+  private func captureShipathonS4CameraMovement(variant: String) {
+    let contextual = variant == "c" || variant == "production" || variant == "s5ambient" ||
+      variant == "s5candidate" || variant == "s5revisionc"
+    let app = XCUIApplication()
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-traversal-diagnostics",
+                           "--shipathon-s4-camera-diagnostics", "--shipathon-s2c-route-performance"]
+    if variant == "d" { app.launchArguments.append("--shipathon-s2-camera-d") }
+    if variant == "b" { app.launchArguments.append("--shipathon-s4-camera-b") }
+    if variant == "c" { app.launchArguments.append("--shipathon-s4-camera-c") }
+    if variant == "s5ambient" { app.launchArguments.append("--shipathon-s5-ambient") }
+    if variant == "s5candidate" { app.launchArguments.append("--shipathon-s5-candidate") }
+    if variant == "s5revisionc" { app.launchArguments.append("--shipathon-s5-revision-c") }
+    if variant.hasPrefix("s5") { app.launchArguments.append("--shipathon-s5-diagnostics") }
+    app.launch()
+    enterFreshProductionCareer(in: app)
+    let explore = app.buttons["founderGarage.camera.toggleWalking"]
+    XCTAssertTrue(explore.waitForExistence(timeout: 8))
+    capture("S4_\(variant)_garage", in: app)
+    explore.tap()
+    let door = app.buttons["founderGarage.realityKit.garageDoor.toggle"]
+    XCTAssertTrue(door.waitForExistence(timeout: 5))
+    door.tap()
+    let garagePad = app.descendants(matching: .any)["founderGarage.camera.movementPad"]
+    XCTAssertTrue(garagePad.waitForExistence(timeout: 5))
+    garagePad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+      .press(forDuration: 0.1,
+             thenDragTo: garagePad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02)),
+             withVelocity: .fast, thenHoldForDuration: 5)
+    let atlantis = app.descendants(matching: .any)["atlantis.traversal.root"]
+    XCTAssertTrue(atlantis.waitForExistence(timeout: 12))
+    capture("S4_\(variant)_threshold", in: app)
+    captureS2Diagnostics("S4_\(variant)_threshold_diagnostics", from: atlantis)
+    let pad = app.descendants(matching: .any)["atlantis.traversal.movementPad"]
+    XCTAssertTrue(pad.waitForExistence(timeout: 5))
+    let center = pad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+    let forward = pad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02))
+    let left = pad.coordinate(withNormalizedOffset: CGVector(dx: 0.02, dy: 0.5))
+    let right = pad.coordinate(withNormalizedOffset: CGVector(dx: 0.98, dy: 0.5))
+    let reverse = pad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.98))
+    center.press(forDuration: 0.1, thenDragTo: forward, withVelocity: .fast, thenHoldForDuration: 3)
+    capture("S4_\(variant)_shot4", in: app)
+    captureS2Diagnostics("S4_\(variant)_shot4_diagnostics", from: atlantis)
+    center.press(forDuration: 0.1, thenDragTo: forward, withVelocity: .fast, thenHoldForDuration: 2)
+    center.press(forDuration: 0.1, thenDragTo: left, withVelocity: .fast, thenHoldForDuration: 0.84)
+    captureS2Diagnostics("S4_\(variant)_east_turn", from: atlantis)
+    center.press(forDuration: 0.1, thenDragTo: forward, withVelocity: .fast, thenHoldForDuration: 16)
+    capture("S4_\(variant)_shot5_walk", in: app)
+    captureS2Diagnostics("S4_\(variant)_shot5_walk_diagnostics", from: atlantis)
+    let walkValue = String(describing: atlantis.value ?? "")
+    XCTAssertFalse(walkValue.contains("Blocked"), walkValue)
+    let walkYaw = s4Yaw(from: walkValue)
+    XCTAssertNotNil(walkYaw, walkValue)
+    if variant == "a" { XCTAssertEqual(walkYaw ?? -1, 0, accuracy: 0.05) }
+    if variant == "d" { XCTAssertEqual(walkYaw ?? -1, 0.75, accuracy: 0.05) }
+    if variant == "b" { XCTAssertEqual(walkYaw ?? -1, 0.52, accuracy: 0.08) }
+    // The held drag has released by the time XCTest reads this value, so the
+    // pause pan may have advanced a few frames beyond its centered walk state.
+    if contextual { XCTAssertLessThanOrEqual(walkYaw ?? 1, 0.15) }
+
+    if contextual {
+      Thread.sleep(forTimeInterval: 0.55)
+      capture("S4_\(variant)_pause_pan", in: app)
+      captureS2Diagnostics("S4_\(variant)_pause_pan_diagnostics", from: atlantis)
+    }
+    Thread.sleep(forTimeInterval: contextual ? 0.75 : 1.2)
+    capture("S4_\(variant)_stop", in: app)
+    captureS2Diagnostics("S4_\(variant)_stop_diagnostics", from: atlantis)
+    if variant == "b" {
+      XCTAssertEqual(s4Yaw(from: String(describing: atlantis.value ?? "")) ?? -1, 0, accuracy: 0.05)
+    }
+    if contextual {
+      XCTAssertEqual(s4Yaw(from: String(describing: atlantis.value ?? "")) ?? -1, 0.75, accuracy: 0.06)
+    }
+    center.press(forDuration: 0.1, thenDragTo: forward, withVelocity: .fast, thenHoldForDuration: 2)
+    capture("S4_\(variant)_restart", in: app)
+    captureS2Diagnostics("S4_\(variant)_restart_diagnostics", from: atlantis)
+    if contextual {
+      XCTAssertEqual(s4Yaw(from: String(describing: atlantis.value ?? "")) ?? -1, 0, accuracy: 0.05)
+    }
+    center.press(forDuration: 0.1, thenDragTo: left, withVelocity: .fast, thenHoldForDuration: 0.18)
+    Thread.sleep(forTimeInterval: 0.5)
+    capture("S4_\(variant)_heading_correction", in: app)
+    captureS2Diagnostics("S4_\(variant)_heading_correction_diagnostics", from: atlantis)
+    center.press(forDuration: 0.1, thenDragTo: right, withVelocity: .fast, thenHoldForDuration: 0.18)
+    captureS2Diagnostics("S4_\(variant)_heading_restore_diagnostics", from: atlantis)
+    center.press(forDuration: 0.1, thenDragTo: reverse, withVelocity: .fast, thenHoldForDuration: 0.7)
+    capture("S4_\(variant)_reverse", in: app)
+    captureS2Diagnostics("S4_\(variant)_reverse_diagnostics", from: atlantis)
+    Thread.sleep(forTimeInterval: 0.5)
+    captureS2Diagnostics("S4_\(variant)_reverse_recovered_diagnostics", from: atlantis)
+    if variant == "b" || contextual {
+      XCTAssertEqual(s4Yaw(from: String(describing: atlantis.value ?? "")) ?? -1, 0, accuracy: 0.05)
+    }
+    app.terminate()
+  }
+
+  private func s4Yaw(from value: String) -> Float? {
+    value.components(separatedBy: "yaw ").dropFirst().first?
+      .components(separatedBy: " · ").first.flatMap(Float.init)
+  }
+
+  func testShipathonS3A2MatchedRouteAndShot5Direction() throws {
+    captureShipathonS3Lighting(variants: ["baseline", "a2"],
+                              fullRoute: ["baseline", "a2"], shot5Direction: true)
+  }
+
+  func testShipathonS3A2MatchedKeyFramesAndShot5Direction() throws {
+    captureShipathonS3Lighting(variants: ["baseline", "a2"],
+                              fullRoute: [], shot5Direction: true)
+  }
+
+  func testShipathonS3RecoveredProductionRoute() throws {
+    captureShipathonS3Lighting(variants: ["production"], fullRoute: ["production"])
+  }
+
+  func testShipathonS3RecoveredProductionKeyFrames() throws {
+    captureShipathonS3Lighting(variants: ["production"], fullRoute: [])
+  }
+
+  func testShipathonS5PeerCueRoute() throws {
+    captureShipathonS3Lighting(variants: ["production"], fullRoute: ["production"],
+                              studyArgument: "--shipathon-s5-peer-cue")
+  }
+
+  func testShipathonS5CandidateFullRoute() throws {
+    captureShipathonS3Lighting(variants: ["production"], fullRoute: ["production"],
+                              studyArgument: "--shipathon-s5-candidate")
+  }
+
+  func testShipathonS5RevisionAFullRoute() throws {
+    captureShipathonS3Lighting(variants: ["production"], fullRoute: ["production"],
+                              studyArgument: "--shipathon-s5-revision-a")
+  }
+
+  func testShipathonS5RevisionBFullRoute() throws {
+    captureShipathonS3Lighting(variants: ["production"], fullRoute: ["production"],
+                              studyArgument: "--shipathon-s5-revision-b")
+  }
+
+  func testShipathonS5RevisionCFullRoute() throws {
+    captureShipathonS3Lighting(variants: ["production"], fullRoute: ["production"],
+                              studyArgument: "--shipathon-s5-revision-c")
+  }
+
+  private func captureShipathonS3Lighting(variants: [String], fullRoute: Set<String>,
+                                         shot5Direction: Bool = false, studyArgument: String? = nil) {
+    for variant in variants {
+      let captureLabel = studyArgument.map { "S5_\($0.replacingOccurrences(of: "--shipathon-s5-", with: ""))" } ?? "S3_\(variant)"
+      let app = XCUIApplication()
+      app.launchArguments = ["--founder-desk-production-proof", "--founder-traversal-diagnostics",
+                             "--shipathon-s2c-route-performance"]
+      if variant != "production" { app.launchArguments.append("--s3-lighting-\(variant)") }
+      if shot5Direction { app.launchArguments.append("--shipathon-s2-camera-d") }
+      if let studyArgument {
+        app.launchArguments.append(studyArgument)
+        app.launchArguments.append("--shipathon-s5-diagnostics")
+      }
+      app.launch()
+      enterFreshProductionCareer(in: app)
+      let explore = app.buttons["founderGarage.camera.toggleWalking"]
+      XCTAssertTrue(explore.waitForExistence(timeout: 8))
+      capture("\(captureLabel)_L1_garage", in: app)
+      explore.tap()
+      let door = app.buttons["founderGarage.realityKit.garageDoor.toggle"]
+      XCTAssertTrue(door.waitForExistence(timeout: 5))
+      door.tap()
+      let garagePad = app.descendants(matching: .any)["founderGarage.camera.movementPad"]
+      XCTAssertTrue(garagePad.waitForExistence(timeout: 5))
+      garagePad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        .press(forDuration: 0.1,
+               thenDragTo: garagePad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02)),
+               withVelocity: .fast, thenHoldForDuration: 5)
+      let atlantis = app.descendants(matching: .any)["atlantis.traversal.root"]
+      XCTAssertTrue(atlantis.waitForExistence(timeout: 12))
+      capture("\(captureLabel)_L2_threshold", in: app)
+      let pad = app.descendants(matching: .any)["atlantis.traversal.movementPad"]
+      XCTAssertTrue(pad.waitForExistence(timeout: 5))
+      let center = pad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+      let forward = pad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02))
+      let left = pad.coordinate(withNormalizedOffset: CGVector(dx: 0.02, dy: 0.5))
+      center.press(forDuration: 0.1, thenDragTo: forward, withVelocity: .fast, thenHoldForDuration: 3)
+      capture("\(captureLabel)_L3_shot4", in: app)
+      captureS2Diagnostics("\(captureLabel)_L3_position", from: atlantis)
+      center.press(forDuration: 0.1, thenDragTo: forward, withVelocity: .fast, thenHoldForDuration: 2)
+      center.press(forDuration: 0.1, thenDragTo: left, withVelocity: .fast, thenHoldForDuration: 0.84)
+      center.press(forDuration: 0.1, thenDragTo: forward, withVelocity: .fast, thenHoldForDuration: 16)
+      capture("\(captureLabel)_L4_shot5", in: app)
+      captureS2Diagnostics("\(captureLabel)_L4_position", from: atlantis)
+      if studyArgument != nil {
+        XCTAssertFalse(app.descendants(matching: .any)["atlantis.shipathon.peerCue"].exists)
+      }
+      if fullRoute.contains(variant) {
+        center.press(forDuration: 0.1, thenDragTo: forward, withVelocity: .fast, thenHoldForDuration: 20.5)
+        center.press(forDuration: 0.1, thenDragTo: left, withVelocity: .fast, thenHoldForDuration: 0.864)
+        center.press(forDuration: 0.1, thenDragTo: forward, withVelocity: .fast, thenHoldForDuration: 75)
+        capture("\(captureLabel)_L5_peer", in: app)
+        captureS2Diagnostics("\(captureLabel)_L5_routePerformance", from: atlantis)
+        if studyArgument != nil {
+          XCTAssertTrue(app.descendants(matching: .any)["atlantis.shipathon.peerCue"].exists)
+          if studyArgument == "--shipathon-s5-revision-c" {
+            XCTAssertFalse(app.descendants(matching: .any)["atlantis.hud.districtCard"].exists)
+          }
+        }
+        let endpoint = atlantis.value as? String ?? "no diagnostics"
+        XCTAssertFalse(endpoint.contains("Blocked"), endpoint)
+        let position = endpoint.split(separator: "·").first?
+          .split(separator: ",").compactMap { Float($0.trimmingCharacters(in: .whitespaces)) } ?? []
+        XCTAssertEqual(position.count, 3, endpoint)
+        if position.count == 3 {
+          XCTAssertEqual(position[0], -825, accuracy: 2, endpoint)
+          if studyArgument?.hasPrefix("--shipathon-s5-revision-") == true {
+            XCTAssertEqual(position[0], -823.7, accuracy: 0.5, endpoint)
+          }
+          XCTAssertEqual(position[1], 8.375, accuracy: 0.05, endpoint)
+          XCTAssertEqual(position[2], 940, accuracy: 5, endpoint)
+        }
+      }
+      app.terminate()
+    }
+  }
+
+  private func captureShipathonS2CThreshold(variants: [String]) {
+    for variant in variants {
+      let app = XCUIApplication()
+      app.launchArguments = ["--founder-desk-production-proof", "--founder-traversal-diagnostics"]
+      app.launchArguments.append("--shipathon-s2-threshold-\(variant)")
+      app.launch()
+      enterFreshProductionCareer(in: app)
+
+      let explore = app.buttons["founderGarage.camera.toggleWalking"]
+      XCTAssertTrue(explore.waitForExistence(timeout: 8))
+      explore.tap()
+      let door = app.buttons["founderGarage.realityKit.garageDoor.toggle"]
+      XCTAssertTrue(door.waitForExistence(timeout: 5))
+      door.tap()
+
+      let movement = app.descendants(matching: .any)["founderGarage.camera.movementPad"]
+      XCTAssertTrue(movement.waitForExistence(timeout: 5))
+      movement.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        .press(forDuration: 0.1,
+               thenDragTo: movement.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02)),
+               withVelocity: .fast, thenHoldForDuration: 5)
+
+      let atlantis = app.descendants(matching: .any)["atlantis.traversal.root"]
+      XCTAssertTrue(atlantis.waitForExistence(timeout: 12))
+      capture("S2C_\(variant)_thresholdContinuation", in: app)
+      let exteriorMovement = app.descendants(matching: .any)["atlantis.traversal.movementPad"]
+      XCTAssertTrue(exteriorMovement.waitForExistence(timeout: 5))
+      exteriorMovement.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        .press(forDuration: 0.1,
+               thenDragTo: exteriorMovement.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02)),
+               withVelocity: .fast, thenHoldForDuration: 3)
+      capture("S2C_\(variant)_firstExterior", in: app)
+      let diagnostic = XCTAttachment(string: atlantis.value as? String ?? "No traversal diagnostics")
+      diagnostic.name = "S2C_\(variant)_cameraDiagnostics"
+      diagnostic.lifetime = .keepAlways
+      add(diagnostic)
+      app.terminate()
+    }
+  }
+
+  func testShipathonS2FirstStreetRouteCapture() throws {
+    captureShipathonS2FirstStreetRoute(variants: ["c", "d"])
+  }
+
+  func testShipathonS2CMaterialStreetAndShot5() throws {
+    captureShipathonS2FirstStreetRoute(variants: ["d"], thresholdB: true)
+  }
+
+  private func captureShipathonS2FirstStreetRoute(variants: [String], thresholdB: Bool = false) {
+    for variant in variants {
+      let app = XCUIApplication()
+      app.launchArguments = ["--founder-desk-production-proof", "--founder-traversal-diagnostics"]
+      app.launchArguments.append("--shipathon-s2-camera-\(variant)")
+      if thresholdB { app.launchArguments.append("--shipathon-s2-threshold-b") }
+      app.launch()
+      enterFreshProductionCareer(in: app)
+
+      let explore = app.buttons["founderGarage.camera.toggleWalking"]
+      XCTAssertTrue(explore.waitForExistence(timeout: 8))
+      explore.tap()
+      let door = app.buttons["founderGarage.realityKit.garageDoor.toggle"]
+      XCTAssertTrue(door.waitForExistence(timeout: 5))
+      door.tap()
+      let garagePad = app.descendants(matching: .any)["founderGarage.camera.movementPad"]
+      XCTAssertTrue(garagePad.waitForExistence(timeout: 5))
+      garagePad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        .press(forDuration: 0.1,
+               thenDragTo: garagePad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02)),
+               withVelocity: .fast, thenHoldForDuration: 5)
+
+      let atlantis = app.descendants(matching: .any)["atlantis.traversal.root"]
+      XCTAssertTrue(atlantis.waitForExistence(timeout: 12))
+      print("S2 \(variant) exterior: \(atlantis.value ?? "no diagnostics")")
+      captureS2Diagnostics("S2_\(variant)_exteriorPosition", from: atlantis)
+      let pad = app.descendants(matching: .any)["atlantis.traversal.movementPad"]
+      XCTAssertTrue(pad.waitForExistence(timeout: 5))
+      let center = pad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+      center.press(forDuration: 0.1,
+                   thenDragTo: pad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02)),
+                   withVelocity: .fast, thenHoldForDuration: 5)
+      capture("S2_\(variant)_streetThreshold", in: app)
+      captureS2Diagnostics("S2_\(variant)_streetThresholdPosition", from: atlantis)
+      center.press(forDuration: 0.1,
+                   thenDragTo: pad.coordinate(withNormalizedOffset: CGVector(dx: 0.02, dy: 0.5)),
+                   withVelocity: .fast, thenHoldForDuration: 0.87)
+      capture("S2_\(variant)_eastTurn", in: app)
+      print("S2 \(variant) east turn: \(atlantis.value ?? "no diagnostics")")
+      captureS2Diagnostics("S2_\(variant)_eastTurnPosition", from: atlantis)
+      center.press(forDuration: 0.1,
+                   thenDragTo: pad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02)),
+                   withVelocity: .fast, thenHoldForDuration: 16)
+      capture("S2_\(variant)_firstStreet20m", in: app)
+      print("S2 \(variant) first street: \(atlantis.value ?? "no diagnostics")")
+      captureS2Diagnostics("S2_\(variant)_firstStreetPosition", from: atlantis)
+      app.terminate()
+    }
+  }
+
+  private func captureS2Diagnostics(_ name: String, from element: XCUIElement) {
+    let attachment = XCTAttachment(string: String(describing: element.value ?? "no diagnostics"))
+    attachment.name = name
+    attachment.lifetime = .keepAlways
+    add(attachment)
+  }
+
+  func testShipathonS2BActualWalkToPeerZone() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-traversal-diagnostics", "--shipathon-s2c-route-performance"]
+    app.launch()
+    enterFreshProductionCareer(in: app)
+    let explore = app.buttons["founderGarage.camera.toggleWalking"]
+    XCTAssertTrue(explore.waitForExistence(timeout: 8))
+    explore.tap()
+    let door = app.buttons["founderGarage.realityKit.garageDoor.toggle"]
+    XCTAssertTrue(door.waitForExistence(timeout: 5))
+    door.tap()
+    capture("S2B_threshold_before_crossing", in: app)
+
+    let garagePad = app.descendants(matching: .any)["founderGarage.camera.movementPad"]
+    XCTAssertTrue(garagePad.waitForExistence(timeout: 5))
+    garagePad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+      .press(forDuration: 0.1,
+             thenDragTo: garagePad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02)),
+             withVelocity: .fast, thenHoldForDuration: 5)
+    let atlantis = app.descendants(matching: .any)["atlantis.traversal.root"]
+    XCTAssertTrue(atlantis.waitForExistence(timeout: 12))
+    capture("S2B_first_exterior", in: app)
+    captureS2Diagnostics("S2B_handoff_position", from: atlantis)
+
+    let pad = app.descendants(matching: .any)["atlantis.traversal.movementPad"]
+    XCTAssertTrue(pad.waitForExistence(timeout: 5))
+    let center = pad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+    let forward = pad.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.02))
+    let left = pad.coordinate(withNormalizedOffset: CGVector(dx: 0.02, dy: 0.5))
+    center.press(forDuration: 0.1, thenDragTo: forward, withVelocity: .fast, thenHoldForDuration: 5)
+    captureS2Diagnostics("S2B_street_threshold", from: atlantis)
+    center.press(forDuration: 0.1, thenDragTo: left, withVelocity: .fast, thenHoldForDuration: 0.84)
+    captureS2Diagnostics("S2B_east_turn", from: atlantis)
+    center.press(forDuration: 0.1, thenDragTo: forward, withVelocity: .fast, thenHoldForDuration: 36.5)
+    capture("S2B_eastbound_street", in: app)
+    captureS2Diagnostics("S2B_eastbound_position", from: atlantis)
+    let eastCorner = atlantis.value as? String ?? "no diagnostics"
+    XCTAssertFalse(eastCorner.contains("Blocked"), eastCorner)
+    let eastCoordinates = eastCorner.split(separator: "·").first?
+      .split(separator: ",").compactMap { Float($0.trimmingCharacters(in: .whitespaces)) } ?? []
+    XCTAssertEqual(eastCoordinates.count, 3, eastCorner)
+    if eastCoordinates.count == 3 { XCTAssertEqual(eastCoordinates[0], -825, accuracy: 5, eastCorner) }
+    guard !eastCorner.contains("Blocked"), eastCoordinates.count == 3,
+          abs(eastCoordinates[0] + 825) <= 5 else { app.terminate(); return }
+    center.press(forDuration: 0.1, thenDragTo: left, withVelocity: .fast, thenHoldForDuration: 0.864)
+    captureS2Diagnostics("S2B_south_turn", from: atlantis)
+    center.press(forDuration: 0.1, thenDragTo: forward, withVelocity: .fast, thenHoldForDuration: 75)
+    captureS2Diagnostics("S2B_corridor_south_position", from: atlantis)
+    let corridor = atlantis.value as? String ?? "no diagnostics"
+    XCTAssertFalse(corridor.contains("Blocked"), corridor)
+    capture("S2B_peer_zone_attempt", in: app)
+    captureS2Diagnostics("S2B_peer_zone_position", from: atlantis)
+    captureS2Diagnostics("S2C_peer_zone_route_performance", from: atlantis)
+    let endpoint = atlantis.value as? String ?? "no diagnostics"
+    XCTAssertFalse(endpoint.contains("Blocked"), endpoint)
+    let coordinates = endpoint.split(separator: "·").first?
+      .split(separator: ",").compactMap { Float($0.trimmingCharacters(in: .whitespaces)) } ?? []
+    XCTAssertEqual(coordinates.count, 3, endpoint)
+    if coordinates.count == 3 {
+      XCTAssertEqual(coordinates[0], -825, accuracy: 2, endpoint)
+      XCTAssertEqual(coordinates[1], 8.375, accuracy: 0.05, endpoint)
+      XCTAssertEqual(coordinates[2], 940, accuracy: 5, endpoint)
+    }
+    app.terminate()
+  }
+
   func testRealityKitLookOutFocusAndReturn() throws {
     let app = XCUIApplication()
     app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-realitykit"]

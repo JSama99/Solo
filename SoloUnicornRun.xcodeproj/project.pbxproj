@@ -29,6 +29,7 @@
 		A12000000000000000000002 /* RealityKit/Atlantis/tech_unicorn_bridge_repaired.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A12000000000000000000001 /* RealityKit/Atlantis/tech_unicorn_bridge_repaired.usdz */; };
 		A12100000000000000000002 /* RealityKit/Atlantis/spire_far_proxy.usdz in Resources */ = {isa = PBXBuildFile; fileRef = A12100000000000000000001 /* RealityKit/Atlantis/spire_far_proxy.usdz */; };
 		A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2513145C1504A166E8177382 /* GameStoreTests.swift */; };
+		CE2A00000000000000000001 /* CoreExperienceDecisionLoopTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE2A00000000000000000002 /* CoreExperienceDecisionLoopTests.swift */; };
 		A2C2E52CAB4B3D4FB22505FE /* AtlantisDistrictLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFA44EBA9C58588064E85F9D /* AtlantisDistrictLoader.swift */; };
 		A30000000000000000000001 /* SprintOutcomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31000000000000000000001 /* SprintOutcomeScreen.swift */; };
 		A30000000000000000000002 /* HindsightArchiveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A31000000000000000000002 /* HindsightArchiveCard.swift */; };
@@ -205,6 +206,7 @@
 		207E2115321660B4EE667E49 /* AtlantisRuntimeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisRuntimeTests.swift; sourceTree = "<group>"; };
 		24B6048AF96C255824BFD84D /* AtlantisWorldPresentationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlantisWorldPresentationModel.swift; sourceTree = "<group>"; };
 		2513145C1504A166E8177382 /* GameStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStoreTests.swift; sourceTree = "<group>"; };
+		CE2A00000000000000000002 /* CoreExperienceDecisionLoopTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreExperienceDecisionLoopTests.swift; sourceTree = "<group>"; };
 		2BCCB6F92A46ACB05330AE9B /* RealityKit/Atlantis/atlantis_manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = RealityKit/Atlantis/atlantis_manifest.json; sourceTree = "<group>"; };
 		326100000000000000000002 /* Build32_6_1ProductionContinuityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Build32_6_1ProductionContinuityUITests.swift; sourceTree = "<group>"; };
 		326100000000000000000003 /* Solo Unicorn Run UI Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Solo Unicorn Run UI Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -436,6 +438,7 @@
 				AA1000000000000000000004 /* DivergenceChaosTests.swift */,
 				AA1000000000000000000005 /* DivergenceSystemTests.swift */,
 				2513145C1504A166E8177382 /* GameStoreTests.swift */,
+				CE2A00000000000000000002 /* CoreExperienceDecisionLoopTests.swift */,
 				E70000000000000000000012 /* EnvironmentalInteractionTests.swift */,
 				B10000000000000000000020 /* FounderPassGateTests.swift */,
 				B10000000000000000000021 /* HindsightTests.swift */,
@@ -796,6 +799,7 @@
 				AA0000000000000000000004 /* DivergenceChaosTests.swift in Sources */,
 				AA0000000000000000000005 /* DivergenceSystemTests.swift in Sources */,
 				A135DBCC4C70F1D6B4034260 /* GameStoreTests.swift in Sources */,
+				CE2A00000000000000000001 /* CoreExperienceDecisionLoopTests.swift in Sources */,
 				E70000000000000000000002 /* EnvironmentalInteractionTests.swift in Sources */,
 				B20000000000000000000020 /* FounderPassGateTests.swift in Sources */,
 				B20000000000000000000021 /* HindsightTests.swift in Sources */,

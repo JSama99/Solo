@@ -308,7 +308,7 @@ private struct AtlantisDebugContent: View {
               Menu("Camera") {ForEach(AtlantisBenchmarkCamera.allCases) {c in Button(c.rawValue) {world.selectCamera(c)}.accessibilityIdentifier("atlantis.debug.camera.\(c.rawValue)")}}
                 .accessibilityIdentifier("atlantis.debug.camera")
               Menu("Lighting: \(world.phase.title)") {ForEach(FounderEnvironmentTimeState.allCases,id:\.self) {p in Button(p.title) {world.phase=p;world.applyLighting()}}}
-              Menu("Shadows: \(world.shadowMode)") {ForEach(0..<3) {mode in Button(["Off","120 m","500 m"][mode]) {world.shadowMode=mode;world.applyLighting()}}}
+              Menu("Shadows: \(world.shadowMode)") {ForEach(0..<3) {mode in Button(["Off","30 m","500 m"][mode]) {world.shadowMode=mode;world.applyLighting()}}}
               Menu("Districts") {ForEach(AtlantisDistrict.allCases) {d in
                 Button("Load \(d.title)") {world.loader.load(d)}
                 Button("Unload \(d.title)") {world.unload(d)}

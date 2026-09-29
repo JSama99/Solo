@@ -2303,6 +2303,16 @@ final class FounderAuthoredPoseRig {
   }
 
   private func applyMotion(_ motion: FounderMotionFrame, names: [String], transforms: inout [Transform]) {
+    let standingArmAmount: Float = switch motion.state {
+    case .seatedIdle, .seatedTurn: 0
+    case .standingUp: motion.progress
+    case .sittingDown: 1 - motion.progress
+    case .standingIdle, .walkStart, .walking, .walkStop, .turnInPlace: 1
+    }
+    // The accepted neutral asset is an outward A-pose. Keep hands beside the
+    // torso at rest as well as in motion, including with Reduce Motion enabled.
+    rotate("UpperArm_L", angle: -0.50 * standingArmAmount, axis: [0, 0, 1], names: names, transforms: &transforms)
+    rotate("UpperArm_R", angle: 0.50 * standingArmAmount, axis: [0, 0, 1], names: names, transforms: &transforms)
     guard !motion.reduceMotion else { return }
     let breath = sin(motion.clock * 2 * .pi / 4.8) * 0.010
       + sin(motion.clock * 2 * .pi / 7.3 + 0.8) * 0.003
@@ -2339,22 +2349,20 @@ final class FounderAuthoredPoseRig {
       let weightTransfer = motion.weightTransfer
       let kineticChain = motion.kineticChain
       let pelvisWave = sin(phase + profile.pelvis) * gait
-      let stride = sin(phase + profile.thigh) * gait
-      let opposite = sin(phase + .pi + profile.thigh) * gait
-      let leftKnee = max(0, -sin(phase + 0.35 + profile.knee)) * gait
-      let rightKnee = max(0, -sin(phase + .pi + 0.35 + profile.knee)) * gait
-      let leftFoot = sin(phase + profile.foot) * gait
-      let rightFoot = sin(phase + .pi + profile.foot) * gait
+      let leftLeg = FounderWalkPose.resolve(phase: phase)
+      let rightLeg = FounderWalkPose.resolve(phase: phase + .pi)
       let torso = sin(phase + profile.torso - kineticChain.torsoPhaseOffset) * gait
       let rightArm = kineticChain.armPresentedAngle / 0.25
       let leftArm = -rightArm
-      let verticalCOM = abs(sin(phase + profile.verticalCOM)) * gait
-      rotate("Thigh_L", angle: stride * 0.34, axis: [1, 0, 0], names: names, transforms: &transforms)
-      rotate("Thigh_R", angle: opposite * 0.34, axis: [1, 0, 0], names: names, transforms: &transforms)
-      rotate("Calf_L", angle: leftKnee * 0.48, axis: [1, 0, 0], names: names, transforms: &transforms)
-      rotate("Calf_R", angle: rightKnee * 0.48, axis: [1, 0, 0], names: names, transforms: &transforms)
-      rotate("Foot_L", angle: (-leftFoot * 0.13) - leftKnee * 0.12, axis: [1, 0, 0], names: names, transforms: &transforms)
-      rotate("Foot_R", angle: (-rightFoot * 0.13) - rightKnee * 0.12, axis: [1, 0, 0], names: names, transforms: &transforms)
+      let verticalCOM = (leftLeg.pelvisHeight + rightLeg.pelvisHeight) * 0.5 * gait
+      rotate("Thigh_L", angle: leftLeg.thigh * gait, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Thigh_R", angle: rightLeg.thigh * gait, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Calf_L", angle: leftLeg.knee * gait, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Calf_R", angle: rightLeg.knee * gait, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Foot_L", angle: leftLeg.foot * gait, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Foot_R", angle: rightLeg.foot * gait, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Toe_L", angle: leftLeg.toe * gait, axis: [1, 0, 0], names: names, transforms: &transforms)
+      rotate("Toe_R", angle: rightLeg.toe * gait, axis: [1, 0, 0], names: names, transforms: &transforms)
       rotate("UpperArm_L", angle: leftArm * 0.25, axis: [1, 0, 0], names: names, transforms: &transforms)
       rotate("UpperArm_R", angle: rightArm * 0.25, axis: [1, 0, 0], names: names, transforms: &transforms)
       rotate("LowerArm_L", angle: 0.10 + max(0, rightArm) * 0.10, axis: [1, 0, 0], names: names, transforms: &transforms)
@@ -2366,7 +2374,7 @@ final class FounderAuthoredPoseRig {
         "Hips",
         by: [
           pelvisWave * 0.006 + weightTransfer.pelvisLateral,
-          verticalCOM * 0.011 + kineticChain.pelvisVerticalLoadOffset,
+          verticalCOM + kineticChain.pelvisVerticalLoadOffset,
           0
         ],
         names: names,
@@ -2782,6 +2790,48 @@ enum FounderFootPhase: String, CaseIterable, Equatable, Sendable {
   }
 }
 
+/// One distance-driven left-foot cycle. The right leg is sampled half a cycle later.
+/// Contact, loading, toe-off, passing, and approach are explicit poses rather than
+/// unrelated joint sine waves; this is presentation only, not root motion or IK.
+struct FounderWalkPose: Equatable, Sendable {
+  let thigh: Float
+  let knee: Float
+  let foot: Float
+  let toe: Float
+  let pelvisHeight: Float
+
+  private static let keys: [Self] = [
+    .init(thigh: 0.10, knee: 0.04, foot: -0.08, toe: 0, pelvisHeight: 0),       // contact
+    .init(thigh: 0.08, knee: 0.12, foot: -0.06, toe: 0, pelvisHeight: -0.008),  // down
+    .init(thigh: -0.10, knee: 0.08, foot: 0.10, toe: 0.08, pelvisHeight: 0),    // push-off
+    .init(thigh: -0.22, knee: 0.36, foot: 0.10, toe: 0.10, pelvisHeight: 0.008),// toe-off
+    .init(thigh: -0.13, knee: 0.46, foot: -0.04, toe: 0, pelvisHeight: 0.012),  // swing
+    .init(thigh: 0.04, knee: 0.38, foot: -0.10, toe: 0, pelvisHeight: 0.010),   // passing
+    .init(thigh: 0.20, knee: 0.18, foot: -0.06, toe: 0, pelvisHeight: 0.006),   // up
+    .init(thigh: 0.23, knee: 0.05, foot: -0.08, toe: 0, pelvisHeight: 0.002),   // approach
+    .init(thigh: 0.10, knee: 0.04, foot: -0.08, toe: 0, pelvisHeight: 0)        // loop contact
+  ]
+
+  static func resolve(phase: Float) -> Self {
+    let cycle = 2 * Float.pi
+    let wrapped = phase.truncatingRemainder(dividingBy: cycle)
+    let normalized = (wrapped < 0 ? wrapped + cycle : wrapped) / cycle
+    let position = normalized * 8
+    let index = min(Int(position), 7)
+    let fraction = position - Float(index)
+    let eased = fraction * fraction * (3 - 2 * fraction)
+    let from = keys[index]
+    let to = keys[index + 1]
+    return Self(
+      thigh: from.thigh + (to.thigh - from.thigh) * eased,
+      knee: from.knee + (to.knee - from.knee) * eased,
+      foot: from.foot + (to.foot - from.foot) * eased,
+      toe: from.toe + (to.toe - from.toe) * eased,
+      pelvisHeight: from.pelvisHeight + (to.pelvisHeight - from.pelvisHeight) * eased
+    )
+  }
+}
+
 enum FounderLocomotionPhaseVariant: String, CaseIterable, Equatable, Sendable {
   case baseline, a, b, c
 
@@ -3168,7 +3218,8 @@ final class FounderLocomotionController {
   private var kineticChainVariant: FounderKineticChainVariant
   private(set) var latestMotionSample: FounderMotionCaptureSample?
 
-  private static let gaitCycleDistance: Float = 0.78
+  // A full left/right cycle covers two steps, not one. At 1.4 m/s this is 120 steps/min.
+  static let gaitCycleDistance: Float = 1.40
   private static let sampledJoints: Set<String> = [
     "Hips", "Spine01", "Spine02", "Chest", "Head", "Clavicle_L", "Clavicle_R",
     "UpperArm_L", "UpperArm_R", "Hand_L", "Hand_R",
@@ -3437,6 +3488,7 @@ final class FounderLocomotionController {
     let worldDisplacement = rig.anchor.position - previousAnchorPosition
     previousAnchorPosition = rig.anchor.position
     let horizontalDisplacement = simd_length(SIMD2<Float>(worldDisplacement.x, worldDisplacement.z))
+    // Distance synchronization proxy only; this does not measure a skinned foot's world-space slip.
     let slideRatio = state == .walking && horizontalDisplacement > 0.0001 && !reduceMotion
       ? abs(horizontalDisplacement - animatedGaitDistance) / horizontalDisplacement
       : 0
@@ -3578,6 +3630,7 @@ final class FounderGarageRealityWorld {
   @ObservationIgnored private var garageDoorAnimationElements: [FounderGarageDoorAnimationElement] = []
   @ObservationIgnored private var garageDoorAnimationPlaybacks: [AnimationPlaybackController] = []
   @ObservationIgnored private var onAtlantisBoundaryCrossing: ((FounderAtlantisTraversalHandoff) -> Void)?
+  @ObservationIgnored private var defersAtlantisCameraParking = false
   @ObservationIgnored private var didRequestAtlantisTraversal = false
   @ObservationIgnored private(set) var isFounderPresentedInAtlantis = false
   @ObservationIgnored private var traversalDiagnosticsElapsed: TimeInterval = 0
@@ -3839,6 +3892,26 @@ final class FounderGarageRealityWorld {
     onAtlantisBoundaryCrossing = handler
   }
 
+  func deferAtlantisCameraParking(_ deferred: Bool) {
+    defersAtlantisCameraParking = deferred
+  }
+
+  func setGarageExteriorBackgroundVisible(_ visible: Bool) {
+    let root = activeGarageArchitectureAdapter.rig.visualRoot
+    root.findEntity(named: "Blocker_Far_L")?.isEnabled = visible
+    root.findEntity(named: "Blocker_Far_R")?.isEnabled = visible
+  }
+
+  /// Atlantis owns these overlapping exterior surfaces once its camera takes over.
+  /// Keep the Garage visuals for the approach; traversal remains manifest-owned.
+  func setGarageExteriorGroundVisible(_ visible: Bool) {
+    let root = activeGarageArchitectureAdapter.rig.visualRoot
+    for name in ["Driveway_mesh_001", "LotGround_mesh", "Sidewalk_mesh", "Street_mesh",
+                 "DrivewayApron_CurbCut_mesh_001"] {
+      root.findEntity(named: name)?.isEnabled = visible
+    }
+  }
+
   func transferFounderPresentation(
     to atlantis: AtlantisRealityWorld,
     reduceMotion: Bool
@@ -3868,6 +3941,7 @@ final class FounderGarageRealityWorld {
   }
 
   func restoreFromAtlantis() {
+    defersAtlantisCameraParking = false
     didRequestAtlantisTraversal = false
     let approach = spatialSpecification.interactionApproaches.garageDoor.approach
     cameraController.consume(.init(
@@ -3896,7 +3970,7 @@ final class FounderGarageRealityWorld {
     ))
     // The covered Garage remains alive. Park its session-only player at the
     // authored interior approach so dismissal resumes a coherent return path.
-    restoreFromAtlantis()
+    if !defersAtlantisCameraParking { restoreFromAtlantis() }
   }
 
   func stopCameraUpdates() {

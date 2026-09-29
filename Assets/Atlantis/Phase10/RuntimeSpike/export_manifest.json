@@ -2,13 +2,13 @@
   "axis": "Y",
   "metersPerUnit": 1,
   "conversion": "Blender (x,y,z) -> RealityKit (x,z,-y)",
-  "sourceSHA256": "f480525ff3fd347594da879f9926e8a6acfd5fa334151b8db5d6cd01730ea5b3",
+  "sourceSHA256": "4942447499d0f22fd0a8cd44387e6ac58a7e0d0c143b636affa13e2fc0f393c2",
   "districts": {
     "FounderDistrict": {
       "package": "founder_district",
-      "bytes": 362055,
-      "meshes": 464,
-      "triangles": 46032,
+      "bytes": 362874,
+      "meshes": 468,
+      "triangles": 46080,
       "materials": 15,
       "textures": 0,
       "bounds": [
@@ -30,9 +30,9 @@
           1030.0
         ]
       },
-      "sha256": "4f43a8635fc3330f1f487d182f7a4400208517f03f2fbe1c6c4a88f1f8863573",
+      "sha256": "a30983678741ed2cb232d4b480fc4d6f3dc53878ba2bcb45fd3e2e23b90a3f10",
       "source_shared_mesh_variants": 23,
-      "mesh_payloads_exported": 464,
+      "mesh_payloads_exported": 468,
       "instancing": "expanded per object in baseline; runtime sharing not assumed"
     },
     "StartupRow": {
@@ -1690,7 +1690,11 @@
     "PlayerUnicornHQ_Signage_Main": "UnicornHeights",
     "Player_UnicornHQ_Slot": "UnicornHeights",
     "Central_Peninsula": "WorldContext",
-    "Atlantis_Bay": "WorldContext"
+    "Atlantis_Bay": "WorldContext",
+    "Founder_OriginKerb_00": "FounderDistrict",
+    "Founder_OriginKerb_00.001": "FounderDistrict",
+    "Founder_OriginKerb_00.002": "FounderDistrict",
+    "Founder_OriginKerb_00.003": "FounderDistrict"
   },
   "landmarks": {
     "FounderGarageSlot": {
@@ -26540,9 +26544,9 @@
   "experiments": {
     "FounderDistrictBatched": {
       "package": "founder_district_batched",
-      "bytes": 1566454,
+      "bytes": 1566990,
       "meshes": 15,
-      "triangles": 46032,
+      "triangles": 46080,
       "materials": 15,
       "textures": 0,
       "bounds": [
@@ -26564,7 +26568,7 @@
           1030
         ]
       },
-      "sha256": "b27c60fda2a8ab7b01335d2826d01456a8b2879d58f289c73067b46daf71d46f",
+      "sha256": "52b4462f35faa090947754cd6b763d073eee82a670f7073b81b8ac0a212013bb",
       "experiment": "Static geometry grouped by material; source transforms baked; diagnostic only"
     },
     "StartupRowBatched": {
