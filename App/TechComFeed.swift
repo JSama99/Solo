@@ -33,6 +33,36 @@ enum NarrativeThread: String, Codable, Hashable, Sendable {
   case evidenceAndExecution
 }
 
+enum NarrativeArc: String, Codable, Hashable, Sendable {
+  case credibilityCrisis
+  case comeback
+  case momentumStreak
+  case founderSpotlight
+  case rivalryPressure
+}
+
+struct NarrativeMemoryState: Equatable, Sendable {
+  var favorableCount: Int
+  var criticalCount: Int
+  var favorableStreak: Int
+  var criticalStreak: Int
+  var priorCriticalCount: Int
+  var spotlightEventCount: Int
+  var rivalryEventCount: Int
+  var activeArcs: [NarrativeArc]
+
+  static let empty = NarrativeMemoryState(
+    favorableCount: 0,
+    criticalCount: 0,
+    favorableStreak: 0,
+    criticalStreak: 0,
+    priorCriticalCount: 0,
+    spotlightEventCount: 0,
+    rivalryEventCount: 0,
+    activeArcs: []
+  )
+}
+
 struct NarrativeBeat: Equatable, Hashable, Sendable {
   var id: String
   var thread: NarrativeThread
@@ -47,6 +77,7 @@ struct NarrativeBeat: Equatable, Hashable, Sendable {
 struct NarrativeSnapshot: Equatable, Sendable {
   var activeThreads: [NarrativeThread]
   var leadBeat: NarrativeBeat?
+  var memory: NarrativeMemoryState
 }
 
 struct NarrativeProjection: Equatable, Sendable {
@@ -61,6 +92,8 @@ struct NarrativeProjection: Equatable, Sendable {
 /// public-facing company state. The director does not mutate simulation state,
 /// consume simulation RNG, or inspect hidden task/result truth.
 enum NarrativeDirector {
+  static let memoryWindow = 8
+
   static func evaluate(
     publicEvents: [PublicMediaEvent],
     stats: FounderStats,
@@ -68,11 +101,20 @@ enum NarrativeDirector {
     venture: Int,
     sprint: Int
   ) -> NarrativeSnapshot {
-    let publicPlayerEvents = publicEvents.filter { $0.isPublic && $0.concernsPlayerCompany }
-    let latestEvent = publicPlayerEvents.max(by: eventPrecedes)
+    let publicEvents = publicEvents.filter(\.isPublic)
+    let playerEvents = publicEvents.filter(\.concernsPlayerCompany)
     let rival = standings.first(where: { !$0.isPlayer })
+    let memory = deriveMemory(publicEvents: publicEvents, rival: rival, stats: stats)
+    let latestEvent = playerEvents.max(by: eventPrecedes)
 
-    let leadBeat = latestEvent.map(beat(for:)) ?? stateBeat(
+    let leadBeat = memoryBeat(
+      memory: memory,
+      latestEvent: latestEvent,
+      stats: stats,
+      rival: rival,
+      venture: venture,
+      sprint: sprint
+    ) ?? latestEvent.map(beat(for:)) ?? stateBeat(
       stats: stats,
       rival: rival,
       venture: venture,
@@ -83,20 +125,70 @@ enum NarrativeDirector {
     if let leadBeat {
       threads.append(leadBeat.thread)
     }
-    if stats.momentum >= 70 {
+    if stats.momentum >= 70 || memory.activeArcs.contains(.momentumStreak) {
       appendUnique(.momentum, to: &threads)
     }
-    if stats.trust <= 35 || stats.coverage <= -30 {
+    if stats.trust <= 35 || stats.coverage <= -30 || memory.activeArcs.contains(.credibilityCrisis) {
       appendUnique(.credibility, to: &threads)
     }
-    if abs(stats.coverage) >= 60 {
+    if abs(stats.coverage) >= 60 || memory.activeArcs.contains(.founderSpotlight) {
       appendUnique(.founderProfile, to: &threads)
     }
-    if let rival, rival.marketShare >= 0.25 {
+    if (rival?.marketShare ?? 0) >= 0.25 || memory.activeArcs.contains(.rivalryPressure) {
       appendUnique(.rivalry, to: &threads)
     }
+    if memory.activeArcs.contains(.comeback) {
+      appendUnique(.evidenceAndExecution, to: &threads)
+    }
 
-    return NarrativeSnapshot(activeThreads: threads, leadBeat: leadBeat)
+    return NarrativeSnapshot(activeThreads: threads, leadBeat: leadBeat, memory: memory)
+  }
+
+  static func deriveMemory(
+    publicEvents: [PublicMediaEvent],
+    rival: RivalStanding?,
+    stats: FounderStats
+  ) -> NarrativeMemoryState {
+    let ordered = publicEvents
+      .filter(\.isPublic)
+      .sorted(by: eventPrecedes)
+    let window = Array(ordered.suffix(memoryWindow))
+    let playerWindow = window.filter(\.concernsPlayerCompany)
+
+    let favorableCount = playerWindow.filter { $0.tone == .favorable || $0.coverageDelta > 0 }.count
+    let criticalCount = playerWindow.filter { $0.tone == .critical || $0.coverageDelta < 0 }.count
+    let favorableStreak = trailingStreak(in: playerWindow, favorable: true)
+    let criticalStreak = trailingStreak(in: playerWindow, favorable: false)
+    let priorCriticalCount = max(0, criticalCount - criticalStreak)
+    let spotlightEventCount = playerWindow.filter { $0.program == .founderSpotlight }.count
+    let rivalryEventCount = window.filter { $0.program == .rivalWatch }.count
+
+    var arcs: [NarrativeArc] = []
+    if criticalStreak >= 2 {
+      arcs.append(.credibilityCrisis)
+    }
+    if favorableStreak >= 2, priorCriticalCount > 0 {
+      arcs.append(.comeback)
+    } else if favorableStreak >= 2 {
+      arcs.append(.momentumStreak)
+    }
+    if spotlightEventCount >= 2 || stats.coverage >= 60 {
+      arcs.append(.founderSpotlight)
+    }
+    if rivalryEventCount >= 2 || (rival?.marketShare ?? 0) >= 0.30 {
+      arcs.append(.rivalryPressure)
+    }
+
+    return NarrativeMemoryState(
+      favorableCount: favorableCount,
+      criticalCount: criticalCount,
+      favorableStreak: favorableStreak,
+      criticalStreak: criticalStreak,
+      priorCriticalCount: priorCriticalCount,
+      spotlightEventCount: spotlightEventCount,
+      rivalryEventCount: rivalryEventCount,
+      activeArcs: arcs
+    )
   }
 
   static func techComProjection(for snapshot: NarrativeSnapshot, stats: FounderStats) -> NarrativeProjection {
@@ -146,6 +238,83 @@ enum NarrativeDirector {
         silenceDetail: "Let the verified event travel without adding the Founder's framing."
       )
     }
+  }
+
+  private static func memoryBeat(
+    memory: NarrativeMemoryState,
+    latestEvent: PublicMediaEvent?,
+    stats: FounderStats,
+    rival: RivalStanding?,
+    venture: Int,
+    sprint: Int
+  ) -> NarrativeBeat? {
+    if memory.activeArcs.contains(.comeback), let latestEvent {
+      return NarrativeBeat(
+        id: "arc-comeback-v\(venture)-s\(sprint)",
+        thread: .evidenceAndExecution,
+        tone: .favorable,
+        headline: "SOLO starts to rewrite its credibility story",
+        summary: "After earlier public pressure, SOLO has now produced \(memory.favorableStreak) favorable public outcomes in a row. The question is shifting from failure to recovery.",
+        intensity: min(100, 55 + memory.favorableStreak * 10),
+        sourceEventID: latestEvent.id,
+        preferredProgram: .techComLive
+      )
+    }
+
+    if memory.activeArcs.contains(.credibilityCrisis), let latestEvent {
+      return NarrativeBeat(
+        id: "arc-credibility-v\(venture)-s\(sprint)",
+        thread: .credibility,
+        tone: .critical,
+        headline: "SOLO's credibility problem is becoming a pattern",
+        summary: "SOLO has taken \(memory.criticalStreak) critical public hits in a row. A single explanation may no longer be enough to reset the story.",
+        intensity: min(100, 60 + memory.criticalStreak * 10),
+        sourceEventID: latestEvent.id,
+        preferredProgram: .breaking
+      )
+    }
+
+    if memory.activeArcs.contains(.momentumStreak), let latestEvent {
+      return NarrativeBeat(
+        id: "arc-momentum-v\(venture)-s\(sprint)",
+        thread: .momentum,
+        tone: .favorable,
+        headline: "SOLO is putting together a public run",
+        summary: "The company has posted \(memory.favorableStreak) favorable public outcomes in a row. The market is beginning to treat momentum as a pattern rather than a one-off win.",
+        intensity: min(100, 50 + memory.favorableStreak * 10),
+        sourceEventID: latestEvent.id,
+        preferredProgram: .techComLive
+      )
+    }
+
+    if memory.activeArcs.contains(.founderSpotlight), stats.coverage >= 60 {
+      return NarrativeBeat(
+        id: "arc-spotlight-v\(venture)-s\(sprint)",
+        thread: .founderProfile,
+        tone: .favorable,
+        headline: "SOLO's Founder is becoming part of the story",
+        summary: "Coverage is +\(stats.coverage). Attention has persisted long enough that the Founder is now being judged alongside the company.",
+        intensity: min(100, stats.coverage),
+        sourceEventID: latestEvent?.id,
+        preferredProgram: .founderSpotlight
+      )
+    }
+
+    if memory.activeArcs.contains(.rivalryPressure), let rival {
+      let share = Int((rival.marketShare * 100).rounded())
+      return NarrativeBeat(
+        id: "arc-rivalry-\(rival.id)-v\(venture)-s\(sprint)",
+        thread: .rivalry,
+        tone: .neutral,
+        headline: "SOLO's contest with \(rival.name) is becoming a running story",
+        summary: "\(rival.name) holds \(share)% market share, and repeated public pressure is turning the matchup into a persistent narrative.",
+        intensity: min(100, max(55, share * 2)),
+        sourceEventID: latestEvent?.id,
+        preferredProgram: .rivalWatch
+      )
+    }
+
+    return nil
   }
 
   private static func beat(for event: PublicMediaEvent) -> NarrativeBeat {
@@ -248,6 +417,21 @@ enum NarrativeDirector {
       sourceEventID: nil,
       preferredProgram: .techComLive
     )
+  }
+
+  private static func trailingStreak(in events: [PublicMediaEvent], favorable: Bool) -> Int {
+    var count = 0
+    for event in events.reversed() {
+      let matches = favorable
+        ? event.tone == .favorable || event.coverageDelta > 0
+        : event.tone == .critical || event.coverageDelta < 0
+      if matches {
+        count += 1
+      } else {
+        break
+      }
+    }
+    return count
   }
 
   private static func fallbackProjection(stats: FounderStats) -> NarrativeProjection {
