@@ -117,6 +117,64 @@ final class TechComFeedTests: XCTestCase {
     XCTAssertEqual(beat.headline, "SOLO is putting together a public run")
   }
 
+  func testCredibilityCrisisPropagatesPressureAndMakesSilenceMoreCostly() throws {
+    let events = [
+      mediaEvent(id: "critical-1", program: .breaking, tone: .critical, delta: -6, venture: 2, sprint: 2),
+      mediaEvent(id: "critical-2", program: .breaking, tone: .critical, delta: -7, venture: 2, sprint: 3)
+    ]
+    let snapshot = NarrativeDirector.evaluate(publicEvents: events, stats: FounderStats(), standings: [], venture: 2, sprint: 3)
+    XCTAssertEqual(snapshot.consequences.rivalAggression, 2)
+    XCTAssertEqual(snapshot.consequences.investorInterest, -2)
+    XCTAssertEqual(snapshot.consequences.talentInterest, -1)
+    XCTAssertEqual(snapshot.consequences.customerPressure, 2)
+    XCTAssertEqual(snapshot.consequences.statementCoverageDelta, 10)
+    XCTAssertEqual(snapshot.consequences.silenceCoverageDelta, -8)
+    XCTAssertEqual(snapshot.consequences.statementTrustDelta, 0)
+    XCTAssertEqual(snapshot.consequences.silenceTrustDelta, -4)
+
+    let posts = TechComFeedEngine.posts(venture: 2, sprint: 3, stats: FounderStats(), standings: [], publicEvents: events)
+    let press = try XCTUnwrap(posts.first { $0.kind == .pressInquiry })
+    XCTAssertEqual(press.actions.first(where: { $0.id == "statement" })?.coverageDelta, 10)
+    XCTAssertEqual(press.actions.first(where: { $0.id == "silence" })?.coverageDelta, -8)
+    XCTAssertEqual(press.actions.first(where: { $0.id == "statement" })?.effects.trust, 0)
+    XCTAssertEqual(press.actions.first(where: { $0.id == "silence" })?.effects.trust, -4)
+  }
+
+  func testComebackPropagatesPositiveInterestAndAmplifiesStatement() throws {
+    let events = [
+      mediaEvent(id: "critical-1", program: .breaking, tone: .critical, delta: -8, venture: 1, sprint: 2),
+      mediaEvent(id: "win-1", tone: .favorable, delta: 5, venture: 1, sprint: 3),
+      mediaEvent(id: "win-2", tone: .favorable, delta: 6, venture: 1, sprint: 4)
+    ]
+    let snapshot = NarrativeDirector.evaluate(publicEvents: events, stats: FounderStats(), standings: [], venture: 1, sprint: 4)
+    XCTAssertEqual(snapshot.consequences.rivalAggression, 1)
+    XCTAssertEqual(snapshot.consequences.investorInterest, 2)
+    XCTAssertEqual(snapshot.consequences.talentInterest, 1)
+    XCTAssertEqual(snapshot.consequences.customerPressure, -1)
+    XCTAssertEqual(snapshot.consequences.statementCoverageDelta, 14)
+    XCTAssertEqual(snapshot.consequences.silenceCoverageDelta, -4)
+    XCTAssertEqual(snapshot.consequences.statementTrustDelta, 0)
+    XCTAssertEqual(snapshot.consequences.silenceTrustDelta, -2)
+
+    let posts = TechComFeedEngine.posts(venture: 1, sprint: 4, stats: FounderStats(), standings: [], publicEvents: events)
+    let press = try XCTUnwrap(posts.first { $0.kind == .pressInquiry })
+    XCTAssertEqual(press.actions.first(where: { $0.id == "statement" })?.coverageDelta, 14)
+    XCTAssertEqual(press.actions.first(where: { $0.id == "silence" })?.coverageDelta, -4)
+  }
+
+  func testMomentumStreakRaisesInvestorAndTalentInterest() {
+    let events = [
+      mediaEvent(id: "win-1", tone: .favorable, delta: 4, venture: 3, sprint: 1),
+      mediaEvent(id: "win-2", tone: .favorable, delta: 5, venture: 3, sprint: 2)
+    ]
+    let snapshot = NarrativeDirector.evaluate(publicEvents: events, stats: FounderStats(), standings: [], venture: 3, sprint: 2)
+    XCTAssertEqual(snapshot.consequences.rivalAggression, 1)
+    XCTAssertEqual(snapshot.consequences.investorInterest, 2)
+    XCTAssertEqual(snapshot.consequences.talentInterest, 2)
+    XCTAssertEqual(snapshot.consequences.statementCoverageDelta, 14)
+    XCTAssertEqual(snapshot.consequences.silenceCoverageDelta, -5)
+  }
+
   func testNarrativeMemoryWindowIsBoundedToEightPublicEvents() {
     var events: [PublicMediaEvent] = []
     for sprint in 1...9 {
