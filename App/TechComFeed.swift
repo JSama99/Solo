@@ -63,6 +63,30 @@ struct NarrativeMemoryState: Equatable, Sendable {
   )
 }
 
+struct NarrativeConsequenceProfile: Equatable, Sendable {
+  var rivalAggression: Int
+  var investorInterest: Int
+  var talentInterest: Int
+  var customerPressure: Int
+  var statementCoverageDelta: Int
+  var silenceCoverageDelta: Int
+  var statementTrustDelta: Int
+  var silenceTrustDelta: Int
+  var spotlightEligible: Bool
+
+  static let baseline = NarrativeConsequenceProfile(
+    rivalAggression: 0,
+    investorInterest: 0,
+    talentInterest: 0,
+    customerPressure: 0,
+    statementCoverageDelta: 12,
+    silenceCoverageDelta: -6,
+    statementTrustDelta: -1,
+    silenceTrustDelta: -3,
+    spotlightEligible: false
+  )
+}
+
 struct NarrativeBeat: Equatable, Hashable, Sendable {
   var id: String
   var thread: NarrativeThread
@@ -78,6 +102,7 @@ struct NarrativeSnapshot: Equatable, Sendable {
   var activeThreads: [NarrativeThread]
   var leadBeat: NarrativeBeat?
   var memory: NarrativeMemoryState
+  var consequences: NarrativeConsequenceProfile
 }
 
 struct NarrativeProjection: Equatable, Sendable {
@@ -122,9 +147,7 @@ enum NarrativeDirector {
     )
 
     var threads: [NarrativeThread] = []
-    if let leadBeat {
-      threads.append(leadBeat.thread)
-    }
+    if let leadBeat { threads.append(leadBeat.thread) }
     if stats.momentum >= 70 || memory.activeArcs.contains(.momentumStreak) {
       appendUnique(.momentum, to: &threads)
     }
@@ -141,7 +164,8 @@ enum NarrativeDirector {
       appendUnique(.evidenceAndExecution, to: &threads)
     }
 
-    return NarrativeSnapshot(activeThreads: threads, leadBeat: leadBeat, memory: memory)
+    let consequences = consequenceProfile(memory: memory, stats: stats)
+    return NarrativeSnapshot(activeThreads: threads, leadBeat: leadBeat, memory: memory, consequences: consequences)
   }
 
   static func deriveMemory(
@@ -164,20 +188,14 @@ enum NarrativeDirector {
     let rivalryEventCount = window.filter { $0.program == .rivalWatch }.count
 
     var arcs: [NarrativeArc] = []
-    if criticalStreak >= 2 {
-      arcs.append(.credibilityCrisis)
-    }
+    if criticalStreak >= 2 { arcs.append(.credibilityCrisis) }
     if favorableStreak >= 2, priorCriticalCount > 0 {
       arcs.append(.comeback)
     } else if favorableStreak >= 2 {
       arcs.append(.momentumStreak)
     }
-    if spotlightEventCount >= 2 {
-      arcs.append(.founderSpotlight)
-    }
-    if rivalryEventCount >= 2 {
-      arcs.append(.rivalryPressure)
-    }
+    if spotlightEventCount >= 2 { arcs.append(.founderSpotlight) }
+    if rivalryEventCount >= 2 { arcs.append(.rivalryPressure) }
 
     return NarrativeMemoryState(
       favorableCount: favorableCount,
@@ -192,10 +210,7 @@ enum NarrativeDirector {
   }
 
   static func techComProjection(for snapshot: NarrativeSnapshot, stats: FounderStats) -> NarrativeProjection {
-    guard let beat = snapshot.leadBeat else {
-      return fallbackProjection(stats: stats)
-    }
-
+    guard let beat = snapshot.leadBeat else { return fallbackProjection(stats: stats) }
     switch beat.thread {
     case .founderProfile:
       return NarrativeProjection(headline: beat.headline, body: beat.summary, statementLabel: "Own the spotlight", statementDetail: "Put the Founder on record while attention is concentrated on SOLO.", silenceDetail: "Leave a high-attention story for commentators and rivals to frame without you.")
@@ -210,6 +225,58 @@ enum NarrativeDirector {
     }
   }
 
+  private static func consequenceProfile(memory: NarrativeMemoryState, stats: FounderStats) -> NarrativeConsequenceProfile {
+    var profile = NarrativeConsequenceProfile.baseline
+
+    for arc in memory.activeArcs {
+      switch arc {
+      case .credibilityCrisis:
+        profile.rivalAggression += 2
+        profile.investorInterest -= 2
+        profile.talentInterest -= 1
+        profile.customerPressure += 2
+        profile.statementCoverageDelta -= 2
+        profile.silenceCoverageDelta -= 2
+        profile.statementTrustDelta += 1
+        profile.silenceTrustDelta -= 1
+      case .comeback:
+        profile.rivalAggression += 1
+        profile.investorInterest += 2
+        profile.talentInterest += 1
+        profile.customerPressure -= 1
+        profile.statementCoverageDelta += 2
+        profile.silenceCoverageDelta += 2
+        profile.statementTrustDelta += 1
+        profile.silenceTrustDelta += 1
+      case .momentumStreak:
+        profile.rivalAggression += 1
+        profile.investorInterest += 2
+        profile.talentInterest += 2
+        profile.statementCoverageDelta += 2
+        profile.silenceCoverageDelta += 1
+      case .founderSpotlight:
+        profile.investorInterest += 1
+        profile.talentInterest += 1
+        profile.customerPressure += 1
+        profile.spotlightEligible = true
+      case .rivalryPressure:
+        profile.rivalAggression += 2
+        profile.customerPressure += 1
+      }
+    }
+
+    if stats.coverage >= 60 { profile.spotlightEligible = true }
+    profile.rivalAggression = clampedSignal(profile.rivalAggression)
+    profile.investorInterest = clampedSignal(profile.investorInterest)
+    profile.talentInterest = clampedSignal(profile.talentInterest)
+    profile.customerPressure = clampedSignal(profile.customerPressure)
+    profile.statementCoverageDelta = CoverageTuning.clampDelta(profile.statementCoverageDelta)
+    profile.silenceCoverageDelta = CoverageTuning.clampDelta(profile.silenceCoverageDelta)
+    profile.statementTrustDelta = min(2, max(-4, profile.statementTrustDelta))
+    profile.silenceTrustDelta = min(0, max(-5, profile.silenceTrustDelta))
+    return profile
+  }
+
   private static func memoryBeat(
     memory: NarrativeMemoryState,
     latestEvent: PublicMediaEvent?,
@@ -221,28 +288,22 @@ enum NarrativeDirector {
     if memory.activeArcs.contains(.comeback), let latestEvent {
       return NarrativeBeat(id: "arc-comeback-v\(venture)-s\(sprint)", thread: .evidenceAndExecution, tone: .favorable, headline: "SOLO starts to rewrite its credibility story", summary: "After earlier public pressure, SOLO has now produced \(memory.favorableStreak) favorable public outcomes in a row. The question is shifting from failure to recovery.", intensity: min(100, 55 + memory.favorableStreak * 10), sourceEventID: latestEvent.id, preferredProgram: .techComLive)
     }
-
     if memory.activeArcs.contains(.credibilityCrisis), let latestEvent {
       return NarrativeBeat(id: "arc-credibility-v\(venture)-s\(sprint)", thread: .credibility, tone: .critical, headline: "SOLO's credibility problem is becoming a pattern", summary: "SOLO has taken \(memory.criticalStreak) critical public hits in a row. A single explanation may no longer be enough to reset the story.", intensity: min(100, 60 + memory.criticalStreak * 10), sourceEventID: latestEvent.id, preferredProgram: .breaking)
     }
-
     if memory.activeArcs.contains(.momentumStreak), let latestEvent {
       return NarrativeBeat(id: "arc-momentum-v\(venture)-s\(sprint)", thread: .momentum, tone: .favorable, headline: "SOLO is putting together a public run", summary: "The company has posted \(memory.favorableStreak) favorable public outcomes in a row. The market is beginning to treat momentum as a pattern rather than a one-off win.", intensity: min(100, 50 + memory.favorableStreak * 10), sourceEventID: latestEvent.id, preferredProgram: .techComLive)
     }
 
-    // Background arcs never bury a fresh canonical SOLO event. They can lead
-    // only when the public ledger has no newer player-company truth to frame.
     guard latestEvent == nil else { return nil }
 
     if memory.activeArcs.contains(.founderSpotlight), stats.coverage >= 60 {
       return NarrativeBeat(id: "arc-spotlight-v\(venture)-s\(sprint)", thread: .founderProfile, tone: .favorable, headline: "SOLO's Founder is becoming part of the story", summary: "Coverage is +\(stats.coverage). Attention has persisted long enough that the Founder is now being judged alongside the company.", intensity: min(100, stats.coverage), sourceEventID: nil, preferredProgram: .founderSpotlight)
     }
-
     if memory.activeArcs.contains(.rivalryPressure), let rival {
       let share = Int((rival.marketShare * 100).rounded())
       return NarrativeBeat(id: "arc-rivalry-\(rival.id)-v\(venture)-s\(sprint)", thread: .rivalry, tone: .neutral, headline: "SOLO's contest with \(rival.name) is becoming a running story", summary: "\(rival.name) holds \(share)% market share, and repeated public pressure is turning the matchup into a persistent narrative.", intensity: min(100, max(55, share * 2)), sourceEventID: nil, preferredProgram: .rivalWatch)
     }
-
     return nil
   }
 
@@ -307,6 +368,7 @@ enum NarrativeDirector {
     if !threads.contains(thread) { threads.append(thread) }
   }
 
+  private static func clampedSignal(_ value: Int) -> Int { min(5, max(-5, value)) }
   private static func signed(_ value: Int) -> String { value >= 0 ? "+\(value)" : "\(value)" }
 }
 
@@ -315,7 +377,7 @@ enum TechComFeedEngine {
     let rival = standings.first(where: { !$0.isPlayer })
     let snapshot = NarrativeDirector.evaluate(publicEvents: publicEvents, stats: stats, standings: standings, venture: venture, sprint: sprint)
     let narrative = NarrativeDirector.techComProjection(for: snapshot, stats: stats)
-    let press = pressInquiry(venture: venture, sprint: sprint, narrative: narrative)
+    let press = pressInquiry(venture: venture, sprint: sprint, narrative: narrative, consequences: snapshot.consequences)
     var posts: [FeedPost] = [press]
     if let rival {
       posts.append(FeedPost(id: "rival-\(rival.id)-\(venture)-\(sprint)", kind: .rivalMove, headline: "\(rival.name) pressures the category", body: "Its market share is now \(Int((rival.marketShare * 100).rounded()))%.", venture: venture, sprint: sprint, actions: [
@@ -328,10 +390,10 @@ enum TechComFeedEngine {
     return posts
   }
 
-  private static func pressInquiry(venture: Int, sprint: Int, narrative: NarrativeProjection) -> FeedPost {
+  private static func pressInquiry(venture: Int, sprint: Int, narrative: NarrativeProjection, consequences: NarrativeConsequenceProfile) -> FeedPost {
     FeedPost(id: "press-\(venture)-\(sprint)", kind: .pressInquiry, headline: narrative.headline, body: narrative.body, venture: venture, sprint: sprint, actions: [
-      FeedAction(id: "statement", label: narrative.statementLabel, detail: narrative.statementDetail, requiresStatement: true, effects: SimulationEffects(trust: -1), coverageDelta: 12),
-      FeedAction(id: "silence", label: "Decline to comment", detail: narrative.silenceDetail, requiresStatement: false, effects: SimulationEffects(trust: -3), coverageDelta: -6)
+      FeedAction(id: "statement", label: narrative.statementLabel, detail: narrative.statementDetail, requiresStatement: true, effects: SimulationEffects(trust: consequences.statementTrustDelta), coverageDelta: consequences.statementCoverageDelta),
+      FeedAction(id: "silence", label: "Decline to comment", detail: narrative.silenceDetail, requiresStatement: false, effects: SimulationEffects(trust: consequences.silenceTrustDelta), coverageDelta: consequences.silenceCoverageDelta)
     ])
   }
 }
