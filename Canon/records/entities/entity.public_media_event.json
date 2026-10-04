@@ -1,0 +1,13 @@
+{
+  "schema_version": "0.1", "id": "entity.public_media_event", "type": "entity",
+  "title": "Public media event class",
+  "summary": "PublicMediaEvent is the current visible event projection shared by Signal TV and Tech.com; this record describes the public class, not an occurrence in a particular career.",
+  "status": "canonical", "authority": {"level": "P1", "kind": "production_canon"},
+  "validity": {"valid_from": "2026-10-03", "valid_until": null},
+  "visibility": ["developer", "public", "media"],
+  "facts": {"safe_fact_class": "publicly recorded launch or company outcome", "instance_gate": "current PublicMediaEvent with isPublic true"},
+  "relationships": [{"predicate": "presented_by", "target": "system.signal_tv"}, {"predicate": "governed_by", "target": "rule.narrative_disclosure"}],
+  "constraints": ["A public event type does not prove that a specific failed launch occurred; inspect the current event ledger before publication."],
+  "sources": [{"kind": "source_file", "path": "App/SignalTVModels.swift"}, {"kind": "source_file", "path": "App/GameStore.swift"}],
+  "evidence": [], "supersedes": [], "superseded_by": [], "tags": ["narrative", "public", "media", "launch", "event"]
+}

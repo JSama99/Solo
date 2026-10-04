@@ -1,0 +1,54 @@
+{
+  "authority": {
+    "kind": "accepted",
+    "level": "P2"
+  },
+  "constraints": [],
+  "evidence": [],
+  "facts": {
+    "chaos_max_finding_state": "proposed",
+    "live_save_mutation": false,
+    "production_formula_mutation": false,
+    "promotion_authority": "external Canon governance"
+  },
+  "id": "rule.chaos_observation_only",
+  "relationships": [
+    {
+      "predicate": "depends_on",
+      "target": "rule.canon_promotion"
+    },
+    {
+      "predicate": "governed_by",
+      "target": "rule.simulation_authority"
+    }
+  ],
+  "schema_version": "0.1",
+  "sources": [
+    {
+      "kind": "documentation",
+      "path": "AGENTS.md"
+    },
+    {
+      "kind": "documentation",
+      "path": "Canon/README.md"
+    }
+  ],
+  "status": "accepted",
+  "summary": "Chaos findings remain observations or proposals until independent verification and external Canon governance; Chaos cannot edit production formulas, live saves, or promote itself.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "rule",
+    "chaos"
+  ],
+  "title": "Chaos observations are not Canon",
+  "type": "rule",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "developer",
+    "simulation_internal"
+  ]
+}

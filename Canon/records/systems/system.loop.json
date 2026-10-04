@@ -1,0 +1,57 @@
+{
+  "authority": {
+    "kind": "implemented",
+    "level": "P3"
+  },
+  "constraints": [],
+  "evidence": [],
+  "external_evidence": [
+    {
+      "graph_id": "solo-v3-1-founder-usd-structure-contract",
+      "ledger_head": "b59e3ed8cda8b50cff6496de74281b173e6e34ad49874b60bf3784976118e81a",
+      "path": ".solo-loop/runs/solo-v3-1-founder-usd-structure-contract-8683a57771/evidence.jsonl",
+      "run_id": "solo-v3-1-founder-usd-structure-contract-8683a57771",
+      "sha256": "17ab76e556f7e02b9161140ad0ebf351b3c328de27db7a16f05771bb4454f052",
+      "system": "solo_loop_v3"
+    }
+  ],
+  "facts": {
+    "artifact_forms": [
+      "graph JSON",
+      "run state and result JSON",
+      "hash-chained evidence JSONL",
+      "adapter outputs and manifests"
+    ],
+    "gameplay_authority": false,
+    "storage": ".solo-loop/ (untracked in this worktree)"
+  },
+  "id": "system.loop",
+  "relationships": [
+    {
+      "predicate": "related_to",
+      "target": "system.canon"
+    },
+    {
+      "predicate": "related_to",
+      "target": "system.evidence"
+    }
+  ],
+  "schema_version": "0.1",
+  "sources": [],
+  "status": "implemented",
+  "summary": "The separate .solo-loop system runs verification graphs and retains generated evidence artifacts; it is not gameplay authority.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "system"
+  ],
+  "title": "Loop V3 verification",
+  "type": "system",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "developer"
+  ]
+}

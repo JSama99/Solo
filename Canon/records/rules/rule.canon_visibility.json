@@ -1,0 +1,43 @@
+{
+  "authority": {
+    "kind": "accepted",
+    "level": "P2"
+  },
+  "constraints": [],
+  "evidence": [],
+  "facts": {},
+  "id": "rule.canon_visibility",
+  "relationships": [
+    {
+      "predicate": "related_to",
+      "target": "rule.hidden_truth"
+    }
+  ],
+  "schema_version": "0.1",
+  "sources": [
+    {
+      "kind": "documentation",
+      "path": "Canon/README.md"
+    },
+    {
+      "kind": "documentation",
+      "path": "AGENTS.md"
+    }
+  ],
+  "status": "accepted",
+  "summary": "A consumer may read only explicitly authorized scopes; authority rank does not grant visibility.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "rule"
+  ],
+  "title": "Canon visibility rule",
+  "type": "rule",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "developer"
+  ]
+}

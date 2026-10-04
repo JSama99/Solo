@@ -26,6 +26,34 @@ the relevant implementation and `git status --short --branch` before editing.
 
 ## Architecture boundaries
 
+- Before substantial architectural, gameplay, visual-canon, or narrative-canon
+  changes, consult applicable `Canon/` records. Canon is project knowledge,
+  not simulation authority; production source remains authoritative for behavior.
+  Report conflicts rather than silently resolving them. Experimental or
+  historical records cannot override applicable production Canon, and Canon
+  visibility restrictions must be respected.
+- Semantic Canon retrieval is candidate discovery only. Structured Canon rules
+  still govern visibility, validity, authority, supersession, and conflicts.
+- Runtime AI must consume the runtime-safe Canon projection, never the full
+  developer Canon tree. Runtime-safe Canon holds stable authorized world knowledge;
+  session-specific truth requires separately authorized runtime state.
+- For substantial architecture, gameplay, simulation, visual-canon, narrative,
+  agent, world, asset, persistence, economy, or media work, run
+  `python3 -B Tools/SoloCanon/codex_preflight.py --task "<task>"` before editing.
+  Inspect its listed production sources. A BLOCKING result stops implementation;
+  inspect reported ambiguities rather than guessing. Trivial formatting and
+  isolated mechanical edits do not need a preflight.
+- Before substantial character, environment, animation, camera, lighting,
+  material, or world-visual work, also run
+  `python3 -B Tools/SoloCanon/visual_preflight.py --task "<task>"` and inspect
+  its production references. Automated validation does not replace owner
+  visual acceptance.
+- Narrative generation must follow the Narrative Director boundary. Subordinate
+  narrative workers may draft candidate expression but may not reveal hidden
+  truth, change narrative state, promote Canon, or publish independently.
+  Check channel visibility and runtime reveal state before any disclosure;
+  Director inspection access is not channel disclosure permission.
+
 - Preserve existing architecture before creating new architecture.
 - Prefer small, bounded changes.
 - `GameStore` is the mutable simulation authority. Reuse the existing pure engines
@@ -38,6 +66,10 @@ the relevant implementation and `git status --short --branch` before editing.
 - Preserve hidden-truth and secrecy boundaries. Do not expose actual agent quality,
   verification, drift, overclaim, or other hidden simulation truth before canonical
   Founder review. Founder-facing UI must use visible projections and SOLO game fiction.
+- Future runtime AI context must pass through the Runtime Knowledge Gateway. Neither
+  full Canon nor raw GameStore state should be supplied directly. Runtime knowledge
+  authorization is determined by gameplay-owned visibility and reveal state; the
+  gateway only enforces that state.
 - Preserve save compatibility and the existing migration chain unless explicitly
   instructed otherwise.
 - Preserve accessibility, Dynamic Type, VoiceOver, Reduce Motion endpoints, and
@@ -99,6 +131,8 @@ If a new Swift file is genuinely required, explain why before changing target
 membership and make only precise project-file edits.
 
 ## Git safety
+
+Chaos Crew results are observations/evidence until independently verified and promoted. Chaos Crew may not directly mutate production formulas or Canon. Deterministic experiment claims must include the seed, relevant repository revision, and Canon manifest fingerprint.
 
 - Do not commit unless explicitly instructed.
 - Do not push unless explicitly instructed.

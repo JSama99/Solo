@@ -1,0 +1,43 @@
+{
+  "authority": {
+    "kind": "production_canon",
+    "level": "P1"
+  },
+  "constraints": [],
+  "evidence": [],
+  "facts": {},
+  "id": "system.hindsight",
+  "relationships": [
+    {
+      "predicate": "reads",
+      "target": "system.evidence"
+    }
+  ],
+  "schema_version": "0.1",
+  "sources": [
+    {
+      "kind": "source_file",
+      "path": "App/Hindsight.swift"
+    },
+    {
+      "kind": "source_file",
+      "path": "App/GameStore.swift"
+    }
+  ],
+  "status": "canonical",
+  "summary": "HindsightEngine defines precedent identifiers, similarity, recall, and consequential outcome checks.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "system"
+  ],
+  "title": "Hindsight",
+  "type": "system",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "developer"
+  ]
+}

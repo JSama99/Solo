@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "solo-runtime-canon-projection-0.1",
+  "title": "SOLO read-only runtime-safe Canon projection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "projection_version", "projection_policy_version", "canon_manifest_sha256", "as_of", "audience", "record_count", "eligible_record_ids", "records", "projection_sha256"],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "projection_version": {"const": "0.1"},
+    "projection_policy_version": {"type": "string", "minLength": 1},
+    "canon_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "as_of": {"type": "string", "format": "date"},
+    "audience": {"enum": ["runtime", "aurora", "stacks", "brio", "signal_tv", "rival", "founder"]},
+    "record_count": {"type": "integer", "minimum": 0},
+    "eligible_record_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "records": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+      "required": ["id", "type", "title", "summary", "facts", "relationships", "tags"],
+      "properties": {
+        "id": {"type": "string"},
+        "type": {"enum": ["system", "mechanic", "entity", "asset", "character", "location", "rule", "decision", "experiment", "evidence", "agent"]},
+        "title": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "facts": {"type": "object", "additionalProperties": {"type": ["string", "integer", "number", "boolean"]}},
+        "relationships": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+          "required": ["predicate", "target"], "properties": {"predicate": {"type": "string"}, "target": {"type": "string"}}}},
+        "tags": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+      }}},
+    "projection_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

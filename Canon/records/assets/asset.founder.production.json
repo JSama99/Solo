@@ -1,0 +1,30 @@
+{
+  "schema_version": "0.1",
+  "id": "asset.founder.production",
+  "type": "asset",
+  "title": "Production Founder character USDZ",
+  "summary": "The normal production Garage loads the owner-approved Founder USDZ through the existing Founder character adapter.",
+  "status": "canonical",
+  "authority": {"level": "P1", "kind": "production_canon"},
+  "validity": {"valid_from": "2026-10-03", "valid_until": null},
+  "visibility": ["developer", "founder_known"],
+  "facts": {
+    "asset_path": "App/RealityKit/FounderCharacter/founder_candidate_a.usdz",
+    "asset_role": "production_runtime_character",
+    "identity_subject": "founder",
+    "sha256_from_promotion_report": "6392eb1dea5f13506913feeb1a65bf84c97f9b61266ba027bd3b3377278171f5",
+    "owner_acceptance": "accepted_candidate_and_promoted_to_normal_route",
+    "production_loader": "FounderGarageRealityWorld.requestProductionFounder"
+  },
+  "relationships": [{"predicate": "related_to", "target": "character.founder"}],
+  "constraints": ["Do not replace the production Founder USDZ based on an experimental or reference-only study."],
+  "sources": [
+    {"kind": "asset", "path": "App/RealityKit/FounderCharacter/founder_candidate_a.usdz"},
+    {"kind": "source_file", "path": "App/FounderCharacterContract.swift"},
+    {"kind": "source_file", "path": "App/FounderGarageRealityScene.swift"},
+    {"kind": "owner_acceptance", "path": "Documentation/FounderCharacter/FOUNDER_CHARACTER_PASS_A2_PRODUCTION_ACCEPTANCE_REPORT.md"},
+    {"kind": "documentation", "path": "Documentation/FounderCharacter/FOUNDER_CHARACTER_PRODUCTION_PROMOTION_REPORT.md"}
+  ],
+  "evidence": [], "supersedes": [], "superseded_by": [],
+  "tags": ["visual", "founder", "production", "character"]
+}

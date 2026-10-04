@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "solo-canon-object-0.1",
+  "title": "SOLO Canon object v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "type", "title", "status", "authority", "summary", "validity", "visibility", "facts", "relationships", "constraints", "sources", "evidence", "supersedes", "superseded_by", "tags"],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._][a-z0-9]+)*$"},
+    "type": {"enum": ["system", "mechanic", "entity", "asset", "character", "location", "rule", "decision", "experiment", "evidence", "agent"]},
+    "title": {"type": "string", "minLength": 1},
+    "status": {"enum": ["canonical", "accepted", "implemented", "proposed", "experimental", "historical", "deprecated", "blocked"]},
+    "authority": {"type": "object", "additionalProperties": false, "required": ["level", "kind"], "properties": {"level": {"enum": ["P0", "P1", "P2", "P3", "P4", "P5", "P6", "P7"]}, "kind": {"enum": ["owner_locked", "production_canon", "accepted", "implemented", "proposed", "experimental", "historical", "deprecated"]}}},
+    "summary": {"type": "string", "minLength": 1},
+    "validity": {"type": "object", "additionalProperties": false, "required": ["valid_from", "valid_until"], "properties": {"valid_from": {"type": "string", "format": "date"}, "valid_until": {"type": ["string", "null"], "format": "date"}}},
+    "visibility": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["developer", "simulation_internal", "founder_known", "agent_known", "public", "media", "rival", "runtime_safe"]}},
+    "facts": {"type": "object"},
+    "runtime_projection": {"type": "object", "additionalProperties": false,
+      "required": ["title", "summary", "facts", "relationships", "tags"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "facts": {"type": "object", "additionalProperties": {"type": ["string", "integer", "number", "boolean"]}},
+        "relationships": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+          "required": ["predicate", "target", "required"], "properties": {
+            "predicate": {"enum": ["depends_on", "reads", "writes", "produces", "affects", "implemented_by", "presented_by", "located_in", "governed_by", "supersedes", "evidenced_by", "related_to"]},
+            "target": {"type": "string"}, "required": {"type": "boolean"}}}},
+        "tags": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+      }},
+    "relationships": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["predicate", "target"], "properties": {"predicate": {"enum": ["depends_on", "reads", "writes", "produces", "affects", "implemented_by", "presented_by", "located_in", "governed_by", "supersedes", "evidenced_by", "related_to"]}, "target": {"type": "string"}}}},
+    "constraints": {"type": "array", "items": {"type": "string"}},
+    "sources": {"type": "array", "items": {"type": "object", "required": ["kind"], "properties": {"kind": {"enum": ["source_file", "test", "evidence_file", "owner_acceptance", "documentation", "commit", "asset"]}, "path": {"type": "string"}, "sha": {"type": "string"}}, "additionalProperties": false}},
+    "evidence": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "external_evidence": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["system", "path", "sha256", "run_id", "graph_id", "ledger_head"], "properties": {"system": {"const": "solo_loop_v3"}, "path": {"type": "string", "pattern": "^\\.solo-loop/runs/.+/evidence\\.jsonl$"}, "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "run_id": {"type": "string", "minLength": 1}, "graph_id": {"type": "string", "minLength": 1}, "ledger_head": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}}},
+    "supersedes": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "superseded_by": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "tags": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+  }
+}

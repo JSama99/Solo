@@ -1,0 +1,64 @@
+{
+  "authority": {
+    "kind": "production_canon",
+    "level": "P1"
+  },
+  "constraints": [],
+  "evidence": [],
+  "facts": {
+    "initial_role": "engineering"
+  },
+  "id": "agent.stacks",
+  "relationships": [
+    {
+      "predicate": "depends_on",
+      "target": "system.simulation"
+    },
+    {
+      "predicate": "related_to",
+      "target": "system.work_sessions"
+    }
+  ],
+  "runtime_projection": {
+    "facts": {
+      "role": "engineering"
+    },
+    "relationships": [],
+    "summary": "Stacks is the company engineering agent.",
+    "tags": [
+      "agent",
+      "engineering"
+    ],
+    "title": "Stacks"
+  },
+  "schema_version": "0.1",
+  "sources": [
+    {
+      "kind": "source_file",
+      "path": "App/ContentLibrary.swift"
+    },
+    {
+      "kind": "source_file",
+      "path": "App/WorkSessionEngine.swift"
+    }
+  ],
+  "status": "canonical",
+  "summary": "Stacks is an initial engineering agent; Work Sessions include agent-specific paths.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "agent"
+  ],
+  "title": "Stacks",
+  "type": "agent",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "agent_known",
+    "developer",
+    "founder_known",
+    "runtime_safe"
+  ]
+}

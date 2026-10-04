@@ -1,0 +1,13 @@
+{
+  "schema_version": "0.1", "id": "entity.rival_public_claim", "type": "entity",
+  "title": "Rival public claim class",
+  "summary": "Public rival claims can enter Tech.com and Signal TV when their current channel projection contains them.",
+  "status": "canonical", "authority": {"level": "P1", "kind": "production_canon"},
+  "validity": {"valid_from": "2026-10-03", "valid_until": null},
+  "visibility": ["developer", "public", "media", "rival"],
+  "facts": {"safe_fact_class": "public rival claim", "instance_gate": "current public rival claim projection"},
+  "relationships": [{"predicate": "related_to", "target": "entity.public_media_event"}],
+  "constraints": ["Use only current public rival claim projections for channel copy."],
+  "sources": [{"kind": "source_file", "path": "App/RivalEngine.swift"}, {"kind": "source_file", "path": "App/TechComFeed.swift"}, {"kind": "source_file", "path": "App/SignalTVModels.swift"}],
+  "evidence": [], "supersedes": [], "superseded_by": [], "tags": ["narrative", "rival", "public", "media"]
+}

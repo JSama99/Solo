@@ -1,0 +1,546 @@
+{
+  "canon_version": "C0",
+  "generated_from": "Canon/records/**/*.json",
+  "record_count": 45,
+  "records": [
+    {
+      "authority": "P1",
+      "id": "agent.aurora",
+      "path": "Canon/records/agents/agent.aurora.json",
+      "sha256": "baaaf8a3e1f2157276656b09951848172669842b1afabdd44df5e54c4e29a4f3",
+      "status": "canonical",
+      "type": "agent",
+      "visibility": [
+        "agent_known",
+        "developer",
+        "founder_known",
+        "runtime_safe"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "agent.brio",
+      "path": "Canon/records/agents/agent.brio.json",
+      "sha256": "6092cf5015d5585b8802360e823184af696bf248a8bec5ac6cc879fad80019f2",
+      "status": "canonical",
+      "type": "agent",
+      "visibility": [
+        "agent_known",
+        "developer",
+        "founder_known",
+        "runtime_safe"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "agent.stacks",
+      "path": "Canon/records/agents/agent.stacks.json",
+      "sha256": "308fc52c5056e4fd10f5bb878849ed8812add519e0c7e96ba0d1ed87fbd3dafb",
+      "status": "canonical",
+      "type": "agent",
+      "visibility": [
+        "agent_known",
+        "developer",
+        "founder_known",
+        "runtime_safe"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "asset.founder.production",
+      "path": "Canon/records/assets/asset.founder.production.json",
+      "sha256": "1b4d794d5fac2392a8aa8000a3c8f15fe87713a121bda0b21b9a9ab3d6dffed2",
+      "status": "canonical",
+      "type": "asset",
+      "visibility": [
+        "developer",
+        "founder_known"
+      ]
+    },
+    {
+      "authority": "P2",
+      "id": "asset.founder.shoulder_r1",
+      "path": "Canon/records/assets/asset.founder.shoulder_r1.json",
+      "sha256": "f9258f75f7fd1cf8a5cebe3fff1db3a413ec27f8aae28f85bfafedc3d4b6a995",
+      "status": "accepted",
+      "type": "asset",
+      "visibility": [
+        "developer",
+        "founder_known"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "character.founder",
+      "path": "Canon/records/characters/character.founder.json",
+      "sha256": "4a3db904ea277d63ac406c1c8bb2a7961aa241f4bbb89dc138eb3f62dc3b7deb",
+      "status": "canonical",
+      "type": "character",
+      "visibility": [
+        "developer",
+        "founder_known"
+      ]
+    },
+    {
+      "authority": "P2",
+      "id": "character.mara",
+      "path": "Canon/records/characters/character.mara.json",
+      "sha256": "55599a65a605f2b8db61d619100973415ddcd7b512187ed42429f27c5c2b5bea",
+      "status": "accepted",
+      "type": "character",
+      "visibility": [
+        "developer",
+        "founder_known"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "entity.public_media_event",
+      "path": "Canon/records/entities/entity.public_media_event.json",
+      "sha256": "c9caa33d9ef3b4a78e3a89cb44a0309e1468a46f7e13978adf51416a76b2a50c",
+      "status": "canonical",
+      "type": "entity",
+      "visibility": [
+        "developer",
+        "media",
+        "public"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "entity.rival_public_claim",
+      "path": "Canon/records/entities/entity.rival_public_claim.json",
+      "sha256": "143631c4a8fa745bbfce56dacb27780a589a77b87a0e6b09df9fce835940bab8",
+      "status": "canonical",
+      "type": "entity",
+      "visibility": [
+        "developer",
+        "media",
+        "public",
+        "rival"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "entity.tech_com",
+      "path": "Canon/records/entities/entity.tech_com.json",
+      "sha256": "1c7213fbe2892d64a3427f6d3d393fec8bb24f9f817836b64f4ca4299be7a02a",
+      "status": "canonical",
+      "type": "entity",
+      "visibility": [
+        "developer",
+        "media",
+        "public",
+        "runtime_safe"
+      ]
+    },
+    {
+      "authority": "P5",
+      "id": "experiment.founder.shoulder_rejected",
+      "path": "Canon/records/experiments/experiment.founder.shoulder_rejected.json",
+      "sha256": "079e6441e42b167e8b4e940da51c303f745c722890e6fc338ef0074b0c0ae474",
+      "status": "blocked",
+      "type": "experiment",
+      "visibility": [
+        "developer",
+        "founder_known"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "location.atlantis",
+      "path": "Canon/records/world/location.atlantis.json",
+      "sha256": "d7e30fdcf4aa33e6b55b3146415a4aaf76287da53775494f054618c948d27375",
+      "status": "canonical",
+      "type": "location",
+      "visibility": [
+        "developer",
+        "founder_known",
+        "runtime_safe"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "location.founder_garage",
+      "path": "Canon/records/world/location.founder_garage.json",
+      "sha256": "148868f614502704a7959e8c176f8aba273754e123ffdf3f2ff59ba1af7b5a24",
+      "status": "canonical",
+      "type": "location",
+      "visibility": [
+        "developer",
+        "founder_known",
+        "runtime_safe"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "mechanic.coverage",
+      "path": "Canon/records/mechanics/mechanic.coverage.json",
+      "sha256": "db730d8d2b2416135b56440d179c57719085252c8faa7bfb56f18ce3f303f70e",
+      "status": "canonical",
+      "type": "mechanic",
+      "visibility": [
+        "developer"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "mechanic.founder_attention",
+      "path": "Canon/records/mechanics/mechanic.founder_attention.json",
+      "sha256": "bd7b6f932a72bcbdfe9c153b77c5826ec22681253c3e017105eb732cc3952c42",
+      "status": "canonical",
+      "type": "mechanic",
+      "visibility": [
+        "developer",
+        "founder_known"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "mechanic.founder_energy",
+      "path": "Canon/records/mechanics/mechanic.founder_energy.json",
+      "sha256": "fd110228313f2a4ebed452f692a09c1199dda49ae57d5a4ea300d1e3810fada0",
+      "status": "canonical",
+      "type": "mechanic",
+      "visibility": [
+        "developer",
+        "founder_known"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "mechanic.momentum",
+      "path": "Canon/records/mechanics/mechanic.momentum.json",
+      "sha256": "f80e827d06469748a910437140d76e2997ef842cbee73a07fa64268c52465023",
+      "status": "canonical",
+      "type": "mechanic",
+      "visibility": [
+        "developer",
+        "founder_known"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "mechanic.revenue",
+      "path": "Canon/records/mechanics/mechanic.revenue.json",
+      "sha256": "e404fe00abee8a04e2b631057b9833bbe7dd9ac2c7623ad89ba36ca37be93b41",
+      "status": "canonical",
+      "type": "mechanic",
+      "visibility": [
+        "developer",
+        "founder_known"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "mechanic.runway",
+      "path": "Canon/records/mechanics/mechanic.runway.json",
+      "sha256": "534618f77155c33c106b2ec601aa8415302a1fd46f84214fe618775d1a6a402d",
+      "status": "canonical",
+      "type": "mechanic",
+      "visibility": [
+        "developer",
+        "founder_known"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "mechanic.trust",
+      "path": "Canon/records/mechanics/mechanic.trust.json",
+      "sha256": "614a548a3aa8f06805d5be8492ad21c5201a92a5f1ec2cd7e5251a5221b304cc",
+      "status": "canonical",
+      "type": "mechanic",
+      "visibility": [
+        "developer",
+        "founder_known"
+      ]
+    },
+    {
+      "authority": "P2",
+      "id": "rule.canon_promotion",
+      "path": "Canon/records/rules/rule.canon_promotion.json",
+      "sha256": "25696e65e1f674ddc4aadc599c41eeb9bbe23a9c8c8295a67f3103a5b19fa9be",
+      "status": "accepted",
+      "type": "rule",
+      "visibility": [
+        "developer"
+      ]
+    },
+    {
+      "authority": "P2",
+      "id": "rule.canon_visibility",
+      "path": "Canon/records/rules/rule.canon_visibility.json",
+      "sha256": "62d85c3da51f3532e9b313aa14e87087a39dc19442b39af6345d208d63ac6a92",
+      "status": "accepted",
+      "type": "rule",
+      "visibility": [
+        "developer"
+      ]
+    },
+    {
+      "authority": "P2",
+      "id": "rule.chaos_observation_only",
+      "path": "Canon/records/rules/rule.chaos_observation_only.json",
+      "sha256": "9b4a667e17efdd083d8148b5d6db6db716a428c86c2a1c6c989eb3ad9d6609ac",
+      "status": "accepted",
+      "type": "rule",
+      "visibility": [
+        "developer",
+        "simulation_internal"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "rule.determinism",
+      "path": "Canon/records/rules/rule.determinism.json",
+      "sha256": "2db8b23ca42e63baba8b7bd59984c93d1a7b509063875ce08a5b8bc269a0262c",
+      "status": "canonical",
+      "type": "rule",
+      "visibility": [
+        "developer",
+        "simulation_internal"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "rule.hidden_truth",
+      "path": "Canon/records/rules/rule.hidden_truth.json",
+      "sha256": "3daa334eed086365fa5dc04beaa43aa6bca5cd0dcb2c0b4e2ee5f5f83b7d9bd3",
+      "status": "canonical",
+      "type": "rule",
+      "visibility": [
+        "developer",
+        "simulation_internal"
+      ]
+    },
+    {
+      "authority": "P2",
+      "id": "rule.narrative_continuity",
+      "path": "Canon/records/rules/rule.narrative_continuity.json",
+      "sha256": "8885b965c2dad5ea81b54043cebee6eb8ad805d2ea088f67d032abeb998d5bb2",
+      "status": "accepted",
+      "type": "rule",
+      "visibility": [
+        "developer"
+      ]
+    },
+    {
+      "authority": "P2",
+      "id": "rule.narrative_disclosure",
+      "path": "Canon/records/rules/rule.narrative_disclosure.json",
+      "sha256": "caff65faf0f4ee4eb04582b1a1321dbcfd54cfe9b62ec42ddfc3273c3798c10a",
+      "status": "accepted",
+      "type": "rule",
+      "visibility": [
+        "developer"
+      ]
+    },
+    {
+      "authority": "P2",
+      "id": "rule.narrative_worker_boundary",
+      "path": "Canon/records/rules/rule.narrative_worker_boundary.json",
+      "sha256": "ee3055e6f3c244ac48f748aa1f26967f42860eba58379b67456705eca43f7254",
+      "status": "accepted",
+      "type": "rule",
+      "visibility": [
+        "developer"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "rule.presentation_separation",
+      "path": "Canon/records/rules/rule.presentation_separation.json",
+      "sha256": "a4e974d4d1444ee6b295ca16fae8f2577ec300aa7029cdaff849e0d1e21a905e",
+      "status": "canonical",
+      "type": "rule",
+      "visibility": [
+        "developer"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "rule.reduce_motion_visual",
+      "path": "Canon/records/rules/rule.reduce_motion_visual.json",
+      "sha256": "24dd079844e188172c602644b65ae972fc469fe8c54384559e3c69133db64621",
+      "status": "canonical",
+      "type": "rule",
+      "visibility": [
+        "developer",
+        "founder_known"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "rule.save_compatibility",
+      "path": "Canon/records/rules/rule.save_compatibility.json",
+      "sha256": "f105027287e0dfa2004b67a036e51258f9de54b5bc38b331d02ef6550d935b43",
+      "status": "canonical",
+      "type": "rule",
+      "visibility": [
+        "developer"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "rule.simulation_authority",
+      "path": "Canon/records/rules/rule.simulation_authority.json",
+      "sha256": "ad9adec2ce8cb7548f0ec2812ee83b1cb68f1f8fb2116be24a8ba5b9bbd7708f",
+      "status": "canonical",
+      "type": "rule",
+      "visibility": [
+        "developer"
+      ]
+    },
+    {
+      "authority": "P2",
+      "id": "rule.simulation_invariants",
+      "path": "Canon/records/rules/rule.simulation_invariants.json",
+      "sha256": "f6efc6d3d4685551c71f861488ed85dfd11bd5267c0f17f865bbecb1497ff488",
+      "status": "accepted",
+      "type": "rule",
+      "visibility": [
+        "developer",
+        "simulation_internal"
+      ]
+    },
+    {
+      "authority": "P2",
+      "id": "rule.visual_identity",
+      "path": "Canon/records/rules/rule.visual_identity.json",
+      "sha256": "16394325a675b1bc2d697fd9ea3e390e5b70224b91db6115b9d2b96a960c9db2",
+      "status": "accepted",
+      "type": "rule",
+      "visibility": [
+        "developer",
+        "founder_known"
+      ]
+    },
+    {
+      "authority": "P2",
+      "id": "system.canon",
+      "path": "Canon/records/systems/system.canon.json",
+      "sha256": "0cfbca42a83f327e53bb8048b4e1ed81b1dad7787ca11c45a5539a95bcec9edb",
+      "status": "accepted",
+      "type": "system",
+      "visibility": [
+        "developer"
+      ]
+    },
+    {
+      "authority": "P2",
+      "id": "system.chaos_crew",
+      "path": "Canon/records/systems/system.chaos_crew.json",
+      "sha256": "5ea8dbd58822ccf73818ed0a206282f88489da5bdcf71d67ad9f32fc9223c100",
+      "status": "accepted",
+      "type": "system",
+      "visibility": [
+        "developer",
+        "simulation_internal"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "system.evidence",
+      "path": "Canon/records/systems/system.evidence.json",
+      "sha256": "3c902696a8bddea03a6f2242cf8a03ecc486ae8f7ec6cfb2f0e37c7af9d35e4c",
+      "status": "canonical",
+      "type": "system",
+      "visibility": [
+        "developer",
+        "simulation_internal"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "system.hindsight",
+      "path": "Canon/records/systems/system.hindsight.json",
+      "sha256": "f795bed8050cf460ad836b54a7e692684e050a72d756e4738837a59b93b791da",
+      "status": "canonical",
+      "type": "system",
+      "visibility": [
+        "developer"
+      ]
+    },
+    {
+      "authority": "P3",
+      "id": "system.loop",
+      "path": "Canon/records/systems/system.loop.json",
+      "sha256": "3936d1ed3bbafb0f64c3ad133d058248159cec0e72a0789cacd97f01a2726e70",
+      "status": "implemented",
+      "type": "system",
+      "visibility": [
+        "developer"
+      ]
+    },
+    {
+      "authority": "P2",
+      "id": "system.narrative_director",
+      "path": "Canon/records/systems/system.narrative_director.json",
+      "sha256": "7e895ac01997a604c5f758c02bee94748a0dfdd2789de4b911cca5293d56b6ef",
+      "status": "accepted",
+      "type": "system",
+      "visibility": [
+        "developer"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "system.persistence",
+      "path": "Canon/records/systems/system.persistence.json",
+      "sha256": "7cc114c43d10d8076c740c52b65ad73b91e74f3d26a261a10fb96e94f767907f",
+      "status": "canonical",
+      "type": "system",
+      "visibility": [
+        "developer",
+        "simulation_internal"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "system.presentation",
+      "path": "Canon/records/systems/system.presentation.json",
+      "sha256": "a7c396a1f0107e4254132320152f50ad6dc5ae96e02b0fc84641586651aa6ec9",
+      "status": "canonical",
+      "type": "system",
+      "visibility": [
+        "developer"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "system.signal_tv",
+      "path": "Canon/records/systems/system.signal_tv.json",
+      "sha256": "3428a0bee74e9e2f751ba9bee66114eaf7bc7ca43d418c56194bc84337ae0e94",
+      "status": "canonical",
+      "type": "system",
+      "visibility": [
+        "developer",
+        "runtime_safe"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "system.simulation",
+      "path": "Canon/records/systems/system.simulation.json",
+      "sha256": "903538c67d4879a92ce0f25517df4a85b9b475599d87e14dba947c686b38fa77",
+      "status": "canonical",
+      "type": "system",
+      "visibility": [
+        "developer",
+        "simulation_internal"
+      ]
+    },
+    {
+      "authority": "P1",
+      "id": "system.work_sessions",
+      "path": "Canon/records/systems/system.work_sessions.json",
+      "sha256": "3188900a9287787fac060eb74edafc0634fea25f8f4a9554660f10b4d1a749f8",
+      "status": "canonical",
+      "type": "system",
+      "visibility": [
+        "developer"
+      ]
+    }
+  ],
+  "schema_version": "0.1"
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.1",
+  "id": "asset.founder.shoulder_r1",
+  "type": "asset",
+  "title": "Founder shoulder calibration R1 accepted reference",
+  "summary": "The owner accepted shoulder Reference R1 as a calibration reference only; production Founder geometry was not promoted or changed by that decision.",
+  "status": "accepted",
+  "authority": {"level": "P2", "kind": "accepted"},
+  "validity": {"valid_from": "2026-10-03", "valid_until": null},
+  "visibility": ["developer", "founder_known"],
+  "facts": {"owner_acceptance": "reference_only", "production_promotion": false, "reference_manifest_path": ".solo-loop/calibration/shoulder-reference-r1/reference-r1-manifest.json", "reference_manifest_sha256_from_report": "02450476fdc0655a30b2156ee36611519e837a0fb3a2a3389c90801c8dd4ada0", "owner_decision_path": ".solo-loop/evidence/shoulder-reference-r1-owner-decision.json"},
+  "relationships": [{"predicate": "related_to", "target": "asset.founder.production"}],
+  "constraints": ["Use as an accepted calibration reference, never as an automatic production replacement or a universal visual-quality threshold."],
+  "sources": [{"kind": "documentation", "path": "Documentation/FounderCharacter/SHOULDER_REFERENCE_R1_CANON_PROVENANCE.md"}],
+  "evidence": [], "supersedes": [], "superseded_by": [],
+  "tags": ["visual", "founder", "shoulder", "animation", "reference"]
+}

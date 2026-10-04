@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1",
+  "id": "rule.visual_identity",
+  "type": "rule",
+  "title": "Accepted visual identity boundary",
+  "summary": "Owner-accepted visual direction and production asset identity are separate decisions; tests and studies cannot promote a new character appearance by themselves.",
+  "status": "accepted",
+  "authority": {"level": "P2", "kind": "accepted"},
+  "validity": {"valid_from": "2026-10-03", "valid_until": null},
+  "visibility": ["developer", "founder_known"],
+  "facts": {"acceptance_policy": "human_owner_decision_required_for_visual_replacement", "automated_verification": "not_owner_visual_acceptance"},
+  "relationships": [{"predicate": "related_to", "target": "character.founder"}, {"predicate": "related_to", "target": "character.mara"}],
+  "constraints": ["Do not promote an experimental visual or replace an accepted identity based on automated tests alone."],
+  "sources": [
+    {"kind": "documentation", "path": "AGENTS.md"},
+    {"kind": "documentation", "path": "Documentation/FounderCharacter/FOUNDER_CHARACTER_PRODUCTION_PROMOTION_REPORT.md"},
+    {"kind": "owner_acceptance", "path": "Assets/Atlantis/Characters/MaraChen/ASSET_CONTRACT.md"},
+    {"kind": "owner_acceptance", "path": "Documentation/Shipathon/SHIPATHON_VISUAL_LOCK.md"}
+  ],
+  "evidence": [], "supersedes": [], "superseded_by": [],
+  "tags": ["visual", "identity", "acceptance", "rule"]
+}

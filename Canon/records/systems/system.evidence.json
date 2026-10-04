@@ -1,0 +1,55 @@
+{
+  "authority": {
+    "kind": "production_canon",
+    "level": "P1"
+  },
+  "constraints": [],
+  "evidence": [],
+  "facts": {
+    "distinct_from": "Loop V3 verification artifacts",
+    "domain": "in-game career evidence"
+  },
+  "id": "system.evidence",
+  "relationships": [
+    {
+      "predicate": "governed_by",
+      "target": "rule.hidden_truth"
+    },
+    {
+      "predicate": "related_to",
+      "target": "system.work_sessions"
+    },
+    {
+      "predicate": "related_to",
+      "target": "system.loop"
+    }
+  ],
+  "schema_version": "0.1",
+  "sources": [
+    {
+      "kind": "source_file",
+      "path": "App/GameStore.swift"
+    },
+    {
+      "kind": "source_file",
+      "path": "App/GameModels.swift"
+    }
+  ],
+  "status": "canonical",
+  "summary": "GameStore retains in-game Founder EvidenceEntry career records, including review and verification fields. These are distinct from Loop V3 verification artifacts.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "system"
+  ],
+  "title": "Founder Evidence",
+  "type": "system",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "developer",
+    "simulation_internal"
+  ]
+}

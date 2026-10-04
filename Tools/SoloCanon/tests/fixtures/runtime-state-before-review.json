@@ -1,0 +1,18 @@
+{
+  "schema_version": "0.1",
+  "state_version": 20,
+  "knowledge": [
+    {"id": "runtime.event.launch_failure", "kind": "event", "summary": "The launch failed.", "visibility": ["public"]},
+    {"id": "runtime.assignment.aurora_research", "kind": "assignment", "summary": "Aurora is researching the next release.", "visibility": ["aurora"]},
+    {"id": "runtime.fact.stacks_drift", "kind": "fact", "summary": "Stacks detects drift in its own work.", "visibility": ["stacks"]},
+    {"id": "runtime.fact.stacks_defect", "kind": "fact", "summary": "A hidden Stacks defect caused the failure.", "visibility": ["stacks"]},
+    {"id": "runtime.metric.coverage", "kind": "metric", "summary": "Public Coverage is 41.", "visibility": ["public"]},
+    {"id": "runtime.event.campaign_result", "kind": "event", "summary": "Brio's public campaign reached viewers.", "visibility": ["public", "brio"]},
+    {"id": "runtime.fact.founder_cause", "kind": "fact", "summary": "Founder review found a private launch cause.", "visibility": ["founder"]},
+    {"id": "runtime.metric.private_runway", "kind": "metric", "summary": "The company has a private runway problem.", "visibility": ["founder"]},
+    {"id": "runtime.event.media_tip", "kind": "event", "summary": "A tip was shared with both media channels.", "visibility": ["media_shared"]},
+    {"id": "runtime.fact.rival_plan", "kind": "fact", "summary": "A rival knows its own plan.", "visibility": ["rival"]},
+    {"id": "runtime.fact.agent_shared", "kind": "fact", "summary": "The three agents share a planning note.", "visibility": ["agent_shared"]},
+    {"id": "runtime.fact.internal_seed", "kind": "fact", "summary": "Internal-only simulation truth.", "visibility": ["simulation_internal"]}
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "authority": {
+    "kind": "production_canon",
+    "level": "P1"
+  },
+  "constraints": [
+    "Preserve the production Garage V8 spatial envelope and camera handoff unless a reviewed production change replaces them."
+  ],
+  "evidence": [],
+  "facts": {
+    "asset_role": "production_garage_environment",
+    "production_asset_path": "App/RealityKit/FounderGarage/founder_garage_v8.usdz"
+  },
+  "id": "location.founder_garage",
+  "relationships": [
+    {
+      "predicate": "presented_by",
+      "target": "system.presentation"
+    },
+    {
+      "predicate": "governed_by",
+      "target": "rule.reduce_motion_visual"
+    }
+  ],
+  "runtime_projection": {
+    "facts": {
+      "kind": "company_space"
+    },
+    "relationships": [],
+    "summary": "The Founder Garage is the starting company workspace.",
+    "tags": [
+      "location",
+      "garage"
+    ],
+    "title": "Founder Garage"
+  },
+  "schema_version": "0.1",
+  "sources": [
+    {
+      "kind": "source_file",
+      "path": "App/FounderDeskWorkspace.swift"
+    },
+    {
+      "kind": "source_file",
+      "path": "App/FounderGarageRealityScene.swift"
+    },
+    {
+      "kind": "asset",
+      "path": "App/RealityKit/FounderGarage/founder_garage_v8.usdz"
+    },
+    {
+      "kind": "documentation",
+      "path": "Documentation/FounderGarage/ANIMATION_PASS_A1_GARAGE_SPATIAL_CONTINUITY_REPORT.md"
+    }
+  ],
+  "status": "canonical",
+  "summary": "FounderDeskWorkspace is the production Garage and device navigation route.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "location"
+  ],
+  "title": "Founder Garage",
+  "type": "location",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "developer",
+    "founder_known",
+    "runtime_safe"
+  ]
+}

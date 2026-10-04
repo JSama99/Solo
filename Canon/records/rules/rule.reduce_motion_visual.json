@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1",
+  "id": "rule.reduce_motion_visual",
+  "type": "rule",
+  "title": "Visual Reduce Motion endpoints",
+  "summary": "Visual motion must preserve the same meaningful endpoint with reduced or immediate movement when Reduce Motion is enabled.",
+  "status": "canonical",
+  "authority": {"level": "P1", "kind": "production_canon"},
+  "validity": {"valid_from": "2026-10-03", "valid_until": null},
+  "visibility": ["developer", "founder_known"],
+  "facts": {"camera_endpoint": "immediate under Reduce Motion"},
+  "relationships": [{"predicate": "related_to", "target": "system.presentation"}],
+  "constraints": ["Keep final camera and visual state available under Reduce Motion; do not require continuous movement to communicate the endpoint."],
+  "sources": [
+    {"kind": "documentation", "path": "AGENTS.md"},
+    {"kind": "source_file", "path": "App/GameplayMotion.swift"},
+    {"kind": "source_file", "path": "App/FounderGarageRealityScene.swift"},
+    {"kind": "documentation", "path": "Documentation/FounderGarage/VISUAL_PASS_B_CAMERA_PHYSICS_REPORT.md"},
+    {"kind": "documentation", "path": "Assets/Atlantis/Characters/MaraChen/ASSET_CONTRACT.md"}
+  ],
+  "evidence": [], "supersedes": [], "superseded_by": [],
+  "tags": ["visual", "motion", "animation", "camera", "accessibility"]
+}
