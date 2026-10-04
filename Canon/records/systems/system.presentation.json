@@ -1,0 +1,51 @@
+{
+  "authority": {
+    "kind": "production_canon",
+    "level": "P1"
+  },
+  "constraints": [],
+  "evidence": [],
+  "facts": {},
+  "id": "system.presentation",
+  "relationships": [
+    {
+      "predicate": "depends_on",
+      "target": "system.simulation"
+    },
+    {
+      "predicate": "governed_by",
+      "target": "rule.presentation_separation"
+    },
+    {
+      "predicate": "governed_by",
+      "target": "rule.hidden_truth"
+    }
+  ],
+  "schema_version": "0.1",
+  "sources": [
+    {
+      "kind": "source_file",
+      "path": "App/PresentationCoordinator.swift"
+    },
+    {
+      "kind": "source_file",
+      "path": "App/LivingCompanyPresentation.swift"
+    }
+  ],
+  "status": "canonical",
+  "summary": "PresentationCoordinator and living company projections coordinate visible choreography without owning simulation truth.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "system"
+  ],
+  "title": "Presentation authority",
+  "type": "system",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "developer"
+  ]
+}

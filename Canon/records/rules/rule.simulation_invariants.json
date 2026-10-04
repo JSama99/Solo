@@ -1,0 +1,64 @@
+{
+  "authority": {
+    "kind": "accepted",
+    "level": "P2"
+  },
+  "constraints": [],
+  "evidence": [],
+  "facts": {
+    "limit": "preflight does not prove results or every simulation path deterministic",
+    "verified_invariants": [
+      "seeded RNG ordering and cached outcomes for supported paths",
+      "Coverage clamped to -100 through 100 on production mutation paths",
+      "save envelope version 20 at current source revision"
+    ]
+  },
+  "id": "rule.simulation_invariants",
+  "relationships": [
+    {
+      "predicate": "depends_on",
+      "target": "rule.determinism"
+    },
+    {
+      "predicate": "depends_on",
+      "target": "rule.save_compatibility"
+    }
+  ],
+  "schema_version": "0.1",
+  "sources": [
+    {
+      "kind": "source_file",
+      "path": "App/SimulationEngine.swift"
+    },
+    {
+      "kind": "source_file",
+      "path": "App/GameStore.swift"
+    },
+    {
+      "kind": "source_file",
+      "path": "App/SignalTVModels.swift"
+    },
+    {
+      "kind": "test",
+      "path": "Tests/SimulationEngineTests.swift"
+    }
+  ],
+  "status": "accepted",
+  "summary": "Chaos experiment contracts name only invariants supported by current production source and require the relevant code and Canon fingerprint for reproducibility.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "rule",
+    "chaos"
+  ],
+  "title": "Source-backed simulation invariant checks",
+  "type": "rule",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "developer",
+    "simulation_internal"
+  ]
+}

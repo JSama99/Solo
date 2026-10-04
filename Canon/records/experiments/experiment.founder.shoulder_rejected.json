@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.1",
+  "id": "experiment.founder.shoulder_rejected",
+  "type": "experiment",
+  "title": "Founder shoulder rejected revision studies",
+  "summary": "The 7R-A and 7R-B shoulder revisions were not selected; their evidence remains as negative visual history, not a target for production.",
+  "status": "blocked",
+  "authority": {"level": "P5", "kind": "experimental"},
+  "validity": {"valid_from": "2026-10-03", "valid_until": null},
+  "visibility": ["developer", "founder_known"],
+  "facts": {"target_eligible": false, "selection": "7R-A and 7R-B not selected", "production_promotion": false, "closure_path": ".solo-loop/FounderDeformationMotionTrackClosure.md"},
+  "relationships": [{"predicate": "related_to", "target": "asset.founder.shoulder_r1"}],
+  "constraints": ["DO NOT USE AS TARGET. Preserve for inspection of rejected shoulder motion/deformation approaches only."],
+  "sources": [{"kind": "documentation", "path": "Documentation/FounderCharacter/SHOULDER_REFERENCE_R1_CANON_PROVENANCE.md"}],
+  "evidence": [], "supersedes": [], "superseded_by": [],
+  "tags": ["visual", "founder", "shoulder", "animation", "rejected"]
+}

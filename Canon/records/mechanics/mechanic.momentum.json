@@ -1,0 +1,50 @@
+{
+  "authority": {
+    "kind": "production_canon",
+    "level": "P1"
+  },
+  "constraints": [],
+  "evidence": [],
+  "facts": {
+    "state_field": "FounderStats.momentum"
+  },
+  "id": "mechanic.momentum",
+  "relationships": [
+    {
+      "predicate": "implemented_by",
+      "target": "system.simulation"
+    }
+  ],
+  "schema_version": "0.1",
+  "sources": [
+    {
+      "kind": "source_file",
+      "path": "App/GameModels.swift"
+    },
+    {
+      "kind": "source_file",
+      "path": "App/GameStore.swift"
+    },
+    {
+      "kind": "source_file",
+      "path": "App/SimulationEngine.swift"
+    }
+  ],
+  "status": "canonical",
+  "summary": "FounderStats stores Momentum; GameStore and simulation effects update it.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "mechanic"
+  ],
+  "title": "Momentum",
+  "type": "mechanic",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "developer",
+    "founder_known"
+  ]
+}

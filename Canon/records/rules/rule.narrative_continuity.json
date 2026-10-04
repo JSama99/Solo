@@ -1,0 +1,13 @@
+{
+  "schema_version": "0.1", "id": "rule.narrative_continuity", "type": "rule",
+  "title": "Narrative continuity from current state",
+  "summary": "Hindsight precedents and career event history can inform continuity, but a historical event is not automatically current or known to every audience.",
+  "status": "accepted", "authority": {"level": "P2", "kind": "accepted"},
+  "validity": {"valid_from": "2026-10-03", "valid_until": null},
+  "visibility": ["developer"],
+  "facts": {"historical_event_visibility": "requires_current_runtime_reveal_state", "static_canon_role": "continuity_contract_not_event_instance"},
+  "relationships": [{"predicate": "related_to", "target": "system.hindsight"}, {"predicate": "related_to", "target": "system.evidence"}],
+  "constraints": ["Do not convert a superseded, prior-venture, or private precedent into a current public fact without current state evidence."],
+  "sources": [{"kind": "source_file", "path": "App/Hindsight.swift"}, {"kind": "source_file", "path": "App/GameStore.swift"}],
+  "evidence": [], "supersedes": [], "superseded_by": [], "tags": ["narrative", "continuity", "history"]
+}

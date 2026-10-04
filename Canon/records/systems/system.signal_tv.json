@@ -1,0 +1,77 @@
+{
+  "authority": {
+    "kind": "production_canon",
+    "level": "P1"
+  },
+  "constraints": [],
+  "evidence": [],
+  "facts": {
+    "current_implementation": "PublicMediaEvent and SignalTVProgramming; GameStore.applyPublicMediaEvent is the Coverage mutation path",
+    "inputs": "public event ledger, Tech.com headlines, rivals, Coverage, venture and sprint",
+    "latent_defect_boundary": "Only surfaced latent defects enter public media through LatentDefectPublicMediaProjection.",
+    "outputs": "public broadcast events and presentation; public player events may apply Coverage"
+  },
+  "id": "system.signal_tv",
+  "relationships": [
+    {
+      "predicate": "reads",
+      "target": "mechanic.coverage"
+    },
+    {
+      "predicate": "affects",
+      "target": "mechanic.coverage"
+    },
+    {
+      "predicate": "governed_by",
+      "target": "rule.hidden_truth"
+    },
+    {
+      "predicate": "related_to",
+      "target": "system.evidence"
+    }
+  ],
+  "runtime_projection": {
+    "facts": {
+      "kind": "media_channel"
+    },
+    "relationships": [],
+    "summary": "Signal TV is a public media channel covering company stories.",
+    "tags": [
+      "media",
+      "channel"
+    ],
+    "title": "Signal TV"
+  },
+  "schema_version": "0.1",
+  "sources": [
+    {
+      "kind": "source_file",
+      "path": "App/SignalTVModels.swift"
+    },
+    {
+      "kind": "source_file",
+      "path": "App/GameStore.swift"
+    },
+    {
+      "kind": "source_file",
+      "path": "App/SignalTVView.swift"
+    }
+  ],
+  "status": "canonical",
+  "summary": "SignalTVModels defines public media events, programming, safe broadcast filtering, and Coverage tuning. GameStore owns event application and deduplication.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "system"
+  ],
+  "title": "Signal TV public media",
+  "type": "system",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "developer",
+    "runtime_safe"
+  ]
+}

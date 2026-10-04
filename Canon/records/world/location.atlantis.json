@@ -1,0 +1,80 @@
+{
+  "authority": {
+    "kind": "production_canon",
+    "level": "P1"
+  },
+  "constraints": [
+    "Preserve the owner-accepted S2 material and route, S3 A2 daylight and Atmosphere A, and S4 stopped Shot 5 camera behavior until a new owner decision changes them."
+  ],
+  "evidence": [],
+  "facts": {
+    "owner_acceptance": "S2 material and route; S3 A2 daylight and Atmosphere A; S4 stopped Shot 5 C2 camera",
+    "production_asset_sha256_from_visual_lock": "a30983678741ed2cb232d4b480fc4d6f3dc53878ba2bcb45fd3e2e23b90a3f10",
+    "production_founder_district_asset": "App/RealityKit/Atlantis/founder_district.usdz",
+    "unselected_studies": "Atmosphere B and continuous walking-pan D"
+  },
+  "id": "location.atlantis",
+  "relationships": [
+    {
+      "predicate": "presented_by",
+      "target": "system.presentation"
+    },
+    {
+      "predicate": "governed_by",
+      "target": "rule.reduce_motion_visual"
+    }
+  ],
+  "runtime_projection": {
+    "facts": {
+      "kind": "destination"
+    },
+    "relationships": [],
+    "summary": "Atlantis is a destination in the company world.",
+    "tags": [
+      "location",
+      "atlantis"
+    ],
+    "title": "Atlantis"
+  },
+  "schema_version": "0.1",
+  "sources": [
+    {
+      "kind": "source_file",
+      "path": "App/AtlantisWorldPresentationModel.swift"
+    },
+    {
+      "kind": "source_file",
+      "path": "App/FounderDeskWorkspace.swift"
+    },
+    {
+      "kind": "asset",
+      "path": "App/RealityKit/Atlantis/founder_district.usdz"
+    },
+    {
+      "kind": "owner_acceptance",
+      "path": "Documentation/Shipathon/SHIPATHON_VISUAL_LOCK.md"
+    },
+    {
+      "kind": "documentation",
+      "path": "Documentation/Shipathon/SHIPATHON_S3_LIGHTING_ATMOSPHERE_REPORT.md"
+    }
+  ],
+  "status": "canonical",
+  "summary": "AtlantisWorldPresentationModel defines the production world presentation and routes.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "location"
+  ],
+  "title": "Atlantis",
+  "type": "location",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "developer",
+    "founder_known",
+    "runtime_safe"
+  ]
+}

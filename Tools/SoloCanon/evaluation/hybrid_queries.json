@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.1",
+  "k": 8,
+  "queries": [
+    {"query": "Signal TV", "expected_ids": ["system.signal_tv"]},
+    {"query": "Founder Garage", "expected_ids": ["location.founder_garage"]},
+    {"query": "hidden truth", "expected_ids": ["rule.hidden_truth"]},
+    {"query": "Momentum", "expected_ids": ["mechanic.momentum"]},
+    {"query": "Mara", "expected_ids": ["character.mara"]},
+    {"query": "Chaos Crew", "expected_ids": ["system.chaos_crew"]},
+    {"query": "news reacting to the player's company", "expected_ids": ["mechanic.coverage", "system.signal_tv"]},
+    {"query": "don't let characters know private simulation facts", "expected_ids": ["rule.hidden_truth"]},
+    {"query": "the founder model we actually ship", "expected_ids": ["asset.founder.production"]},
+    {"query": "test thousands of companies for broken strategies", "expected_ids": ["system.chaos_crew"]},
+    {"query": "AI writer should not decide what becomes canon", "expected_ids": ["rule.narrative_worker_boundary"]}
+  ]
+}

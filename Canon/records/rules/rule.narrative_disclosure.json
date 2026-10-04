@@ -1,0 +1,13 @@
+{
+  "schema_version": "0.1", "id": "rule.narrative_disclosure", "type": "rule",
+  "title": "Narrative channel disclosure gate",
+  "summary": "Internal Director knowledge and permission to disclose to a channel are separate; hidden or runtime-dependent facts need channel scope and canonical reveal evidence.",
+  "status": "accepted", "authority": {"level": "P2", "kind": "accepted"},
+  "validity": {"valid_from": "2026-10-03", "valid_until": null},
+  "visibility": ["developer"],
+  "facts": {"director_internal_inspection": "does_not_grant_channel_disclosure", "runtime_reveal_state": "must_be_supplied_by_canonical_game_state"},
+  "relationships": [{"predicate": "governed_by", "target": "rule.hidden_truth"}, {"predicate": "related_to", "target": "entity.public_media_event"}],
+  "constraints": ["Never disclose a latent defect before the public projection surfaces or Founder review reveals it to that audience.", "Static Canon cannot prove a particular career event or review reveal occurred."],
+  "sources": [{"kind": "documentation", "path": "AGENTS.md"}, {"kind": "source_file", "path": "App/SignalTVModels.swift"}, {"kind": "source_file", "path": "App/LivingCompanyPresentation.swift"}],
+  "evidence": [], "supersedes": [], "superseded_by": [], "tags": ["narrative", "visibility", "reveal"]
+}

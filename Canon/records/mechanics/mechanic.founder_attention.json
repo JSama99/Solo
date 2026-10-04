@@ -1,0 +1,46 @@
+{
+  "authority": {
+    "kind": "production_canon",
+    "level": "P1"
+  },
+  "constraints": [],
+  "evidence": [],
+  "facts": {
+    "state_field": "GameStore.founderAttentionSpent"
+  },
+  "id": "mechanic.founder_attention",
+  "relationships": [
+    {
+      "predicate": "implemented_by",
+      "target": "system.simulation"
+    },
+    {
+      "predicate": "related_to",
+      "target": "system.work_sessions"
+    }
+  ],
+  "schema_version": "0.1",
+  "sources": [
+    {
+      "kind": "source_file",
+      "path": "App/GameStore.swift"
+    }
+  ],
+  "status": "canonical",
+  "summary": "GameStore tracks Founder Attention spent and gates reviews, rework, and cross-checks.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "mechanic"
+  ],
+  "title": "Founder Attention",
+  "type": "mechanic",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "developer",
+    "founder_known"
+  ]
+}

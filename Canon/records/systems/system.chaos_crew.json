@@ -1,0 +1,59 @@
+{
+  "authority": {
+    "kind": "accepted",
+    "level": "P2"
+  },
+  "constraints": [],
+  "evidence": [],
+  "facts": {
+    "finding_authority": "non_canonical",
+    "implementation": "preflight_only",
+    "permitted_outputs": [
+      "experiment specification",
+      "observation",
+      "reproducible evidence",
+      "Canon proposal"
+    ],
+    "simulation_mutation_authority": "GameStore"
+  },
+  "id": "system.chaos_crew",
+  "relationships": [
+    {
+      "predicate": "reads",
+      "target": "system.simulation"
+    },
+    {
+      "predicate": "governed_by",
+      "target": "rule.chaos_observation_only"
+    }
+  ],
+  "schema_version": "0.1",
+  "sources": [
+    {
+      "kind": "documentation",
+      "path": "Canon/README.md"
+    },
+    {
+      "kind": "source_file",
+      "path": "Tools/SoloCanon/chaos_preflight.py"
+    }
+  ],
+  "status": "accepted",
+  "summary": "Accepted headless experiment architecture; C5 supplies a read-only preflight contract, not a runtime workforce or production simulation authority.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "system",
+    "chaos"
+  ],
+  "title": "Chaos Crew experiment boundary",
+  "type": "system",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "developer",
+    "simulation_internal"
+  ]
+}

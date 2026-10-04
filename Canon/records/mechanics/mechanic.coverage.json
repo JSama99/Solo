@@ -1,0 +1,63 @@
+{
+  "authority": {
+    "kind": "production_canon",
+    "level": "P1"
+  },
+  "constraints": [],
+  "evidence": [],
+  "facts": {
+    "ambiguity": {
+      "description": "AGENTS.md says Coverage mutations must flow through GameStore.applyPublicMediaEvent, while GameStore.commitSprint directly reduces Coverage for unresolved press inquiries.",
+      "key": "mechanic.coverage.mutation_authority",
+      "sources": [
+        "AGENTS.md",
+        "App/GameStore.swift"
+      ]
+    },
+    "other_current_mutation": "GameStore.commitSprint unresolved press inquiry penalty",
+    "public_media_mutation_path": "GameStore.applyPublicMediaEvent",
+    "state_field": "FounderStats.coverage"
+  },
+  "id": "mechanic.coverage",
+  "relationships": [
+    {
+      "predicate": "implemented_by",
+      "target": "system.simulation"
+    },
+    {
+      "predicate": "related_to",
+      "target": "system.signal_tv"
+    }
+  ],
+  "schema_version": "0.1",
+  "sources": [
+    {
+      "kind": "source_file",
+      "path": "App/GameModels.swift"
+    },
+    {
+      "kind": "source_file",
+      "path": "App/SignalTVModels.swift"
+    },
+    {
+      "kind": "source_file",
+      "path": "App/GameStore.swift"
+    }
+  ],
+  "status": "canonical",
+  "summary": "FounderStats stores Coverage. GameStore deduplicates public media Coverage through applyPublicMediaEvent, and also directly reduces Coverage for unresolved press inquiries during sprint commit.",
+  "superseded_by": [],
+  "supersedes": [],
+  "tags": [
+    "mechanic"
+  ],
+  "title": "Coverage",
+  "type": "mechanic",
+  "validity": {
+    "valid_from": "2026-10-03",
+    "valid_until": null
+  },
+  "visibility": [
+    "developer"
+  ]
+}

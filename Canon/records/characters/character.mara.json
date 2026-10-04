@@ -1,0 +1,29 @@
+{
+  "schema_version": "0.1",
+  "id": "character.mara",
+  "type": "character",
+  "title": "Mara Chen accepted visual direction",
+  "summary": "The owner accepted Mara's image-driven Gate 1 shape and wardrobe and selected the original Higgsfield source; final face, materials, rig, clips, export, and runtime presentation remain unapproved.",
+  "status": "accepted",
+  "authority": {"level": "P2", "kind": "accepted"},
+  "validity": {"valid_from": "2026-10-03", "valid_until": null},
+  "visibility": ["developer", "founder_known"],
+  "facts": {
+    "owner_acceptance": "Gate 1 shape and wardrobe only",
+    "identity_subject": "mara",
+    "reference_path": "Assets/Atlantis/Characters/MaraChen/Reference/mara_chen_reference.png",
+    "reference_sha256_from_contract": "4ae2ade09b9d1c1087c279e87791e74b49bc4e869252964e40e595fd970bda0f",
+    "accepted_source_path": "Assets/Atlantis/Characters/MaraChen/Blender/MaraChen_Gate1_Source.blend",
+    "runtime_asset_state": "not_approved_or_promoted",
+    "rejected_studies": "Founder-derived graybox and procedural RetopoA/B/C"
+  },
+  "relationships": [{"predicate": "governed_by", "target": "rule.visual_identity"}],
+  "constraints": ["Preserve the approved Mara reference, original source shape, hair, face, wardrobe, and proportions; do not treat Gate 1 approval as runtime acceptance.", "Do not use rejected procedural rebuilds as visual targets.", "For a finished asset, Reduce Motion holds a stable authored pose as specified by the Gate 0 contract."],
+  "sources": [
+    {"kind": "owner_acceptance", "path": "Assets/Atlantis/Characters/MaraChen/ASSET_CONTRACT.md"},
+    {"kind": "asset", "path": "Assets/Atlantis/Characters/MaraChen/Blender/MaraChen_Gate1_Source.blend"},
+    {"kind": "owner_acceptance", "path": "Documentation/Shipathon/S5_Original_Higgsfield_Source_Selection.json"}
+  ],
+  "evidence": [], "supersedes": [], "superseded_by": [],
+  "tags": ["visual", "mara", "identity", "character"]
+}

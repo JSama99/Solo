@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1",
+  "id": "character.founder",
+  "type": "character",
+  "title": "Founder visual identity",
+  "summary": "The accepted Founder character identity is represented by the production USDZ and its reviewed front, profile, seated, standing, blink, and jaw views.",
+  "status": "canonical",
+  "authority": {"level": "P1", "kind": "production_canon"},
+  "validity": {"valid_from": "2026-10-03", "valid_until": null},
+  "visibility": ["developer", "founder_known"],
+  "facts": {"identity_subject": "founder", "identity_asset_id": "asset.founder.production", "owner_acceptance": "accepted_production_candidate"},
+  "relationships": [
+    {"predicate": "related_to", "target": "asset.founder.production"},
+    {"predicate": "governed_by", "target": "rule.visual_identity"}
+  ],
+  "constraints": ["Preserve the accepted Founder silhouette, face, wardrobe, scale, and production asset identity unless a new owner decision authorizes replacement."],
+  "sources": [
+    {"kind": "owner_acceptance", "path": "Documentation/FounderCharacter/FOUNDER_CHARACTER_PASS_A2_PRODUCTION_ACCEPTANCE_REPORT.md"},
+    {"kind": "documentation", "path": "Documentation/FounderCharacter/FOUNDER_CHARACTER_PRODUCTION_PROMOTION_REPORT.md"}
+  ],
+  "evidence": [], "supersedes": [], "superseded_by": [],
+  "tags": ["visual", "founder", "identity", "character"]
+}

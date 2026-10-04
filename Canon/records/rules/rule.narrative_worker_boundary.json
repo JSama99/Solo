@@ -1,0 +1,13 @@
+{
+  "schema_version": "0.1", "id": "rule.narrative_worker_boundary", "type": "rule",
+  "title": "Narrative worker boundary",
+  "summary": "Narrative workers can draft and check candidate expression but cannot make Director decisions, reveal hidden truth, alter state, promote Canon, or publish.",
+  "status": "accepted", "authority": {"level": "P2", "kind": "accepted"},
+  "validity": {"valid_from": "2026-10-03", "valid_until": null},
+  "visibility": ["developer"],
+  "facts": {"candidate_copy_authority": "none", "publication_authority": "none", "canon_promotion_authority": "none"},
+  "relationships": [{"predicate": "related_to", "target": "system.narrative_director"}],
+  "constraints": ["A generated narrative draft is proposal material, never Canon or a published event."],
+  "sources": [{"kind": "documentation", "path": "AGENTS.md"}],
+  "evidence": [], "supersedes": [], "superseded_by": [], "tags": ["narrative", "worker", "authority"]
+}
