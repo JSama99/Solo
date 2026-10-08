@@ -1,0 +1,54 @@
+{
+  "classification": "SOURCE_PRESERVATION",
+  "detectionMethod": null,
+  "evidenceReferences": [
+    "EV-001",
+    "EV-017"
+  ],
+  "expectedBehavior": "Verified milestone source can be independently restored.",
+  "failedApproaches": [],
+  "firstObservedDate": null,
+  "id": "FL-003",
+  "lessons": [
+    {
+      "acceptance": "ACCEPTED",
+      "evidenceReferences": [
+        "EV-001",
+        "EV-017"
+      ],
+      "text": "Do not equate passing tests with recoverable source."
+    }
+  ],
+  "observedBehavior": "Original final archives/manifests and the temporary uncommitted tree did not survive.",
+  "preventionRules": [
+    "DND-003"
+  ],
+  "relatedCanonRecords": [],
+  "relatedFailureIds": [],
+  "relatedTests": [],
+  "reproductionConditions": null,
+  "requiredFutureGates": [
+    "Preserve source provenance and a durable checkpoint, then independently restore and verify source fingerprints."
+  ],
+  "resolutionDate": null,
+  "rootCause": "Temporary uncommitted work lacked a surviving durable final source checkpoint.",
+  "rootCauseConfidence": "SUPPORTED",
+  "schemaVersion": "1",
+  "severity": "HIGH",
+  "status": "RESOLVED",
+  "successfulCorrection": "R0\u2013R7 exact-patch reconstruction, independently verified archive and R8 durable Git checkpoint.",
+  "system": [
+    "source recovery",
+    "worktree",
+    "git",
+    "checkpoint",
+    "release"
+  ],
+  "title": "Authoritative uncommitted temporary source lost",
+  "unknownInformation": [
+    "First observation and resolution dates not established by inspected evidence.",
+    "Deletion mechanism and exact original final byte fingerprint unavailable."
+  ],
+  "visibility": "developer_only",
+  "whyExistingChecksMissedIt": null
+}

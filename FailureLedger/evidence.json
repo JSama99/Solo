@@ -1,0 +1,155 @@
+[
+  {
+    "id": "EV-001",
+    "kind": "RETROSPECTIVE_REPORT",
+    "locator": "Restored milestones R4\u2013R7; Failures and corrections; Fresh balance evidence; Checkpoint/restoration",
+    "path": "Documentation/Reconstruction/Report.md",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "14947eff6356d98fad86cd49d68dc041163747082745b9b4ebce177d10f0c94a",
+    "summary": "R7 recovery, gates, source-loss limits and restoration evidence. Historical tests only."
+  },
+  {
+    "id": "EV-002",
+    "kind": "OWNER_STATEMENT",
+    "locator": "Career erasure; Launch reachability; F1 evidence gaps",
+    "path": "Documentation/FailureLedger/Evidence/OwnerStatements.md",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "ff2fcc5864d07d3c3e59ed80d2bd43a1e35d3c910b9f4cfad66c355236734197",
+    "summary": "Exact bounded owner statements, original attachment hashes and limitations."
+  },
+  {
+    "id": "EV-003",
+    "kind": "HISTORICAL_REPORT",
+    "locator": "T1, T2, T3, T4",
+    "path": "Documentation/FailureLedger/Evidence/TuningHistorical.md",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "a8be66f14115afb089377f73686e2d8dccdfc8d06d1fa1dd592983a9b0ef0461",
+    "summary": "Exact preserved report content, extracted from historical source operation index 92. Results are historical."
+  },
+  {
+    "id": "EV-004",
+    "kind": "PRIMARY_SOURCE",
+    "locator": "array index 92; timestamp 2026-10-05T15:53:20.834Z; Tuning/Report.md content",
+    "path": "Documentation/Reconstruction/HistoricalSourceOperations.json",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "ebb8a228b0b86da463cd179b00f2435b6ceab3a46459467ec112670ce6307473",
+    "summary": "Original logged write payload underlying the tuning report."
+  },
+  {
+    "id": "EV-005",
+    "kind": "PRIMARY_SOURCE",
+    "locator": "ProductTractionEngine.presentation and step; researchEffortRemainder",
+    "path": "App/SimulationModels.swift",
+    "scope": "current_source",
+    "sha256": "962b9f8563db49184bea724d323b8284576010ae7d3534432c8a7597cac2b4ea",
+    "summary": "Current exposure-weighted retention, diminishing Grow and fractional Research implementations."
+  },
+  {
+    "id": "EV-006",
+    "kind": "PRIMARY_SOURCE",
+    "locator": "retainCompletedProductLaunchPreparation; beginProductLaunch; commitSprint; saveVersion",
+    "path": "App/GameStore.swift",
+    "scope": "current_source",
+    "sha256": "daad1c791acf9ed91f14c3943e1f6eec1bc2e8a23b00c1dcfebff6e8d53db2ed",
+    "summary": "Current preparation authority, Coverage discrepancy and persistence seams."
+  },
+  {
+    "id": "EV-007",
+    "kind": "PRIMARY_SOURCE",
+    "locator": "ProductLaunchPreparationPersistenceTests",
+    "path": "Tests/FounderDeskWorkspaceTests.swift",
+    "scope": "current_source",
+    "sha256": "11d8bb64418ae0cdd21fdd3ee16cea2316c661a220c568423de58f6042f3d858",
+    "summary": "Production action reachability and cross-sprint persistence regressions; not run by F1."
+  },
+  {
+    "id": "EV-008",
+    "kind": "PRIMARY_SOURCE",
+    "locator": "ProductTraction tests and guarded lab cohort",
+    "path": "Tests/CompanyFinanceTests.swift",
+    "scope": "current_source",
+    "sha256": "84888c58f4673b651847cea3618a192410c2e941b5fdd074e0ffce6a76aa2fef",
+    "summary": "Traction tuning regressions and dedicated study lab guard; not run by F1."
+  },
+  {
+    "id": "EV-009",
+    "kind": "RETROSPECTIVE_REPORT",
+    "locator": "KEEP R1; 7R-A and 7R-B not selected; missing Loop evidence disclaimer",
+    "path": "Documentation/FounderCharacter/SHOULDER_REFERENCE_R1_CANON_PROVENANCE.md",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "c93b0c8874336bc0da2222083fbe7310b5b230ee4636d0ef521525c0854d2cb6",
+    "summary": "Reference-only selection; primary historical repair details unavailable."
+  },
+  {
+    "id": "EV-010",
+    "kind": "HISTORICAL_REPORT",
+    "locator": "Rest orientations/lengths; deform roles; Decision",
+    "path": "Documentation/FounderCharacter/AnimationLibrary/ChainValidation/skeleton_compatibility.md",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "2fdc3e498edb4767e5e45557763c16e41bf42f4901baf095dedd3e2ee28adbc6",
+    "summary": "55 names/hierarchy match while rest poses and 33 deform roles differ; transfer not performed."
+  },
+  {
+    "id": "EV-011",
+    "kind": "PRIMARY_SOURCE",
+    "locator": "production bone audit",
+    "path": "Documentation/FounderCharacter/AnimationLibrary/ChainValidation/production_rig_audit.json",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "f1f978f98faed1289651c83a68e591f2b11cf0d33c32653e2f247d94bd8e360e",
+    "summary": "Historical numerical production skeleton audit."
+  },
+  {
+    "id": "EV-012",
+    "kind": "HISTORICAL_REPORT",
+    "locator": "Diagnosis; Bounded batching; Tradeoffs",
+    "path": "Documentation/Atlantis/PHASE11_IMPORT_LATENCY_INVESTIGATION.md",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "c1109e3cfefdbdb9df26b89d0af3a9ae67608c4892a2643faf9560c99293e7dc",
+    "summary": "112.33 second import; entity construction bottleneck; simulator optimization evidence."
+  },
+  {
+    "id": "EV-013",
+    "kind": "HISTORICAL_REPORT",
+    "locator": "Founder hardware validation; static batching",
+    "path": "Documentation/Atlantis/PHASE11B_DISTRICT_BATCHING_HARDWARE_VALIDATION.md",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "4753db810e57487f509b190ecfe074cc24ce2ee37646b38365635a20220d33ba",
+    "summary": "Historical same-device import medians 40.040 to 0.783 seconds, semantic retention."
+  },
+  {
+    "id": "EV-014",
+    "kind": "HISTORICAL_REPORT",
+    "locator": "Regression results and Production traversal",
+    "path": "Documentation/FounderCharacter/FOUNDER_CHARACTER_PASS_A1_REPAIR_REPORT.md",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "0f381158a6bb94ab3edd09b38dbf9a8a6da4171d6ec1881fe812b6bfd9a34bd7",
+    "summary": "909 unit passes while iPad production traversal failed; root cause then unconfirmed."
+  },
+  {
+    "id": "EV-015",
+    "kind": "HISTORICAL_REPORT",
+    "locator": "Traversal; Facial Acceptance; Performance",
+    "path": "Documentation/FounderCharacter/FOUNDER_CHARACTER_PASS_A2_PRODUCTION_ACCEPTANCE_REPORT.md",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "21638d278f333e476818451b47d5b6ce1ee1a1289ed60298ec6cca8cce97c0ca",
+    "summary": "Readiness/collision corrections, separate human acceptance; one-skeleton package rejected."
+  },
+  {
+    "id": "EV-016",
+    "kind": "PRIMARY_SOURCE",
+    "locator": "facts.ambiguity",
+    "path": "Canon/records/mechanics/mechanic.coverage.json",
+    "scope": "current_source",
+    "sha256": "db730d8d2b2416135b56440d179c57719085252c8faa7bfb56f18ce3f303f70e",
+    "summary": "Canon records prescribed public mutation path versus direct sprint reduction."
+  },
+  {
+    "id": "EV-017",
+    "kind": "PRIMARY_SOURCE",
+    "locator": "R7 fingerprints and historical/current verification",
+    "path": "Documentation/Reconstruction/GitCheckpoint.json",
+    "scope": "current_source",
+    "sha256": "c93ca6c60f9a68da07fcef19be2886281ce29933b750b07630f28287908d36bc",
+    "summary": "Committed R8 provenance identifies independent R7 source and archive hashes."
+  }
+]

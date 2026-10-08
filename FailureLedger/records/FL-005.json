@@ -1,0 +1,70 @@
+{
+  "classification": "NUMERICAL_PROGRESS",
+  "detectionMethod": null,
+  "evidenceReferences": [
+    "EV-003",
+    "EV-004",
+    "EV-005"
+  ],
+  "expectedBehavior": "Legitimate nonzero Research effort eventually produces progress.",
+  "failedApproaches": [
+    {
+      "approach": "Adaptive policy waits indefinitely for confidence",
+      "conditionsPermittingReconsideration": "Bounded policy with visible-outcome escape from stalled Research and paired evidence.",
+      "evidenceReferences": [
+        "EV-003",
+        "EV-004"
+      ],
+      "observedOutcome": "Confidence stayed low when acquisition was needed for observations.",
+      "reasonAttempted": "Use visible evidence before growth.",
+      "whyRejected": "Harness policy and production rounding both contributed; neither alone explains all improvement."
+    }
+  ],
+  "firstObservedDate": null,
+  "id": "FL-005",
+  "lessons": [
+    {
+      "acceptance": "ACCEPTED",
+      "evidenceReferences": [
+        "EV-003",
+        "EV-004",
+        "EV-005"
+      ],
+      "text": "Do not discard legitimate fractional effort in repeated progress systems."
+    }
+  ],
+  "observedBehavior": "Support below 15 rounded to zero indefinitely.",
+  "preventionRules": [
+    "DND-005"
+  ],
+  "relatedCanonRecords": [
+    "rule.save_compatibility"
+  ],
+  "relatedFailureIds": [],
+  "relatedTests": [
+    "Tests/CompanyFinanceTests.swift"
+  ],
+  "reproductionConditions": null,
+  "requiredFutureGates": [
+    "Test lowest nonzero support, zero support, variable effort and save/reload conservation over multiple cycles."
+  ],
+  "resolutionDate": null,
+  "rootCause": "Per-cycle integer division discarded legitimate fractional effort.",
+  "rootCauseConfidence": "SUPPORTED",
+  "schemaVersion": "1",
+  "severity": "HIGH",
+  "status": "RESOLVED",
+  "successfulCorrection": "Optional researchEffortRemainder conserves variable effort across cycles and version-20 reload.",
+  "system": [
+    "customer traction",
+    "research",
+    "fractional progress",
+    "persistence"
+  ],
+  "title": "Fractional Research effort lost to rounding",
+  "unknownInformation": [
+    "First observation and resolution dates not established by inspected evidence."
+  ],
+  "visibility": "developer_only",
+  "whyExistingChecksMissedIt": null
+}

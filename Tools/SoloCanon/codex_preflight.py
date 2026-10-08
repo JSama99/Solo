@@ -102,6 +102,18 @@ def build_preflight(store: CanonStore, task: str, repository: dict, *, required:
             "query_fingerprint": pack["query_fingerprint"], "record_ids": record_ids,
             "required_record_ids": required_ids, "sources_to_inspect": sources,
             "conflicts": conflicts, "ambiguities": ambiguities}
+    # Historical precedents are developer context, never authoritative Canon pack records.
+    precedents = None
+    if (store.root / "Tools/FailureLedger/ledger.py").is_file() or (store.root / "FailureLedger").exists():
+        tools_path = str(Path(__file__).resolve().parents[1])
+        if tools_path not in sys.path:
+            sys.path.insert(0, tools_path)
+        try:
+            from FailureLedger.ledger import Ledger
+            precedents = Ledger(store.root).retrieve(task)
+        except (ImportError, OSError, ValueError, KeyError, TypeError) as exc:
+            raise CanonError("Failure Ledger unavailable or invalid: " + str(exc)) from exc
+        core["failure_precedents"] = precedents
     fingerprint = hashlib.sha256(canonical_bytes(core)).hexdigest()
     notices = []
     if repository["dirty"]:
@@ -122,6 +134,11 @@ def build_preflight(store: CanonStore, task: str, repository: dict, *, required:
                 "conflicts": conflicts, "ambiguities": ambiguities,
                 "sources_to_inspect": sources, "preflight_fingerprint": fingerprint,
                 "notices": notices, "result": "pass"}
+    if precedents is not None:
+        artifact["failure_precedents"] = precedents
+        for record in precedents["unresolved_warnings"]:
+            notices.append({"severity": "WARNING", "code": "failure_precedent_unresolved",
+                            "message": record["id"] + ": " + record["title"] + " (" + record["status"] + ")"})
     if semantic:
         artifact["retrieval_mode"] = "hybrid"
         artifact["semantic_status"] = pack["semantic_status"]
@@ -167,6 +184,17 @@ def render_text(artifact: dict) -> str:
     if artifact["result"] == "pass":
         lines.extend(("Applicable Canon:", *("- " + item for item in artifact["pack"]["record_ids"]), "",
                       "Required source inspection:", *("- " + item for item in artifact["sources_to_inspect"]), ""))
+    if "failure_precedents" in artifact:
+        precedents = artifact["failure_precedents"]
+        lines.extend(("Historical failure precedents (developer-only; not Canon authority):",
+                      *("- " + r["id"] + " — " + r["title"] + " [" + r["status"] + "]" for r in precedents["incidents"]), "",
+                      "Accepted development prevention rules:",
+                      *("- " + r["id"] + ": " + r["shortProhibition"] for r in precedents["accepted_rules"]), "",
+                      "Required precedent gates:", *("- " + gate for gate in precedents["required_gates"]), "",
+                      "Previously failed fixes:",
+                      *("- " + f["failureId"] + ": " + f["approach"] + "; " + f["observedOutcome"] + "; evidence " + ", ".join(f["evidenceReferences"]) for f in precedents["failed_fixes"]), "",
+                      "Candidate lessons (not accepted rules):",
+                      *("- " + r["id"] + " — " + r["title"] for r in precedents["candidate_lessons"]), ""))
     if artifact["notices"]:
         lines.extend(("Notices:", *(f"- {item['severity']} {item['message']}" for item in artifact["notices"]), ""))
     if artifact["result"] == "pass":

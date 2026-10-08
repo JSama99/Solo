@@ -1,0 +1,228 @@
+{
+  "changed_file_count_including_this_inventory": 37,
+  "excluded_existing_untracked": [
+    ".solo-loop/cache/canon-semantic/index.json",
+    ".solo-loop/cache/runtime-canon/projection.json"
+  ],
+  "files": [
+    {
+      "bytes": 9292,
+      "change": "MODIFIED",
+      "path": "AGENTS.md",
+      "sha256": "cca2f1722546cb8e21cc67c67dffbb578e0c6ab6e90785f013ced30f992471a7"
+    },
+    {
+      "bytes": 1331,
+      "change": "NEW",
+      "path": "Documentation/FailureLedger/Evidence/OwnerStatements.md",
+      "sha256": "ff2fcc5864d07d3c3e59ed80d2bd43a1e35d3c910b9f4cfad66c355236734197"
+    },
+    {
+      "bytes": 12862,
+      "change": "NEW",
+      "path": "Documentation/FailureLedger/Evidence/TuningHistorical.md",
+      "sha256": "a8be66f14115afb089377f73686e2d8dccdfc8d06d1fa1dd592983a9b0ef0461"
+    },
+    {
+      "bytes": 5990,
+      "change": "NEW",
+      "path": "Documentation/FailureLedger/F1-Report.md",
+      "sha256": "ab80270a137cd24a77b7af365d0ed8e406c3d01b2b430b3e4d4e311bc637f184"
+    },
+    {
+      "bytes": 2205,
+      "change": "NEW",
+      "path": "Documentation/FailureLedger/FailedFixes.md",
+      "sha256": "c949b05e8e6e2be0f5ea5f2271efd1ce8d8e68a266a95e2d12e8b4950771bd0a"
+    },
+    {
+      "bytes": 4187,
+      "change": "NEW",
+      "path": "Documentation/FailureLedger/HistoricalInventory.md",
+      "sha256": "f9b24624449786ff4494d91cac8a80fb6e4d6016937d42b07152c0176aab67e3"
+    },
+    {
+      "bytes": 1119,
+      "change": "NEW",
+      "path": "Documentation/FailureLedger/Verification.json",
+      "sha256": "591fa6c1554de1a8adfa3883820503e8b4a13ee5271e310ec4382d1a3f65c17e"
+    },
+    {
+      "bytes": 4004,
+      "change": "NEW",
+      "path": "FailureLedger/README.md",
+      "sha256": "a50bccaac7b5dce309dc46176e214d3c5d758004a847ace5b4222ab917ce17a6"
+    },
+    {
+      "bytes": 849,
+      "change": "NEW",
+      "path": "FailureLedger/candidates/example.json",
+      "sha256": "1034f17dc43be8f346f328b2faa61db4ae379e2f11a2552610b263227ee7a515"
+    },
+    {
+      "bytes": 7281,
+      "change": "NEW",
+      "path": "FailureLedger/evidence.json",
+      "sha256": "a7b12e9130ab8a07231f87d7b5fff6165d2e93dadee4da3426fd3f8d351265d8"
+    },
+    {
+      "bytes": 2654,
+      "change": "NEW",
+      "path": "FailureLedger/records/FL-001.json",
+      "sha256": "2f7a190a9e2f196c9e04d4ad7761420a7e25af1a1f034e345e69004c8ef34a28"
+    },
+    {
+      "bytes": 1711,
+      "change": "NEW",
+      "path": "FailureLedger/records/FL-002.json",
+      "sha256": "4d848b7bae5c623da0cd15939943e44ce93dc142ae9de9d58c8d871200db75ea"
+    },
+    {
+      "bytes": 1699,
+      "change": "NEW",
+      "path": "FailureLedger/records/FL-003.json",
+      "sha256": "c0fd79021a811c97ddf6556d3d13fd1facf5e29b0a00478ab77d28853a4dbb1b"
+    },
+    {
+      "bytes": 2399,
+      "change": "NEW",
+      "path": "FailureLedger/records/FL-004.json",
+      "sha256": "18b4d6c48af92f3e4a28c18f9f167bd1503ec053842dc4df8e0478b0b309159a"
+    },
+    {
+      "bytes": 2268,
+      "change": "NEW",
+      "path": "FailureLedger/records/FL-005.json",
+      "sha256": "0696f97cba4467214a6a5efc9d361b85049d7815a8cfa22165b95a279bf879e2"
+    },
+    {
+      "bytes": 1801,
+      "change": "NEW",
+      "path": "FailureLedger/records/FL-006.json",
+      "sha256": "97bb2ee5fb1f1a582fbe780e6a0409d6ad39bd1c67dad39059bf32279bc6d692"
+    },
+    {
+      "bytes": 1667,
+      "change": "NEW",
+      "path": "FailureLedger/records/FL-007.json",
+      "sha256": "bf820db91b8ead3aaef8f57dba160688e38891ba9af540b5369f18de6616cf11"
+    },
+    {
+      "bytes": 1654,
+      "change": "NEW",
+      "path": "FailureLedger/records/FL-008.json",
+      "sha256": "430f2ac32be602d79ef6b41a04e36000e86b1006d8520aed45cf569dde80588a"
+    },
+    {
+      "bytes": 1740,
+      "change": "NEW",
+      "path": "FailureLedger/records/FL-009.json",
+      "sha256": "c41f5b74337e60ac3809c3e52419782839fd08b67077e2cb9236b87555aba4da"
+    },
+    {
+      "bytes": 1672,
+      "change": "NEW",
+      "path": "FailureLedger/records/FL-010.json",
+      "sha256": "369915e4c8f10f2ed86420b4873823e32033c3ee58f0e49b6aa231c2b96bd945"
+    },
+    {
+      "bytes": 2186,
+      "change": "NEW",
+      "path": "FailureLedger/records/FL-011.json",
+      "sha256": "5f0be244354bc2d2a459fedc2a6b08b4d44227fff35aa3ccdb3f3200c24987e7"
+    },
+    {
+      "bytes": 1226,
+      "change": "NEW",
+      "path": "FailureLedger/records/FL-012.json",
+      "sha256": "311b716f7a81a1ae57f2ade74fcbb327164130a840f2a2a1d697655c9bcb3ec3"
+    },
+    {
+      "bytes": 1573,
+      "change": "NEW",
+      "path": "FailureLedger/records/FL-013.json",
+      "sha256": "b0623cd2945e6b6f0b5310657336a065fadbbe56bc83af5182663fd71232a797"
+    },
+    {
+      "bytes": 2305,
+      "change": "NEW",
+      "path": "FailureLedger/records/FL-014.json",
+      "sha256": "1654ac8bed1a329016e55ae473e75a2a292a3684b5f12fad88829b30592365c5"
+    },
+    {
+      "bytes": 7675,
+      "change": "NEW",
+      "path": "FailureLedger/registry/DO_NOT_DO.md",
+      "sha256": "906f74be9c8421f8ab7f0ead221af6d7fc00cc668e1e50ed1b9f04670e86fcea"
+    },
+    {
+      "bytes": 10865,
+      "change": "NEW",
+      "path": "FailureLedger/registry/rules.json",
+      "sha256": "9981211bd912d65b5a373182585b77ced09a3712828fd23bd4aa9c049d514702"
+    },
+    {
+      "bytes": 2669,
+      "change": "NEW",
+      "path": "FailureLedger/schemas/candidate.schema.json",
+      "sha256": "f29dcde5c73048ec6f1314072c69854914f36cefc16700bfd70b6ebfe3f0e99b"
+    },
+    {
+      "bytes": 1148,
+      "change": "NEW",
+      "path": "FailureLedger/schemas/evidence.schema.json",
+      "sha256": "99ea1a1b8e80fc58bd4f201f77e391ef6c2d18c46315aba169c7ec1b21af0707"
+    },
+    {
+      "bytes": 6391,
+      "change": "NEW",
+      "path": "FailureLedger/schemas/failure.schema.json",
+      "sha256": "73a0fd3db042d8b749d5a99fdab42d3efc4bf4bf1eb26ccf9d8f4de3b01a9808"
+    },
+    {
+      "bytes": 1559,
+      "change": "NEW",
+      "path": "FailureLedger/schemas/rule.schema.json",
+      "sha256": "f93b61342a9af7d2694259c76588f6a2bacf70a7205b054c4eb3381c784afc33"
+    },
+    {
+      "bytes": 73,
+      "change": "NEW",
+      "path": "Tools/FailureLedger/__init__.py",
+      "sha256": "200b6532cb6817db5899829635cb8b5ac04481efa8502786e780e4b2fa3f714d"
+    },
+    {
+      "bytes": 1459,
+      "change": "NEW",
+      "path": "Tools/FailureLedger/build_registry.py",
+      "sha256": "2810d82a20a7c61f18c37f12f6cff53b6b601b434216435030863acec55b0b95"
+    },
+    {
+      "bytes": 11761,
+      "change": "NEW",
+      "path": "Tools/FailureLedger/ledger.py",
+      "sha256": "b6761bdc95d1a440ddbeda74f018c16475ff9c055eddee3cc88a2b9761fe94bd"
+    },
+    {
+      "bytes": 13644,
+      "change": "NEW",
+      "path": "Tools/FailureLedger/tests/test_ledger.py",
+      "sha256": "2dd54bb8569fb0844102195e5059dc972c25c076996b7477adcb006be42c4721"
+    },
+    {
+      "bytes": 747,
+      "change": "NEW",
+      "path": "Tools/FailureLedger/validate.py",
+      "sha256": "b023a6d4213ff4a4b2870fc7315977b6a8f87674daed584609fb435e9cffe4a8"
+    },
+    {
+      "bytes": 13641,
+      "change": "MODIFIED",
+      "path": "Tools/SoloCanon/codex_preflight.py",
+      "sha256": "e59f7ffd12d36f7db5d81505b8973fa686f51f16b5c5d566be43b86fd1eb5479"
+    }
+  ],
+  "parent_commit": "4e0ff187d50c9b796002e08d36a52d4c63c32bdd",
+  "self_hash_excluded": true,
+  "worktree": "/Users/jermainenelson/Documents/Solo-Reconstruction"
+}

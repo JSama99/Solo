@@ -1,0 +1,315 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "classification": {
+      "enum": [
+        "GAMEPLAY_REACHABILITY",
+        "ENVIRONMENT_ISOLATION",
+        "SOURCE_PRESERVATION",
+        "BALANCE",
+        "NUMERICAL_PROGRESS",
+        "STATISTICAL_AGGREGATION",
+        "DESIGN_AMBIGUITY",
+        "ASSET_DEFORMATION",
+        "RIG_COMPATIBILITY",
+        "LOADING_PERFORMANCE",
+        "ACCEPTANCE_PROCESS",
+        "RELEASE_READINESS",
+        "AUTHORITY_CONFLICT",
+        "TRAVERSAL"
+      ],
+      "type": "string"
+    },
+    "detectionMethod": {
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidenceReferences": {
+      "items": {
+        "pattern": "EV-[0-9]{3}",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "expectedBehavior": {
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "failedApproaches": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "approach": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "conditionsPermittingReconsideration": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "evidenceReferences": {
+            "items": {
+              "pattern": "EV-[0-9]{3}",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "observedOutcome": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "reasonAttempted": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "whyRejected": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "approach",
+          "reasonAttempted",
+          "observedOutcome",
+          "whyRejected",
+          "conditionsPermittingReconsideration",
+          "evidenceReferences"
+        ],
+        "type": "object"
+      },
+      "minItems": 0,
+      "type": "array"
+    },
+    "firstObservedDate": {
+      "format": "date",
+      "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2}",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "pattern": "FL-[0-9]{3}",
+      "type": "string"
+    },
+    "lessons": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "acceptance": {
+            "enum": [
+              "ACCEPTED",
+              "PROPOSED",
+              "NEEDS_REVIEW"
+            ],
+            "type": "string"
+          },
+          "evidenceReferences": {
+            "items": {
+              "pattern": "EV-[0-9]{3}",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "text": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "acceptance",
+          "evidenceReferences"
+        ],
+        "type": "object"
+      },
+      "minItems": 0,
+      "type": "array"
+    },
+    "observedBehavior": {
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "preventionRules": {
+      "items": {
+        "pattern": "DND-[0-9]{3}",
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array"
+    },
+    "relatedCanonRecords": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array"
+    },
+    "relatedFailureIds": {
+      "items": {
+        "pattern": "FL-[0-9]{3}",
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array"
+    },
+    "relatedTests": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array"
+    },
+    "reproductionConditions": {
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "requiredFutureGates": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array"
+    },
+    "resolutionDate": {
+      "format": "date",
+      "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2}",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rootCause": {
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rootCauseConfidence": {
+      "enum": [
+        "ESTABLISHED",
+        "SUPPORTED",
+        "HYPOTHESIS",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "schemaVersion": {
+      "enum": [
+        "1"
+      ],
+      "type": "string"
+    },
+    "severity": {
+      "enum": [
+        "CRITICAL",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "CANDIDATE",
+        "REPRODUCED",
+        "CONFIRMED",
+        "RESOLVED",
+        "DESIGN_DECISION_REQUIRED"
+      ],
+      "type": "string"
+    },
+    "successfulCorrection": {
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "system": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "title": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "unknownInformation": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array"
+    },
+    "visibility": {
+      "enum": [
+        "developer_only"
+      ],
+      "type": "string"
+    },
+    "whyExistingChecksMissedIt": {
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "title",
+    "system",
+    "classification",
+    "severity",
+    "status",
+    "expectedBehavior",
+    "observedBehavior",
+    "reproductionConditions",
+    "detectionMethod",
+    "whyExistingChecksMissedIt",
+    "rootCause",
+    "successfulCorrection",
+    "rootCauseConfidence",
+    "failedApproaches",
+    "lessons",
+    "preventionRules",
+    "requiredFutureGates",
+    "evidenceReferences",
+    "relatedTests",
+    "relatedCanonRecords",
+    "relatedFailureIds",
+    "firstObservedDate",
+    "resolutionDate",
+    "unknownInformation",
+    "visibility"
+  ],
+  "title": "failure v1",
+  "type": "object"
+}

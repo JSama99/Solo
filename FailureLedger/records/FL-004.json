@@ -1,0 +1,71 @@
+{
+  "classification": "BALANCE",
+  "detectionMethod": null,
+  "evidenceReferences": [
+    "EV-003",
+    "EV-004",
+    "EV-005",
+    "EV-001"
+  ],
+  "expectedBehavior": "Focus strategies retain contextual tradeoffs.",
+  "failedApproaches": [
+    {
+      "approach": "Halve the additional Grow acquisition bonus",
+      "conditionsPermittingReconsideration": "New matched-seed evidence demonstrating a different tradeoff without removing meaningful occasional Grow.",
+      "evidenceReferences": [
+        "EV-003",
+        "EV-004"
+      ],
+      "observedOutcome": "Grow still beat rotation in customers/revenue in every cell; reported cash win rate 89.4%.",
+      "reasonAttempted": "Reduce reported repeated-Grow dominance.",
+      "whyRejected": "Blanket reduction did not yield the intended contextual tradeoffs."
+    }
+  ],
+  "firstObservedDate": null,
+  "id": "FL-004",
+  "lessons": [
+    {
+      "acceptance": "ACCEPTED",
+      "evidenceReferences": [
+        "EV-003",
+        "EV-004",
+        "EV-005",
+        "EV-001"
+      ],
+      "text": "Do not accept balance from isolated local tuning alone."
+    }
+  ],
+  "observedBehavior": "Unchanged Grow beat rotation in customers/revenue/cash in every tested search cell.",
+  "preventionRules": [
+    "DND-004"
+  ],
+  "relatedCanonRecords": [],
+  "relatedFailureIds": [],
+  "relatedTests": [
+    "Tests/CompanyFinanceTests.swift"
+  ],
+  "reproductionConditions": null,
+  "requiredFutureGates": [
+    "Evaluate matched-seed multi-policy distributions and switching strategies with costs, acquisition, churn and revenue."
+  ],
+  "resolutionDate": null,
+  "rootCause": "Undiminished repeated additional acquisition reach contributed to dominance in the reported fixtures.",
+  "rootCauseConfidence": "SUPPORTED",
+  "schemaVersion": "1",
+  "severity": "HIGH",
+  "status": "RESOLVED",
+  "successfulCorrection": "Only the extra Grow bonus diminishes with Grow uses in the last three cycles; first-use bonus preserved.",
+  "system": [
+    "customer traction",
+    "grow",
+    "balance",
+    "chaos crew"
+  ],
+  "title": "Repeated Grow economic dominance in matched study",
+  "unknownInformation": [
+    "First observation and resolution dates not established by inspected evidence.",
+    "Tuned study is bounded fixture-conditioned evidence; global balance is not proven."
+  ],
+  "visibility": "developer_only",
+  "whyExistingChecksMissedIt": null
+}

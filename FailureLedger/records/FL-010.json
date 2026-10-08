@@ -1,0 +1,54 @@
+{
+  "classification": "LOADING_PERFORMANCE",
+  "detectionMethod": null,
+  "evidenceReferences": [
+    "EV-012",
+    "EV-013"
+  ],
+  "expectedBehavior": "World import is acceptably bounded on physical hardware.",
+  "failedApproaches": [],
+  "firstObservedDate": null,
+  "id": "FL-010",
+  "lessons": [
+    {
+      "acceptance": "ACCEPTED",
+      "evidenceReferences": [
+        "EV-012",
+        "EV-013"
+      ],
+      "text": "Do not remove validation or flatten interactive semantics based only on package size or simulator timing."
+    }
+  ],
+  "observedBehavior": "Seven districts took 112.33 seconds on the physical baseline.",
+  "preventionRules": [
+    "DND-009"
+  ],
+  "relatedCanonRecords": [
+    "rule.simulation_authority"
+  ],
+  "relatedFailureIds": [],
+  "relatedTests": [],
+  "reproductionConditions": null,
+  "requiredFutureGates": [
+    "Measure import stages on target hardware and preserve semantic roots, bounds, interaction and streaming contracts."
+  ],
+  "resolutionDate": null,
+  "rootCause": "RealityKit construction scaled with mesh-entity count; file read/checksum were small measured stages.",
+  "rootCauseConfidence": "SUPPORTED",
+  "schemaVersion": "1",
+  "severity": "HIGH",
+  "status": "RESOLVED",
+  "successfulCorrection": "Selective semantic static batching: historical Founder median import 40.040 to 0.783 seconds.",
+  "system": [
+    "atlantis",
+    "loading",
+    "performance",
+    "batching"
+  ],
+  "title": "Atlantis mesh-entity import latency",
+  "unknownInformation": [
+    "First observation and resolution dates not established by inspected evidence."
+  ],
+  "visibility": "developer_only",
+  "whyExistingChecksMissedIt": null
+}

@@ -1,0 +1,73 @@
+{
+  "classification": "TRAVERSAL",
+  "detectionMethod": null,
+  "evidenceReferences": [
+    "EV-014",
+    "EV-015"
+  ],
+  "expectedBehavior": "Open-door production walking enters Atlantis consistently.",
+  "failedApproaches": [
+    {
+      "approach": "Unchanged iPad traversal retry",
+      "conditionsPermittingReconsideration": "New readiness/collision evidence or a diagnosed environment change.",
+      "evidenceReferences": [
+        "EV-014"
+      ],
+      "observedOutcome": "The traversal-only retry failed again.",
+      "reasonAttempted": "Determine whether route failure was transient.",
+      "whyRejected": "Retry alone did not correct the production divergence."
+    }
+  ],
+  "firstObservedDate": null,
+  "id": "FL-014",
+  "lessons": [
+    {
+      "acceptance": "ACCEPTED",
+      "evidenceReferences": [
+        "EV-014",
+        "EV-015"
+      ],
+      "text": "Do not qualify traversal using provisional bounds or a single platform."
+    }
+  ],
+  "observedBehavior": "Physical iPad route remained in Garage; unchanged retry also failed.",
+  "preventionRules": [
+    "DND-012"
+  ],
+  "relatedCanonRecords": [
+    "rule.simulation_authority"
+  ],
+  "relatedFailureIds": [
+    "FL-010",
+    "FL-011"
+  ],
+  "relatedTests": [
+    "Tests/FounderGarageRealityTests.swift"
+  ],
+  "reproductionConditions": null,
+  "requiredFutureGates": [
+    "Verify ready authored bounds, obstacle corners, world/root continuity and repeated physical routes on both form factors."
+  ],
+  "resolutionDate": null,
+  "rootCause": "Later report establishes collision slide-axis divergence and provisional bounds before Garage readiness.",
+  "rootCauseConfidence": "SUPPORTED",
+  "schemaVersion": "1",
+  "severity": "HIGH",
+  "status": "RESOLVED",
+  "successfulCorrection": "Gate walking on Garage readiness and retain one composed RealityView/world through handoff.",
+  "system": [
+    "garage",
+    "atlantis",
+    "traversal",
+    "collision",
+    "grounding",
+    "readiness"
+  ],
+  "title": "Garage-to-Atlantis physical traversal failure",
+  "unknownInformation": [
+    "First observation and resolution dates not established by inspected evidence.",
+    "Do not infer that every historical grounding issue shared these two causes."
+  ],
+  "visibility": "developer_only",
+  "whyExistingChecksMissedIt": null
+}

@@ -176,3 +176,14 @@ When asked for an architecture handoff, inspect without editing and report:
 
 Clearly distinguish current static inspection from historical test reports, and do
 not claim a current test pass unless the current revision was actually tested.
+
+## Historical failure precedents
+
+Developer Codex Canon preflight also retrieves the offline Failure Ledger. Before
+changing a known system, inspect its confirmed incidents, accepted development
+prevention rules, failed fixes, required gates and unresolved warnings. Candidate
+lessons are separate and cannot become accepted rules automatically. Ledger
+precedents do not override Canon or authorize gameplay changes. Missing/corrupt
+ledger evidence blocks preflight until reviewed and corrected; do not bypass it.
+See `FailureLedger/README.md` for validation and evidence maintenance. Failure
+Ledger contents are developer-only and must never enter runtime AI context.
