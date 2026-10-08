@@ -476,7 +476,7 @@
       "authority": "P2",
       "id": "system.narrative_director",
       "path": "Canon/records/systems/system.narrative_director.json",
-      "sha256": "7e895ac01997a604c5f758c02bee94748a0dfdd2789de4b911cca5293d56b6ef",
+      "sha256": "910bbb5fe2ca3f77f670d9bc8025ce6572635fd26b40f1eaa8e932cd6cdc2a2c",
       "status": "accepted",
       "type": "system",
       "visibility": [

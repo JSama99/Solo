@@ -1127,10 +1127,15 @@ final class GameStoreTests: XCTestCase {
 
     store.commitSprint()
 
-    let rivalHeadlines = store.techComHeadlines.filter { $0.category == .rival }
+    let rivalHeadlines = TechComEngine.mergedRivalHeadlines(
+      headlines: store.techComHeadlines, publicEvents: store.publicMediaEvents
+    )
+    XCTAssertFalse(rivalHeadlines.isEmpty)
+    XCTAssertTrue(store.techComHeadlines.filter { $0.category == .rival }.isEmpty)
     XCTAssertLessThanOrEqual(rivalHeadlines.count, 2)
     for headline in rivalHeadlines {
       XCTAssertTrue(expectedHeadlines.contains(headline.text))
+      XCTAssertTrue(expectedMoves.contains { $0.id == headline.publicEventID })
     }
   }
 

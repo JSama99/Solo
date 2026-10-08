@@ -421,12 +421,13 @@ final class FounderDeskWorkspaceTests: XCTestCase {
     let opportunity = try XCTUnwrap(FundingBoardCatalog.opportunities.first {
       $0.id == "pioneer-ai-grant"
     })
-    let fundingEvent = try XCTUnwrap(FundingPublicMediaProjection.resolution(
+    let fundingProjection = try XCTUnwrap(FundingPublicMediaProjection.resolution(
       opportunity: opportunity,
       outcome: .awarded,
       venture: 1,
       sprint: 2
     ))
+    let fundingEvent = try XCTUnwrap(MediaNarrativeDirector.decide(event: .publicFundingProgress(fundingProjection))).story
     let currentEvents = [fundingEvent, SignalTVProgramming.marketPulse(venture: 1, sprint: 2)]
     let previousEvents = [fundingEvent, SignalTVProgramming.marketPulse(venture: 1, sprint: 3)]
     let standard = operationalMotion(publicEvents: currentEvents)
@@ -1309,6 +1310,7 @@ final class ProductLaunchOperationTests: XCTestCase {
     operation.publicPosture = .bold
     store.installProductLaunchOperationForTesting(operation)
     let before = store.stats
+    let rngBefore = store.randomNumberGenerator
 
     XCTAssertTrue(store.executeProductLaunch())
     XCTAssertTrue(store.resolveProductLaunch())
@@ -1317,7 +1319,15 @@ final class ProductLaunchOperationTests: XCTestCase {
     XCTAssertEqual(resolvedStats.momentum, min(100, max(0, before.momentum + result.effects.momentum)))
     XCTAssertEqual(resolvedStats.trust, min(100, max(0, before.trust + result.effects.trust)))
     XCTAssertEqual(resolvedStats.coverage, min(100, max(-100, before.coverage + result.coverageDelta)))
+    XCTAssertEqual(store.randomNumberGenerator, rngBefore)
     XCTAssertEqual(store.productLaunchOperation?.canonicalEffectApplicationCount, 1)
+    let story = try XCTUnwrap(store.publicMediaEvents.first { $0.id == "\(operation.id)-resolved" })
+    XCTAssertEqual(story.coverageDelta, result.coverageDelta)
+    XCTAssertEqual(story.program, result.overall == .breakout ? .founderSpotlight : .breaking)
+    XCTAssertEqual(story.headline, result.headline)
+    XCTAssertEqual(story.venture, operation.preparation.venture)
+    XCTAssertEqual(story.sprint, operation.preparation.sprint)
+    XCTAssertEqual(SignalTVProgramming.publicBroadcastEvents([story]), [story])
 
     XCTAssertFalse(store.resolveProductLaunch())
     XCTAssertEqual(store.stats, resolvedStats)
@@ -1442,5 +1452,304 @@ final class ProductLaunchOperationTests: XCTestCase {
       )
     }
     return store
+  }
+}
+
+@MainActor
+final class ProductLaunchPreparationPersistenceTests: XCTestCase {
+  // Reconstruction verification: production Founder Computer routes eligible
+  // reports through Work Sessions before canonical review. No fixture installation.
+  func testProductionWorkSessionRouteLaunchesWithTwoAttentionAcrossSprints() throws {
+    let store = makeStore()
+    XCTAssertEqual(store.attentionMaximum, 2)
+    var delegated = 0
+    for (offset, agentID) in ["aurora", "stacks", "brio"].enumerated() {
+      if offset == 2 {
+        XCTAssertEqual(store.attentionRemaining, 0)
+        XCTAssertNil(store.commitBlockerMessage)
+        store.commitSprint()
+        store.finishReport()
+        respond(in: store)
+        XCTAssertEqual(store.sprint, 2)
+        XCTAssertEqual(store.attentionRemaining, 2)
+      }
+      let role: AgentRole = agentID == "aurora" ? .research : (agentID == "stacks" ? .engineering : .marketing)
+      let available = store.tasks.filter { $0.assignedAgentID == nil && !$0.isReviewed }
+      let task = try XCTUnwrap(available.first { $0.role == role && $0.urgency != .critical } ?? available.first)
+      store.assign(agentID: agentID, to: task.id)
+      let id = task.id
+      let before = store.attentionRemaining
+      // Mirror FounderComputerScreen.review: Work Session when eligible,
+      // direct canonical review otherwise, using ordinary authored tasks.
+      if store.workSessionFamily(taskID: id) != nil {
+        XCTAssertTrue(store.delegateWorkSession(taskID: id), store.alertMessage ?? "")
+        XCTAssertTrue(store.workSession(for: id)?.completed == true)
+        delegated += 1
+      }
+      store.review(taskID: id)
+      store.resolveReviewedTask(taskID: id, choice: .approve)
+      XCTAssertEqual(store.attentionRemaining, before - 1)
+      XCTAssertTrue(store.tasks.first { $0.id == id }?.resolutionLocked == true)
+    }
+    XCTAssertGreaterThan(delegated, 0)
+    XCTAssertEqual(store.canonicalProductLaunchPreparations.map(\.agentID), ["aurora", "stacks", "brio"])
+    let restored = GameStore()
+    restored.continueCareer()
+    XCTAssertEqual(restored.canonicalProductLaunchPreparations, store.canonicalProductLaunchPreparations)
+    XCTAssertTrue(readiness(restored).commitEligible)
+    XCTAssertTrue(restored.beginProductLaunch(), restored.alertMessage ?? "")
+    XCTAssertEqual(restored.productLaunchOperation?.preparation.reviewedEvidenceCount, 3)
+    restored.resetCareer()
+  }
+
+  override func tearDown() {
+    UserDefaults.standard.removeObject(forKey: GameStore.saveKey)
+    super.tearDown()
+  }
+
+  func testNormalTwoAttentionCareerAccumulatesAcrossReloadAndLaunches() throws {
+    let store = makeStore()
+    XCTAssertEqual(store.attentionMaximum, 2)
+    try complete("aurora", in: store)
+    try complete("stacks", in: store)
+    XCTAssertEqual(store.attentionRemaining, 0)
+    XCTAssertEqual(store.canonicalProductLaunchPreparations.map(\.agentID), ["aurora", "stacks"])
+    XCTAssertFalse(readiness(store).commitEligible)
+    XCTAssertFalse(store.beginProductLaunch())
+    let saved = try savedEnvelope()
+    XCTAssertEqual(saved.version, 20)
+    let restored = GameStore()
+    restored.continueCareer()
+    XCTAssertEqual(restored.productLaunchPreparationState, store.productLaunchPreparationState)
+    XCTAssertEqual(restored.attentionRemaining, 0)
+    restored.commitSprint()
+    restored.finishReport()
+    XCTAssertEqual(restored.sprint, 2)
+    XCTAssertNil(restored.careerOutcome)
+    XCTAssertEqual(restored.attentionRemaining, 2)
+    respond(in: restored)
+    XCTAssertEqual(restored.canonicalProductLaunchPreparations.count, 2)
+    try complete("brio", in: restored)
+    let records = restored.canonicalProductLaunchPreparations
+    XCTAssertEqual(records.map(\.agentID), ["aurora", "stacks", "brio"])
+    XCTAssertEqual(records.map(\.sprint), [1, 1, 2])
+    XCTAssertEqual(readiness(restored).readiness, .ready)
+    XCTAssertTrue(readiness(restored).commitEligible)
+    let rng = restored.randomNumberGenerator.state
+    XCTAssertTrue(restored.beginProductLaunch(), restored.alertMessage ?? "")
+    let operation = try XCTUnwrap(restored.productLaunchOperation)
+    XCTAssertEqual(operation.preparation.reviewedEvidenceCount, 3)
+    XCTAssertEqual(operation.preparation.aurora.visibleQuality,
+      records[0].result.revealedActualQuality ?? records[0].result.reportedQuality)
+    XCTAssertEqual(operation.preparation.stacks.visibleQuality,
+      records[1].result.revealedActualQuality ?? records[1].result.reportedQuality)
+    XCTAssertEqual(operation.preparation.brio.visibleQuality,
+      records[2].result.revealedActualQuality ?? records[2].result.reportedQuality)
+    XCTAssertEqual(operation.deterministicSeed, SeededRandomNumberGenerator.mixed(rng
+      ^ UInt64(operation.preparation.venture * 10_000 + operation.preparation.sprint * 100)
+      ^ UInt64(operation.preparation.aurora.visibleQuality * 7
+        + operation.preparation.stacks.visibleQuality * 11 + operation.preparation.brio.visibleQuality * 13)))
+    XCTAssertTrue(restored.productLaunchPreparationState.records.isEmpty)
+    XCTAssertFalse(readiness(restored).commitEligible)
+    XCTAssertTrue(restored.advanceProductLaunchToDecisions())
+    XCTAssertTrue(restored.selectProductLaunchReleasePosture(.shipNow))
+    XCTAssertTrue(restored.selectProductLaunchPublicPosture(.evidenceLed))
+    let expected = ProductLaunchResolutionPolicy.resolve(try XCTUnwrap(restored.productLaunchOperation))
+    XCTAssertTrue(restored.executeProductLaunch())
+    let resumed = GameStore()
+    resumed.continueCareer()
+    XCTAssertTrue(resumed.resolveProductLaunch())
+    XCTAssertEqual(resumed.productLaunchOperation?.result, expected)
+    XCTAssertFalse(resumed.resolveProductLaunch())
+    XCTAssertTrue(resumed.finishProductLaunchPresentation())
+    XCTAssertTrue(resumed.canonicalProductLaunchPreparations.isEmpty)
+    resumed.resetCareer()
+  }
+
+  func testUnreviewedUnresolvedAndMissingEvidenceCannotQualify() throws {
+    let store = makeStore()
+    let id = try assign("aurora", in: store)
+    XCTAssertTrue(store.canonicalProductLaunchPreparations.isEmpty)
+    store.review(taskID: id)
+    XCTAssertTrue(store.canonicalProductLaunchPreparations.isEmpty)
+    // Simulate absence of the required canonical receipt at the validation seam.
+    store.evidence = []
+    XCTAssertFalse(readiness(store).commitEligible)
+    XCTAssertFalse(store.beginProductLaunch())
+    store.resolveReviewedTask(taskID: id, choice: .approve)
+    XCTAssertEqual(store.canonicalProductLaunchPreparations.count, 1)
+    store.evidence = []
+    XCTAssertTrue(store.canonicalProductLaunchPreparations.isEmpty)
+    XCTAssertFalse(readiness(store).commitEligible)
+    XCTAssertFalse(store.beginProductLaunch())
+    store.resetCareer()
+  }
+
+  func testNewerCompletedWorkReplacesOnlyItsTrackAndDuplicateCannotReplace() throws {
+    let store = makeStore()
+    let first = try complete("aurora", in: store)
+    let prior = try XCTUnwrap(store.productLaunchPreparationState.records["aurora"])
+    store.resolveReviewedTask(taskID: first, choice: .approve)
+    XCTAssertEqual(store.productLaunchPreparationState.records["aurora"], prior)
+    store.commitSprint()
+    store.finishReport()
+    respond(in: store)
+    let second = try assign("aurora", in: store)
+    XCTAssertEqual(store.canonicalProductLaunchPreparations.first?.taskID, first)
+    store.review(taskID: second)
+    XCTAssertEqual(store.canonicalProductLaunchPreparations.first?.taskID, first)
+    store.resolveReviewedTask(taskID: second, choice: .approve)
+    XCTAssertEqual(store.productLaunchPreparationState.records.count, 1)
+    XCTAssertEqual(store.productLaunchPreparationState.records["aurora"]?.taskID, second)
+    XCTAssertEqual(store.productLaunchPreparationState.records["aurora"]?.sprint, 2)
+    var value = store.productLaunchPreparationState
+    value.retain(prior) // stale completed work cannot overwrite the newer record
+    XCTAssertEqual(value, store.productLaunchPreparationState)
+    store.resetCareer()
+  }
+
+  func testIncompleteEvidenceKeepsHiddenTruthOutOfRetainedChecklist() throws {
+    let store = makeStore()
+    let id = try assign("stacks", in: store)
+    // Only the hidden-truth edge case uses controlled result input. Review and
+    // resolution still use production mutations and their canonical Evidence.
+    let index = try XCTUnwrap(store.tasks.firstIndex { $0.id == id })
+    store.tasks[index].result = TaskResult(actualQuality: 31, reportedQuality: 88,
+      verificationState: .reported, evidenceCompleteness: 10,
+      correlatedFailureIdentifier: nil, immediateEffects: .init(), delayedEffects: .init(),
+      confidenceLowerBound: 30, confidenceUpperBound: 90, knownOperationalRisk: "Release needs monitoring")
+    store.review(taskID: id)
+    store.resolveReviewedTask(taskID: id, choice: .approve)
+    let record = try XCTUnwrap(store.productLaunchPreparationState.records["stacks"])
+    XCTAssertEqual(record.result.deliveredQualityForSimulation, 31)
+    XCTAssertNil(record.result.revealedActualQuality)
+    store.commitSprint()
+    store.finishReport()
+    let signal = try XCTUnwrap(FounderStrategyBoardSnapshot.read(store).tasks.first { $0.agentID == "stacks" })
+    XCTAssertEqual(signal.preparationSprint, 1)
+    XCTAssertTrue(signal.reviewed && signal.resolutionLocked && signal.evidenceRecorded)
+    let fields = Set(Mirror(reflecting: signal).children.compactMap(\.label))
+    XCTAssertEqual(fields, ["id", "title", "agentID", "submitted", "reviewed", "resolutionLocked", "evidenceRecorded", "preparationSprint"])
+    XCTAssertTrue(readiness(store).preparation.contains { $0.definition.owner == .stacks && $0.status == .complete && $0.detail.contains("Sprint 1") })
+    store.resetCareer()
+  }
+
+  func testSaveWithoutFieldDecodesEmptyAndDoesNotInventPastPreparation() throws {
+    let store = makeStore()
+    try complete("aurora", in: store)
+    store.commitSprint()
+    var json = try XCTUnwrap(JSONSerialization.jsonObject(with: try XCTUnwrap(UserDefaults.standard.data(forKey: GameStore.saveKey))) as? [String: Any])
+    var career = try XCTUnwrap(json["career"] as? [String: Any])
+    career.removeValue(forKey: "productLaunchPreparationState")
+    json["career"] = career
+    let legacy = try JSONSerialization.data(withJSONObject: json)
+    let decoded = try JSONDecoder().decode(SaveEnvelope.self, from: legacy)
+    XCTAssertTrue(decoded.career.productLaunchPreparationState.records.isEmpty)
+    UserDefaults.standard.set(legacy, forKey: GameStore.saveKey)
+    let restored = GameStore()
+    restored.continueCareer()
+    XCTAssertTrue(restored.canonicalProductLaunchPreparations.isEmpty)
+    restored.resetCareer()
+  }
+
+  func testLegacyCurrentCompletedWorkIsRetainedBeforeSprintReplacement() throws {
+    let store = makeStore()
+    try complete("aurora", in: store)
+    try complete("stacks", in: store)
+    var json = try XCTUnwrap(JSONSerialization.jsonObject(with: try XCTUnwrap(UserDefaults.standard.data(forKey: GameStore.saveKey))) as? [String: Any])
+    var career = try XCTUnwrap(json["career"] as? [String: Any])
+    career.removeValue(forKey: "productLaunchPreparationState")
+    json["career"] = career
+    UserDefaults.standard.set(try JSONSerialization.data(withJSONObject: json), forKey: GameStore.saveKey)
+    let restored = GameStore()
+    restored.continueCareer()
+    XCTAssertTrue(restored.productLaunchPreparationState.records.isEmpty)
+    XCTAssertEqual(restored.canonicalProductLaunchPreparations.count, 2)
+    restored.commitSprint()
+    XCTAssertEqual(restored.productLaunchPreparationState.records.count, 2)
+    XCTAssertEqual(restored.canonicalProductLaunchPreparations.map(\.sprint), [1, 1])
+    restored.resetCareer()
+  }
+
+  func testVentureAndCareerBoundariesClearPreparation() throws {
+    let store = makeStore()
+    try complete("aurora", in: store)
+    // Exercise the existing venture transition without playing eleven unrelated sprints.
+    store.entitlements = StaticEntitlementProvider(hasFounderPass: true)
+    store.sprint = 12
+    store.stats.runway = 100
+    store.stats.energy = 100
+    store.stats.trust = 100
+    store.commitSprint()
+    XCTAssertEqual(store.venture, 2)
+    XCTAssertTrue(store.productLaunchPreparationState.records.isEmpty)
+    XCTAssertTrue(store.canonicalProductLaunchPreparations.isEmpty)
+    store.confirmVentureThesisIfNeeded()
+    respond(in: store)
+    try complete("stacks", in: store)
+    XCTAssertEqual(store.canonicalProductLaunchPreparations.first?.venture, 2)
+    store.startCareer(seed: 811)
+    XCTAssertTrue(store.productLaunchPreparationState.records.isEmpty)
+    store.confirmVentureThesisIfNeeded()
+    respond(in: store)
+    try complete("brio", in: store)
+    store.resetCareer()
+    XCTAssertTrue(store.productLaunchPreparationState.records.isEmpty)
+  }
+
+  func testWrongVentureFutureAndMissingEvidenceRecordsAreRejectedOnReload() throws {
+    let store = makeStore()
+    try complete("aurora", in: store)
+    let envelope = try savedEnvelope()
+    for variant in 0..<3 {
+      var bad = envelope
+      if variant == 0 { bad.career.productLaunchPreparationState.records["aurora"]?.venture += 1 }
+      if variant == 1 { bad.career.productLaunchPreparationState.records["aurora"]?.sprint += 1 }
+      if variant == 2 { bad.career.evidence = [] }
+      // Exclude current-task fallback to isolate retained record validation.
+      bad.career.tasks = []
+      UserDefaults.standard.set(try JSONEncoder().encode(bad), forKey: GameStore.saveKey)
+      let restored = GameStore()
+      restored.continueCareer()
+      XCTAssertTrue(restored.productLaunchPreparationState.records.isEmpty)
+      XCTAssertTrue(restored.canonicalProductLaunchPreparations.isEmpty)
+    }
+    store.resetCareer()
+  }
+
+  private func makeStore() -> GameStore {
+    let store = GameStore()
+    store.resetCareer()
+    store.startCareer(seed: 18_180)
+    store.confirmVentureThesisIfNeeded()
+    respond(in: store)
+    return store
+  }
+
+  private func respond(in store: GameStore) {
+    if let choice = store.activeDilemma?.choices.first { store.selectDilemmaChoice(choice.id) }
+  }
+
+  private func readiness(_ store: GameStore) -> FounderInitiativeProjection {
+    FounderStrategyBoardPolicy.project(FounderStrategicInitiativeDefinition.all[0], snapshot: .read(store))
+  }
+
+  @discardableResult private func assign(_ agentID: String, in store: GameStore) throws -> UUID {
+    let task = try XCTUnwrap(store.tasks.first { $0.assignedAgentID == nil && !$0.isReviewed })
+    store.assign(agentID: agentID, to: task.id)
+    XCTAssertEqual(store.tasks.first { $0.id == task.id }?.assignedAgentID, agentID)
+    return task.id
+  }
+
+  @discardableResult private func complete(_ agentID: String, in store: GameStore) throws -> UUID {
+    let id = try assign(agentID, in: store)
+    store.review(taskID: id)
+    store.resolveReviewedTask(taskID: id, choice: .approve)
+    XCTAssertTrue(store.tasks.first { $0.id == id }?.resolutionLocked == true)
+    return id
+  }
+
+  private func savedEnvelope() throws -> SaveEnvelope {
+    try JSONDecoder().decode(SaveEnvelope.self, from: XCTUnwrap(UserDefaults.standard.data(forKey: GameStore.saveKey)))
   }
 }

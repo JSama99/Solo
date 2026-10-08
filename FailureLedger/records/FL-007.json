@@ -1,0 +1,58 @@
+{
+  "classification": "DESIGN_AMBIGUITY",
+  "detectionMethod": null,
+  "evidenceReferences": [
+    "EV-003",
+    "EV-004",
+    "EV-006"
+  ],
+  "expectedBehavior": "Player can distinguish abstract Runway from a cash-derived financial estimate.",
+  "failedApproaches": [],
+  "firstObservedDate": null,
+  "id": "FL-007",
+  "lessons": [
+    {
+      "acceptance": "ACCEPTED",
+      "evidenceReferences": [
+        "EV-003",
+        "EV-004",
+        "EV-006"
+      ],
+      "text": "Do not infer a cash-to-Runway conversion from conflicting labels."
+    }
+  ],
+  "observedBehavior": "Cash can rise while abstract Runway expires; screens use Runway for two meanings.",
+  "preventionRules": [
+    "DND-007"
+  ],
+  "relatedCanonRecords": [
+    "mechanic.runway",
+    "mechanic.revenue"
+  ],
+  "relatedFailureIds": [],
+  "relatedTests": [],
+  "reproductionConditions": null,
+  "requiredFutureGates": [
+    "Inspect both authorities and obtain an explicit design decision before changing financial mechanics."
+  ],
+  "resolutionDate": null,
+  "rootCause": null,
+  "rootCauseConfidence": "UNKNOWN",
+  "schemaVersion": "1",
+  "severity": "HIGH",
+  "status": "DESIGN_DECISION_REQUIRED",
+  "successfulCorrection": null,
+  "system": [
+    "finance",
+    "cash",
+    "runway",
+    "bankruptcy"
+  ],
+  "title": "Cash and Runway use ambiguous survival meanings",
+  "unknownInformation": [
+    "First observation and resolution dates not established by inspected evidence.",
+    "Whether positive cash should replenish abstract Runway requires an owner design decision; no accidental formula defect claimed."
+  ],
+  "visibility": "developer_only",
+  "whyExistingChecksMissedIt": null
+}

@@ -78,6 +78,23 @@ final class GameStore {
   /// The single persisted major-initiative operation. Its preparation is
   /// frozen before sprint commit and its canonical effects resolve once.
   private(set) var productLaunchOperation: ProductLaunchOperation?
+  private(set) var launchedProduct: LaunchedProductState?
+  private(set) var productLaunchPreparationState = ProductLaunchPreparationState()
+
+  var productTraction: ProductTractionPresentation? {
+    launchedProduct.map(ProductTractionEngine.presentation)
+  }
+
+  @discardableResult
+  func selectProductFocus(_ focus: ProductFocus, expectedCycle: Int) -> Bool {
+    guard stage == .game, careerOutcome == nil, !awaitingFounderPass,
+          let product = launchedProduct, product.nextCycle == expectedCycle,
+          product.pendingFocus == nil, attentionRemaining >= ProductTractionTuning.focusAttentionCost else { return false }
+    launchedProduct?.pendingFocus = focus
+    founderAttentionSpent += ProductTractionTuning.focusAttentionCost
+    saveCareer()
+    return true
+  }
   /// Persistent strategic emphasis for Aurora, Stacks and Brio. Workload is
   /// derived from these allocations plus canonical assignments, never stored
   /// as a competing agent-state truth.
@@ -665,13 +682,13 @@ final class GameStore {
       )
       alertMessage = reason
     }
-    if let publicEvent = FundingPublicMediaProjection.resolution(
+    if let projection = FundingPublicMediaProjection.resolution(
       opportunity: opportunity,
       outcome: outcome,
       venture: venture,
       sprint: sprint
-    ) {
-      _ = applyPublicMediaEvent(publicEvent, persist: false)
+    ), let decision = mediaNarrativeDecision(event: .publicFundingProgress(projection)) {
+      _ = applyPublicMediaEvent(decision.story, persist: false)
     }
     save()
     return true
@@ -713,15 +730,17 @@ final class GameStore {
           decision: "Completed the \(opportunity.name) milestone.",
           outcome: "Met the visible \(obligation.metric.title) target at \(fundingValueLabel(metric: obligation.metric, value: currentValue)) before the deadline."
         )
-        _ = applyPublicMediaEvent(
-          FundingPublicMediaProjection.milestoneMet(
+        guard let resolvedObligation = finance.fundingApplications.first(where: {
+          $0.opportunityID == application.opportunityID
+        })?.milestoneObligation else { continue }
+        if let projection = FundingPublicMediaProjection.milestoneMet(
             opportunity: opportunity,
-            obligation: obligation,
+            obligation: resolvedObligation,
             venture: venture,
             sprint: sprint
-          ),
-          persist: false
-        )
+          ), let decision = mediaNarrativeDecision(event: .publicFundingProgress(projection)) {
+          _ = applyPublicMediaEvent(decision.story, persist: false)
+        }
       } else if careerSprintIndex >= obligation.dueCareerSprint {
         guard finance.resolveFundingMilestone(
           opportunityID: application.opportunityID,
@@ -971,6 +990,8 @@ final class GameStore {
     processedCoverageEventIDs = []
     latestCoverageChange = nil
     productLaunchOperation = nil
+    launchedProduct = nil
+    productLaunchPreparationState = .init()
     agentOperations = .balanced
     techComHeadlines = []
     techComRivals = TechComEngine.rivals(seed: seed ?? 0x534F4C4F)
@@ -1836,6 +1857,9 @@ final class GameStore {
     tasks[taskIndex].result = result
     tasks[taskIndex].resolutionLocked = true
     recordEvidence(task: tasks[taskIndex], agent: agents[agentIndex], result: result)
+    if let completed = completedLaunchPreparation(task: tasks[taskIndex]) {
+      productLaunchPreparationState.retain(completed)
+    }
     sanitizeState()
     save()
   }
@@ -1846,6 +1870,11 @@ final class GameStore {
     if let blocker = commitBlockerMessage {
       alertMessage = blocker
       return
+    }
+    // Preserve completed current tasks from older saves before sprint replacement.
+    // This uses original results and the same validation as readiness/capture.
+    for completed in canonicalProductLaunchPreparations {
+      productLaunchPreparationState.retain(completed)
     }
 
     let dilemmaChoice = selectedDilemmaChoice
@@ -1990,14 +2019,15 @@ final class GameStore {
     effects = effects + rivalMoves.reduce(SimulationEffects()) { $0 + $1.playerEffects }
     apply(effects)
     for defect in surfacedDefects.sorted(by: { $0.id < $1.id }) {
-      _ = applyPublicMediaEvent(
-        LatentDefectPublicMediaProjection.surfaced(
+      if let projection = LatentDefectPublicMediaProjection.surfaced(
           defect,
           venture: venture,
-          sprint: sprint
+          sprint: sprint,
+          careerSprint: careerSprintIndex
         ),
-        persist: false
-      )
+        let decision = mediaNarrativeDecision(event: .surfacedLatentDefect(projection)) {
+        _ = applyPublicMediaEvent(decision.story, persist: false)
+      }
     }
     advanceOperatingTime(hours: 7 * 24)
     finance.beginSprint()
@@ -2110,6 +2140,7 @@ final class GameStore {
       deterministicSeed: SeededRandomNumberGenerator.mixed(seedKey)
     )
     commitSprint()
+    productLaunchPreparationState = .init() // The operation now owns its frozen preparation.
     productLaunchOperation?.state = .launchCheck
     saveCareer()
     return true
@@ -2188,18 +2219,23 @@ final class GameStore {
       return false
     }
     apply(result.effects)
-    _ = applyPublicMediaEvent(PublicMediaEvent(
-      id: "\(operation.id)-resolved",
-      program: result.overall == .breakout ? .founderSpotlight : .breaking,
-      tone: result.coverageDelta > 0 ? .favorable : result.coverageDelta < 0 ? .critical : .neutral,
-      headline: result.headline,
-      summary: "The public launch resolved \(result.overall.rawValue) with \(result.marketRating.rawValue) market and \(result.publicRating.rawValue) public reception.",
-      tickerItems: [result.headline.uppercased(), "SOLO PRODUCT LAUNCH", "MARKET \(result.marketRating.rawValue.uppercased())"],
-      coverageDelta: result.coverageDelta,
+    if launchedProduct == nil {
+      launchedProduct = ProductTractionEngine.launched(operation: operation, result: result,
+        type: productType, day: operatingCalendar.totalDays)
+    }
+    let publicOutcome = PublicLaunchOutcome(
+      sourceEventID: "\(operation.id)-resolved",
       venture: operation.preparation.venture,
       sprint: operation.preparation.sprint,
-      concernsPlayerCompany: true
-    ), persist: false)
+      overall: result.overall,
+      marketRating: result.marketRating,
+      publicRating: result.publicRating,
+      headline: result.headline,
+      coverageDelta: result.coverageDelta
+    )
+    if let decision = mediaNarrativeDecision(event: .productLaunchResolved(publicOutcome)) {
+      _ = applyPublicMediaEvent(decision.story, persist: false)
+    }
     productLaunchOperation?.result = result
     productLaunchOperation?.canonicalEffectApplicationCount += 1
     productLaunchOperation?.state = .resolved
@@ -2218,15 +2254,55 @@ final class GameStore {
     return true
   }
 
+  /// Shared validated source for both the Strategy Board and operation capture.
+  /// Current completed work also supports existing saves without retained state.
+  var canonicalProductLaunchPreparations: [ProductLaunchPreparationRecord] {
+    ProductLaunchPreparationState.agentIDs.compactMap { agentID in
+      let retained = productLaunchPreparationState.records[agentID].flatMap {
+        isValidLaunchPreparation($0) ? $0 : nil
+      }
+      let current = stage == .game
+        ? tasks.first(where: { $0.assignedAgentID == agentID }).flatMap(completedLaunchPreparation)
+        : nil
+      if let current, retained == nil || current.sprint >= retained!.sprint { return current }
+      return retained
+    }
+  }
+
+  var productLaunchCommitBlocker: String? {
+    if let operation = productLaunchOperation, operation.state != .resolved {
+      return "A Product Launch operation is already in progress."
+    }
+    return commitBlockerMessage
+  }
+
+  private func isValidLaunchPreparation(_ record: ProductLaunchPreparationRecord) -> Bool {
+    record.venture == venture && record.sprint > 0 && record.sprint <= sprint
+      && ProductLaunchPreparationState.agentIDs.contains(record.agentID)
+      && record.result.verificationState.reviewAttempted
+      && evidence.contains { $0.venture == record.venture && $0.sprint == record.sprint
+        && $0.taskInstanceID == record.taskID.uuidString && $0.reviewed }
+  }
+
+  private func completedLaunchPreparation(task: SoloTask) -> ProductLaunchPreparationRecord? {
+    guard let agentID = task.assignedAgentID,
+          ProductLaunchPreparationState.agentIDs.contains(agentID),
+          task.isReviewed, task.resolutionLocked, let result = task.result,
+          let resolution = task.resolution else { return nil }
+    let record = ProductLaunchPreparationRecord(venture: venture, sprint: sprint,
+      taskID: task.id, taskTitle: task.title, agentID: agentID,
+      urgency: task.urgency, result: result, resolution: resolution)
+    return isValidLaunchPreparation(record) ? record : nil
+  }
+
   private func captureProductLaunchPreparation() -> (snapshot: ProductLaunchPreparationSnapshot, truth: ProductLaunchResolutionTruth)? {
-    let evidenceIDs = Set(evidence.map(\.taskInstanceID))
+    let records = canonicalProductLaunchPreparations
     func preparation(for agentID: String) -> (ProductLaunchAgentPreparation, Int, Bool)? {
-      guard let task = tasks.first(where: { $0.assignedAgentID == agentID }),
-            task.isReviewed, task.resolutionLocked,
-            evidenceIDs.contains(task.id.uuidString), let result = task.result else { return nil }
+      guard let record = records.first(where: { $0.agentID == agentID }) else { return nil }
+      let result = record.result
       let visible = result.revealedActualQuality ?? result.reportedQuality
       let profile = agentOperations.profile(for: agentID)
-      let workload = AgentOperationsPolicy.workload(profile: profile, assignmentUrgency: task.urgency)
+      let workload = AgentOperationsPolicy.workload(profile: profile, assignmentUrgency: record.urgency)
       var risks: [String] = []
       let taskRisk = result.knownOperationalRisk.trimmingCharacters(in: .whitespacesAndNewlines)
       if !taskRisk.isEmpty && !taskRisk.lowercased().hasPrefix("no known") { risks.append(taskRisk) }
@@ -2241,7 +2317,7 @@ final class GameStore {
         risks.append("Brio public-response capacity is constrained")
       }
       let operationalAdjustment = AgentOperationsPolicy.productLaunchQualityAdjustment(
-        agentID: agentID, profile: profile, assignmentUrgency: task.urgency
+        agentID: agentID, profile: profile, assignmentUrgency: record.urgency
       )
       return (
         ProductLaunchAgentPreparation(
@@ -2311,6 +2387,7 @@ final class GameStore {
   private func advanceToNextVenture() {
     sprint = 1
     venture += 1
+    productLaunchPreparationState = .init()
     recallsShownThisVenture = 0
     activeRecall = nil
     forksUsedThisVenture = 0
@@ -2556,6 +2633,8 @@ final class GameStore {
     reportCache = []
     workSessions = []
     taskBacklog = []
+    launchedProduct = nil
+    productLaunchPreparationState = .init()
     founderAttentionSpent = 0
     restingAgentIDs = []
     statementSpent = 0
@@ -2621,16 +2700,6 @@ final class GameStore {
         kind: .rivalMove,
         headline: event.headline,
         body: "A traceable market discontinuity changed the active rival field.",
-        venture: venture,
-        sprint: sprint
-      ), at: 0)
-    }
-    for defect in latentDefects where defect.surfacesAtCareerSprint == careerSprintIndex {
-      feedPosts.insert(FeedPost(
-        id: "latent-\(defect.id)",
-        kind: .trendSignal,
-        headline: "A delayed defect surfaced",
-        body: defect.receipt,
         venture: venture,
         sprint: sprint
       ), at: 0)
@@ -3075,10 +3144,12 @@ final class GameStore {
   }
 
   func advanceOperatingTime(hours: Int) {
+    guard hours > 0 else { return }
     let startDay = operatingCalendar.totalDays
     operatingCalendar.advance(hours: hours)
     guard operatingCalendar.totalDays > startDay else { return }
     for day in (startDay + 1)...operatingCalendar.totalDays { closeOperatingDay(day) }
+    if launchedProduct != nil { saveCareer() }
   }
 
   private func closeOperatingDay(_ day: Int) {
@@ -3088,7 +3159,43 @@ final class GameStore {
     if progressionStore?.currentFacility == .founderLoft, day % 30 == 0 {
       recordExpense(id: "loft-monthly-\(day / 30)", category: .space, amount: OperatingCostTuning.founderLoftMonthlyObligation, source: "Founder Loft monthly lease and utilities", recurring: true, headquarters: .founderLoft)
     }
+    resolveProductTraction(on: day)
     finance.closeDay()
+  }
+
+  private func resolveProductTraction(on day: Int) {
+    guard careerOutcome == nil, let product = launchedProduct,
+          let next = ProductTractionEngine.step(product, day: day,
+            support: ProductTractionSupport(agents: agents, operations: agentOperations, tasks: tasks)),
+          let observation = next.history.last else { return }
+    let id = ProductTractionEngine.periodID(product, day: day)
+    // CompanyFinance is the only financial authority. Stable period IDs and
+    // product cursor independently prevent replayed revenue/expense effects.
+    if finance.apply(.init(id: id + "-revenue", kind: .revenue,
+      amount: observation.revenue, category: nil, simulationDay: day,
+      source: "Product customers · cycle \(observation.cycle)", isRecurring: true,
+      agentID: nil, headquarters: nil)) {
+      stats.revenue += observation.revenue
+    }
+    if observation.operatingCost > 0 {
+      _ = finance.apply(.init(id: id + "-focus", kind: .expense,
+        amount: observation.operatingCost, category: observation.focus == .grow ? .growth : .operations,
+        simulationDay: day, source: "Product focus · \(observation.focus?.title ?? "Maintain")",
+        isRecurring: false, agentID: nil, headquarters: nil))
+    }
+    stats.capital = finance.cash
+    launchedProduct = next
+    let evidenceID = ProductTractionEngine.evidenceID(product, day: day)
+    if !evidence.contains(where: { $0.id == evidenceID }) {
+      let visible = ProductTractionEngine.presentation(next)
+      evidence.insert(EvidenceEntry(id: evidenceID, venture: venture, sprint: sprint,
+        taskInstanceID: id, task: "Product customers · cycle \(observation.cycle)", agent: "Customer observations",
+        reviewed: false, evidenceVerified: false, verdict: "Observed customers",
+        note: visible.observation + " Revenue: $\(observation.revenue). " + visible.pricingEvidence,
+        reportedQuality: 0, actualQuality: nil, verificationState: .reported,
+        overclaimAmount: 0, evidenceCompleteness: visible.confidence == "Moderate" ? 60 : 30,
+        correlatedFailureIdentifier: nil, productObservation: observation), at: 0)
+    }
   }
 
   private func apply(_ save: CareerSave) {
@@ -3157,11 +3264,20 @@ final class GameStore {
     thesisHistory = save.thesisHistory
     awaitingThesisSelection = save.awaitingThesisSelection
     pendingChapterMilestone = save.pendingChapterMilestone
-    techComHeadlines = save.techComHeadlines
+    techComHeadlines = save.techComHeadlines.filter {
+      !MediaNarrativeDirector.isLegacyPrivateReviewHeadline($0.text)
+    }
     techComRivals = save.techComRivals.isEmpty ? TechComEngine.rivals(seed: UInt64(save.venture * 100 + save.sprint)) : save.techComRivals
-    publicMediaEvents = save.publicMediaEvents.filter(\.isPublic)
+    publicMediaEvents = save.publicMediaEvents.filter {
+      $0.isPublic && !MediaNarrativeDirector.isLegacyPrivateReviewHeadline($0.headline)
+    }
     processedCoverageEventIDs = save.processedCoverageEventIDs
     productLaunchOperation = save.productLaunchOperation
+    launchedProduct = save.launchedProduct
+    productLaunchPreparationState = save.productLaunchPreparationState
+    productLaunchPreparationState.records = productLaunchPreparationState.records.filter {
+      $0.key == $0.value.agentID && isValidLaunchPreparation($0.value)
+    }
     agentOperations = save.agentOperations
     latestCoverageChange = nil
     talentBoardRefreshes = save.talentBoardRefreshes
@@ -3622,22 +3738,27 @@ final class GameStore {
       .filter { $0.move != .steadyBuild }
       .sorted { abs($0.strengthBonus) > abs($1.strengthBonus) }
     for event in notable.prefix(2) {
-      let headline = TechComHeadline(
-        id: UUID(),
-        category: .rival,
-        text: event.headline,
-        venture: venture,
-        sprint: sprint
-      )
-      guard !techComHeadlines.contains(where: {
-        $0.text == headline.text && $0.venture == headline.venture && $0.sprint == headline.sprint
-      }) else { continue }
-      techComHeadlines.insert(headline, at: 0)
+      let projection = PublicRivalMoveNarrativeInput(event, venture: venture, sprint: sprint)
+      if let decision = mediaNarrativeDecision(event: .rivalMove(projection)) {
+        _ = applyPublicMediaEvent(decision.story, persist: false)
+      }
     }
-    techComHeadlines = Array(techComHeadlines.prefix(60))
   }
 
   func recordTechComHeadlines(events: [PresentationCoordinator.Event], snapshot: TechComSnapshot) {
+    for event in events {
+      guard case .review(_, let taskID, _, let result, _) = event else { continue }
+      let review = FounderReviewNarrativeInput(
+        sourceEventID: "founder-review-\(taskID.uuidString.lowercased())",
+        venture: snapshot.venture,
+        sprint: snapshot.sprint,
+        founderVisibleOutcome: FounderVisibleReviewOutcome(result.verificationState),
+        disclosure: .privateToFounder
+      )
+      if let decision = mediaNarrativeDecision(event: .founderReview(review)) {
+        _ = applyPublicMediaEvent(decision.story, persist: false)
+      }
+    }
     var generator = SeededRandomNumberGenerator(seed: UInt64(snapshot.venture * 10_000 + snapshot.sprint * 100 + techComHeadlines.count))
     let published = TechComEngine.headlines(snapshot: snapshot, events: events, generator: &generator)
     var unappliedCoverage = publicCoverageDelta(events: events)
@@ -3674,6 +3795,12 @@ final class GameStore {
     save()
   }
 
+  /// Continuity reads only the already-published public ledger, before mutation.
+  private func mediaNarrativeDecision(event: MediaNarrativeEvent) -> MediaNarrativeDecision? {
+    MediaNarrativeDirector.decide(event: event,
+      history: PublicNarrativeHistory(publicEvents: publicMediaEvents, before: event))
+  }
+
   /// The single authority for Coverage-changing media. Both publication and
   /// broadcast replay call this method; the stable event ledger makes those
   /// representations idempotent across navigation and save/load.
@@ -3704,13 +3831,8 @@ final class GameStore {
       switch event {
       case .sprint(_, let result):
         return CoverageTuning.delta(for: result)
-      case .review(_, _, _, let result, _):
-        switch result.verificationState {
-        case .overclaimed: return -6
-        case .driftDetected: return -7
-        case .confirmed where result.evidenceCompleteness >= 75: return 4
-        default: continue
-        }
+      case .review:
+        continue
       case .assignment:
         continue
       }
@@ -3825,6 +3947,8 @@ final class GameStore {
       operatingCalendar: operatingCalendar,
       workSessions: workSessions,
       productLaunchOperation: productLaunchOperation,
+      launchedProduct: launchedProduct,
+      productLaunchPreparationState: productLaunchPreparationState,
       agentOperations: agentOperations
     )
     let envelope = SaveEnvelope(version: Self.saveVersion, career: payload)

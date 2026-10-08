@@ -1,0 +1,72 @@
+{
+  "classification": "GAMEPLAY_REACHABILITY",
+  "detectionMethod": "Owner gameplay observation followed by source inspection and R7 production-path tests.",
+  "evidenceReferences": [
+    "EV-002",
+    "EV-001",
+    "EV-006",
+    "EV-007"
+  ],
+  "expectedBehavior": "Three reviewed preparations accumulate through ordinary play with two Attention per sprint.",
+  "failedApproaches": [
+    {
+      "approach": "Repeat more sprints without retained preparation",
+      "conditionsPermittingReconsideration": "A canonical persistence change, verified through production actions.",
+      "evidenceReferences": [
+        "EV-002"
+      ],
+      "observedOutcome": "Prior preparation vanished on task replacement.",
+      "reasonAttempted": "Attempt to complete all three launch tracks.",
+      "whyRejected": "Repeating the same state boundary cannot accumulate all tracks."
+    }
+  ],
+  "firstObservedDate": null,
+  "id": "FL-001",
+  "lessons": [
+    {
+      "acceptance": "ACCEPTED",
+      "evidenceReferences": [
+        "EV-002",
+        "EV-001",
+        "EV-006",
+        "EV-007"
+      ],
+      "text": "Do not declare gameplay reachability using fixture-installed state alone."
+    }
+  ],
+  "observedBehavior": "Three tracks required; replacing current-sprint tasks erased prior qualifying preparation.",
+  "preventionRules": [
+    "DND-001"
+  ],
+  "relatedCanonRecords": [
+    "rule.simulation_authority",
+    "rule.save_compatibility"
+  ],
+  "relatedFailureIds": [],
+  "relatedTests": [
+    "Tests/FounderDeskWorkspaceTests.swift"
+  ],
+  "reproductionConditions": "Normal career; three tracks; two Founder Attention each sprint; review costs one per task.",
+  "requiredFutureGates": [
+    "Reach the milestone through production player-action APIs under real resource limits, including two-Attention launch preparation across save/reload."
+  ],
+  "resolutionDate": null,
+  "rootCause": "Readiness and launch capture originally used current-sprint tasks; replacement prevented cross-sprint accumulation.",
+  "rootCauseConfidence": "SUPPORTED",
+  "schemaVersion": "1",
+  "severity": "HIGH",
+  "status": "RESOLVED",
+  "successfulCorrection": "GameStore retains reviewed preparation per venture; readiness and capture share those records.",
+  "system": [
+    "product launch",
+    "readiness",
+    "attention",
+    "progression"
+  ],
+  "title": "Product Launch unreachable across sprints",
+  "unknownInformation": [
+    "First observation and resolution dates not established by inspected evidence."
+  ],
+  "visibility": "developer_only",
+  "whyExistingChecksMissedIt": "Fixture-installed prepared state proved resolution, not ordinary reachability."
+}

@@ -195,8 +195,10 @@ class RuntimeGatewayTests(unittest.TestCase):
     def test_projection_record_count_unchanged(self):
         self.assertEqual(self.projection["record_count"], 7)
 
-    def test_projection_golden_hash_unchanged(self):
-        self.assertEqual(self.projection["projection_sha256"], "ce9ac2b5ef9cb3aafe88c5a571d146d033d7dcb42238f524087433b01d6cb6ae")
+    def test_projection_golden_hash_matches_corrected_director_manifest(self):
+        # The developer-only Director correction changes the manifest binding,
+        # while the runtime-safe record set and disclosure policy stay fixed.
+        self.assertEqual(self.projection["projection_sha256"], "dae7056b0c3cc5b2c4e02854478f81216169b785477f5096a45eb6b3f19fabc2")
 
 
 # Each generated method is a separate test case in unittest discovery, making the

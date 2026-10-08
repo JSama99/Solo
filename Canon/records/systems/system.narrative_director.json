@@ -1,13 +1,13 @@
 {
   "schema_version": "0.1", "id": "system.narrative_director", "type": "system",
   "title": "Narrative Director accepted architecture",
-  "summary": "The Narrative Director is the sole planned authority for narrative importance, reveal timing, channel, pacing, and arc intent; no centralized runtime Director is implemented yet.",
+  "summary": "The pure deterministic MediaNarrativeDirector is implemented for public launches, private Founder Review disclosure gating, surfaced latent defects, public rival moves, and public funding successes and completed funding milestones. Broader pacing and arc architecture remains accepted future work.",
   "status": "accepted", "authority": {"level": "P2", "kind": "accepted"},
   "validity": {"valid_from": "2026-10-03", "valid_until": null},
   "visibility": ["developer"],
-  "facts": {"runtime_state": "not_implemented", "authority_scope": "narrative decisions and intent", "worker_role": "candidate expression only"},
+  "facts": {"runtime_state": "implemented", "authority_scope": "narrative decisions and intent", "worker_role": "candidate expression only", "implemented_event_slices": ["public_product_launch_resolution", "founder_review_disclosure_gate", "surfaced_latent_defects", "rival_public_reactions", "public_funding_and_completed_funding_milestones"]},
   "relationships": [{"predicate": "governed_by", "target": "rule.narrative_worker_boundary"}, {"predicate": "governed_by", "target": "rule.narrative_disclosure"}],
   "constraints": ["Do not describe the accepted Director architecture as a production runtime authority until implemented and verified."],
-  "sources": [{"kind": "documentation", "path": "AGENTS.md"}],
+  "sources": [{"kind": "documentation", "path": "AGENTS.md"}, {"kind": "source_file", "path": "App/MediaNarrativeDirector.swift"}, {"kind": "source_file", "path": "App/GameStore.swift"}, {"kind": "source_file", "path": "App/SignalTVModels.swift"}, {"kind": "source_file", "path": "Tests/SignalTVTests.swift"}],
   "evidence": [], "supersedes": [], "superseded_by": [], "tags": ["narrative", "director", "architecture"]
 }

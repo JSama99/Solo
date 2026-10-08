@@ -1,0 +1,52 @@
+{
+  "classification": "ASSET_DEFORMATION",
+  "detectionMethod": null,
+  "evidenceReferences": [
+    "EV-002",
+    "EV-009"
+  ],
+  "expectedBehavior": "Shoulder deformation is accepted under representative motion.",
+  "failedApproaches": [],
+  "firstObservedDate": null,
+  "id": "FL-008",
+  "lessons": [
+    {
+      "acceptance": "NEEDS_REVIEW",
+      "evidenceReferences": [
+        "EV-009"
+      ],
+      "text": "Inspect topology and deformation evidence before repeating repairs; weight painting is not universally prohibited."
+    }
+  ],
+  "observedBehavior": "Surviving provenance records KEEP R1 and 7R-A/7R-B not selected; specific repair mechanisms not preserved.",
+  "preventionRules": [],
+  "relatedCanonRecords": [],
+  "relatedFailureIds": [],
+  "relatedTests": [],
+  "reproductionConditions": null,
+  "requiredFutureGates": [
+    "Recover primary rejected experiment evidence and representative owner deformation review."
+  ],
+  "resolutionDate": null,
+  "rootCause": null,
+  "rootCauseConfidence": "UNKNOWN",
+  "schemaVersion": "1",
+  "severity": "HIGH",
+  "status": "CANDIDATE",
+  "successfulCorrection": null,
+  "system": [
+    "founder",
+    "shoulder",
+    "sleeve",
+    "topology",
+    "deformation"
+  ],
+  "title": "Founder shoulder and sleeve topology repair history",
+  "unknownInformation": [
+    "First observation and resolution dates not established by inspected evidence.",
+    "Primary smoothing, sleeve geometry and underlayer experiment evidence missing.",
+    "Unsuitable topology as established cause is not proven by the surviving provenance."
+  ],
+  "visibility": "developer_only",
+  "whyExistingChecksMissedIt": null
+}

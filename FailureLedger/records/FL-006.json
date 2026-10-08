@@ -1,0 +1,58 @@
+{
+  "classification": "STATISTICAL_AGGREGATION",
+  "detectionMethod": null,
+  "evidenceReferences": [
+    "EV-003",
+    "EV-004",
+    "EV-005"
+  ],
+  "expectedBehavior": "Retention and confidence reflect observed customer exposure.",
+  "failedApproaches": [],
+  "firstObservedDate": null,
+  "id": "FL-006",
+  "lessons": [
+    {
+      "acceptance": "ACCEPTED",
+      "evidenceReferences": [
+        "EV-003",
+        "EV-004",
+        "EV-005"
+      ],
+      "text": "Do not average rates with unequal exposure denominators without justification."
+    }
+  ],
+  "observedBehavior": "0/1 and 13/16 periods produced an equal-period mean near 40%, despite pooled retention 13/17.",
+  "preventionRules": [
+    "DND-006"
+  ],
+  "relatedCanonRecords": [
+    "rule.hidden_truth"
+  ],
+  "relatedFailureIds": [],
+  "relatedTests": [
+    "Tests/CompanyFinanceTests.swift"
+  ],
+  "reproductionConditions": null,
+  "requiredFutureGates": [
+    "Test tiny versus large cohorts, equal exposures, confidence floors and hidden-truth invariance; describe exposures as observations, not unique customers."
+  ],
+  "resolutionDate": null,
+  "rootCause": "Equal averaging of rates ignored substantially different denominators.",
+  "rootCauseConfidence": "SUPPORTED",
+  "schemaVersion": "1",
+  "severity": "HIGH",
+  "status": "RESOLVED",
+  "successfulCorrection": "Pool retained and retention-eligible observations; require 20 exposure observations for Moderate confidence.",
+  "system": [
+    "product fit",
+    "retention",
+    "customer traction",
+    "confidence"
+  ],
+  "title": "Product Fit gave equal weight to unequal exposures",
+  "unknownInformation": [
+    "First observation and resolution dates not established by inspected evidence."
+  ],
+  "visibility": "developer_only",
+  "whyExistingChecksMissedIt": null
+}

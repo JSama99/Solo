@@ -1,0 +1,24 @@
+{
+  "branch": "codex/controlled-reconstruction",
+  "build": "PASS: generic iOS Simulator build; no launch or hosted tests",
+  "canon_manifest_sha256": "b7c6d656281fc24d63cf706a5129c2ee4c13fed88224d5f38303090ee95897aa",
+  "canon_records": 45,
+  "canon_tests": 357,
+  "canon_validation": "PASS",
+  "diff_check": "PASS",
+  "historical_test_counts_not_counted_as_f1": true,
+  "ledger_sha256": "bf16c7209683ecdb1f342fb64ee088dcaa1fd4a195bc8549c00a9e61d220d368",
+  "ledger_tests": 34,
+  "milestone": "F1",
+  "parent_commit": "4e0ff187d50c9b796002e08d36a52d4c63c32bdd",
+  "protected_sources_match_r7": true,
+  "r7_archives_sha256_verified": true,
+  "r7_files_unchanged_except_authorized_infrastructure": 6513,
+  "raw_log_hashes": {
+    "solo-f1-build.log": "d3b8c3a5b85d2aa522757bfe064759e2130e489c83810b8832040883de623a9d",
+    "solo-f1-canon-tests-final.log": "b7daf29015aab051dba27093543835024c2013bdd86da7df4d36fc2c65b1bc58",
+    "solo-f1-ledger-tests.log": "05365f6a1249626631d0f6e916e722de4838efd2b1396f74aa24049dcda5bcd2"
+  },
+  "registry_check": "PASS",
+  "verification_time_utc": "2026-10-08T22:57:43.434769+00:00"
+}

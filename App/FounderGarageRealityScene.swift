@@ -866,7 +866,10 @@ struct FounderGarageSpatialSpecification {
     let frontBayZone = FounderGaragePlanarBounds(center: [1.62, 0.85], size: [1.85, 0.75])
     let shelvingZone = FounderGaragePlanarBounds(center: [-2.20, -2.00], size: [0.50, 1.40])
     let doorClearance = FounderGaragePlanarBounds(center: [0, 2.20], size: [2.90, 1.00])
-    let signalTV = FounderGarageSpatialPose(position: [-1.45, 1.70, rearWallFrontZ + 0.04], facingDirection: [0, 0, 1])
+    // The authored left shelving occludes the old procedural TV anchor.
+    // Mount above the clear rear-wall span, keeping the existing interaction
+    // target and camera focus tied to this single spatial authority.
+    let signalTV = FounderGarageSpatialPose(position: [-0.05, 2.12, rearWallFrontZ + 0.16], facingDirection: [0, 0, 1])
     let fundingBoard = FounderGarageSpatialPose(position: [1.55, 1.70, rearWallFrontZ + 0.03], facingDirection: [0, 0, 1])
     let door = FounderGarageSpatialPose(position: authored.doorMouth, facingDirection: [0, 0, -1])
     let secondWorkstationApproach = FounderGarageSpatialPose(
@@ -1112,7 +1115,11 @@ struct FounderGarageSpatialSpecification {
     if !objectPoints.allSatisfy({ roomBounds.contains([$0.x, $0.z]) }) { failures.append("object outside room") }
     if workstation.deskHeight <= 0 || anchors.desk.position.y != 0 { failures.append("desk floor relationship") }
     let rearWallFrontZ = architecture.rearWall.position.z + room.wallThickness / 2
-    if abs(anchors.signalTV.position.z - (rearWallFrontZ + media.signalTV.z / 2)) > 0.001
+    // A bounded wall bracket clears the authored conduit without allowing a
+    // freestanding screen or a panel intersecting the wall/ceiling.
+    let tvWallOffset = anchors.signalTV.position.z - rearWallFrontZ
+    if tvWallOffset < media.signalTV.z / 2 - 0.001 || tvWallOffset > 0.161
+      || anchors.signalTV.position.y + media.signalTV.y / 2 > room.ceilingHeight
       || abs(anchors.fundingBoard.position.z - (rearWallFrontZ + media.fundingBoard.z / 2)) > 0.001 {
       failures.append("rear wall media")
     }
@@ -3606,6 +3613,8 @@ final class FounderGarageRealityWorld {
   let exteriorPracticalLight = PointLight()
   let environmentLight = Entity()
   private var environmentResource: EnvironmentResource?
+  @ObservationIgnored private(set) var signalTVStory: PublicMediaEvent?
+  @ObservationIgnored private(set) var signalTVTextureRefreshCount = 0
   private(set) var environmentTimeState = FounderEnvironmentLightingConfiguration.defaultState
   @ObservationIgnored private(set) var architectureLoadDiagnostics = FounderGarageArchitectureLoadDiagnostics()
   private let quality: FounderGarageRealityQuality
@@ -3678,6 +3687,31 @@ final class FounderGarageRealityWorld {
     architectureLoadTask?.cancel()
     accessibilityActivationSubscription?.cancel()
     cameraUpdateSubscription?.cancel()
+  }
+
+  /// Public presentation only. The same Slice 7 selector drives wall and viewer.
+  func applySignalTVBroadcast(_ events: [PublicMediaEvent]) throws {
+    let story = NarrativeStoryCompetition.selectPrimaryStory(from: events)
+      ?? SignalTVProgramming.marketPulse(venture: 1, sprint: 1)
+    guard story != signalTVStory else { return }
+    guard let image = SignalTVScreenImage.render(event: story) else { return }
+    let texture = try TextureResource(image: image, options: .init(semantic: .color))
+    var material = UnlitMaterial()
+    material.color = .init(tint: .white, texture: .init(texture))
+    let screen: ModelEntity
+    if let existing = entities.signalTV.findEntity(named: "SignalTV.Broadcast.Screen") as? ModelEntity {
+      screen = existing
+      screen.model?.materials = [material]
+    } else {
+      screen = ModelEntity(mesh: .generatePlane(width: spatialSpecification.media.signalTV.x - 0.08,
+        height: spatialSpecification.media.signalTV.y - 0.08), materials: [material])
+      screen.name = "SignalTV.Broadcast.Screen"
+      screen.position = [0, 0, spatialSpecification.media.signalTV.z / 2 + 0.002]
+      entities.signalTV.addChild(screen)
+    }
+    entities.signalTV.isEnabled = true
+    signalTVStory = story
+    signalTVTextureRefreshCount += 1
   }
 
   func attachRoot(using add: (Entity) -> Void) {
@@ -4252,7 +4286,8 @@ final class FounderGarageRealityWorld {
     entities.iPad.isEnabled = true
     activeGarageArchitectureAdapter.rig.visualRoot
       .findEntity(named: "FounderLaptop")?.isEnabled = isVisible
-    entities.signalTV.isEnabled = isVisible
+    // V8 has no authored broadcast display; retain the canonical mounted TV.
+    entities.signalTV.isEnabled = true
     entities.fundingBoard.isEnabled = isVisible
     for child in entities.founderComputer.children
       where child.id != entities.founderComputerInteractionTarget.id {
@@ -5231,7 +5266,8 @@ struct FounderGarageCameraConfiguration {
     case .strategyBoard:
       position = eye; lookTarget = spatial.anchors.fundingBoard.position; fov = 54
     case .signalTV:
-      position = eye; lookTarget = spatial.anchors.signalTV.position; fov = 55
+      // TV-only wider lens retains the seated eye and fits portrait screen edges.
+      position = eye; lookTarget = spatial.anchors.signalTV.position; fov = 75
     case .server:
       position = eye; lookTarget = spatial.productionAnchors?.agentDeskSurface ?? spatial.anchors.desk.position; fov = 55
     }

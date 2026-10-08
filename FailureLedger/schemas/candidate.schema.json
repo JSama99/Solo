@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "actionTrace": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "observedResult": {
+            "minLength": 1,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "parameters": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "action",
+          "parameters",
+          "observedResult"
+        ],
+        "type": "object"
+      },
+      "minItems": 0,
+      "type": "array"
+    },
+    "authority": {
+      "enum": [
+        "observation_only"
+      ],
+      "type": "string"
+    },
+    "evidenceReferences": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "[0-9a-f]{64}",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "expectedBehavior": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "id": {
+      "pattern": "CF-[a-z0-9._-]+",
+      "type": "string"
+    },
+    "invariantViolation": {
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "missionId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "observedBehavior": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "reproductionStatus": {
+      "enum": [
+        "NOT_REPLAYED",
+        "REPRODUCED",
+        "NOT_REPRODUCED",
+        "INFRASTRUCTURE_FAILURE"
+      ],
+      "type": "string"
+    },
+    "reviewStatus": {
+      "enum": [
+        "CANDIDATE"
+      ],
+      "type": "string"
+    },
+    "scenarioId": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "schemaVersion": {
+      "enum": [
+        "1"
+      ],
+      "type": "string"
+    },
+    "seed": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "sourceFingerprint": {
+      "pattern": "[0-9a-f]{64}",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "missionId",
+    "scenarioId",
+    "seed",
+    "sourceFingerprint",
+    "actionTrace",
+    "expectedBehavior",
+    "observedBehavior",
+    "invariantViolation",
+    "evidenceReferences",
+    "reproductionStatus",
+    "reviewStatus",
+    "authority"
+  ],
+  "title": "candidate v1",
+  "type": "object"
+}

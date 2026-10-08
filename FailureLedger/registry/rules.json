@@ -1,0 +1,263 @@
+[
+  {
+    "acceptance": "ACCEPTED",
+    "applicability": [
+      "gameplay",
+      "product launch",
+      "progression",
+      "onboarding"
+    ],
+    "authority": "development_prevention_not_canon",
+    "evidenceReferences": [
+      "EV-002",
+      "EV-001",
+      "EV-006",
+      "EV-007"
+    ],
+    "futureVerificationGate": "Reach the milestone through production player-action APIs under real resource limits, including two-Attention launch preparation across save/reload.",
+    "id": "DND-001",
+    "requiredExceptionEvidence": "New evidence and explicit engineering/owner review showing the proposed exception preserves the authoritative contract.",
+    "review": "F1 engineering review: supported by the listed inspected evidence; scoped development prevention only. No Canon promotion or gameplay authority.",
+    "shortProhibition": "Do not declare gameplay reachability using fixture-installed state alone.",
+    "supportingFailureIds": [
+      "FL-001"
+    ]
+  },
+  {
+    "acceptance": "ACCEPTED",
+    "applicability": [
+      "hosted XCTest",
+      "Chaos Crew",
+      "simulator saves"
+    ],
+    "authority": "development_prevention_not_canon",
+    "evidenceReferences": [
+      "EV-002",
+      "EV-008",
+      "EV-001"
+    ],
+    "futureVerificationGate": "Positively identify an authorized dedicated lab by stable device identity before any hosted destructive test.",
+    "id": "DND-002",
+    "requiredExceptionEvidence": "Explicitly authorized expendable lab identity and isolated save namespace; device model alone is insufficient.",
+    "review": "F1 engineering review: supported by the listed inspected evidence; scoped development prevention only. No Canon promotion or gameplay authority.",
+    "shortProhibition": "Do not run destructive hosted tests on owner-review or unverified destinations.",
+    "supportingFailureIds": [
+      "FL-002"
+    ]
+  },
+  {
+    "acceptance": "ACCEPTED",
+    "applicability": [
+      "milestones",
+      "release",
+      "worktrees"
+    ],
+    "authority": "development_prevention_not_canon",
+    "evidenceReferences": [
+      "EV-001",
+      "EV-017"
+    ],
+    "futureVerificationGate": "Preserve source provenance and a durable checkpoint, then independently restore and verify source fingerprints.",
+    "id": "DND-003",
+    "requiredExceptionEvidence": "New evidence and explicit engineering/owner review showing the proposed exception preserves the authoritative contract.",
+    "review": "F1 engineering review: supported by the listed inspected evidence; scoped development prevention only. No Canon promotion or gameplay authority.",
+    "shortProhibition": "Do not equate passing tests with recoverable source.",
+    "supportingFailureIds": [
+      "FL-003"
+    ]
+  },
+  {
+    "acceptance": "ACCEPTED",
+    "applicability": [
+      "customer traction",
+      "economy tuning",
+      "Chaos Crew"
+    ],
+    "authority": "development_prevention_not_canon",
+    "evidenceReferences": [
+      "EV-003",
+      "EV-004",
+      "EV-005",
+      "EV-001"
+    ],
+    "futureVerificationGate": "Evaluate matched-seed multi-policy distributions and switching strategies with costs, acquisition, churn and revenue.",
+    "id": "DND-004",
+    "requiredExceptionEvidence": "New evidence and explicit engineering/owner review showing the proposed exception preserves the authoritative contract.",
+    "review": "F1 engineering review: supported by the listed inspected evidence; scoped development prevention only. No Canon promotion or gameplay authority.",
+    "shortProhibition": "Do not accept balance from isolated local tuning alone.",
+    "supportingFailureIds": [
+      "FL-004"
+    ]
+  },
+  {
+    "acceptance": "ACCEPTED",
+    "applicability": [
+      "research",
+      "simulation progress",
+      "persistence"
+    ],
+    "authority": "development_prevention_not_canon",
+    "evidenceReferences": [
+      "EV-003",
+      "EV-004",
+      "EV-005"
+    ],
+    "futureVerificationGate": "Test lowest nonzero support, zero support, variable effort and save/reload conservation over multiple cycles.",
+    "id": "DND-005",
+    "requiredExceptionEvidence": "New evidence and explicit engineering/owner review showing the proposed exception preserves the authoritative contract.",
+    "review": "F1 engineering review: supported by the listed inspected evidence; scoped development prevention only. No Canon promotion or gameplay authority.",
+    "shortProhibition": "Do not discard legitimate fractional effort in repeated progress systems.",
+    "supportingFailureIds": [
+      "FL-005"
+    ]
+  },
+  {
+    "acceptance": "ACCEPTED",
+    "applicability": [
+      "product fit",
+      "retention",
+      "confidence"
+    ],
+    "authority": "development_prevention_not_canon",
+    "evidenceReferences": [
+      "EV-003",
+      "EV-004",
+      "EV-005"
+    ],
+    "futureVerificationGate": "Test tiny versus large cohorts, equal exposures, confidence floors and hidden-truth invariance; describe exposures as observations, not unique customers.",
+    "id": "DND-006",
+    "requiredExceptionEvidence": "New evidence and explicit engineering/owner review showing the proposed exception preserves the authoritative contract.",
+    "review": "F1 engineering review: supported by the listed inspected evidence; scoped development prevention only. No Canon promotion or gameplay authority.",
+    "shortProhibition": "Do not average rates with unequal exposure denominators without justification.",
+    "supportingFailureIds": [
+      "FL-006"
+    ]
+  },
+  {
+    "acceptance": "ACCEPTED",
+    "applicability": [
+      "finance",
+      "runway UI",
+      "bankruptcy"
+    ],
+    "authority": "development_prevention_not_canon",
+    "evidenceReferences": [
+      "EV-003",
+      "EV-004",
+      "EV-006"
+    ],
+    "futureVerificationGate": "Inspect both authorities and obtain an explicit design decision before changing financial mechanics.",
+    "id": "DND-007",
+    "requiredExceptionEvidence": "New evidence and explicit engineering/owner review showing the proposed exception preserves the authoritative contract.",
+    "review": "F1 engineering review: supported by the listed inspected evidence; scoped development prevention only. No Canon promotion or gameplay authority.",
+    "shortProhibition": "Do not infer a cash-to-Runway conversion from conflicting labels.",
+    "supportingFailureIds": [
+      "FL-007"
+    ]
+  },
+  {
+    "acceptance": "ACCEPTED",
+    "applicability": [
+      "rigging",
+      "retargeting",
+      "animation assets"
+    ],
+    "authority": "development_prevention_not_canon",
+    "evidenceReferences": [
+      "EV-010",
+      "EV-011"
+    ],
+    "futureVerificationGate": "Compare rest poses, lengths, deform roles and modular/facial interfaces; prove transfer on a copy before production promotion.",
+    "id": "DND-008",
+    "requiredExceptionEvidence": "New evidence and explicit engineering/owner review showing the proposed exception preserves the authoritative contract.",
+    "review": "F1 engineering review: supported by the listed inspected evidence; scoped development prevention only. No Canon promotion or gameplay authority.",
+    "shortProhibition": "Do not infer motion-transfer compatibility from bone names and hierarchy alone.",
+    "supportingFailureIds": [
+      "FL-009"
+    ]
+  },
+  {
+    "acceptance": "ACCEPTED",
+    "applicability": [
+      "Atlantis import",
+      "asset optimization"
+    ],
+    "authority": "development_prevention_not_canon",
+    "evidenceReferences": [
+      "EV-012",
+      "EV-013"
+    ],
+    "futureVerificationGate": "Measure import stages on target hardware and preserve semantic roots, bounds, interaction and streaming contracts.",
+    "id": "DND-009",
+    "requiredExceptionEvidence": "New evidence and explicit engineering/owner review showing the proposed exception preserves the authoritative contract.",
+    "review": "F1 engineering review: supported by the listed inspected evidence; scoped development prevention only. No Canon promotion or gameplay authority.",
+    "shortProhibition": "Do not remove validation or flatten interactive semantics based only on package size or simulator timing.",
+    "supportingFailureIds": [
+      "FL-010"
+    ]
+  },
+  {
+    "acceptance": "ACCEPTED",
+    "applicability": [
+      "visual",
+      "gameplay",
+      "release milestones"
+    ],
+    "authority": "development_prevention_not_canon",
+    "evidenceReferences": [
+      "EV-014",
+      "EV-015",
+      "EV-001"
+    ],
+    "futureVerificationGate": "Separately record technical results and explicit human acceptance for the actual route and relevant form factors.",
+    "id": "DND-010",
+    "requiredExceptionEvidence": "New evidence and explicit engineering/owner review showing the proposed exception preserves the authoritative contract.",
+    "review": "F1 engineering review: supported by the listed inspected evidence; scoped development prevention only. No Canon promotion or gameplay authority.",
+    "shortProhibition": "Do not claim human acceptance from automated PASS.",
+    "supportingFailureIds": [
+      "FL-011"
+    ]
+  },
+  {
+    "acceptance": "ACCEPTED",
+    "applicability": [
+      "Canon integration",
+      "Coverage",
+      "public media"
+    ],
+    "authority": "development_prevention_not_canon",
+    "evidenceReferences": [
+      "EV-016",
+      "EV-006"
+    ],
+    "futureVerificationGate": "Surface both sources and obtain a bounded authority decision; preserve existing implementation until authorized.",
+    "id": "DND-011",
+    "requiredExceptionEvidence": "New evidence and explicit engineering/owner review showing the proposed exception preserves the authoritative contract.",
+    "review": "F1 engineering review: supported by the listed inspected evidence; scoped development prevention only. No Canon promotion or gameplay authority.",
+    "shortProhibition": "Do not silently resolve an inherited Canon/production authority discrepancy.",
+    "supportingFailureIds": [
+      "FL-013"
+    ]
+  },
+  {
+    "acceptance": "ACCEPTED",
+    "applicability": [
+      "garage",
+      "atlantis traversal",
+      "collision"
+    ],
+    "authority": "development_prevention_not_canon",
+    "evidenceReferences": [
+      "EV-014",
+      "EV-015"
+    ],
+    "futureVerificationGate": "Verify ready authored bounds, obstacle corners, world/root continuity and repeated physical routes on both form factors.",
+    "id": "DND-012",
+    "requiredExceptionEvidence": "New evidence and explicit engineering/owner review showing the proposed exception preserves the authoritative contract.",
+    "review": "F1 engineering review: supported by the listed inspected evidence; scoped development prevention only. No Canon promotion or gameplay authority.",
+    "shortProhibition": "Do not qualify traversal using provisional bounds or a single platform.",
+    "supportingFailureIds": [
+      "FL-014"
+    ]
+  }
+]

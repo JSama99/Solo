@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "items": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "pattern": "EV-[0-9]{3}",
+        "type": "string"
+      },
+      "kind": {
+        "enum": [
+          "PRIMARY_SOURCE",
+          "HISTORICAL_REPORT",
+          "RETROSPECTIVE_REPORT",
+          "OWNER_STATEMENT",
+          "REQUEST_WITH_EVIDENCE_GAP"
+        ],
+        "type": "string"
+      },
+      "locator": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "path": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "scope": {
+        "enum": [
+          "current_source",
+          "historical_evidence_not_current_test"
+        ],
+        "type": "string"
+      },
+      "sha256": {
+        "pattern": "[0-9a-f]{64}",
+        "type": "string"
+      },
+      "summary": {
+        "minLength": 1,
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "kind",
+      "path",
+      "sha256",
+      "locator",
+      "summary",
+      "scope"
+    ],
+    "type": "object"
+  },
+  "minItems": 1,
+  "title": "evidence v1",
+  "type": "array"
+}

@@ -71,6 +71,28 @@ struct TechComRankingEntry: Identifiable, Equatable {
 enum TechComEngine {
   static let maximumHeadlinesPerSprint = 3
 
+  /// Rival actions reflect the authorized ledger. Historical public headline
+  /// copy remains readable, but cannot duplicate a newly authorized story.
+  static func mergedRivalHeadlines(
+    headlines: [TechComHeadline], publicEvents: [PublicMediaEvent]
+  ) -> [TechComHeadline] {
+    var seen = Set<String>()
+    let stories = publicEvents.filter {
+      $0.isPublic && $0.program == .rivalWatch && seen.insert($0.id).inserted
+    }
+    let reflected = stories.map {
+      TechComHeadline(id: stableHeadlineID($0.id), category: .rival,
+        text: $0.headline, venture: $0.venture, sprint: $0.sprint, publicEventID: $0.id)
+    }
+    let existing = headlines.filter { headline in
+      headline.category == .rival && !stories.contains {
+        $0.id == headline.publicEventID
+          || ($0.headline == headline.text && $0.venture == headline.venture && $0.sprint == headline.sprint)
+      }
+    }
+    return Array((reflected + existing).prefix(60))
+  }
+
   /// Reflects the canonical public ledger in Tech.com without writing a second
   /// persisted headline or consuming simulation randomness.
   static func mergedOwnCompanyHeadlines(
@@ -79,7 +101,11 @@ enum TechComEngine {
   ) -> [TechComHeadline] {
     var seenPublicIDs = Set<String>()
     let publicHeadlines = publicEvents
-      .filter { $0.isPublic && $0.concernsPlayerCompany && seenPublicIDs.insert($0.id).inserted }
+      .filter {
+        $0.isPublic && $0.concernsPlayerCompany && $0.program != .rivalWatch
+          && !MediaNarrativeDirector.isLegacyPrivateReviewHeadline($0.headline)
+          && seenPublicIDs.insert($0.id).inserted
+      }
       .map { event in
         TechComHeadline(
           id: stableHeadlineID(event.id),
@@ -93,6 +119,7 @@ enum TechComEngine {
     let publicIDs = Set(publicHeadlines.compactMap(\.publicEventID))
     let existing = headlines.filter {
       $0.category == .ownCompany
+        && !MediaNarrativeDirector.isLegacyPrivateReviewHeadline($0.text)
         && ($0.publicEventID.map { !publicIDs.contains($0) } ?? true)
     }
     return Array((publicHeadlines + existing).prefix(60))
@@ -142,12 +169,14 @@ enum TechComEngine {
     case .assignment(_, let taskID, let agentID, _):
       guard let task = snapshot.tasks.first(where: { $0.id == taskID }), let agent = snapshot.agents.first(where: { $0.id == agentID }) else { return nil }
       text = "\(agent.name) takes on \(task.title) at SOLO"
-    case .review(_, let taskID, let agentID, let result, _):
-      guard let task = snapshot.tasks.first(where: { $0.id == taskID }), let agent = snapshot.agents.first(where: { $0.id == agentID }) else { return nil }
-      if let actual = result.actualQuality, result.overclaimAmount > 0 { text = "SOLO review finds \(agent.name)'s \(task.title) overclaimed by \(result.overclaimAmount): actual \(actual)" }
-      else { text = "SOLO verifies \(agent.name)'s \(task.title): \(result.verificationState.label)" }
+    case .review:
+      // Founder-visible review truth is private unless a separate production
+      // disclosure event supplies authorized public facts to the ledger.
+      return nil
     case .sprint(_, let result):
-      text = "SOLO closes sprint \(result.sprint): \(result.headline) (\(result.revenueDelta >= 0 ? "+" : "")$\(result.revenueDelta) revenue)"
+      // VisibleSprintResult.headline can summarize Founder-private review
+      // findings. Publish only the already-public aggregate revenue change.
+      text = "SOLO closes sprint \(result.sprint) (\(result.revenueDelta >= 0 ? "+" : "")$\(result.revenueDelta) revenue)"
     }
     return TechComHeadline(id: UUID(), category: .ownCompany, text: text, venture: snapshot.venture, sprint: snapshot.sprint)
   }

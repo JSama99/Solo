@@ -96,6 +96,16 @@ struct FounderComputerScreen: View {
           )
           .id("viewport")
           .founderEntrance(order: 0, alreadyPresented: hasPresentedRoster)
+          if let product = store.productTraction {
+            ProductTractionCard(product: product,
+              attentionRemaining: store.attentionRemaining,
+              canChoose: store.stage == .game && store.careerOutcome == nil && !store.awaitingFounderPass,
+              onFocus: { focus in
+                if store.selectProductFocus(focus, expectedCycle: product.nextCycle) {
+                  announce("\(focus.title) selected for product cycle \(product.nextCycle).")
+                }
+              })
+          }
           evidenceDrawer
             .id(FounderComputerWorkspaceTarget.evidence.rawValue)
             .founderEntrance(order: 1, alreadyPresented: hasPresentedRoster)
@@ -676,6 +686,59 @@ struct FounderComputerScreen: View {
   /// discover by exploring the screen again.
   private func announce(_ text: String) {
     AccessibilityNotification.Announcement(text).post()
+  }
+}
+
+/// Observed product results only; no raw product or agent truth enters this UI.
+struct ProductTractionCard: View {
+  let product: ProductTractionPresentation
+  let attentionRemaining: Int
+  let canChoose: Bool
+  let onFocus: (ProductFocus) -> Void
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Label("PRODUCT · \(product.name)", systemImage: "shippingbox.fill")
+        .font(.headline).accessibilityAddTraits(.isHeader)
+      Text(product.segment).font(.caption).foregroundStyle(.secondary)
+      Text("\(product.customers) customers · \(product.payingCustomers) paying")
+        .font(.subheadline.weight(.semibold))
+      Text("Customer revenue: \(product.revenue.formatted(.currency(code: "USD").precision(.fractionLength(0)))) / last 7-day cycle")
+        .font(.subheadline)
+      Text("PRODUCT FIT: \(product.fit.rawValue.uppercased()) · Confidence: \(product.confidence)")
+        .font(.caption.weight(.bold)).foregroundStyle(SoloTheme.cyan)
+      Text(product.observation).font(.subheadline)
+      Text(product.pricingEvidence).font(.caption).foregroundStyle(.secondary)
+      Divider()
+      Text("Cycle \(product.nextCycle) resolves on operating day \(product.nextCycleDay). Advance company operating time through your usual work and sprint commitments.")
+        .font(.caption).foregroundStyle(.secondary)
+      if let focus = product.chosenFocus {
+        Label("Focus locked: \(focus.title)", systemImage: "checkmark.circle.fill")
+          .font(.subheadline.weight(.semibold))
+      } else {
+        Text("Choose one focus · 1 Founder Attention").font(.subheadline.weight(.semibold))
+        ForEach(ProductFocus.allCases) { focus in
+          Button { onFocus(focus) } label: {
+            VStack(alignment: .leading, spacing: 3) {
+              Text(focus.title).font(.subheadline.weight(.semibold))
+              Text(focus.tradeoff).font(.caption).foregroundStyle(.secondary)
+              Text("$\(focus.operatingCost) operating cost this cycle").font(.caption).foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .padding(8)
+            .background(.white.opacity(0.04), in: .rect(cornerRadius: 8))
+          }
+          .buttonStyle(.plain)
+          .disabled(!canChoose || attentionRemaining < ProductTractionTuning.focusAttentionCost)
+          .accessibilityIdentifier("product-focus-\(focus.rawValue)")
+        }
+        Text("Without a choice, existing agent operating plans continue with no extra product-focus spend.")
+          .font(.caption).foregroundStyle(.secondary)
+      }
+    }
+    .padding(14)
+    .background(SoloTheme.card, in: .rect(cornerRadius: 18))
+    .accessibilityIdentifier("founder-computer-product-traction")
   }
 }
 

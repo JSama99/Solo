@@ -356,6 +356,7 @@ struct FounderStrategyTaskSignal: Equatable, Sendable {
   var reviewed: Bool
   var resolutionLocked: Bool
   var evidenceRecorded: Bool
+  var preparationSprint: Int? = nil
 }
 
 struct FounderStrategyPublicRivalSignal: Equatable, Sendable {
@@ -380,15 +381,21 @@ struct FounderStrategyBoardSnapshot: Equatable, Sendable {
 
   @MainActor static func read(_ store: GameStore) -> Self {
     let evidenceTaskIDs = Set(store.evidence.map(\.taskInstanceID))
+    let preparations = store.canonicalProductLaunchPreparations
+    let completedSignals: [FounderStrategyTaskSignal] = preparations.map {
+      .init(id: $0.taskID, title: $0.taskTitle, agentID: $0.agentID,
+        submitted: true, reviewed: true, resolutionLocked: true,
+        evidenceRecorded: true, preparationSprint: $0.sprint)
+    }
     return .init(
       sprint: store.sprint,
       attentionRemaining: store.attentionRemaining,
       runway: store.stats.runway,
       cash: store.finance.cash,
-      canCommitSprint: store.canCommitSprint,
-      canonicalCommitBlocker: store.commitBlockerMessage,
-      tasks: store.tasks.compactMap { task in
-        guard let agentID = task.assignedAgentID else { return nil }
+      canCommitSprint: store.productLaunchCommitBlocker == nil,
+      canonicalCommitBlocker: store.productLaunchCommitBlocker,
+      tasks: completedSignals + store.tasks.compactMap { task in
+        guard let agentID = task.assignedAgentID, !preparations.contains(where: { $0.agentID == agentID }) else { return nil }
         return .init(
           id: task.id,
           title: task.title,
@@ -563,7 +570,7 @@ enum FounderStrategyBoardPolicy {
     guard task.resolutionLocked else {
       return .init(definition: definition, status: .blocked, detail: "\(task.title) was reviewed; choose its canonical resolution.")
     }
-    return .init(definition: definition, status: .complete, detail: "\(task.title) is reviewed and resolved.")
+    return .init(definition: definition, status: .complete, detail: task.preparationSprint.map { "\(task.title) is reviewed and resolved. Retained from Sprint \($0)." } ?? "\(task.title) is reviewed and resolved.")
   }
 }
 

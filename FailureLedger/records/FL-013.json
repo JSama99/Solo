@@ -1,0 +1,56 @@
+{
+  "classification": "AUTHORITY_CONFLICT",
+  "detectionMethod": null,
+  "evidenceReferences": [
+    "EV-016",
+    "EV-006"
+  ],
+  "expectedBehavior": "Coverage mutation guidance and production authority agree.",
+  "failedApproaches": [],
+  "firstObservedDate": null,
+  "id": "FL-013",
+  "lessons": [
+    {
+      "acceptance": "ACCEPTED",
+      "evidenceReferences": [
+        "EV-016",
+        "EV-006"
+      ],
+      "text": "Do not silently resolve an inherited Canon/production authority discrepancy."
+    }
+  ],
+  "observedBehavior": "Canon/AGENTS prescribe applyPublicMediaEvent, while commitSprint directly reduces Coverage for unresolved press inquiries.",
+  "preventionRules": [
+    "DND-011"
+  ],
+  "relatedCanonRecords": [
+    "mechanic.coverage",
+    "rule.simulation_authority"
+  ],
+  "relatedFailureIds": [],
+  "relatedTests": [],
+  "reproductionConditions": null,
+  "requiredFutureGates": [
+    "Surface both sources and obtain a bounded authority decision; preserve existing implementation until authorized."
+  ],
+  "resolutionDate": null,
+  "rootCause": null,
+  "rootCauseConfidence": "UNKNOWN",
+  "schemaVersion": "1",
+  "severity": "HIGH",
+  "status": "DESIGN_DECISION_REQUIRED",
+  "successfulCorrection": null,
+  "system": [
+    "coverage",
+    "media",
+    "canon",
+    "authority",
+    "sprint"
+  ],
+  "title": "Inherited Coverage mutation authority discrepancy",
+  "unknownInformation": [
+    "First observation and resolution dates not established by inspected evidence."
+  ],
+  "visibility": "developer_only",
+  "whyExistingChecksMissedIt": null
+}

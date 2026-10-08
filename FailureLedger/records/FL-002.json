@@ -1,0 +1,56 @@
+{
+  "classification": "ENVIRONMENT_ISOLATION",
+  "detectionMethod": "Owner statement preserved in C1 request; guarded current harness corroborates prevention, not the original invocation.",
+  "evidenceReferences": [
+    "EV-002",
+    "EV-008",
+    "EV-001"
+  ],
+  "expectedBehavior": "Hosted tests preserve owner careers.",
+  "failedApproaches": [],
+  "firstObservedDate": null,
+  "id": "FL-002",
+  "lessons": [
+    {
+      "acceptance": "ACCEPTED",
+      "evidenceReferences": [
+        "EV-002",
+        "EV-008",
+        "EV-001"
+      ],
+      "text": "Do not run destructive hosted tests on owner-review or unverified destinations."
+    }
+  ],
+  "observedBehavior": "Owner reports a hosted XCTest erased the review career.",
+  "preventionRules": [
+    "DND-002"
+  ],
+  "relatedCanonRecords": [],
+  "relatedFailureIds": [],
+  "relatedTests": [],
+  "reproductionConditions": null,
+  "requiredFutureGates": [
+    "Positively identify an authorized dedicated lab by stable device identity before any hosted destructive test."
+  ],
+  "resolutionDate": null,
+  "rootCause": null,
+  "rootCauseConfidence": "UNKNOWN",
+  "schemaVersion": "1",
+  "severity": "HIGH",
+  "status": "CONFIRMED",
+  "successfulCorrection": null,
+  "system": [
+    "hosted tests",
+    "simulator",
+    "career save",
+    "environment"
+  ],
+  "title": "Hosted XCTest erased owner career",
+  "unknownInformation": [
+    "First observation and resolution dates not established by inspected evidence.",
+    "Exact invocation, device ID, save diff and independent incident log unavailable.",
+    "Specific causal chain and original remediation cannot be established."
+  ],
+  "visibility": "developer_only",
+  "whyExistingChecksMissedIt": null
+}

@@ -1,0 +1,27 @@
+{
+  "actionTrace": [
+    {
+      "action": "synthetic-observation",
+      "observedResult": "contract example",
+      "parameters": {}
+    }
+  ],
+  "authority": "observation_only",
+  "evidenceReferences": [
+    {
+      "path": "FailureLedger/README.md",
+      "sha256": "a50bccaac7b5dce309dc46176e214d3c5d758004a847ace5b4222ab917ce17a6"
+    }
+  ],
+  "expectedBehavior": "Illustrative expected behavior; not an executed mission.",
+  "id": "CF-example.synthetic",
+  "invariantViolation": null,
+  "missionId": "example.contract.v1",
+  "observedBehavior": "Illustrative candidate only; no production failure claimed.",
+  "reproductionStatus": "NOT_REPLAYED",
+  "reviewStatus": "CANDIDATE",
+  "scenarioId": "synthetic-only",
+  "schemaVersion": "1",
+  "seed": 1,
+  "sourceFingerprint": "0000000000000000000000000000000000000000000000000000000000000000"
+}

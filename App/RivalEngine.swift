@@ -32,7 +32,7 @@ struct RivalStanding: Identifiable, Hashable {
 }
 
 /// A deterministic competitive action selected from an archetype-specific kit.
-enum RivalMove: String, CaseIterable, Codable, Hashable {
+enum RivalMove: String, CaseIterable, Codable, Hashable, Sendable {
   case steadyBuild
   case prBlitz
   case priceUndercut

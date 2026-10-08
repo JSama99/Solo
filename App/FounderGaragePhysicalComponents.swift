@@ -1307,7 +1307,15 @@ struct FounderStrategyBoardViewer: View {
   private var overviewContent: some View {
     VStack(alignment: .leading, spacing: 13) {
       readinessCard
-      Text("Product Launch coordinates the current sprint. Aurora, Stacks, and Brio still perform their work through Company Command; Founder review and the Evidence Ledger remain canonical.")
+      ForEach(Array(projection.blockers.enumerated()), id: \.offset) { _, blocker in
+        Label(blocker, systemImage: "exclamationmark.triangle.fill")
+          .font(.subheadline).foregroundStyle(SoloTheme.amber)
+          .fixedSize(horizontal: false, vertical: true)
+      }
+      Button("Open Product Launch controls", systemImage: "flag.checkered") { mode = .commit }
+        .buttonStyle(.bordered).frame(minHeight: 44)
+        .accessibilityHint("Shows the remaining launch requirements and Commit Initiative action.")
+      Text("Completed Aurora, Stacks, and Brio launch preparation carries across sprints in this venture. Work, Founder review, and the Evidence Ledger remain in Company Command.")
         .font(.subheadline).foregroundStyle(.secondary)
       ForEach(FounderStrategyTrack.allCases.filter { $0 != .capital }) { track in
         let items = projection.preparation.filter { $0.definition.track == track }

@@ -69,7 +69,9 @@ struct TechComScreen: View {
   }
 
   private var rivalHeadlines: [TechComHeadline] {
-    store.techComHeadlines.filter { $0.category == .rival }
+    TechComEngine.mergedRivalHeadlines(
+      headlines: store.techComHeadlines, publicEvents: store.publicMediaEvents
+    )
   }
 
   private var playerMarketPosition: Int? {

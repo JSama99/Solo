@@ -57,7 +57,9 @@ struct SoloUnicornRunApp: App {
     WindowGroup {
       Group {
         #if DEBUG
-        if let founderMotionReviewSection {
+        if ProcessInfo.processInfo.arguments.contains("--signal-tv-garage-review") {
+          SignalTVGarageReviewHost()
+        } else if let founderMotionReviewSection {
           FounderMotionReviewView(section: founderMotionReviewSection)
         } else if ProcessInfo.processInfo.arguments.contains("--founder-character-qa") {
           FounderCharacterQAView()

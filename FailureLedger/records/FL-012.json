@@ -1,0 +1,41 @@
+{
+  "classification": "RELEASE_READINESS",
+  "detectionMethod": null,
+  "evidenceReferences": [
+    "EV-002"
+  ],
+  "expectedBehavior": "Purchase-flow release readiness meets the review requirement.",
+  "failedApproaches": [],
+  "firstObservedDate": null,
+  "id": "FL-012",
+  "lessons": [],
+  "observedBehavior": null,
+  "preventionRules": [],
+  "relatedCanonRecords": [],
+  "relatedFailureIds": [],
+  "relatedTests": [],
+  "reproductionConditions": null,
+  "requiredFutureGates": [
+    "Locate original rejection and exact build/configuration evidence before attributing a purchase-flow cause."
+  ],
+  "resolutionDate": null,
+  "rootCause": null,
+  "rootCauseConfidence": "UNKNOWN",
+  "schemaVersion": "1",
+  "severity": "HIGH",
+  "status": "CANDIDATE",
+  "successfulCorrection": null,
+  "system": [
+    "app store",
+    "purchase",
+    "revenuecat",
+    "release"
+  ],
+  "title": "App Store purchase-flow Guideline 2.1(b) history",
+  "unknownInformation": [
+    "First observation and resolution dates not established by inspected evidence.",
+    "Original rejection text, verified deficiency, review date and successful remediation unavailable."
+  ],
+  "visibility": "developer_only",
+  "whyExistingChecksMissedIt": null
+}

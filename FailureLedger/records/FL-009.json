@@ -1,0 +1,56 @@
+{
+  "classification": "RIG_COMPATIBILITY",
+  "detectionMethod": null,
+  "evidenceReferences": [
+    "EV-010",
+    "EV-011"
+  ],
+  "expectedBehavior": "Motion transfer preserves rest/deform and modular interfaces.",
+  "failedApproaches": [],
+  "firstObservedDate": "2026-09-28",
+  "id": "FL-009",
+  "lessons": [
+    {
+      "acceptance": "ACCEPTED",
+      "evidenceReferences": [
+        "EV-010",
+        "EV-011"
+      ],
+      "text": "Do not infer motion-transfer compatibility from bone names and hierarchy alone."
+    }
+  ],
+  "observedBehavior": "55 names and hierarchy match, but eight bone directions and 33 deform roles differ.",
+  "preventionRules": [
+    "DND-008"
+  ],
+  "relatedCanonRecords": [
+    "asset.founder.production"
+  ],
+  "relatedFailureIds": [],
+  "relatedTests": [],
+  "reproductionConditions": null,
+  "requiredFutureGates": [
+    "Compare rest poses, lengths, deform roles and modular/facial interfaces; prove transfer on a copy before production promotion."
+  ],
+  "resolutionDate": null,
+  "rootCause": "Names/hierarchy omit rest-pose and deform-role compatibility.",
+  "rootCauseConfidence": "SUPPORTED",
+  "schemaVersion": "1",
+  "severity": "HIGH",
+  "status": "CONFIRMED",
+  "successfulCorrection": "Compatibility gate blocked transfer; copy-only retarget proof still pending.",
+  "system": [
+    "founder",
+    "rig",
+    "animation",
+    "retarget",
+    "skeleton"
+  ],
+  "title": "Matching rig names did not establish motion-transfer compatibility",
+  "unknownInformation": [
+    "Actual failed production motion transfer is not claimed; transfer was not performed.",
+    "Resolution date and adapter validation unavailable."
+  ],
+  "visibility": "developer_only",
+  "whyExistingChecksMissedIt": null
+}

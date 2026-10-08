@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "acceptance": {
+      "enum": [
+        "ACCEPTED",
+        "PROPOSED",
+        "NEEDS_REVIEW"
+      ],
+      "type": "string"
+    },
+    "applicability": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "authority": {
+      "enum": [
+        "development_prevention_not_canon"
+      ],
+      "type": "string"
+    },
+    "evidenceReferences": {
+      "items": {
+        "pattern": "EV-[0-9]{3}",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "futureVerificationGate": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "id": {
+      "pattern": "DND-[0-9]{3}",
+      "type": "string"
+    },
+    "requiredExceptionEvidence": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "review": {
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "shortProhibition": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "supportingFailureIds": {
+      "items": {
+        "pattern": "FL-[0-9]{3}",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "shortProhibition",
+    "applicability",
+    "supportingFailureIds",
+    "requiredExceptionEvidence",
+    "futureVerificationGate",
+    "evidenceReferences",
+    "acceptance",
+    "review",
+    "authority"
+  ],
+  "title": "rule v1",
+  "type": "object"
+}

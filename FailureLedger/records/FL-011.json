@@ -1,0 +1,66 @@
+{
+  "classification": "ACCEPTANCE_PROCESS",
+  "detectionMethod": null,
+  "evidenceReferences": [
+    "EV-014",
+    "EV-015",
+    "EV-001"
+  ],
+  "expectedBehavior": "Claims distinguish technical checks and human-route acceptance.",
+  "failedApproaches": [
+    {
+      "approach": "One-skeleton package optimization",
+      "conditionsPermittingReconsideration": "A new copy-only package passing masking/module/facial contracts before hardware profiling.",
+      "evidenceReferences": [
+        "EV-015"
+      ],
+      "observedOutcome": "Only 785 bytes saved; runtime collapsed ten models to one, exposed zero head modules and failed three of five contracts.",
+      "reasonAttempted": "Reduce skeleton duplication.",
+      "whyRejected": "Functional/masking contract failed before physical profiling; package not promoted."
+    }
+  ],
+  "firstObservedDate": null,
+  "id": "FL-011",
+  "lessons": [
+    {
+      "acceptance": "ACCEPTED",
+      "evidenceReferences": [
+        "EV-014",
+        "EV-015",
+        "EV-001"
+      ],
+      "text": "Do not claim human acceptance from automated PASS."
+    }
+  ],
+  "observedBehavior": "A1 had 909 unit passes while physical iPad traversal failed and human facial acceptance was pending.",
+  "preventionRules": [
+    "DND-010"
+  ],
+  "relatedCanonRecords": [],
+  "relatedFailureIds": [],
+  "relatedTests": [],
+  "reproductionConditions": null,
+  "requiredFutureGates": [
+    "Separately record technical results and explicit human acceptance for the actual route and relevant form factors."
+  ],
+  "resolutionDate": null,
+  "rootCause": "Unit/import contracts do not exercise all physical routes or certify subjective visual acceptance.",
+  "rootCauseConfidence": "SUPPORTED",
+  "schemaVersion": "1",
+  "severity": "HIGH",
+  "status": "CONFIRMED",
+  "successfulCorrection": null,
+  "system": [
+    "human acceptance",
+    "visual",
+    "gameplay",
+    "tests",
+    "release"
+  ],
+  "title": "Automated PASS did not establish gameplay or visual acceptance",
+  "unknownInformation": [
+    "First observation and resolution dates not established by inspected evidence."
+  ],
+  "visibility": "developer_only",
+  "whyExistingChecksMissedIt": null
+}
