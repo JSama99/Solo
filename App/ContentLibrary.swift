@@ -32,11 +32,13 @@ enum ContentLibrary {
     ]
 
     static let techComHeadlineTemplates = [
-      NewsHeadlineTemplate(id: "trend-evidence", category: .trend, textTemplate: "Industry watch: evidence-led teams set the tone in sprint {sprint}", trigger: { $0.tasks.contains { $0.isReviewed } }),
+      // Generic industry programming cannot reveal private SOLO review or
+      // agent state through the eligibility of a trend story.
+      NewsHeadlineTemplate(id: "trend-evidence", category: .trend, textTemplate: "Industry watch: evidence-led teams set the tone in sprint {sprint}", trigger: { _ in true }),
       NewsHeadlineTemplate(id: "trend-runway", category: .trend, textTemplate: "Industry watch: runway discipline dominates sprint {sprint}", trigger: { $0.stats.runway < 20 }),
       NewsHeadlineTemplate(id: "trend-energy", category: .trend, textTemplate: "Industry watch: founder energy is becoming a board-level metric", trigger: { $0.stats.energy < 45 }),
       NewsHeadlineTemplate(id: "trend-trust", category: .trend, textTemplate: "Industry watch: trust-first operators gain attention", trigger: { $0.stats.trust >= 70 }),
-      NewsHeadlineTemplate(id: "trend-drift", category: .trend, textTemplate: "Industry watch: model drift keeps teams cautious", trigger: { $0.agents.contains { $0.drift >= 25 } }),
+      NewsHeadlineTemplate(id: "trend-drift", category: .trend, textTemplate: "Industry watch: model drift keeps teams cautious", trigger: { _ in true }),
       NewsHeadlineTemplate(id: "trend-revenue", category: .trend, textTemplate: "Industry watch: early revenue is changing the conversation", trigger: { $0.stats.revenue >= 1_000 }),
       NewsHeadlineTemplate(id: "trend-momentum", category: .trend, textTemplate: "Industry watch: momentum is rewarding focused launches", trigger: { $0.stats.momentum >= 60 }),
       NewsHeadlineTemplate(id: "trend-prototype", category: .trend, textTemplate: "Industry watch: prototype teams are narrowing their bets", trigger: { $0.sprint <= 3 }),
@@ -44,7 +46,7 @@ enum ContentLibrary {
       NewsHeadlineTemplate(id: "trend-launch", category: .trend, textTemplate: "Industry watch: launch pressure is reshaping operating plans", trigger: { $0.sprint >= 7 && $0.sprint <= 9 }),
       NewsHeadlineTemplate(id: "trend-scale", category: .trend, textTemplate: "Industry watch: scale decisions are splitting founders", trigger: { $0.sprint >= 10 }),
       NewsHeadlineTemplate(id: "trend-capital", category: .trend, textTemplate: "Industry watch: capital efficiency remains in fashion", trigger: { $0.stats.capital < 1_000 }),
-      NewsHeadlineTemplate(id: "trend-attention", category: .trend, textTemplate: "Industry watch: review capacity is a competitive advantage", trigger: { $0.tasks.contains { $0.result != nil } }),
+      NewsHeadlineTemplate(id: "trend-attention", category: .trend, textTemplate: "Industry watch: review capacity is a competitive advantage", trigger: { _ in true }),
       NewsHeadlineTemplate(id: "trend-venture", category: .trend, textTemplate: "Industry watch: second-venture companies are planning for repeatability", trigger: { $0.venture > 1 }),
       NewsHeadlineTemplate(id: "trend-resilience", category: .trend, textTemplate: "Industry watch: resilience work earns a larger share of roadmaps", trigger: { $0.stats.trust < 50 }),
       NewsHeadlineTemplate(id: "trend-focus", category: .trend, textTemplate: "Industry watch: focused teams keep their operating edge", trigger: { $0.stats.energy >= 45 && $0.stats.runway >= 20 })

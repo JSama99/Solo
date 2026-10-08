@@ -1,4 +1,5 @@
 import SwiftUI
+import RealityKit
 
 struct SignalTVView: View {
   var events: [PublicMediaEvent]
@@ -7,274 +8,199 @@ struct SignalTVView: View {
   var continuousMotionEnabled: Bool
 
   var body: some View {
-    TimelineView(.animation(minimumInterval: reduceMotion ? 1 : 1.0 / 12, paused: !continuousMotionEnabled)) { context in
-      let elapsed = context.date.timeIntervalSinceReferenceDate
-      let event = currentEvent(elapsed: elapsed)
-      televisionBody(event: event, elapsed: elapsed)
+    // Selection and public presentation derivation stay outside ticker frames.
+    let event = NarrativeStoryCompetition.selectPrimaryStory(from: events)
+      ?? SignalTVProgramming.marketPulse(venture: 1, sprint: 1)
+    let design = SignalTVBroadcastDesign.derive(event: event, reduceMotion: reduceMotion,
+      continuousMotionEnabled: continuousMotionEnabled)
+    ZStack {
+      RoundedRectangle(cornerRadius: 4).fill(.black).frame(width: 72, height: 98)
+      RoundedRectangle(cornerRadius: 10)
+        .fill(LinearGradient(colors: [.black, FounderGarageMaterial.raisedMetal, .black], startPoint: .topLeading, endPoint: .bottomTrailing))
+        .frame(width: 286, height: 170)
+        .overlay { RoundedRectangle(cornerRadius: 10).stroke(.white.opacity(increasedContrast ? 0.72 : 0.22), lineWidth: increasedContrast ? 2 : 1) }
+        .shadow(color: .black.opacity(0.55), radius: 8, x: 4, y: 6)
+      SignalTVBroadcastSurface(event: event, design: design, compact: true, increasedContrast: increasedContrast)
+        .frame(width: 268, height: 151)
+        .clipShape(.rect(cornerRadius: 5))
+      Circle().fill(design.identity.accent.color).frame(width: 3, height: 3).offset(x: 130, y: 80)
     }
     .frame(width: 292, height: 191)
     .accessibilityElement(children: .ignore)
     .accessibilityLabel("Signal TV, the Startup World Broadcast")
-    .accessibilityValue(accessibilitySummary)
+    .accessibilityValue("\(event.program.rawValue). \(design.prominence.rawValue). \(event.headline). \(event.summary)")
+    .accessibilityIdentifier("signal-tv-wall-broadcast")
   }
+}
 
-  private func currentEvent(elapsed: TimeInterval) -> PublicMediaEvent {
-    let publicEvents = SignalTVProgramming.publicBroadcastEvents(events)
-    guard !publicEvents.isEmpty else { return SignalTVProgramming.marketPulse(venture: 1, sprint: 1) }
-    return publicEvents[SignalTVProgramming.presentationIndex(elapsed: elapsed, count: publicEvents.count, reduceMotion: reduceMotion)]
-  }
+/// One broadcast language, with distance-readable wall and richer viewer modes.
+private struct SignalTVBroadcastSurface: View {
+  let event: PublicMediaEvent
+  let design: SignalTVBroadcastDesign
+  let compact: Bool
+  let increasedContrast: Bool
+  var expression: NarrativeExpressionDraft? = nil
 
-  private var accessibilitySummary: String {
-    let event = SignalTVProgramming.publicBroadcastEvents(events).first
-      ?? SignalTVProgramming.marketPulse(venture: 1, sprint: 1)
-    let presentation = broadcastPresentation(for: event)
-    return "\(presentation.accessibilityState). \(event.program.rawValue). \(event.headline). \(event.summary)"
-  }
+  private var accent: Color { design.identity.accent.color }
 
-  private func televisionBody(event: PublicMediaEvent, elapsed: TimeInterval) -> some View {
-    let presentation = broadcastPresentation(for: event)
-    return ZStack {
-      Ellipse().fill(.black.opacity(0.52)).frame(width: 270, height: 35).offset(x: 8, y: 80)
-      wallMount
-      RoundedRectangle(cornerRadius: 10)
-        .fill(LinearGradient(colors: [.black, FounderGarageMaterial.raisedMetal, .black], startPoint: .topLeading, endPoint: .bottomTrailing))
-        .frame(width: 286, height: 170)
-        .overlay { FounderGarageSurfaceTexture(kind: .powderCoat).clipShape(.rect(cornerRadius: 10)) }
-        .overlay { RoundedRectangle(cornerRadius: 10).stroke(.white.opacity(increasedContrast ? 0.72 : 0.19), lineWidth: increasedContrast ? 2 : 1) }
-        .shadow(color: .black.opacity(0.66), radius: 9, x: 7, y: 8)
-      broadcastScreen(event: event, presentation: presentation, elapsed: elapsed)
-        .frame(width: 268, height: 151)
-        .clipShape(.rect(cornerRadius: 5))
-        .overlay { RoundedRectangle(cornerRadius: 5).stroke(.white.opacity(0.13), lineWidth: 1) }
-        .shadow(color: broadcastColor(presentation).opacity(0.22 + presentation.intensity * 0.22), radius: 8)
-      Circle()
-        .fill(broadcastColor(presentation).opacity(powerIndicatorOpacity(presentation: presentation, elapsed: elapsed)))
-        .frame(width: 3, height: 3)
-        .offset(x: 130, y: 80)
-    }
-  }
-
-  private var wallMount: some View {
-    ZStack {
-      RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.94)).frame(width: 72, height: 98)
-      HStack(spacing: 46) {
-        RoundedRectangle(cornerRadius: 2).fill(FounderGarageMaterial.satinMetal).frame(width: 9, height: 128)
-        RoundedRectangle(cornerRadius: 2).fill(FounderGarageMaterial.satinMetal).frame(width: 9, height: 128)
+  var body: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      HStack(spacing: compact ? 5 : 10) {
+        Text("SIGNAL").font(compact ? .system(size: 10, weight: .black, design: .rounded) : .title3.weight(.black))
+          .tracking(compact ? 1.5 : 2)
+        Spacer(minLength: 4)
+        Label(design.identity.desk, systemImage: design.identity.symbol)
+          .font(compact ? .system(size: 6, weight: .black, design: .monospaced) : .caption2.weight(.black))
+          .padding(.horizontal, compact ? 5 : 9).padding(.vertical, compact ? 3 : 5)
+          .background(accent.opacity(0.18), in: .rect(cornerRadius: 3))
       }
-      ForEach(0..<4, id: \.self) { index in
-        Circle().fill(.white.opacity(0.30)).frame(width: 5, height: 5)
-          .offset(x: index.isMultiple(of: 2) ? -28 : 28, y: index < 2 ? -50 : 50)
+      .padding(compact ? 8 : 18)
+      .background(.black.opacity(0.28))
+      VStack(alignment: .leading, spacing: compact ? 4 : 12) {
+        HStack(spacing: 6) {
+          Rectangle().fill(accent).frame(width: 3, height: compact ? 12 : 18)
+          Text(event.program.rawValue)
+            .font(compact ? .system(size: 11, weight: .black, design: .monospaced) : .subheadline.weight(.black))
+            .tracking(compact ? 0.5 : 1)
+            .foregroundStyle(accent)
+        }
+        Text(expression?.headline ?? event.headline)
+          .font(compact ? .system(size: 15, weight: .bold, design: .rounded) : .title2.weight(.bold))
+          .lineLimit(compact ? 3 : nil)
+          .minimumScaleFactor(1)
+          .contentTransition(.opacity)
+          .accessibilityAddTraits(.isHeader)
+          .accessibilityIdentifier(compact ? "signal-tv-wall-headline" : "signal-tv-viewer-headline")
+        if !compact, let summary = expression?.summary ?? design.supportingSummary {
+          Text(summary).font(.body).foregroundStyle(.white.opacity(increasedContrast ? 1 : 0.86))
+            .fixedSize(horizontal: false, vertical: true)
+            .contentTransition(.opacity)
+        }
+        if compact { Spacer(minLength: 0) }
       }
-    }
-    .offset(y: 4)
-  }
-
-  private func broadcastScreen(
-    event: PublicMediaEvent,
-    presentation: SignalTVBroadcastPresentation,
-    elapsed: TimeInterval
-  ) -> some View {
-    ZStack {
-      LinearGradient(colors: broadcastColors(for: presentation), startPoint: .topLeading, endPoint: .bottomTrailing)
-      screenGrid
-      broadcastLife(presentation: presentation, elapsed: elapsed)
-      VStack(spacing: 0) {
-        networkIdent(presentation: presentation)
-        Spacer(minLength: 2)
-        programGraphic(event: event, elapsed: elapsed)
-        Spacer(minLength: 2)
-        lowerThird(event)
-        ticker(event: event, elapsed: elapsed)
+      .padding(.horizontal, compact ? 9 : 18)
+      .padding(.vertical, compact ? 5 : 18)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      HStack(spacing: 6) {
+        Text(design.prominence.rawValue)
+        Text("/").foregroundStyle(.white.opacity(0.5))
+        Text(event.concernsPlayerCompany ? "SOLO" : "STARTUP WORLD")
+        Spacer(minLength: 0)
       }
-      .padding(.top, 6)
-      LinearGradient(colors: [.white.opacity(0.08), .clear, .black.opacity(0.10)], startPoint: .topLeading, endPoint: .bottomTrailing)
-        .allowsHitTesting(false)
+      .font(compact ? .system(size: 6.5, weight: .bold, design: .monospaced) : .caption2.weight(.bold))
+      .padding(.horizontal, compact ? 9 : 18)
+      .padding(.vertical, compact ? 4 : 8)
+      .background(accent.opacity(event.program == .breaking ? 0.35 : 0.17))
+      SignalTVBroadcastTicker(items: expression?.tickerItems ?? design.tickerItems, moves: design.continuousMotionEnabled, compact: compact)
     }
-  }
-
-  private func networkIdent(presentation: SignalTVBroadcastPresentation) -> some View {
-    HStack(spacing: 6) {
-      Text("SIGNAL").font(.system(size: 9, weight: .black, design: .rounded)).tracking(1.2)
-      Text("THE STARTUP WORLD BROADCAST").font(.system(size: 4.6, weight: .bold, design: .monospaced)).foregroundStyle(.white.opacity(0.66))
-      Spacer()
-      Label(presentation.banner, systemImage: presentation.symbol)
-        .labelStyle(.titleAndIcon)
-        .font(.system(size: 4.5, weight: .black, design: .monospaced))
-        .foregroundStyle(.white)
-        .padding(.horizontal, 4)
-        .frame(height: 9)
-        .background(broadcastColor(presentation).opacity(0.82), in: .capsule)
-    }
-    .font(.system(size: 6, weight: .black, design: .monospaced))
     .foregroundStyle(.white)
-    .padding(.horizontal, 8)
+    .background {
+      ZStack(alignment: .trailing) {
+        LinearGradient(colors: [accent.opacity(event.program == .breaking ? 0.28 : 0.18), Color(red: 0.025, green: 0.04, blue: 0.07)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        Image(systemName: design.identity.symbol)
+          .font(.system(size: compact ? 70 : 170, weight: .ultraLight))
+          .foregroundStyle(accent.opacity(0.06))
+          .padding(.trailing, compact ? -12 : 12)
+        if event.program == .marketPulse {
+          Canvas { context, size in
+            // An unlabelled studio grid, not a chart or invented market metrics.
+            for index in 1..<8 {
+              var path = Path()
+              let x = CGFloat(index) * size.width / 8
+              path.move(to: CGPoint(x: x, y: 0)); path.addLine(to: CGPoint(x: x, y: size.height))
+              context.stroke(path, with: .color(.white.opacity(0.035)), lineWidth: 0.5)
+            }
+          }
+        }
+      }.accessibilityHidden(true)
+    }
+    .clipShape(.rect(cornerRadius: compact ? 0 : 12))
+    .overlay(alignment: .top) { Rectangle().fill(accent).frame(height: compact ? 2 : 3).accessibilityHidden(true) }
+    .animation(design.transitionDuration == 0 ? nil : .easeOut(duration: design.transitionDuration), value: event.id)
+  }
+}
+
+/// A static, bounded texture for the physical Garage TV. Refresh only when
+/// public story content changes; no RealityKit per-frame SwiftUI rendering.
+@MainActor
+enum SignalTVScreenImage {
+  static func render(event: PublicMediaEvent) -> CGImage? {
+    let surface = SignalTVBroadcastSurface(event: event,
+      design: .derive(event: event, reduceMotion: true, continuousMotionEnabled: false),
+      compact: true, increasedContrast: false)
+      .frame(width: 268, height: 151)
+    let renderer = ImageRenderer(content: surface)
+    renderer.scale = 3
+    return renderer.cgImage
+  }
+}
+
+struct SignalTVBroadcastTicker: View {
+  let items: [String]
+  let moves: Bool
+  let compact: Bool
+  /// Fixed phase for reproducible close-inspection captures; production is nil.
+  var reviewElapsed: Double? = nil
+
+  private var font: Font {
+    compact ? .system(size: 8, weight: .semibold, design: .monospaced) : .caption.monospaced()
   }
 
-  private func broadcastLife(presentation: SignalTVBroadcastPresentation, elapsed: TimeInterval) -> some View {
-    let wave = presentation.continuousMotionEnabled ? (sin(elapsed * 1.8) + 1) / 2 : 0.5
-    let sweep = presentation.continuousMotionEnabled
-      ? CGFloat(elapsed.truncatingRemainder(dividingBy: 5.5) / 5.5) * 151 - 75
-      : -48
-    return ZStack {
-      Rectangle()
-        .fill(LinearGradient(colors: [.clear, .white.opacity(0.07), .clear], startPoint: .top, endPoint: .bottom))
-        .frame(height: 18)
-        .offset(y: sweep)
-      HStack(alignment: .bottom, spacing: 2) {
-        ForEach(0..<5, id: \.self) { index in
-          Capsule()
-            .fill(broadcastColor(presentation).opacity(0.34 + wave * 0.20))
-            .frame(width: 2, height: presentation.continuousMotionEnabled ? 3 + CGFloat((index * 3 + Int(elapsed * 2)) % 8) : 4 + CGFloat(index % 3))
+  var body: some View {
+    if !items.isEmpty {
+      Group {
+        if moves {
+          TimelineView(.animation(minimumInterval: 1.0 / 12, paused: reviewElapsed != nil)) { timeline in
+            Canvas { context, size in
+              let texts = items.map { context.resolve(Text($0).font(font).foregroundStyle(.white)) }
+              let widths = texts.map { Double($0.measure(in: CGSize(width: .infinity, height: size.height)).width) }
+              let layout = SignalTVTickerLayout(widths: widths, viewportWidth: Double(size.width))
+              let offset = layout.offset(at: reviewElapsed ?? timeline.date.timeIntervalSinceReferenceDate)
+              // Two copies of a track at least as wide as the viewport cover
+              // every phase. Explicit origins keep phrases and separators apart.
+              for copy in 0...1 {
+                for index in texts.indices {
+                  let x = layout.starts[index] + Double(copy) * layout.period - offset
+                  context.draw(texts[index], at: CGPoint(x: x, y: size.height / 2), anchor: .leading)
+                  let separator = context.resolve(Text("/").font(font).foregroundStyle(.white.opacity(0.45)))
+                  context.draw(separator, at: CGPoint(x: x + widths[index] + layout.gap / 2, y: size.height / 2), anchor: .center)
+                }
+              }
+            }
+          }
+          // A small inset and edge fade make entry/exit intentional, rather
+          // than displaying a hard-cut glyph against the screen bezel.
+          .padding(.horizontal, compact ? 9 : 18)
+          .mask {
+            LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: .black, location: 0.025),
+              .init(color: .black, location: 0.975), .init(color: .clear, location: 1)],
+              startPoint: .leading, endPoint: .trailing)
+          }
+        } else {
+          Text(items[0]).font(font).lineLimit(1).truncationMode(.tail)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, compact ? 9 : 18)
         }
       }
-      .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-      .padding(.leading, 9)
-      .padding(.top, 20)
-      RadialGradient(
-        colors: [broadcastColor(presentation).opacity((0.025 + wave * 0.035) * presentation.intensity), .clear],
-        center: .center,
-        startRadius: 3,
-        endRadius: 120
-      )
-    }
-    .allowsHitTesting(false)
-    .accessibilityHidden(true)
-  }
-
-  @ViewBuilder
-  private func programGraphic(event: PublicMediaEvent, elapsed: TimeInterval) -> some View {
-    HStack(spacing: 9) {
-      switch event.program {
-      case .marketPulse:
-        marketChart(elapsed: elapsed)
-      case .founderSpotlight:
-        interviewPortrait(symbol: "person.crop.square.filled.and.at.rectangle", label: "SOLO FOUNDER")
-      case .rivalWatch:
-        interviewPortrait(symbol: "building.2.fill", label: "RIVAL DESK")
-      case .breaking:
-        Image(systemName: "dot.radiowaves.left.and.right").font(.system(size: 30, weight: .bold)).foregroundStyle(.white)
-      case .techComLive:
-        Image(systemName: "newspaper.fill").font(.system(size: 29, weight: .bold)).foregroundStyle(Color.cyan.opacity(0.92))
-      }
-      VStack(alignment: .leading, spacing: 3) {
-        Text(event.program.rawValue).font(.system(size: 7, weight: .black, design: .monospaced)).foregroundStyle(programColor(event))
-        Text(event.headline).font(.system(size: 10, weight: .black, design: .rounded)).lineLimit(3).minimumScaleFactor(0.78)
-        Text(event.summary).font(.system(size: 5.8, weight: .medium)).foregroundStyle(.white.opacity(0.72)).lineLimit(2)
-      }
-      .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    .padding(.horizontal, 9)
-    .foregroundStyle(.white)
-  }
-
-  private func interviewPortrait(symbol: String, label: String) -> some View {
-    VStack(spacing: 2) {
-      Image(systemName: symbol).font(.system(size: 25)).frame(width: 50, height: 42).background(.white.opacity(0.10), in: .rect(cornerRadius: 4))
-      Text(label).font(.system(size: 4.8, weight: .black, design: .monospaced))
-      HStack(spacing: 1) { ForEach(0..<8, id: \.self) { index in Capsule().frame(width: 1.5, height: CGFloat(2 + (index * 3) % 8)) } }
-        .foregroundStyle(Color.cyan.opacity(0.78))
-    }
-    .foregroundStyle(.white.opacity(0.86))
-  }
-
-  private func marketChart(elapsed: TimeInterval) -> some View {
-    Canvas { context, size in
-      let values: [CGFloat] = [0.68, 0.54, 0.61, 0.39, 0.45, 0.22, 0.28]
-      let progress = reduceMotion ? 1 : min(1, elapsed.truncatingRemainder(dividingBy: 8) / 2.2)
-      var path = Path()
-      for index in values.indices {
-        let point = CGPoint(x: CGFloat(index) / CGFloat(values.count - 1) * size.width, y: values[index] * size.height)
-        index == 0 ? path.move(to: point) : path.addLine(to: point)
-      }
-      context.stroke(path.trimmedPath(from: 0, to: progress), with: .color(Color.cyan), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
-    }
-    .frame(width: 66, height: 45)
-    .background(.black.opacity(0.18), in: .rect(cornerRadius: 4))
-  }
-
-  private func lowerThird(_ event: PublicMediaEvent) -> some View {
-    HStack(spacing: 4) {
-      Text(event.concernsPlayerCompany ? "SOLO" : "STARTUP WORLD").fontWeight(.black)
-      Rectangle().fill(.white.opacity(0.28)).frame(width: 1, height: 8)
-      Text(event.tone == .favorable ? "FAVORABLE" : event.tone == .critical ? "CRITICAL" : "PUBLIC UPDATE")
-      Spacer()
-    }
-    .font(.system(size: 5.4, weight: .bold, design: .monospaced))
-    .foregroundStyle(.white)
-    .padding(.horizontal, 8)
-    .frame(height: 13)
-    .background(programColor(event).opacity(0.52))
-  }
-
-  private func ticker(event: PublicMediaEvent, elapsed: TimeInterval) -> some View {
-    let items = event.tickerItems.isEmpty ? SignalTVProgramming.safeMarketTicker : event.tickerItems
-    let text = items.joined(separator: "  •  ")
-    return GeometryReader { geometry in
-      if reduceMotion {
-        Text(items[SignalTVProgramming.tickerIndex(elapsed: elapsed, count: items.count)])
-          .frame(width: geometry.size.width, alignment: .leading)
-          .padding(.horizontal, 7)
-          .transition(.opacity)
-      } else {
-        Text(text).fixedSize()
-          .offset(x: geometry.size.width - CGFloat(elapsed.truncatingRemainder(dividingBy: 32) / 32) * (geometry.size.width + CGFloat(text.count) * 4.2))
-      }
-    }
-    .font(.system(size: 5.5, weight: .bold, design: .monospaced))
-    .foregroundStyle(.white.opacity(0.88))
-    .frame(height: 13)
-    .background(.black.opacity(0.76))
-    .clipped()
-    .accessibilityHidden(true)
-  }
-
-  private var screenGrid: some View {
-    Canvas { context, size in
-      for index in 1..<8 {
-        let x = CGFloat(index) / 8 * size.width
-        var path = Path(); path.move(to: CGPoint(x: x, y: 0)); path.addLine(to: CGPoint(x: x, y: size.height))
-        context.stroke(path, with: .color(.white.opacity(0.025)), lineWidth: 0.5)
-      }
-    }
-    .allowsHitTesting(false)
-  }
-
-  private func broadcastColors(for presentation: SignalTVBroadcastPresentation) -> [Color] {
-    switch presentation.state {
-    case .idle: [Color(red: 0.025, green: 0.11, blue: 0.16), Color(red: 0.025, green: 0.035, blue: 0.075)]
-    case .companyUpdate: [Color(red: 0.02, green: 0.16, blue: 0.22), Color(red: 0.02, green: 0.045, blue: 0.11)]
-    case .momentum: [Color(red: 0.025, green: 0.22, blue: 0.18), Color(red: 0.02, green: 0.055, blue: 0.095)]
-    case .pressure: [Color(red: 0.34, green: 0.035, blue: 0.05), Color(red: 0.07, green: 0.025, blue: 0.045)]
-    case .spotlight: [Color(red: 0.17, green: 0.075, blue: 0.30), Color(red: 0.025, green: 0.095, blue: 0.11)]
+      .frame(height: compact ? 19 : 30)
+      .foregroundStyle(.white.opacity(0.92))
+      .background(.black.opacity(0.70))
+      .clipped()
+      .accessibilityElement(children: .ignore)
+      .accessibilityLabel("Ticker: \(items.joined(separator: ", "))")
+      .accessibilityHidden(compact)
     }
   }
+}
 
-  private func broadcastColor(_ presentation: SignalTVBroadcastPresentation) -> Color {
-    switch presentation.state {
-    case .idle, .companyUpdate: SoloTheme.cyan
-    case .momentum: SoloTheme.mint
-    case .pressure: SoloTheme.coral
-    case .spotlight: Color(red: 0.72, green: 0.50, blue: 1)
-    }
-  }
-
-  private func broadcastPresentation(for event: PublicMediaEvent) -> SignalTVBroadcastPresentation {
-    .derive(event: event, reduceMotion: reduceMotion, continuousMotionEnabled: continuousMotionEnabled)
-  }
-
-  private func powerIndicatorOpacity(
-    presentation: SignalTVBroadcastPresentation,
-    elapsed: TimeInterval
-  ) -> Double {
-    guard presentation.continuousMotionEnabled else { return 0.66 }
-    return 0.46 + (sin(elapsed * 2.2) + 1) * 0.14
-  }
-
-  private func programColor(_ event: PublicMediaEvent) -> Color {
-    switch event.tone {
-    case .favorable: SoloTheme.mint
-    case .critical: SoloTheme.coral
-    case .neutral: SoloTheme.cyan
+private extension SignalTVProgramAccent {
+  var color: Color {
+    switch self {
+    case .mint: Color(red: 0.35, green: 0.94, blue: 0.73)
+    case .cyan: Color(red: 0.30, green: 0.85, blue: 1)
+    case .violet: Color(red: 0.77, green: 0.65, blue: 1)
+    case .coral: Color(red: 1, green: 0.49, blue: 0.47)
+    case .gold: Color(red: 1, green: 0.83, blue: 0.43)
     }
   }
 }
@@ -282,43 +208,57 @@ struct SignalTVView: View {
 struct SignalTVViewer: View {
   var events: [PublicMediaEvent]
   var coverage: Int
+  /// Presentation-only injection for matched simulator capture; production uses the system setting.
+  var reduceMotionOverride: Bool? = nil
 
   @Environment(\.dismiss) private var dismiss
-  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
+  private var reduceMotion: Bool { reduceMotionOverride ?? systemReduceMotion }
   @Environment(\.colorSchemeContrast) private var contrast
   @State private var section = SignalTVViewerSection.currentStory
   @State private var selectedEventID: String?
+  @State private var expressionService = NarrativeExpressionService()
+  @State private var enhancedRequest: NarrativeExpressionRequest?
+  @State private var enhancedCopy: NarrativeExpressionDraft?
+
+  init(events: [PublicMediaEvent], coverage: Int, reduceMotionOverride: Bool? = nil,
+       expressionService: NarrativeExpressionService = NarrativeExpressionService()) {
+    self.events = events
+    self.coverage = coverage
+    self.reduceMotionOverride = reduceMotionOverride
+    _expressionService = State(initialValue: expressionService)
+  }
 
   var body: some View {
     NavigationStack {
       ScrollView {
         VStack(alignment: .leading, spacing: 18) {
-          Text("THE STARTUP WORLD BROADCAST")
-            .font(.caption2.weight(.black))
-            .tracking(1.4)
-            .foregroundStyle(.secondary)
           broadcastHeader
-          Picker("Signal TV section", selection: $section) {
-            ForEach(SignalTVViewerSection.allCases) { item in
-              Label(item.title, systemImage: item.symbol).tag(item)
-            }
-          }
-          .pickerStyle(.menu)
-          .buttonStyle(.bordered)
-          .accessibilityIdentifier("signal-tv-section-picker")
+          viewerConsole
           sectionContent
         }
         .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: 780, alignment: .leading)
+        .frame(maxWidth: .infinity)
       }
       .background(SoloTheme.background)
       .navigationTitle("Signal TV")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbarBackground(SoloTheme.background, for: .navigationBar)
+      .toolbarBackground(.visible, for: .navigationBar)
       .toolbar {
         ToolbarItem(placement: .confirmationAction) {
           Button("Close", systemImage: "xmark") { dismiss() }
             .labelStyle(.iconOnly)
             .accessibilityIdentifier("close-signal-tv-viewer")
         }
+      }
+      .task(id: expressionRequest) {
+        guard let request = expressionRequest else { return }
+        let result = await expressionService.expression(for: request)
+        guard !Task.isCancelled, expressionRequest == request else { return }
+        enhancedRequest = request
+        enhancedCopy = result.copy
       }
     }
   }
@@ -332,18 +272,58 @@ struct SignalTVViewer: View {
         continuousMotionEnabled: true
       )
       .frame(maxWidth: .infinity)
-      HStack {
-        Label(selectedEvent.program.rawValue, systemImage: section.symbol)
-          .font(.caption.weight(.black))
-          .foregroundStyle(SoloTheme.cyan)
-        Spacer()
-        Text("COVERAGE \(coverage.formatted(.number.sign(strategy: .always())))")
-          .font(.caption.monospacedDigit().weight(.black))
-          .foregroundStyle(coverageColor)
-          .accessibilityLabel("Coverage")
-          .accessibilityValue(coverage.formatted(.number.sign(strategy: .always())))
+
+    }
+  }
+
+  private var viewerConsole: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      Text("SIGNAL TV / VIEWER CONSOLE")
+        .font(.caption2.monospaced().weight(.bold)).tracking(1)
+        .foregroundStyle(.secondary).padding(.horizontal, 12).padding(.top, 10)
+      ViewThatFits(in: .horizontal) {
+        HStack(spacing: 12) { browseMenu; Spacer(minLength: 0); coverageStatus }
+        VStack(alignment: .leading, spacing: 4) { browseMenu; coverageStatus.padding(.horizontal, 12).padding(.bottom, 10) }
       }
     }
+    .background(.white.opacity(0.035), in: .rect(cornerRadius: 6))
+    .overlay { RoundedRectangle(cornerRadius: 6).stroke(.white.opacity(contrast == .increased ? 0.5 : 0.12)) }
+  }
+
+  private var browseMenu: some View {
+    Menu {
+      Picker("Signal TV section", selection: $section) {
+        ForEach(SignalTVViewerSection.allCases) { item in
+          Label(item.title, systemImage: item.symbol).tag(item)
+        }
+      }
+    } label: {
+      HStack(spacing: 8) {
+        Image(systemName: "line.3.horizontal.decrease")
+          .foregroundStyle(SignalTVProgramIdentity(program: selectedEvent.program).accent.color)
+        Text(section.title).font(.subheadline.weight(.semibold))
+        Image(systemName: "chevron.down").font(.caption2.weight(.bold)).foregroundStyle(.secondary)
+      }
+      .padding(.horizontal, 12).frame(minHeight: 44)
+      .contentShape(.rect)
+    }
+    .buttonStyle(.plain)
+    .accessibilityLabel("Signal TV section")
+    .accessibilityValue(section.title)
+    .accessibilityHint("Browse public programs and recent headlines")
+    .accessibilityIdentifier("signal-tv-section-picker")
+  }
+
+  private var coverageStatus: some View {
+    HStack(spacing: 6) {
+      Text("COVERAGE").font(.caption2.monospaced().weight(.medium)).foregroundStyle(.secondary)
+      Text(coverage.formatted(.number.sign(strategy: .always())))
+        .font(.caption.monospacedDigit().weight(.semibold)).foregroundStyle(coverageColor)
+    }
+    .padding(.trailing, 12)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel("Coverage")
+    .accessibilityValue(coverage.formatted(.number.sign(strategy: .always())))
   }
 
   @ViewBuilder
@@ -372,32 +352,26 @@ struct SignalTVViewer: View {
   }
 
   private func storyDetail(_ event: PublicMediaEvent) -> some View {
-    VStack(alignment: .leading, spacing: 10) {
-      Text(event.headline).font(.title3.weight(.bold))
-      Text(event.summary).font(.body).foregroundStyle(.secondary)
-      if !event.tickerItems.isEmpty {
-        Label(event.tickerItems.joined(separator: "  •  "), systemImage: "text.line.first.and.arrowtriangle.forward")
-          .font(.caption.monospaced())
-          .foregroundStyle(.secondary)
-          .accessibilityLabel("Ticker: \(event.tickerItems.joined(separator: ", "))")
-      }
-      if event.concernsPlayerCompany {
-        Label("Public SOLO company story", systemImage: "building.2")
-          .font(.caption.weight(.semibold))
-          .foregroundStyle(.secondary)
-      }
-    }
-    .padding(16)
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .background(.white.opacity(0.06), in: .rect(cornerRadius: 16))
+    SignalTVBroadcastSurface(event: event,
+      design: .derive(event: event, reduceMotion: reduceMotion),
+      compact: false, increasedContrast: contrast == .increased,
+      expression: expressionRequest != nil && enhancedRequest == expressionRequest ? enhancedCopy : nil)
+      .accessibilityIdentifier("signal-tv-viewer-broadcast")
+  }
+
+  /// Current selection only. Browsing historical records keeps canonical copy.
+  /// The wall preview and mounted Garage texture also remain canonical.
+  private var expressionRequest: NarrativeExpressionRequest? {
+    guard section == .currentStory, selectedEventID == nil else { return nil }
+    return NarrativeExpressionRequest(authorizedEvent: selectedEvent)
   }
 
   private func storyRow(_ event: PublicMediaEvent) -> some View {
     HStack(spacing: 12) {
-      Image(systemName: icon(for: event.program))
+      Image(systemName: SignalTVProgramIdentity(program: event.program).symbol)
         .frame(width: 38, height: 38)
-        .background(programColor(event).opacity(0.16), in: .rect(cornerRadius: 10))
-        .foregroundStyle(programColor(event))
+        .background(SignalTVProgramIdentity(program: event.program).accent.color.opacity(0.16), in: .rect(cornerRadius: 10))
+        .foregroundStyle(SignalTVProgramIdentity(program: event.program).accent.color)
       VStack(alignment: .leading, spacing: 3) {
         Text(event.program.rawValue).font(.caption2.weight(.black)).foregroundStyle(.secondary)
         Text(event.headline).font(.subheadline.weight(.semibold)).lineLimit(2)
@@ -417,13 +391,7 @@ struct SignalTVViewer: View {
       if let selectedEventID, let event = publicEvents.first(where: { $0.id == selectedEventID }) {
         return event
       }
-      guard !publicEvents.isEmpty else { return fallbackMarketPulse }
-      let index = SignalTVProgramming.presentationIndex(
-        elapsed: Date.now.timeIntervalSinceReferenceDate,
-        count: publicEvents.count,
-        reduceMotion: reduceMotion
-      )
-      return publicEvents[index]
+      return NarrativeStoryCompetition.selectPrimaryStory(from: events) ?? fallbackMarketPulse
     case .marketPulse:
       return publicEvents.first(where: { $0.program == .marketPulse }) ?? fallbackMarketPulse
     case .rivalWatch:
@@ -468,23 +436,6 @@ struct SignalTVViewer: View {
     }
   }
 
-  private func icon(for program: SignalTVProgram) -> String {
-    switch program {
-    case .marketPulse: "chart.xyaxis.line"
-    case .techComLive: "newspaper"
-    case .rivalWatch: "building.2"
-    case .breaking: "dot.radiowaves.left.and.right"
-    case .founderSpotlight: "person.crop.rectangle"
-    }
-  }
-
-  private func programColor(_ event: PublicMediaEvent) -> Color {
-    switch event.tone {
-    case .favorable: SoloTheme.mint
-    case .neutral: SoloTheme.cyan
-    case .critical: SoloTheme.coral
-    }
-  }
 }
 
 private enum SignalTVViewerSection: String, CaseIterable, Identifiable {
@@ -513,3 +464,46 @@ private enum SignalTVViewerSection: String, CaseIterable, Identifiable {
     }
   }
 }
+
+#if DEBUG
+/// Isolated visual review of the production Garage asset and mounted screen.
+/// No GameStore, save, or simulation state is injected into this fixture.
+@MainActor
+struct SignalTVGarageReviewHost: View {
+  @State private var world = FounderGarageRealityWorld()
+  @State private var status = "Loading production Garage"
+
+  var body: some View {
+    RealityView { content in
+      world.attachRoot { content.add($0) }
+    }
+    .overlay(alignment: .topLeading) {
+      Text("DEBUG · GARAGE BROADCAST REVIEW · \(status)")
+        .font(.caption2.monospaced()).padding(8)
+        .foregroundStyle(.white).background(.black.opacity(0.8))
+    }
+    .task {
+      await world.requestGarageArchitecture(.bundledProductionAsset(name: FounderGarageV8AssetContract.resourceName),
+        descriptor: .facilityTier0V8)?.value
+      do {
+        try world.applySignalTVBroadcast([SignalTVProgramming.marketPulse(venture: 1, sprint: 1)])
+        if ProcessInfo.processInfo.arguments.contains("--signal-tv-garage-review-free-look") {
+          // Exercise the existing seated Free Look and its normal lens/limits.
+          // This fixture does not move the eye or introduce a capture camera.
+          let home = world.cameraController.recipe(for: .founderPOV)
+          let neutral = home.lookTarget - home.position
+          let target = world.spatialSpecification.anchors.signalTV.position - home.position
+          let yaw = atan2(neutral.x, -neutral.z) - atan2(target.x, -target.z)
+          let neutralPitch = atan2(neutral.y, sqrt(neutral.x * neutral.x + neutral.z * neutral.z))
+          let targetPitch = atan2(target.y, sqrt(target.x * target.x + target.z * target.z))
+          world.cameraController.transition(to: .founderPOV, reduceMotion: true)
+          world.cameraController.setLookOrientation(.init(yaw: yaw, pitch: targetPitch - neutralPitch))
+        } else {
+          world.cameraController.focus(on: .signalTV, reduceMotion: true)
+        }
+        status = "Public Market Pulse"
+      } catch { status = "Screen rendering failed" }
+    }
+  }
+}
+#endif

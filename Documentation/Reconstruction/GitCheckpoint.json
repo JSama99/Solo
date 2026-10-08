@@ -1,0 +1,184 @@
+{
+  "source_matches_r7": true,
+  "checked_source_files": 6515,
+  "archives_sha256_verified": true,
+  "restore_tool_verified": true,
+  "protected_sources_unchanged": true,
+  "r7_manifest_sha256": "9ff9b54021ed7a996943989d0cc36633452b57ddef9dd7e64deadb5f40232db8",
+  "r7_source_fingerprint": "23c07b348ae1522e311cee1136de29a73a4fc26dd47e30a526c35982340b198e",
+  "r7_archive": "R7-Source-Complete.tar.gz",
+  "r7_archive_sha256": "436c8349b95ba0addc1a363c508b131d438ca39b19844fb7beca2a3acda91921",
+  "staging_candidates": [
+    {
+      "path": "App/App.swift",
+      "sha256": "a7e8cdc42ad9043cd300ad78c089647d75064fae042ff51bbd8e7503336baa00"
+    },
+    {
+      "path": "App/ContentLibrary.swift",
+      "sha256": "057e661b3c3adf94fc4d2bdfe1056e05e852ec2bb74081faa93fb3ed79968d67"
+    },
+    {
+      "path": "App/ContentView.swift",
+      "sha256": "d63d404392b6900ba444dc7e3f2930013ae3ac8d84cf5ed9fca62641329f0653"
+    },
+    {
+      "path": "App/FounderComputerScreen.swift",
+      "sha256": "cf646e53bdfd8b4ab9ae79beb26da9bb93780c347b7438a99b1173b461265340"
+    },
+    {
+      "path": "App/FounderDeskWorkspace.swift",
+      "sha256": "242343ca069fe18b34c64f1b1234dd38157c3260d86d4353b652b3e05e3e9524"
+    },
+    {
+      "path": "App/FounderDeskWorkspaceModel.swift",
+      "sha256": "77a682bfa5b43fc60dccafc25f2ad9e0a70e324754ad13e48af2fc1040009534"
+    },
+    {
+      "path": "App/FounderGaragePhysicalComponents.swift",
+      "sha256": "7be6d0191006bb40528fb3a5e1287820d86fe18438c4d32ac8057c148b1dd91a"
+    },
+    {
+      "path": "App/FounderGarageRealityScene.swift",
+      "sha256": "64cbc4f254814d2222bf00792df61466a72f5be7a911f625aed3478a141a8bf8"
+    },
+    {
+      "path": "App/FounderGarageRealityView.swift",
+      "sha256": "7c120af5cf83231688f6523a22b40ec9f4bcfda39d282279cd07b6daa981e101"
+    },
+    {
+      "path": "App/GameModels.swift",
+      "sha256": "d0eb699b6cd2704e7ab88ff1dce53640d25a987f4dbe1c78c06e060be70f7dd2"
+    },
+    {
+      "path": "App/GameStore.swift",
+      "sha256": "daad1c791acf9ed91f14c3943e1f6eec1bc2e8a23b00c1dcfebff6e8d53db2ed"
+    },
+    {
+      "path": "App/MediaNarrativeDirector.swift",
+      "sha256": "0e0ec130dbc1a7dedd6d8c6a4ad125199f76fad93dc2f594dcdb2c7f7ba30cb2"
+    },
+    {
+      "path": "App/RivalEngine.swift",
+      "sha256": "ed008c3a47548d0a0e3cd03aa1ac7531201b844fbd0cce93dcc5b61c2a2796a7"
+    },
+    {
+      "path": "App/SignalTVModels.swift",
+      "sha256": "81d01f577d7e497d3ab3e073f87ed8711cb3a12e2c6eed71479fcaacef682b9a"
+    },
+    {
+      "path": "App/SignalTVView.swift",
+      "sha256": "33b94a95bf9b2a9f3e47aec63c23853680cc6e95eae6e3ac1c38530ed1aa3fa4"
+    },
+    {
+      "path": "App/SimulationModels.swift",
+      "sha256": "962b9f8563db49184bea724d323b8284576010ae7d3534432c8a7597cac2b4ea"
+    },
+    {
+      "path": "App/TechComEngine.swift",
+      "sha256": "763468f5722b0b7678af48a5b0ba50670b41167c58983ba2723e4e2695c454a2"
+    },
+    {
+      "path": "App/TechComScreen.swift",
+      "sha256": "e17bcae946fbf288cb8033fb26aa63f160683f5305770db4cb41eaf66a412608"
+    },
+    {
+      "path": "Canon/manifests/canon-manifest.json",
+      "sha256": "b7c6d656281fc24d63cf706a5129c2ee4c13fed88224d5f38303090ee95897aa"
+    },
+    {
+      "path": "Canon/records/systems/system.narrative_director.json",
+      "sha256": "b469e019b7b3d5e7a5109716d00ed27e50f3b454fa6d349ba620da232af4931b"
+    },
+    {
+      "path": "Documentation/Reconstruction/ChangedFileInventory.json",
+      "sha256": "2d624b47e7737e0b0a4fc52113ee7cb7745c6da59d3740a278e97f25b8ce0141"
+    },
+    {
+      "path": "Documentation/Reconstruction/ChronologicalReplay.json",
+      "sha256": "d500421a2a3a08e8a7198f2446fdf9080ba7757a73faac24d853801572ded3a2"
+    },
+    {
+      "path": "Documentation/Reconstruction/HistoricalSourceOperations.json",
+      "sha256": "ebb8a228b0b86da463cd179b00f2435b6ceab3a46459467ec112670ce6307473"
+    },
+    {
+      "path": "Documentation/Reconstruction/Report.md",
+      "sha256": "14947eff6356d98fad86cd49d68dc041163747082745b9b4ebce177d10f0c94a"
+    },
+    {
+      "path": "SoloUnicornRun.xcodeproj/project.pbxproj",
+      "sha256": "14808dd33bbafce75b55e44f93735df0af30395f6aad931256ec77c292dd8182"
+    },
+    {
+      "path": "Tests/CompanyFinanceTests.swift",
+      "sha256": "84888c58f4673b651847cea3618a192410c2e941b5fdd074e0ffce6a76aa2fef"
+    },
+    {
+      "path": "Tests/FounderDeskWorkspaceTests.swift",
+      "sha256": "11d8bb64418ae0cdd21fdd3ee16cea2316c661a220c568423de58f6042f3d858"
+    },
+    {
+      "path": "Tests/FounderGarageRealityTests.swift",
+      "sha256": "02c5f5689d892350a4c31f934f59b58417f23d8decf1f160e299357005e100f2"
+    },
+    {
+      "path": "Tests/GameStoreTests.swift",
+      "sha256": "e765520ead9a01f90f69e078b3c09fe1d5df4fe43f8f499f8b35e1eb231ecddc"
+    },
+    {
+      "path": "Tests/SignalTVTests.swift",
+      "sha256": "c83c393e808ae2f4f33b4be9a59cfeacf6ea68d5a50b32c649616bb09fab984c"
+    },
+    {
+      "path": "Tests/TechComEngineTests.swift",
+      "sha256": "2a787c12608891790ed47e8d6c37e3ad57baa39788172c376bc20294425b5feb"
+    },
+    {
+      "path": "Tools/ChaosCrew/analyze_traction.py",
+      "sha256": "3f05a177f3e53cab04bb222139984ba87aa9ef807a103131f03cf96eb39683ed"
+    },
+    {
+      "path": "Tools/SoloCanon/tests/test_narrative_preflight.py",
+      "sha256": "348eff1e25772ea373b84dd585870c78d5bd0c7c1c1d7f66fad7c81ce0bc6f59"
+    },
+    {
+      "path": "Tools/SoloCanon/tests/test_runtime_gateway.py",
+      "sha256": "fa46b468d0b3dda7868813edd7f0d99b908dcefc21562743750db6e4f510acd3"
+    },
+    {
+      "path": "UITests/Build32_6_1ProductionContinuityUITests.swift",
+      "sha256": "d42b5c6daf1a567c65ddd29ce484733b27b8479ef5dd73ea7ee7f14ffd07a468"
+    }
+  ],
+  "milestone": "R8",
+  "baseline": "bdefb20d9192cecba3df28554818e3e10625e039",
+  "branch": "codex/controlled-reconstruction",
+  "purpose": "Auditable Git checkpoint of verified R0\u2013R7 source; production unchanged from R7.",
+  "backup_location": "/Users/jermainenelson/Documents/Solo-Reconstruction-Backups",
+  "excluded_categories": [
+    "DerivedData",
+    "simulator data",
+    "xcresult bundles",
+    "generated caches",
+    "temporary archives",
+    "large raw CSVs",
+    "user workspace state",
+    "secrets and credentials"
+  ],
+  "historical_verification": {
+    "iphone_broad_tests": 1065,
+    "ipad_tests": 66,
+    "canon_tests": 357,
+    "deterministic_trajectories": 19008,
+    "save_version": 20,
+    "launch_attention_per_sprint": 2
+  },
+  "current_verification": {
+    "r7_source_matches": true,
+    "canon_records": 45,
+    "canon_validation": "PASS",
+    "diff_check": "PASS",
+    "hosted_tests_rerun": false
+  },
+  "post_commit_record": "Separate backup R8-PostCommit.json records the commit and tree hash without self-referential metadata."
+}

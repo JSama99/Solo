@@ -1,0 +1,2216 @@
+[
+  {
+    "path": "App/App.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "6965da0cd5c69efba843b9a8eec6d16c9f5ce6592f253cbde7d8a53f7201f160",
+    "final_sha256": "a7e8cdc42ad9043cd300ad78c089647d75064fae042ff51bbd8e7503336baa00",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T10:20:03.405Z",
+        "ordinal": 2577,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/FounderGarageRealityScene.swift": "332bc86206303a645dc06aafe0b6c462f4dd2a5d42746741fb94d88861e1cfb4",
+          "App/SignalTVView.swift": "5e5c384f57ea2ed0201a4a3c0b8b450fff27aa606d4af293ba82b2280dde62f9",
+          "App/App.swift": "6965da0cd5c69efba843b9a8eec6d16c9f5ce6592f253cbde7d8a53f7201f160"
+        },
+        "after_sha256": {
+          "App/FounderGarageRealityScene.swift": "ea31ca29e0cfcc2656aa4642162a088b7b4bbfcbd8a63da21cb2f0366a9cdcb5",
+          "App/SignalTVView.swift": "1ed3d65e8620262ef371dfbd817c2dd09e0471fbaa643f3fe6ffc572f6aaa7ee",
+          "App/App.swift": "a7e8cdc42ad9043cd300ad78c089647d75064fae042ff51bbd8e7503336baa00"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/ContentLibrary.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "28db0ea2350b922d54cb873f1930d96e44a4f1413116ce77be92e2f9e6008baf",
+    "final_sha256": "057e661b3c3adf94fc4d2bdfe1056e05e852ec2bb74081faa93fb3ed79968d67",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T03:56:26.925Z",
+        "ordinal": 1168,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/ContentLibrary.swift": "28db0ea2350b922d54cb873f1930d96e44a4f1413116ce77be92e2f9e6008baf",
+          "App/MediaNarrativeDirector.swift": "a1ebec37b45e9d4e25f9e80f4f3e0099e83960b796bff038be31aa1066e9a0e3"
+        },
+        "after_sha256": {
+          "App/ContentLibrary.swift": "057e661b3c3adf94fc4d2bdfe1056e05e852ec2bb74081faa93fb3ed79968d67",
+          "App/MediaNarrativeDirector.swift": "fb766683eb65a52ef68fc227cbda5a5fd1aa54e155ca7d237932b4fab7a8f8fc"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/ContentView.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "05f90fbd4c408c4738a7bc0201fd8961b3973d4d55e37c1c027fc3e4799e41f9",
+    "final_sha256": "d63d404392b6900ba444dc7e3f2930013ae3ac8d84cf5ed9fca62641329f0653",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T18:47:54.190Z",
+        "ordinal": 3778,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/ContentView.swift": "05f90fbd4c408c4738a7bc0201fd8961b3973d4d55e37c1c027fc3e4799e41f9"
+        },
+        "after_sha256": {
+          "App/ContentView.swift": "d63d404392b6900ba444dc7e3f2930013ae3ac8d84cf5ed9fca62641329f0653"
+        },
+        "milestone": "R3"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/FounderComputerScreen.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "3be732b94ed02244a3519c475b76d99e5c634e9d30207eb8e14da49b86dcbb9b",
+    "final_sha256": "cf646e53bdfd8b4ab9ae79beb26da9bb93780c347b7438a99b1173b461265340",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T18:47:54.214Z",
+        "ordinal": 3779,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/FounderComputerScreen.swift": "3be732b94ed02244a3519c475b76d99e5c634e9d30207eb8e14da49b86dcbb9b"
+        },
+        "after_sha256": {
+          "App/FounderComputerScreen.swift": "b513a0a738fb3edfbcf5a1db8a1e784f31ed930b4cf09295ee97fac68040d21a"
+        },
+        "milestone": "R3"
+      },
+      {
+        "timestamp": "2026-10-04T18:52:26.560Z",
+        "ordinal": 3807,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "a8f7dd667643323dbcec12632c74d3ddee4b10038e014f9d8ecc24d97c64da22",
+          "App/FounderComputerScreen.swift": "b513a0a738fb3edfbcf5a1db8a1e784f31ed930b4cf09295ee97fac68040d21a",
+          "App/GameStore.swift": "eb1ee5182c468c2449cbdd782ac923784b1f3fb0f72bf3143b5d3b178036f893"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "e6f21b42a445d5e71ecb45be037f6dc1affacffc2293731133af29b7877fb79e",
+          "App/FounderComputerScreen.swift": "426c77c93eda41e603a1d62849dc6689d59fd4848aef19f69aa0cfc22059e302",
+          "App/GameStore.swift": "cf0871030af4645ce98dd0d3a54ae58696a5f82e524d543fd979c34aee0b1056"
+        },
+        "milestone": "R3"
+      },
+      {
+        "timestamp": "2026-10-04T19:03:14.082Z",
+        "ordinal": 3874,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SimulationModels.swift": "d1fd64699f80dcf38534a1c60aa0bd9e051b88015ad24f1325ed405d74158058",
+          "App/FounderComputerScreen.swift": "426c77c93eda41e603a1d62849dc6689d59fd4848aef19f69aa0cfc22059e302",
+          "Tests/CompanyFinanceTests.swift": "b6defefd96df9a88ecb43d9ad182093b846a09b0f96fb6f9cc76ca0fcdfde51c"
+        },
+        "after_sha256": {
+          "App/SimulationModels.swift": "27f176b00276a5b066d4ad01e6d2d7160b07905421647dceafd4dd52fee66cc3",
+          "App/FounderComputerScreen.swift": "cf646e53bdfd8b4ab9ae79beb26da9bb93780c347b7438a99b1173b461265340",
+          "Tests/CompanyFinanceTests.swift": "722dbb00e56fd59da729e22fd9c105ebb513664ca8eaa0a48faff10c68f60b60"
+        },
+        "milestone": "R3"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/FounderDeskWorkspace.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "60ede92271e281d9cbb56799827ff3cc47bdb6f39a7ec19d0a02cc250639247a",
+    "final_sha256": "242343ca069fe18b34c64f1b1234dd38157c3260d86d4353b652b3e05e3e9524",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T10:05:33.994Z",
+        "ordinal": 2365,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "36f15003b1c41f97eee8b64a0cfb3ec113d16b1518fd4bdbe63457f6f0c9a243",
+          "App/FounderGarageRealityScene.swift": "49770ed45ee465feef75967486e53c92ae0ed8ae25432be1d17f1331e00148f4",
+          "App/FounderGarageRealityView.swift": "323a2cc55472d1cbcf07c33a50f5e9ad496c6368b374d3a43ddb735a1cc04801",
+          "App/FounderDeskWorkspace.swift": "60ede92271e281d9cbb56799827ff3cc47bdb6f39a7ec19d0a02cc250639247a",
+          "Tests/SignalTVTests.swift": "fe4d73861e01fa5936f48dd57847d55eb41f1b3b223f9ec33a8024ffd06818d7"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "5e5c384f57ea2ed0201a4a3c0b8b450fff27aa606d4af293ba82b2280dde62f9",
+          "App/FounderGarageRealityScene.swift": "332bc86206303a645dc06aafe0b6c462f4dd2a5d42746741fb94d88861e1cfb4",
+          "App/FounderGarageRealityView.swift": "c5347edb5c7e1c9c8e019ecda5529f985d06fafcbd782b40cf6c4179186053c8",
+          "App/FounderDeskWorkspace.swift": "242343ca069fe18b34c64f1b1234dd38157c3260d86d4353b652b3e05e3e9524",
+          "Tests/SignalTVTests.swift": "fb98d6e9879a6c666f72d845cf0cfff76b1bc73b09076c55442a206edda42fc6"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/FounderDeskWorkspaceModel.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "a70f0233db8924e111f60a9ae8ff0307625b2f8a3fd8a3959358ddd845d22e88",
+    "final_sha256": "77a682bfa5b43fc60dccafc25f2ad9e0a70e324754ad13e48af2fc1040009534",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T20:33:14.618Z",
+        "ordinal": 4373,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SimulationModels.swift": "27f176b00276a5b066d4ad01e6d2d7160b07905421647dceafd4dd52fee66cc3",
+          "App/GameModels.swift": "c9d180f082d5aee8dbaad0530a7ab997635e1774acf9d94cd4573958861df64b",
+          "App/GameStore.swift": "cf0871030af4645ce98dd0d3a54ae58696a5f82e524d543fd979c34aee0b1056",
+          "App/FounderDeskWorkspaceModel.swift": "a70f0233db8924e111f60a9ae8ff0307625b2f8a3fd8a3959358ddd845d22e88",
+          "App/FounderGaragePhysicalComponents.swift": "35bf43ce4b6cc8437e6e136c15a9c0d16d119a4f20631f1524c1505f44fabb76",
+          "App/FounderGarageRealityView.swift": "c5347edb5c7e1c9c8e019ecda5529f985d06fafcbd782b40cf6c4179186053c8"
+        },
+        "after_sha256": {
+          "App/SimulationModels.swift": "c6c5919401f0fe1613240451e61fbc1315d5d8cd883c95287a21a19658dd821b",
+          "App/GameModels.swift": "d0eb699b6cd2704e7ab88ff1dce53640d25a987f4dbe1c78c06e060be70f7dd2",
+          "App/GameStore.swift": "3bc494be1e93846ad03c0827e6fd2eb8239dbe1d25a8cc1d15999717fc450b3b",
+          "App/FounderDeskWorkspaceModel.swift": "77a682bfa5b43fc60dccafc25f2ad9e0a70e324754ad13e48af2fc1040009534",
+          "App/FounderGaragePhysicalComponents.swift": "67d3b23bd2e08d9c3fb8abc36053161d19b69708aeb88e1928fff80a57eaf1e5",
+          "App/FounderGarageRealityView.swift": "7c120af5cf83231688f6523a22b40ec9f4bcfda39d282279cd07b6daa981e101"
+        },
+        "milestone": "R4"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/FounderGaragePhysicalComponents.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "35bf43ce4b6cc8437e6e136c15a9c0d16d119a4f20631f1524c1505f44fabb76",
+    "final_sha256": "7be6d0191006bb40528fb3a5e1287820d86fe18438c4d32ac8057c148b1dd91a",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T20:33:14.618Z",
+        "ordinal": 4373,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SimulationModels.swift": "27f176b00276a5b066d4ad01e6d2d7160b07905421647dceafd4dd52fee66cc3",
+          "App/GameModels.swift": "c9d180f082d5aee8dbaad0530a7ab997635e1774acf9d94cd4573958861df64b",
+          "App/GameStore.swift": "cf0871030af4645ce98dd0d3a54ae58696a5f82e524d543fd979c34aee0b1056",
+          "App/FounderDeskWorkspaceModel.swift": "a70f0233db8924e111f60a9ae8ff0307625b2f8a3fd8a3959358ddd845d22e88",
+          "App/FounderGaragePhysicalComponents.swift": "35bf43ce4b6cc8437e6e136c15a9c0d16d119a4f20631f1524c1505f44fabb76",
+          "App/FounderGarageRealityView.swift": "c5347edb5c7e1c9c8e019ecda5529f985d06fafcbd782b40cf6c4179186053c8"
+        },
+        "after_sha256": {
+          "App/SimulationModels.swift": "c6c5919401f0fe1613240451e61fbc1315d5d8cd883c95287a21a19658dd821b",
+          "App/GameModels.swift": "d0eb699b6cd2704e7ab88ff1dce53640d25a987f4dbe1c78c06e060be70f7dd2",
+          "App/GameStore.swift": "3bc494be1e93846ad03c0827e6fd2eb8239dbe1d25a8cc1d15999717fc450b3b",
+          "App/FounderDeskWorkspaceModel.swift": "77a682bfa5b43fc60dccafc25f2ad9e0a70e324754ad13e48af2fc1040009534",
+          "App/FounderGaragePhysicalComponents.swift": "67d3b23bd2e08d9c3fb8abc36053161d19b69708aeb88e1928fff80a57eaf1e5",
+          "App/FounderGarageRealityView.swift": "7c120af5cf83231688f6523a22b40ec9f4bcfda39d282279cd07b6daa981e101"
+        },
+        "milestone": "R4"
+      },
+      {
+        "timestamp": "2026-10-04T23:29:46.568Z",
+        "ordinal": 4746,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/FounderGaragePhysicalComponents.swift": "67d3b23bd2e08d9c3fb8abc36053161d19b69708aeb88e1928fff80a57eaf1e5"
+        },
+        "after_sha256": {
+          "App/FounderGaragePhysicalComponents.swift": "7be6d0191006bb40528fb3a5e1287820d86fe18438c4d32ac8057c148b1dd91a"
+        },
+        "milestone": "R4"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/FounderGarageRealityScene.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "49770ed45ee465feef75967486e53c92ae0ed8ae25432be1d17f1331e00148f4",
+    "final_sha256": "64cbc4f254814d2222bf00792df61466a72f5be7a911f625aed3478a141a8bf8",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T10:05:33.994Z",
+        "ordinal": 2365,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "36f15003b1c41f97eee8b64a0cfb3ec113d16b1518fd4bdbe63457f6f0c9a243",
+          "App/FounderGarageRealityScene.swift": "49770ed45ee465feef75967486e53c92ae0ed8ae25432be1d17f1331e00148f4",
+          "App/FounderGarageRealityView.swift": "323a2cc55472d1cbcf07c33a50f5e9ad496c6368b374d3a43ddb735a1cc04801",
+          "App/FounderDeskWorkspace.swift": "60ede92271e281d9cbb56799827ff3cc47bdb6f39a7ec19d0a02cc250639247a",
+          "Tests/SignalTVTests.swift": "fe4d73861e01fa5936f48dd57847d55eb41f1b3b223f9ec33a8024ffd06818d7"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "5e5c384f57ea2ed0201a4a3c0b8b450fff27aa606d4af293ba82b2280dde62f9",
+          "App/FounderGarageRealityScene.swift": "332bc86206303a645dc06aafe0b6c462f4dd2a5d42746741fb94d88861e1cfb4",
+          "App/FounderGarageRealityView.swift": "c5347edb5c7e1c9c8e019ecda5529f985d06fafcbd782b40cf6c4179186053c8",
+          "App/FounderDeskWorkspace.swift": "242343ca069fe18b34c64f1b1234dd38157c3260d86d4353b652b3e05e3e9524",
+          "Tests/SignalTVTests.swift": "fb98d6e9879a6c666f72d845cf0cfff76b1bc73b09076c55442a206edda42fc6"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:20:03.405Z",
+        "ordinal": 2577,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/FounderGarageRealityScene.swift": "332bc86206303a645dc06aafe0b6c462f4dd2a5d42746741fb94d88861e1cfb4",
+          "App/SignalTVView.swift": "5e5c384f57ea2ed0201a4a3c0b8b450fff27aa606d4af293ba82b2280dde62f9",
+          "App/App.swift": "6965da0cd5c69efba843b9a8eec6d16c9f5ce6592f253cbde7d8a53f7201f160"
+        },
+        "after_sha256": {
+          "App/FounderGarageRealityScene.swift": "ea31ca29e0cfcc2656aa4642162a088b7b4bbfcbd8a63da21cb2f0366a9cdcb5",
+          "App/SignalTVView.swift": "1ed3d65e8620262ef371dfbd817c2dd09e0471fbaa643f3fe6ffc572f6aaa7ee",
+          "App/App.swift": "a7e8cdc42ad9043cd300ad78c089647d75064fae042ff51bbd8e7503336baa00"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:27:32.822Z",
+        "ordinal": 2739,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/FounderGarageRealityScene.swift": "ea31ca29e0cfcc2656aa4642162a088b7b4bbfcbd8a63da21cb2f0366a9cdcb5"
+        },
+        "after_sha256": {
+          "App/FounderGarageRealityScene.swift": "8447a9e0ce32264ff9e29e6eac90b7adc9b24312fb6092b416f1d640534057e9"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:28:56.320Z",
+        "ordinal": 2788,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/FounderGarageRealityScene.swift": "8447a9e0ce32264ff9e29e6eac90b7adc9b24312fb6092b416f1d640534057e9",
+          "Tests/FounderGarageRealityTests.swift": "754dd8b9a6033cedc1d120066e491c25cfd71226f87a3a632aad3c6808976a47"
+        },
+        "after_sha256": {
+          "App/FounderGarageRealityScene.swift": "02710af55a70db48808b3bebd9ea6adb8dd3fe9d53b948ab758031c0e5a45fec",
+          "Tests/FounderGarageRealityTests.swift": "b6c4cfdf9b41b8b19b5c4f3a882ea23d089fafb45a56f1911042779359646b10"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:33:40.761Z",
+        "ordinal": 2884,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/FounderGarageRealityScene.swift": "02710af55a70db48808b3bebd9ea6adb8dd3fe9d53b948ab758031c0e5a45fec"
+        },
+        "after_sha256": {
+          "App/FounderGarageRealityScene.swift": "7a921441eae86744c4cc67084c6bebff0ecda3ae6e3b8b1c120750ac38971e39"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:56:59.692Z",
+        "ordinal": 3066,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "35f75f2d1a43d9d72e31e2a515ad5d7223affe1470bcf69af7738da629e49212",
+          "App/FounderGarageRealityScene.swift": "7a921441eae86744c4cc67084c6bebff0ecda3ae6e3b8b1c120750ac38971e39"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "f2da37083af6832d824695421d36a871cce4ed69cec1517952d30cc29c5a2e5b",
+          "App/FounderGarageRealityScene.swift": "64cbc4f254814d2222bf00792df61466a72f5be7a911f625aed3478a141a8bf8"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/FounderGarageRealityView.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "323a2cc55472d1cbcf07c33a50f5e9ad496c6368b374d3a43ddb735a1cc04801",
+    "final_sha256": "7c120af5cf83231688f6523a22b40ec9f4bcfda39d282279cd07b6daa981e101",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T10:05:33.994Z",
+        "ordinal": 2365,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "36f15003b1c41f97eee8b64a0cfb3ec113d16b1518fd4bdbe63457f6f0c9a243",
+          "App/FounderGarageRealityScene.swift": "49770ed45ee465feef75967486e53c92ae0ed8ae25432be1d17f1331e00148f4",
+          "App/FounderGarageRealityView.swift": "323a2cc55472d1cbcf07c33a50f5e9ad496c6368b374d3a43ddb735a1cc04801",
+          "App/FounderDeskWorkspace.swift": "60ede92271e281d9cbb56799827ff3cc47bdb6f39a7ec19d0a02cc250639247a",
+          "Tests/SignalTVTests.swift": "fe4d73861e01fa5936f48dd57847d55eb41f1b3b223f9ec33a8024ffd06818d7"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "5e5c384f57ea2ed0201a4a3c0b8b450fff27aa606d4af293ba82b2280dde62f9",
+          "App/FounderGarageRealityScene.swift": "332bc86206303a645dc06aafe0b6c462f4dd2a5d42746741fb94d88861e1cfb4",
+          "App/FounderGarageRealityView.swift": "c5347edb5c7e1c9c8e019ecda5529f985d06fafcbd782b40cf6c4179186053c8",
+          "App/FounderDeskWorkspace.swift": "242343ca069fe18b34c64f1b1234dd38157c3260d86d4353b652b3e05e3e9524",
+          "Tests/SignalTVTests.swift": "fb98d6e9879a6c666f72d845cf0cfff76b1bc73b09076c55442a206edda42fc6"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T20:33:14.618Z",
+        "ordinal": 4373,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SimulationModels.swift": "27f176b00276a5b066d4ad01e6d2d7160b07905421647dceafd4dd52fee66cc3",
+          "App/GameModels.swift": "c9d180f082d5aee8dbaad0530a7ab997635e1774acf9d94cd4573958861df64b",
+          "App/GameStore.swift": "cf0871030af4645ce98dd0d3a54ae58696a5f82e524d543fd979c34aee0b1056",
+          "App/FounderDeskWorkspaceModel.swift": "a70f0233db8924e111f60a9ae8ff0307625b2f8a3fd8a3959358ddd845d22e88",
+          "App/FounderGaragePhysicalComponents.swift": "35bf43ce4b6cc8437e6e136c15a9c0d16d119a4f20631f1524c1505f44fabb76",
+          "App/FounderGarageRealityView.swift": "c5347edb5c7e1c9c8e019ecda5529f985d06fafcbd782b40cf6c4179186053c8"
+        },
+        "after_sha256": {
+          "App/SimulationModels.swift": "c6c5919401f0fe1613240451e61fbc1315d5d8cd883c95287a21a19658dd821b",
+          "App/GameModels.swift": "d0eb699b6cd2704e7ab88ff1dce53640d25a987f4dbe1c78c06e060be70f7dd2",
+          "App/GameStore.swift": "3bc494be1e93846ad03c0827e6fd2eb8239dbe1d25a8cc1d15999717fc450b3b",
+          "App/FounderDeskWorkspaceModel.swift": "77a682bfa5b43fc60dccafc25f2ad9e0a70e324754ad13e48af2fc1040009534",
+          "App/FounderGaragePhysicalComponents.swift": "67d3b23bd2e08d9c3fb8abc36053161d19b69708aeb88e1928fff80a57eaf1e5",
+          "App/FounderGarageRealityView.swift": "7c120af5cf83231688f6523a22b40ec9f4bcfda39d282279cd07b6daa981e101"
+        },
+        "milestone": "R4"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/GameModels.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "13dae71b21d88d73e0c20f112a1ba50918895162b7fc1ec7052f3518fff4e464",
+    "final_sha256": "d0eb699b6cd2704e7ab88ff1dce53640d25a987f4dbe1c78c06e060be70f7dd2",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T18:47:04.024Z",
+        "ordinal": 3762,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/GameModels.swift": "13dae71b21d88d73e0c20f112a1ba50918895162b7fc1ec7052f3518fff4e464"
+        },
+        "after_sha256": {
+          "App/GameModels.swift": "c9d180f082d5aee8dbaad0530a7ab997635e1774acf9d94cd4573958861df64b"
+        },
+        "milestone": "R3"
+      },
+      {
+        "timestamp": "2026-10-04T20:33:14.618Z",
+        "ordinal": 4373,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SimulationModels.swift": "27f176b00276a5b066d4ad01e6d2d7160b07905421647dceafd4dd52fee66cc3",
+          "App/GameModels.swift": "c9d180f082d5aee8dbaad0530a7ab997635e1774acf9d94cd4573958861df64b",
+          "App/GameStore.swift": "cf0871030af4645ce98dd0d3a54ae58696a5f82e524d543fd979c34aee0b1056",
+          "App/FounderDeskWorkspaceModel.swift": "a70f0233db8924e111f60a9ae8ff0307625b2f8a3fd8a3959358ddd845d22e88",
+          "App/FounderGaragePhysicalComponents.swift": "35bf43ce4b6cc8437e6e136c15a9c0d16d119a4f20631f1524c1505f44fabb76",
+          "App/FounderGarageRealityView.swift": "c5347edb5c7e1c9c8e019ecda5529f985d06fafcbd782b40cf6c4179186053c8"
+        },
+        "after_sha256": {
+          "App/SimulationModels.swift": "c6c5919401f0fe1613240451e61fbc1315d5d8cd883c95287a21a19658dd821b",
+          "App/GameModels.swift": "d0eb699b6cd2704e7ab88ff1dce53640d25a987f4dbe1c78c06e060be70f7dd2",
+          "App/GameStore.swift": "3bc494be1e93846ad03c0827e6fd2eb8239dbe1d25a8cc1d15999717fc450b3b",
+          "App/FounderDeskWorkspaceModel.swift": "77a682bfa5b43fc60dccafc25f2ad9e0a70e324754ad13e48af2fc1040009534",
+          "App/FounderGaragePhysicalComponents.swift": "67d3b23bd2e08d9c3fb8abc36053161d19b69708aeb88e1928fff80a57eaf1e5",
+          "App/FounderGarageRealityView.swift": "7c120af5cf83231688f6523a22b40ec9f4bcfda39d282279cd07b6daa981e101"
+        },
+        "milestone": "R4"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/GameStore.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "4af3b9efb29c47fd1f01d477b0ad3db0697d18f1bbad98b0ca727f70805a9759",
+    "final_sha256": "daad1c791acf9ed91f14c3943e1f6eec1bc2e8a23b00c1dcfebff6e8d53db2ed",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T03:19:29.080Z",
+        "ordinal": 150,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/GameStore.swift": "4af3b9efb29c47fd1f01d477b0ad3db0697d18f1bbad98b0ca727f70805a9759"
+        },
+        "after_sha256": {
+          "App/GameStore.swift": "b1d8e70d45ab25acec8aaf657f0c759cd00da5a5b2ae167e71faa1e34b9bc2ac"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T03:36:08.427Z",
+        "ordinal": 623,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/GameStore.swift": "b1d8e70d45ab25acec8aaf657f0c759cd00da5a5b2ae167e71faa1e34b9bc2ac"
+        },
+        "after_sha256": {
+          "App/GameStore.swift": "0eb141aaab4821238cf58a98b019e15eb351491eaf1c1a4d4af830bdd00b7ef0"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T04:13:52.231Z",
+        "ordinal": 1394,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/GameStore.swift": "0eb141aaab4821238cf58a98b019e15eb351491eaf1c1a4d4af830bdd00b7ef0",
+          "App/SignalTVModels.swift": "637b0ce8734aca3681682cc4f03f73aa06b4e5ecc2fe7985ae9b1ec01dfe0981",
+          "App/MediaNarrativeDirector.swift": "fb766683eb65a52ef68fc227cbda5a5fd1aa54e155ca7d237932b4fab7a8f8fc"
+        },
+        "after_sha256": {
+          "App/GameStore.swift": "126f8da444977e4a0b50480d98f32a017fa24df012d93625546c8b8ad1f98d46",
+          "App/SignalTVModels.swift": "a1dabc501ccffd42b22592f74b442a34d239500982c89edcadd7117e7082f073",
+          "App/MediaNarrativeDirector.swift": "34498a26406b3b49b53604b8cb03266dd4719b1d70c00911326b4a3e33c664eb"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T08:54:31.099Z",
+        "ordinal": 1559,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "34498a26406b3b49b53604b8cb03266dd4719b1d70c00911326b4a3e33c664eb",
+          "App/RivalEngine.swift": "6cb674704ee81b9bf2dcea6a68e1eb9e78da1da72693540a7c9270ffde392d01",
+          "App/SignalTVModels.swift": "a1dabc501ccffd42b22592f74b442a34d239500982c89edcadd7117e7082f073",
+          "App/TechComEngine.swift": "93471f36804e169707539f23292b65fb1fa2dd86b8874fc31e31670375bdd62b",
+          "Tests/GameStoreTests.swift": "7f79a4dc0be108fe05fa081b8f783f121d20c336ef27a7de18784ff183e7c219",
+          "App/GameStore.swift": "126f8da444977e4a0b50480d98f32a017fa24df012d93625546c8b8ad1f98d46",
+          "App/TechComScreen.swift": "a2090ce99c881ebf4bcbd53e61de757ffbe22fc7e92511faf8b03368f5088640"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "0b18ddf7e2134468fdd7f34a22b9341098247af3077cb0836f8936c83e015735",
+          "App/RivalEngine.swift": "ed008c3a47548d0a0e3cd03aa1ac7531201b844fbd0cce93dcc5b61c2a2796a7",
+          "App/SignalTVModels.swift": "ceb3e1540ff9d630aac0e9790fb8ac5afbeb13dd0dde360f3daa268670d278e7",
+          "App/TechComEngine.swift": "763468f5722b0b7678af48a5b0ba50670b41167c58983ba2723e4e2695c454a2",
+          "Tests/GameStoreTests.swift": "e765520ead9a01f90f69e078b3c09fe1d5df4fe43f8f499f8b35e1eb231ecddc",
+          "App/GameStore.swift": "db78d4e4c39f756d8ff7ad43f1f3f8eb038ae864b5629b81be098676842907c6",
+          "App/TechComScreen.swift": "e17bcae946fbf288cb8033fb26aa63f160683f5305770db4cb41eaf66a412608"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:05:29.673Z",
+        "ordinal": 1696,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "0b18ddf7e2134468fdd7f34a22b9341098247af3077cb0836f8936c83e015735",
+          "App/SignalTVModels.swift": "ceb3e1540ff9d630aac0e9790fb8ac5afbeb13dd0dde360f3daa268670d278e7",
+          "App/GameStore.swift": "db78d4e4c39f756d8ff7ad43f1f3f8eb038ae864b5629b81be098676842907c6"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "cf6cad816d476eef4c94c0e82873abe42894d9f8f0f0426471776c279b9d0081",
+          "App/SignalTVModels.swift": "70b82d43a68b951347bd7e8f8eee541f0e140621db2ed41a6d0246bcdc862bf4",
+          "App/GameStore.swift": "5318048b6d2fbcbc2ed24602d00fddd04810bbc22b1b5234c182418ee389401c"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:18:33.493Z",
+        "ordinal": 1849,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/GameStore.swift": "5318048b6d2fbcbc2ed24602d00fddd04810bbc22b1b5234c182418ee389401c"
+        },
+        "after_sha256": {
+          "App/GameStore.swift": "934bbabfdd70284c4c471f1ccf8b1f87661d302e289337462cd8d472fabd7dfc"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T18:47:04.050Z",
+        "ordinal": 3763,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/GameStore.swift": "934bbabfdd70284c4c471f1ccf8b1f87661d302e289337462cd8d472fabd7dfc"
+        },
+        "after_sha256": {
+          "App/GameStore.swift": "366292959844cd7111842bd93e7db2e2f492ecb574cb3ee9807358798ca193c4"
+        },
+        "milestone": "R3"
+      },
+      {
+        "timestamp": "2026-10-04T18:50:19.714Z",
+        "ordinal": 3788,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/GameStore.swift": "366292959844cd7111842bd93e7db2e2f492ecb574cb3ee9807358798ca193c4"
+        },
+        "after_sha256": {
+          "App/GameStore.swift": "eb1ee5182c468c2449cbdd782ac923784b1f3fb0f72bf3143b5d3b178036f893"
+        },
+        "milestone": "R3"
+      },
+      {
+        "timestamp": "2026-10-04T18:52:26.560Z",
+        "ordinal": 3807,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "a8f7dd667643323dbcec12632c74d3ddee4b10038e014f9d8ecc24d97c64da22",
+          "App/FounderComputerScreen.swift": "b513a0a738fb3edfbcf5a1db8a1e784f31ed930b4cf09295ee97fac68040d21a",
+          "App/GameStore.swift": "eb1ee5182c468c2449cbdd782ac923784b1f3fb0f72bf3143b5d3b178036f893"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "e6f21b42a445d5e71ecb45be037f6dc1affacffc2293731133af29b7877fb79e",
+          "App/FounderComputerScreen.swift": "426c77c93eda41e603a1d62849dc6689d59fd4848aef19f69aa0cfc22059e302",
+          "App/GameStore.swift": "cf0871030af4645ce98dd0d3a54ae58696a5f82e524d543fd979c34aee0b1056"
+        },
+        "milestone": "R3"
+      },
+      {
+        "timestamp": "2026-10-04T20:33:14.618Z",
+        "ordinal": 4373,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SimulationModels.swift": "27f176b00276a5b066d4ad01e6d2d7160b07905421647dceafd4dd52fee66cc3",
+          "App/GameModels.swift": "c9d180f082d5aee8dbaad0530a7ab997635e1774acf9d94cd4573958861df64b",
+          "App/GameStore.swift": "cf0871030af4645ce98dd0d3a54ae58696a5f82e524d543fd979c34aee0b1056",
+          "App/FounderDeskWorkspaceModel.swift": "a70f0233db8924e111f60a9ae8ff0307625b2f8a3fd8a3959358ddd845d22e88",
+          "App/FounderGaragePhysicalComponents.swift": "35bf43ce4b6cc8437e6e136c15a9c0d16d119a4f20631f1524c1505f44fabb76",
+          "App/FounderGarageRealityView.swift": "c5347edb5c7e1c9c8e019ecda5529f985d06fafcbd782b40cf6c4179186053c8"
+        },
+        "after_sha256": {
+          "App/SimulationModels.swift": "c6c5919401f0fe1613240451e61fbc1315d5d8cd883c95287a21a19658dd821b",
+          "App/GameModels.swift": "d0eb699b6cd2704e7ab88ff1dce53640d25a987f4dbe1c78c06e060be70f7dd2",
+          "App/GameStore.swift": "3bc494be1e93846ad03c0827e6fd2eb8239dbe1d25a8cc1d15999717fc450b3b",
+          "App/FounderDeskWorkspaceModel.swift": "77a682bfa5b43fc60dccafc25f2ad9e0a70e324754ad13e48af2fc1040009534",
+          "App/FounderGaragePhysicalComponents.swift": "67d3b23bd2e08d9c3fb8abc36053161d19b69708aeb88e1928fff80a57eaf1e5",
+          "App/FounderGarageRealityView.swift": "7c120af5cf83231688f6523a22b40ec9f4bcfda39d282279cd07b6daa981e101"
+        },
+        "milestone": "R4"
+      },
+      {
+        "timestamp": "2026-10-04T20:39:46.676Z",
+        "ordinal": 4473,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/GameStore.swift": "3bc494be1e93846ad03c0827e6fd2eb8239dbe1d25a8cc1d15999717fc450b3b",
+          "Tests/FounderDeskWorkspaceTests.swift": "f393293bf5bd9ee7388b21b9c3a09c09a2e6f9c54caa5e4b98ab6726f9910869"
+        },
+        "after_sha256": {
+          "App/GameStore.swift": "daad1c791acf9ed91f14c3943e1f6eec1bc2e8a23b00c1dcfebff6e8d53db2ed",
+          "Tests/FounderDeskWorkspaceTests.swift": "01f88bd646b1a7b81fa694491b0d1d25541cd20a2c5f032062e16660bd129c83"
+        },
+        "milestone": "R4"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/MediaNarrativeDirector.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": null,
+    "final_sha256": "0e0ec130dbc1a7dedd6d8c6a4ad125199f76fad93dc2f594dcdb2c7f7ba30cb2",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T03:19:14.202Z",
+        "ordinal": 136,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": null
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "6dc64b3c2e8df8f3d10da9c62f56bcfa83b8437e0c5415a6d15717211f0875d1"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T03:35:51.976Z",
+        "ordinal": 616,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "6dc64b3c2e8df8f3d10da9c62f56bcfa83b8437e0c5415a6d15717211f0875d1"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "a1ebec37b45e9d4e25f9e80f4f3e0099e83960b796bff038be31aa1066e9a0e3"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T03:56:26.925Z",
+        "ordinal": 1168,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/ContentLibrary.swift": "28db0ea2350b922d54cb873f1930d96e44a4f1413116ce77be92e2f9e6008baf",
+          "App/MediaNarrativeDirector.swift": "a1ebec37b45e9d4e25f9e80f4f3e0099e83960b796bff038be31aa1066e9a0e3"
+        },
+        "after_sha256": {
+          "App/ContentLibrary.swift": "057e661b3c3adf94fc4d2bdfe1056e05e852ec2bb74081faa93fb3ed79968d67",
+          "App/MediaNarrativeDirector.swift": "fb766683eb65a52ef68fc227cbda5a5fd1aa54e155ca7d237932b4fab7a8f8fc"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T04:13:52.231Z",
+        "ordinal": 1394,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/GameStore.swift": "0eb141aaab4821238cf58a98b019e15eb351491eaf1c1a4d4af830bdd00b7ef0",
+          "App/SignalTVModels.swift": "637b0ce8734aca3681682cc4f03f73aa06b4e5ecc2fe7985ae9b1ec01dfe0981",
+          "App/MediaNarrativeDirector.swift": "fb766683eb65a52ef68fc227cbda5a5fd1aa54e155ca7d237932b4fab7a8f8fc"
+        },
+        "after_sha256": {
+          "App/GameStore.swift": "126f8da444977e4a0b50480d98f32a017fa24df012d93625546c8b8ad1f98d46",
+          "App/SignalTVModels.swift": "a1dabc501ccffd42b22592f74b442a34d239500982c89edcadd7117e7082f073",
+          "App/MediaNarrativeDirector.swift": "34498a26406b3b49b53604b8cb03266dd4719b1d70c00911326b4a3e33c664eb"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T08:54:31.099Z",
+        "ordinal": 1559,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "34498a26406b3b49b53604b8cb03266dd4719b1d70c00911326b4a3e33c664eb",
+          "App/RivalEngine.swift": "6cb674704ee81b9bf2dcea6a68e1eb9e78da1da72693540a7c9270ffde392d01",
+          "App/SignalTVModels.swift": "a1dabc501ccffd42b22592f74b442a34d239500982c89edcadd7117e7082f073",
+          "App/TechComEngine.swift": "93471f36804e169707539f23292b65fb1fa2dd86b8874fc31e31670375bdd62b",
+          "Tests/GameStoreTests.swift": "7f79a4dc0be108fe05fa081b8f783f121d20c336ef27a7de18784ff183e7c219",
+          "App/GameStore.swift": "126f8da444977e4a0b50480d98f32a017fa24df012d93625546c8b8ad1f98d46",
+          "App/TechComScreen.swift": "a2090ce99c881ebf4bcbd53e61de757ffbe22fc7e92511faf8b03368f5088640"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "0b18ddf7e2134468fdd7f34a22b9341098247af3077cb0836f8936c83e015735",
+          "App/RivalEngine.swift": "ed008c3a47548d0a0e3cd03aa1ac7531201b844fbd0cce93dcc5b61c2a2796a7",
+          "App/SignalTVModels.swift": "ceb3e1540ff9d630aac0e9790fb8ac5afbeb13dd0dde360f3daa268670d278e7",
+          "App/TechComEngine.swift": "763468f5722b0b7678af48a5b0ba50670b41167c58983ba2723e4e2695c454a2",
+          "Tests/GameStoreTests.swift": "e765520ead9a01f90f69e078b3c09fe1d5df4fe43f8f499f8b35e1eb231ecddc",
+          "App/GameStore.swift": "db78d4e4c39f756d8ff7ad43f1f3f8eb038ae864b5629b81be098676842907c6",
+          "App/TechComScreen.swift": "e17bcae946fbf288cb8033fb26aa63f160683f5305770db4cb41eaf66a412608"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:05:29.673Z",
+        "ordinal": 1696,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "0b18ddf7e2134468fdd7f34a22b9341098247af3077cb0836f8936c83e015735",
+          "App/SignalTVModels.swift": "ceb3e1540ff9d630aac0e9790fb8ac5afbeb13dd0dde360f3daa268670d278e7",
+          "App/GameStore.swift": "db78d4e4c39f756d8ff7ad43f1f3f8eb038ae864b5629b81be098676842907c6"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "cf6cad816d476eef4c94c0e82873abe42894d9f8f0f0426471776c279b9d0081",
+          "App/SignalTVModels.swift": "70b82d43a68b951347bd7e8f8eee541f0e140621db2ed41a6d0246bcdc862bf4",
+          "App/GameStore.swift": "5318048b6d2fbcbc2ed24602d00fddd04810bbc22b1b5234c182418ee389401c"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:18:33.378Z",
+        "ordinal": 1848,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "cf6cad816d476eef4c94c0e82873abe42894d9f8f0f0426471776c279b9d0081"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "0d12a3d76223580c1f561c0edac5bbf030dfefb7418708057c1674959d7625ae"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:19:02.624Z",
+        "ordinal": 1855,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "0d12a3d76223580c1f561c0edac5bbf030dfefb7418708057c1674959d7625ae"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "1d685aec58ee6f545cf7ba6cd2950a189710d0dbbdaa89b8432340b0594c1ca7"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:34:47.495Z",
+        "ordinal": 2089,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "1d685aec58ee6f545cf7ba6cd2950a189710d0dbbdaa89b8432340b0594c1ca7",
+          "App/SignalTVView.swift": "2ab3aadc11a7776bd999b9c8fee1c6aeb6ce44d653c165277eca55c9fea05645"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "92ac3cef82e33b536e355d94ab28c5eebe67e8a4e93840ccd73393d3a8b7d8c0",
+          "App/SignalTVView.swift": "72cdae39cf5c038fe4ca682df963a545beb708146fe0cdd4ed7ef1e6ede98880"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:37:18.271Z",
+        "ordinal": 2107,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "92ac3cef82e33b536e355d94ab28c5eebe67e8a4e93840ccd73393d3a8b7d8c0",
+          "Tests/SignalTVTests.swift": "33b11574a94dab0ec178272241160b0d7c786c0889a5fa59609cdebd4fa9210e"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "0e0ec130dbc1a7dedd6d8c6a4ad125199f76fad93dc2f594dcdb2c7f7ba30cb2",
+          "Tests/SignalTVTests.swift": "f1e0e91f300bc7128bfb1019f91e8fd48f8a4bf46ed6861a115f89b9a4dd6240"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/RivalEngine.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "6cb674704ee81b9bf2dcea6a68e1eb9e78da1da72693540a7c9270ffde392d01",
+    "final_sha256": "ed008c3a47548d0a0e3cd03aa1ac7531201b844fbd0cce93dcc5b61c2a2796a7",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T08:54:31.099Z",
+        "ordinal": 1559,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "34498a26406b3b49b53604b8cb03266dd4719b1d70c00911326b4a3e33c664eb",
+          "App/RivalEngine.swift": "6cb674704ee81b9bf2dcea6a68e1eb9e78da1da72693540a7c9270ffde392d01",
+          "App/SignalTVModels.swift": "a1dabc501ccffd42b22592f74b442a34d239500982c89edcadd7117e7082f073",
+          "App/TechComEngine.swift": "93471f36804e169707539f23292b65fb1fa2dd86b8874fc31e31670375bdd62b",
+          "Tests/GameStoreTests.swift": "7f79a4dc0be108fe05fa081b8f783f121d20c336ef27a7de18784ff183e7c219",
+          "App/GameStore.swift": "126f8da444977e4a0b50480d98f32a017fa24df012d93625546c8b8ad1f98d46",
+          "App/TechComScreen.swift": "a2090ce99c881ebf4bcbd53e61de757ffbe22fc7e92511faf8b03368f5088640"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "0b18ddf7e2134468fdd7f34a22b9341098247af3077cb0836f8936c83e015735",
+          "App/RivalEngine.swift": "ed008c3a47548d0a0e3cd03aa1ac7531201b844fbd0cce93dcc5b61c2a2796a7",
+          "App/SignalTVModels.swift": "ceb3e1540ff9d630aac0e9790fb8ac5afbeb13dd0dde360f3daa268670d278e7",
+          "App/TechComEngine.swift": "763468f5722b0b7678af48a5b0ba50670b41167c58983ba2723e4e2695c454a2",
+          "Tests/GameStoreTests.swift": "e765520ead9a01f90f69e078b3c09fe1d5df4fe43f8f499f8b35e1eb231ecddc",
+          "App/GameStore.swift": "db78d4e4c39f756d8ff7ad43f1f3f8eb038ae864b5629b81be098676842907c6",
+          "App/TechComScreen.swift": "e17bcae946fbf288cb8033fb26aa63f160683f5305770db4cb41eaf66a412608"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/SignalTVModels.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "18f388a937c397849152fda5ee57be89857bafa8a171715d94be37f1828c52b4",
+    "final_sha256": "81d01f577d7e497d3ab3e073f87ed8711cb3a12e2c6eed71479fcaacef682b9a",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T03:36:29.197Z",
+        "ordinal": 637,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVModels.swift": "18f388a937c397849152fda5ee57be89857bafa8a171715d94be37f1828c52b4"
+        },
+        "after_sha256": {
+          "App/SignalTVModels.swift": "637b0ce8734aca3681682cc4f03f73aa06b4e5ecc2fe7985ae9b1ec01dfe0981"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T04:13:52.231Z",
+        "ordinal": 1394,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/GameStore.swift": "0eb141aaab4821238cf58a98b019e15eb351491eaf1c1a4d4af830bdd00b7ef0",
+          "App/SignalTVModels.swift": "637b0ce8734aca3681682cc4f03f73aa06b4e5ecc2fe7985ae9b1ec01dfe0981",
+          "App/MediaNarrativeDirector.swift": "fb766683eb65a52ef68fc227cbda5a5fd1aa54e155ca7d237932b4fab7a8f8fc"
+        },
+        "after_sha256": {
+          "App/GameStore.swift": "126f8da444977e4a0b50480d98f32a017fa24df012d93625546c8b8ad1f98d46",
+          "App/SignalTVModels.swift": "a1dabc501ccffd42b22592f74b442a34d239500982c89edcadd7117e7082f073",
+          "App/MediaNarrativeDirector.swift": "34498a26406b3b49b53604b8cb03266dd4719b1d70c00911326b4a3e33c664eb"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T08:54:31.099Z",
+        "ordinal": 1559,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "34498a26406b3b49b53604b8cb03266dd4719b1d70c00911326b4a3e33c664eb",
+          "App/RivalEngine.swift": "6cb674704ee81b9bf2dcea6a68e1eb9e78da1da72693540a7c9270ffde392d01",
+          "App/SignalTVModels.swift": "a1dabc501ccffd42b22592f74b442a34d239500982c89edcadd7117e7082f073",
+          "App/TechComEngine.swift": "93471f36804e169707539f23292b65fb1fa2dd86b8874fc31e31670375bdd62b",
+          "Tests/GameStoreTests.swift": "7f79a4dc0be108fe05fa081b8f783f121d20c336ef27a7de18784ff183e7c219",
+          "App/GameStore.swift": "126f8da444977e4a0b50480d98f32a017fa24df012d93625546c8b8ad1f98d46",
+          "App/TechComScreen.swift": "a2090ce99c881ebf4bcbd53e61de757ffbe22fc7e92511faf8b03368f5088640"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "0b18ddf7e2134468fdd7f34a22b9341098247af3077cb0836f8936c83e015735",
+          "App/RivalEngine.swift": "ed008c3a47548d0a0e3cd03aa1ac7531201b844fbd0cce93dcc5b61c2a2796a7",
+          "App/SignalTVModels.swift": "ceb3e1540ff9d630aac0e9790fb8ac5afbeb13dd0dde360f3daa268670d278e7",
+          "App/TechComEngine.swift": "763468f5722b0b7678af48a5b0ba50670b41167c58983ba2723e4e2695c454a2",
+          "Tests/GameStoreTests.swift": "e765520ead9a01f90f69e078b3c09fe1d5df4fe43f8f499f8b35e1eb231ecddc",
+          "App/GameStore.swift": "db78d4e4c39f756d8ff7ad43f1f3f8eb038ae864b5629b81be098676842907c6",
+          "App/TechComScreen.swift": "e17bcae946fbf288cb8033fb26aa63f160683f5305770db4cb41eaf66a412608"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:05:29.673Z",
+        "ordinal": 1696,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "0b18ddf7e2134468fdd7f34a22b9341098247af3077cb0836f8936c83e015735",
+          "App/SignalTVModels.swift": "ceb3e1540ff9d630aac0e9790fb8ac5afbeb13dd0dde360f3daa268670d278e7",
+          "App/GameStore.swift": "db78d4e4c39f756d8ff7ad43f1f3f8eb038ae864b5629b81be098676842907c6"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "cf6cad816d476eef4c94c0e82873abe42894d9f8f0f0426471776c279b9d0081",
+          "App/SignalTVModels.swift": "70b82d43a68b951347bd7e8f8eee541f0e140621db2ed41a6d0246bcdc862bf4",
+          "App/GameStore.swift": "5318048b6d2fbcbc2ed24602d00fddd04810bbc22b1b5234c182418ee389401c"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:02:21.316Z",
+        "ordinal": 2315,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVModels.swift": "70b82d43a68b951347bd7e8f8eee541f0e140621db2ed41a6d0246bcdc862bf4",
+          "App/SignalTVView.swift": "b9c276529e2e41756746b2594eac02dedd7209c79229bab3533a3a7a9711dfbe"
+        },
+        "after_sha256": {
+          "App/SignalTVModels.swift": "599b5bb870aa350a6833b18873031a08b53a7ee0fe96f6ae4ec842262b0da6d9",
+          "App/SignalTVView.swift": "ec9a693ea5ba8dabff5406eaca9b865760db77a4b47c794b8afa19cc905a4354"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:55:58.727Z",
+        "ordinal": 3059,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVModels.swift": "599b5bb870aa350a6833b18873031a08b53a7ee0fe96f6ae4ec842262b0da6d9"
+        },
+        "after_sha256": {
+          "App/SignalTVModels.swift": "5141828bb65e1049d9b891e495ec425a78b25d50adb7c3d1d5bac9764b9e2123"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T11:50:09.063Z",
+        "ordinal": 3447,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVModels.swift": "5141828bb65e1049d9b891e495ec425a78b25d50adb7c3d1d5bac9764b9e2123"
+        },
+        "after_sha256": {
+          "App/SignalTVModels.swift": "81d01f577d7e497d3ab3e073f87ed8711cb3a12e2c6eed71479fcaacef682b9a"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/SignalTVView.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "2ab3aadc11a7776bd999b9c8fee1c6aeb6ce44d653c165277eca55c9fea05645",
+    "final_sha256": "33b94a95bf9b2a9f3e47aec63c23853680cc6e95eae6e3ac1c38530ed1aa3fa4",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T09:34:47.495Z",
+        "ordinal": 2089,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "1d685aec58ee6f545cf7ba6cd2950a189710d0dbbdaa89b8432340b0594c1ca7",
+          "App/SignalTVView.swift": "2ab3aadc11a7776bd999b9c8fee1c6aeb6ce44d653c165277eca55c9fea05645"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "92ac3cef82e33b536e355d94ab28c5eebe67e8a4e93840ccd73393d3a8b7d8c0",
+          "App/SignalTVView.swift": "72cdae39cf5c038fe4ca682df963a545beb708146fe0cdd4ed7ef1e6ede98880"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:36:40.602Z",
+        "ordinal": 2098,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "72cdae39cf5c038fe4ca682df963a545beb708146fe0cdd4ed7ef1e6ede98880",
+          "Tests/SignalTVTests.swift": "67f4460133ea5f5ff91294b0c7edcd5fc28d50e2921e2374f55d073573ddf658"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "8a38b390fc14f53540d53523daac15f95c30bd3bb23afa86cc75fe2bfd7a8283",
+          "Tests/SignalTVTests.swift": "33b11574a94dab0ec178272241160b0d7c786c0889a5fa59609cdebd4fa9210e"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:59:34.179Z",
+        "ordinal": 2279,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "8a38b390fc14f53540d53523daac15f95c30bd3bb23afa86cc75fe2bfd7a8283",
+          "Tests/SignalTVTests.swift": "847b520cfa9ece85a2f52acfdc897e9daacb80d8022462f2f882b0c2ab1003cc"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "b9c276529e2e41756746b2594eac02dedd7209c79229bab3533a3a7a9711dfbe",
+          "Tests/SignalTVTests.swift": "45a55f6c9391ce24c07d8faa92c70d0026c06ae78ecb479087a9333e19c59bbf"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:02:21.316Z",
+        "ordinal": 2315,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVModels.swift": "70b82d43a68b951347bd7e8f8eee541f0e140621db2ed41a6d0246bcdc862bf4",
+          "App/SignalTVView.swift": "b9c276529e2e41756746b2594eac02dedd7209c79229bab3533a3a7a9711dfbe"
+        },
+        "after_sha256": {
+          "App/SignalTVModels.swift": "599b5bb870aa350a6833b18873031a08b53a7ee0fe96f6ae4ec842262b0da6d9",
+          "App/SignalTVView.swift": "ec9a693ea5ba8dabff5406eaca9b865760db77a4b47c794b8afa19cc905a4354"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:03:33.409Z",
+        "ordinal": 2321,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "ec9a693ea5ba8dabff5406eaca9b865760db77a4b47c794b8afa19cc905a4354",
+          "Tests/SignalTVTests.swift": "45a55f6c9391ce24c07d8faa92c70d0026c06ae78ecb479087a9333e19c59bbf"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "36f15003b1c41f97eee8b64a0cfb3ec113d16b1518fd4bdbe63457f6f0c9a243",
+          "Tests/SignalTVTests.swift": "fe4d73861e01fa5936f48dd57847d55eb41f1b3b223f9ec33a8024ffd06818d7"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:05:33.994Z",
+        "ordinal": 2365,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "36f15003b1c41f97eee8b64a0cfb3ec113d16b1518fd4bdbe63457f6f0c9a243",
+          "App/FounderGarageRealityScene.swift": "49770ed45ee465feef75967486e53c92ae0ed8ae25432be1d17f1331e00148f4",
+          "App/FounderGarageRealityView.swift": "323a2cc55472d1cbcf07c33a50f5e9ad496c6368b374d3a43ddb735a1cc04801",
+          "App/FounderDeskWorkspace.swift": "60ede92271e281d9cbb56799827ff3cc47bdb6f39a7ec19d0a02cc250639247a",
+          "Tests/SignalTVTests.swift": "fe4d73861e01fa5936f48dd57847d55eb41f1b3b223f9ec33a8024ffd06818d7"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "5e5c384f57ea2ed0201a4a3c0b8b450fff27aa606d4af293ba82b2280dde62f9",
+          "App/FounderGarageRealityScene.swift": "332bc86206303a645dc06aafe0b6c462f4dd2a5d42746741fb94d88861e1cfb4",
+          "App/FounderGarageRealityView.swift": "c5347edb5c7e1c9c8e019ecda5529f985d06fafcbd782b40cf6c4179186053c8",
+          "App/FounderDeskWorkspace.swift": "242343ca069fe18b34c64f1b1234dd38157c3260d86d4353b652b3e05e3e9524",
+          "Tests/SignalTVTests.swift": "fb98d6e9879a6c666f72d845cf0cfff76b1bc73b09076c55442a206edda42fc6"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:20:03.405Z",
+        "ordinal": 2577,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/FounderGarageRealityScene.swift": "332bc86206303a645dc06aafe0b6c462f4dd2a5d42746741fb94d88861e1cfb4",
+          "App/SignalTVView.swift": "5e5c384f57ea2ed0201a4a3c0b8b450fff27aa606d4af293ba82b2280dde62f9",
+          "App/App.swift": "6965da0cd5c69efba843b9a8eec6d16c9f5ce6592f253cbde7d8a53f7201f160"
+        },
+        "after_sha256": {
+          "App/FounderGarageRealityScene.swift": "ea31ca29e0cfcc2656aa4642162a088b7b4bbfcbd8a63da21cb2f0366a9cdcb5",
+          "App/SignalTVView.swift": "1ed3d65e8620262ef371dfbd817c2dd09e0471fbaa643f3fe6ffc572f6aaa7ee",
+          "App/App.swift": "a7e8cdc42ad9043cd300ad78c089647d75064fae042ff51bbd8e7503336baa00"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:24:03.558Z",
+        "ordinal": 2621,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "1ed3d65e8620262ef371dfbd817c2dd09e0471fbaa643f3fe6ffc572f6aaa7ee",
+          "UITests/Build32_6_1ProductionContinuityUITests.swift": "1bc468fe2e8bb8435125163d7b2883fc58751c5ddf5cdac1a3880a6c03df63dc"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "91c5f40451b8890c53c5dd3d024735d2b178e2aa289cd4ac2904bcc95c76aa63",
+          "UITests/Build32_6_1ProductionContinuityUITests.swift": "9a1bd9d33087904ccefa3db5310decaead9dc720339a470a9fdce7a89c89b9a5"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:29:29.037Z",
+        "ordinal": 2807,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "91c5f40451b8890c53c5dd3d024735d2b178e2aa289cd4ac2904bcc95c76aa63"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "35f75f2d1a43d9d72e31e2a515ad5d7223affe1470bcf69af7738da629e49212"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:56:59.692Z",
+        "ordinal": 3066,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "35f75f2d1a43d9d72e31e2a515ad5d7223affe1470bcf69af7738da629e49212",
+          "App/FounderGarageRealityScene.swift": "7a921441eae86744c4cc67084c6bebff0ecda3ae6e3b8b1c120750ac38971e39"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "f2da37083af6832d824695421d36a871cce4ed69cec1517952d30cc29c5a2e5b",
+          "App/FounderGarageRealityScene.swift": "64cbc4f254814d2222bf00792df61466a72f5be7a911f625aed3478a141a8bf8"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T11:17:32.459Z",
+        "ordinal": 3176,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "f2da37083af6832d824695421d36a871cce4ed69cec1517952d30cc29c5a2e5b"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "9e71ef275b78d5012ef1bea4a6823645386f6180355102b6e1eedcf5b73d3c47"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T11:50:30.941Z",
+        "ordinal": 3453,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "9e71ef275b78d5012ef1bea4a6823645386f6180355102b6e1eedcf5b73d3c47"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "d569c0af97adb3c73d9e64111fe33180a0f17a50db840d78a507013eb43a948b"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T11:54:53.425Z",
+        "ordinal": 3499,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "d569c0af97adb3c73d9e64111fe33180a0f17a50db840d78a507013eb43a948b"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "33b94a95bf9b2a9f3e47aec63c23853680cc6e95eae6e3ac1c38530ed1aa3fa4"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/SimulationModels.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "d503529e0f643b0244595fd47680806da6e7be4560e7188dc81a396d12914533",
+    "final_sha256": "962b9f8563db49184bea724d323b8284576010ae7d3534432c8a7597cac2b4ea",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T18:45:36.233Z",
+        "ordinal": 3740,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SimulationModels.swift": "d503529e0f643b0244595fd47680806da6e7be4560e7188dc81a396d12914533"
+        },
+        "after_sha256": {
+          "App/SimulationModels.swift": "d1fd64699f80dcf38534a1c60aa0bd9e051b88015ad24f1325ed405d74158058"
+        },
+        "milestone": "R3"
+      },
+      {
+        "timestamp": "2026-10-04T19:03:14.082Z",
+        "ordinal": 3874,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SimulationModels.swift": "d1fd64699f80dcf38534a1c60aa0bd9e051b88015ad24f1325ed405d74158058",
+          "App/FounderComputerScreen.swift": "426c77c93eda41e603a1d62849dc6689d59fd4848aef19f69aa0cfc22059e302",
+          "Tests/CompanyFinanceTests.swift": "b6defefd96df9a88ecb43d9ad182093b846a09b0f96fb6f9cc76ca0fcdfde51c"
+        },
+        "after_sha256": {
+          "App/SimulationModels.swift": "27f176b00276a5b066d4ad01e6d2d7160b07905421647dceafd4dd52fee66cc3",
+          "App/FounderComputerScreen.swift": "cf646e53bdfd8b4ab9ae79beb26da9bb93780c347b7438a99b1173b461265340",
+          "Tests/CompanyFinanceTests.swift": "722dbb00e56fd59da729e22fd9c105ebb513664ca8eaa0a48faff10c68f60b60"
+        },
+        "milestone": "R3"
+      },
+      {
+        "timestamp": "2026-10-04T20:33:14.618Z",
+        "ordinal": 4373,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SimulationModels.swift": "27f176b00276a5b066d4ad01e6d2d7160b07905421647dceafd4dd52fee66cc3",
+          "App/GameModels.swift": "c9d180f082d5aee8dbaad0530a7ab997635e1774acf9d94cd4573958861df64b",
+          "App/GameStore.swift": "cf0871030af4645ce98dd0d3a54ae58696a5f82e524d543fd979c34aee0b1056",
+          "App/FounderDeskWorkspaceModel.swift": "a70f0233db8924e111f60a9ae8ff0307625b2f8a3fd8a3959358ddd845d22e88",
+          "App/FounderGaragePhysicalComponents.swift": "35bf43ce4b6cc8437e6e136c15a9c0d16d119a4f20631f1524c1505f44fabb76",
+          "App/FounderGarageRealityView.swift": "c5347edb5c7e1c9c8e019ecda5529f985d06fafcbd782b40cf6c4179186053c8"
+        },
+        "after_sha256": {
+          "App/SimulationModels.swift": "c6c5919401f0fe1613240451e61fbc1315d5d8cd883c95287a21a19658dd821b",
+          "App/GameModels.swift": "d0eb699b6cd2704e7ab88ff1dce53640d25a987f4dbe1c78c06e060be70f7dd2",
+          "App/GameStore.swift": "3bc494be1e93846ad03c0827e6fd2eb8239dbe1d25a8cc1d15999717fc450b3b",
+          "App/FounderDeskWorkspaceModel.swift": "77a682bfa5b43fc60dccafc25f2ad9e0a70e324754ad13e48af2fc1040009534",
+          "App/FounderGaragePhysicalComponents.swift": "67d3b23bd2e08d9c3fb8abc36053161d19b69708aeb88e1928fff80a57eaf1e5",
+          "App/FounderGarageRealityView.swift": "7c120af5cf83231688f6523a22b40ec9f4bcfda39d282279cd07b6daa981e101"
+        },
+        "milestone": "R4"
+      },
+      {
+        "timestamp": "2026-10-05T09:03:40.408Z",
+        "ordinal": 5373,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tools/ChaosCrew/analyze_traction.py": "a827535026d468b92f8687561bbba2afc979063b608180ba44825f1e90ff1a0d",
+          "Tests/CompanyFinanceTests.swift": "342e464b6cf572e8d7c9afadd7e9a1c686e3be1f3f4e9e30420a2167d9a1d1ad",
+          "App/SimulationModels.swift": "c6c5919401f0fe1613240451e61fbc1315d5d8cd883c95287a21a19658dd821b"
+        },
+        "after_sha256": {
+          "Tools/ChaosCrew/analyze_traction.py": "3f05a177f3e53cab04bb222139984ba87aa9ef807a103131f03cf96eb39683ed",
+          "Tests/CompanyFinanceTests.swift": "389b10c3c5f1f908cb32838e1893521833ea9b0ed5c66792f1ac20ac045030e4",
+          "App/SimulationModels.swift": "ac87e3c37d96d6ac2b66fa4b256d39db68cb427e6bf03a0e5d713ca8f7440193"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T09:08:23.883Z",
+        "ordinal": 5399,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SimulationModels.swift": "ac87e3c37d96d6ac2b66fa4b256d39db68cb427e6bf03a0e5d713ca8f7440193"
+        },
+        "after_sha256": {
+          "App/SimulationModels.swift": "ed3b3dabfc6bb5a722d83e3c95054cc89deaf0d196d4990ff3d7e123724884e7"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T09:10:27.032Z",
+        "ordinal": 5433,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SimulationModels.swift": "ed3b3dabfc6bb5a722d83e3c95054cc89deaf0d196d4990ff3d7e123724884e7"
+        },
+        "after_sha256": {
+          "App/SimulationModels.swift": "1e5a6f1e355c77ce386a3e3404565b9981561052bff5c4ae3706cbd24c9ec9dc"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T09:17:21.146Z",
+        "ordinal": 5473,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "2e65f160d1b4bac99e9a0c2954951235d8406c888cad86cf819486fd240aca28",
+          "App/SimulationModels.swift": "1e5a6f1e355c77ce386a3e3404565b9981561052bff5c4ae3706cbd24c9ec9dc"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "60b8d6361ce708aa287c5a175bc9c133ea7556abab76101e713c07d346478561",
+          "App/SimulationModels.swift": "962b9f8563db49184bea724d323b8284576010ae7d3534432c8a7597cac2b4ea"
+        },
+        "milestone": "R5R6"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/TechComEngine.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "31c146e527532af8f1fc64b6fb4410a84a8ccde6cda94ce922810f2635e645f5",
+    "final_sha256": "763468f5722b0b7678af48a5b0ba50670b41167c58983ba2723e4e2695c454a2",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T03:36:22.356Z",
+        "ordinal": 630,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/TechComEngine.swift": "31c146e527532af8f1fc64b6fb4410a84a8ccde6cda94ce922810f2635e645f5"
+        },
+        "after_sha256": {
+          "App/TechComEngine.swift": "4c6dc4c0f9c4ac162d109d5133797697f20e64cf5b193944970cff63cdde2322"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T03:46:00.232Z",
+        "ordinal": 917,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/TechComEngine.swift": "4c6dc4c0f9c4ac162d109d5133797697f20e64cf5b193944970cff63cdde2322"
+        },
+        "after_sha256": {
+          "App/TechComEngine.swift": "93471f36804e169707539f23292b65fb1fa2dd86b8874fc31e31670375bdd62b"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T08:54:31.099Z",
+        "ordinal": 1559,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "34498a26406b3b49b53604b8cb03266dd4719b1d70c00911326b4a3e33c664eb",
+          "App/RivalEngine.swift": "6cb674704ee81b9bf2dcea6a68e1eb9e78da1da72693540a7c9270ffde392d01",
+          "App/SignalTVModels.swift": "a1dabc501ccffd42b22592f74b442a34d239500982c89edcadd7117e7082f073",
+          "App/TechComEngine.swift": "93471f36804e169707539f23292b65fb1fa2dd86b8874fc31e31670375bdd62b",
+          "Tests/GameStoreTests.swift": "7f79a4dc0be108fe05fa081b8f783f121d20c336ef27a7de18784ff183e7c219",
+          "App/GameStore.swift": "126f8da444977e4a0b50480d98f32a017fa24df012d93625546c8b8ad1f98d46",
+          "App/TechComScreen.swift": "a2090ce99c881ebf4bcbd53e61de757ffbe22fc7e92511faf8b03368f5088640"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "0b18ddf7e2134468fdd7f34a22b9341098247af3077cb0836f8936c83e015735",
+          "App/RivalEngine.swift": "ed008c3a47548d0a0e3cd03aa1ac7531201b844fbd0cce93dcc5b61c2a2796a7",
+          "App/SignalTVModels.swift": "ceb3e1540ff9d630aac0e9790fb8ac5afbeb13dd0dde360f3daa268670d278e7",
+          "App/TechComEngine.swift": "763468f5722b0b7678af48a5b0ba50670b41167c58983ba2723e4e2695c454a2",
+          "Tests/GameStoreTests.swift": "e765520ead9a01f90f69e078b3c09fe1d5df4fe43f8f499f8b35e1eb231ecddc",
+          "App/GameStore.swift": "db78d4e4c39f756d8ff7ad43f1f3f8eb038ae864b5629b81be098676842907c6",
+          "App/TechComScreen.swift": "e17bcae946fbf288cb8033fb26aa63f160683f5305770db4cb41eaf66a412608"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "App/TechComScreen.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "a2090ce99c881ebf4bcbd53e61de757ffbe22fc7e92511faf8b03368f5088640",
+    "final_sha256": "e17bcae946fbf288cb8033fb26aa63f160683f5305770db4cb41eaf66a412608",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T08:54:31.099Z",
+        "ordinal": 1559,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "34498a26406b3b49b53604b8cb03266dd4719b1d70c00911326b4a3e33c664eb",
+          "App/RivalEngine.swift": "6cb674704ee81b9bf2dcea6a68e1eb9e78da1da72693540a7c9270ffde392d01",
+          "App/SignalTVModels.swift": "a1dabc501ccffd42b22592f74b442a34d239500982c89edcadd7117e7082f073",
+          "App/TechComEngine.swift": "93471f36804e169707539f23292b65fb1fa2dd86b8874fc31e31670375bdd62b",
+          "Tests/GameStoreTests.swift": "7f79a4dc0be108fe05fa081b8f783f121d20c336ef27a7de18784ff183e7c219",
+          "App/GameStore.swift": "126f8da444977e4a0b50480d98f32a017fa24df012d93625546c8b8ad1f98d46",
+          "App/TechComScreen.swift": "a2090ce99c881ebf4bcbd53e61de757ffbe22fc7e92511faf8b03368f5088640"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "0b18ddf7e2134468fdd7f34a22b9341098247af3077cb0836f8936c83e015735",
+          "App/RivalEngine.swift": "ed008c3a47548d0a0e3cd03aa1ac7531201b844fbd0cce93dcc5b61c2a2796a7",
+          "App/SignalTVModels.swift": "ceb3e1540ff9d630aac0e9790fb8ac5afbeb13dd0dde360f3daa268670d278e7",
+          "App/TechComEngine.swift": "763468f5722b0b7678af48a5b0ba50670b41167c58983ba2723e4e2695c454a2",
+          "Tests/GameStoreTests.swift": "e765520ead9a01f90f69e078b3c09fe1d5df4fe43f8f499f8b35e1eb231ecddc",
+          "App/GameStore.swift": "db78d4e4c39f756d8ff7ad43f1f3f8eb038ae864b5629b81be098676842907c6",
+          "App/TechComScreen.swift": "e17bcae946fbf288cb8033fb26aa63f160683f5305770db4cb41eaf66a412608"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "Canon/manifests/canon-manifest.json",
+    "classification": "NEW REPAIR",
+    "baseline_sha256": "d55c6583fa289ff732065ced9920dca9ede2a0872c26dc2bb8178323fd7e514e",
+    "final_sha256": "b7c6d656281fc24d63cf706a5129c2ee4c13fed88224d5f38303090ee95897aa",
+    "amendments": [],
+    "repair": "Regenerated derived Canon manifest after exact record replay."
+  },
+  {
+    "path": "Canon/records/systems/system.narrative_director.json",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "fb7185dd3ae93e44734a5ec98640e1d1e5da890365e1a4c2aac8001f08c9d5f5",
+    "final_sha256": "b469e019b7b3d5e7a5109716d00ed27e50f3b454fa6d349ba620da232af4931b",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T09:07:39.566Z",
+        "ordinal": 1720,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Canon/records/systems/system.narrative_director.json": "fb7185dd3ae93e44734a5ec98640e1d1e5da890365e1a4c2aac8001f08c9d5f5"
+        },
+        "after_sha256": {
+          "Canon/records/systems/system.narrative_director.json": "04d8141b2b0e7a72a3551243193e91b466c56687513d311da844548fc82c5687"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:10:30.022Z",
+        "ordinal": 1809,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Canon/records/systems/system.narrative_director.json": "04d8141b2b0e7a72a3551243193e91b466c56687513d311da844548fc82c5687"
+        },
+        "after_sha256": {
+          "Canon/records/systems/system.narrative_director.json": "b469e019b7b3d5e7a5109716d00ed27e50f3b454fa6d349ba620da232af4931b"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "SoloUnicornRun.xcodeproj/project.pbxproj",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "4026fcf1a575456253eabb1e9ac77b32973f4d2402671f5f6245a20216dbedbc",
+    "final_sha256": "14808dd33bbafce75b55e44f93735df0af30395f6aad931256ec77c292dd8182",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T03:19:43.398Z",
+        "ordinal": 164,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "SoloUnicornRun.xcodeproj/project.pbxproj": "4026fcf1a575456253eabb1e9ac77b32973f4d2402671f5f6245a20216dbedbc"
+        },
+        "after_sha256": {
+          "SoloUnicornRun.xcodeproj/project.pbxproj": "14808dd33bbafce75b55e44f93735df0af30395f6aad931256ec77c292dd8182"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "Tests/CompanyFinanceTests.swift",
+    "classification": "NEW REPAIR",
+    "baseline_sha256": "07273b5b24dbf6c209dcc410bd3d8de021cd19f974dc865bbca95c729396e822",
+    "final_sha256": "84888c58f4673b651847cea3618a192410c2e941b5fdd074e0ffce6a76aa2fef",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T18:51:34.808Z",
+        "ordinal": 3791,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "07273b5b24dbf6c209dcc410bd3d8de021cd19f974dc865bbca95c729396e822"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "a8f7dd667643323dbcec12632c74d3ddee4b10038e014f9d8ecc24d97c64da22"
+        },
+        "milestone": "R3"
+      },
+      {
+        "timestamp": "2026-10-04T18:52:26.560Z",
+        "ordinal": 3807,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "a8f7dd667643323dbcec12632c74d3ddee4b10038e014f9d8ecc24d97c64da22",
+          "App/FounderComputerScreen.swift": "b513a0a738fb3edfbcf5a1db8a1e784f31ed930b4cf09295ee97fac68040d21a",
+          "App/GameStore.swift": "eb1ee5182c468c2449cbdd782ac923784b1f3fb0f72bf3143b5d3b178036f893"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "e6f21b42a445d5e71ecb45be037f6dc1affacffc2293731133af29b7877fb79e",
+          "App/FounderComputerScreen.swift": "426c77c93eda41e603a1d62849dc6689d59fd4848aef19f69aa0cfc22059e302",
+          "App/GameStore.swift": "cf0871030af4645ce98dd0d3a54ae58696a5f82e524d543fd979c34aee0b1056"
+        },
+        "milestone": "R3"
+      },
+      {
+        "timestamp": "2026-10-04T18:57:20.971Z",
+        "ordinal": 3839,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "e6f21b42a445d5e71ecb45be037f6dc1affacffc2293731133af29b7877fb79e"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "b6defefd96df9a88ecb43d9ad182093b846a09b0f96fb6f9cc76ca0fcdfde51c"
+        },
+        "milestone": "R3"
+      },
+      {
+        "timestamp": "2026-10-04T19:03:14.082Z",
+        "ordinal": 3874,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SimulationModels.swift": "d1fd64699f80dcf38534a1c60aa0bd9e051b88015ad24f1325ed405d74158058",
+          "App/FounderComputerScreen.swift": "426c77c93eda41e603a1d62849dc6689d59fd4848aef19f69aa0cfc22059e302",
+          "Tests/CompanyFinanceTests.swift": "b6defefd96df9a88ecb43d9ad182093b846a09b0f96fb6f9cc76ca0fcdfde51c"
+        },
+        "after_sha256": {
+          "App/SimulationModels.swift": "27f176b00276a5b066d4ad01e6d2d7160b07905421647dceafd4dd52fee66cc3",
+          "App/FounderComputerScreen.swift": "cf646e53bdfd8b4ab9ae79beb26da9bb93780c347b7438a99b1173b461265340",
+          "Tests/CompanyFinanceTests.swift": "722dbb00e56fd59da729e22fd9c105ebb513664ca8eaa0a48faff10c68f60b60"
+        },
+        "milestone": "R3"
+      },
+      {
+        "timestamp": "2026-10-04T19:08:21.418Z",
+        "ordinal": 3950,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "722dbb00e56fd59da729e22fd9c105ebb513664ca8eaa0a48faff10c68f60b60"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "9d499cd2572cf8e0b8c8fbde0e053a704f67fdb014b603049597feb837dee8a9"
+        },
+        "milestone": "R3"
+      },
+      {
+        "timestamp": "2026-10-05T01:58:27.322Z",
+        "ordinal": 4997,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "9d499cd2572cf8e0b8c8fbde0e053a704f67fdb014b603049597feb837dee8a9"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "61b128caa507bbf8b6fc9e37ec6e0e456d6d09f22547166e5e4a7e64fb4abd0c"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T08:01:54.426Z",
+        "ordinal": 5090,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "61b128caa507bbf8b6fc9e37ec6e0e456d6d09f22547166e5e4a7e64fb4abd0c",
+          "Tools/ChaosCrew/analyze_traction.py": "2704284a50de380792eb24462c3e3bfbc0652d52b957eab3576251a245146c62"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "f12d0acb28f4d9f9d57ca853f4931b77dbd85adef0a48993127e1526b0eb7b63",
+          "Tools/ChaosCrew/analyze_traction.py": "858aa8ac4672e4a2fcb8e08d773078fdb2e0f8e5eefdbdbec560d863e054a4ce"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T08:05:05.606Z",
+        "ordinal": 5120,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "f12d0acb28f4d9f9d57ca853f4931b77dbd85adef0a48993127e1526b0eb7b63"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "38bce6cebf31352012bc84da5bb0a28a1826d820d28c9a86fdffcd5406d94fd9"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T08:07:47.662Z",
+        "ordinal": 5141,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "38bce6cebf31352012bc84da5bb0a28a1826d820d28c9a86fdffcd5406d94fd9"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "5b285d8d664e367337b836e03aa4fdca187b9ae0a52d2800711e43d569595fcd"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T08:13:27.460Z",
+        "ordinal": 5169,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "5b285d8d664e367337b836e03aa4fdca187b9ae0a52d2800711e43d569595fcd"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "342e464b6cf572e8d7c9afadd7e9a1c686e3be1f3f4e9e30420a2167d9a1d1ad"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T09:03:40.408Z",
+        "ordinal": 5373,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tools/ChaosCrew/analyze_traction.py": "a827535026d468b92f8687561bbba2afc979063b608180ba44825f1e90ff1a0d",
+          "Tests/CompanyFinanceTests.swift": "342e464b6cf572e8d7c9afadd7e9a1c686e3be1f3f4e9e30420a2167d9a1d1ad",
+          "App/SimulationModels.swift": "c6c5919401f0fe1613240451e61fbc1315d5d8cd883c95287a21a19658dd821b"
+        },
+        "after_sha256": {
+          "Tools/ChaosCrew/analyze_traction.py": "3f05a177f3e53cab04bb222139984ba87aa9ef807a103131f03cf96eb39683ed",
+          "Tests/CompanyFinanceTests.swift": "389b10c3c5f1f908cb32838e1893521833ea9b0ed5c66792f1ac20ac045030e4",
+          "App/SimulationModels.swift": "ac87e3c37d96d6ac2b66fa4b256d39db68cb427e6bf03a0e5d713ca8f7440193"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T09:06:41.174Z",
+        "ordinal": 5389,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "389b10c3c5f1f908cb32838e1893521833ea9b0ed5c66792f1ac20ac045030e4"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "500815a2a3a8c153053da0e6e81923a8ac22facae9597f0ce9437e25f4007115"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T09:14:27.770Z",
+        "ordinal": 5446,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "500815a2a3a8c153053da0e6e81923a8ac22facae9597f0ce9437e25f4007115"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "2e65f160d1b4bac99e9a0c2954951235d8406c888cad86cf819486fd240aca28"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T09:17:21.146Z",
+        "ordinal": 5473,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "2e65f160d1b4bac99e9a0c2954951235d8406c888cad86cf819486fd240aca28",
+          "App/SimulationModels.swift": "1e5a6f1e355c77ce386a3e3404565b9981561052bff5c4ae3706cbd24c9ec9dc"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "60b8d6361ce708aa287c5a175bc9c133ea7556abab76101e713c07d346478561",
+          "App/SimulationModels.swift": "962b9f8563db49184bea724d323b8284576010ae7d3534432c8a7597cac2b4ea"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T09:31:47.902Z",
+        "ordinal": 5521,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "60b8d6361ce708aa287c5a175bc9c133ea7556abab76101e713c07d346478561"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "476d2959b69c208fde62fb9f49163ad0f4450fb701da81ae8799aa817a6a2078"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T15:53:20.834Z",
+        "ordinal": 5625,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "476d2959b69c208fde62fb9f49163ad0f4450fb701da81ae8799aa817a6a2078"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "7fe3e3e9b4b8435726f27a7126b635efde20aa44f0dbdd497dcf34cb58912d5b"
+        },
+        "milestone": "R5R6"
+      }
+    ],
+    "repair": "Strict study simulator guard changed to the newly created reconstruction iPhone lab."
+  },
+  {
+    "path": "Tests/FounderDeskWorkspaceTests.swift",
+    "classification": "NEW REPAIR",
+    "baseline_sha256": "29ded644dd746cda5489493f6ecd31a099e9f759d849de6567e3100a25721dac",
+    "final_sha256": "11d8bb64418ae0cdd21fdd3ee16cea2316c661a220c568423de58f6042f3d858",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T03:20:17.937Z",
+        "ordinal": 178,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/FounderDeskWorkspaceTests.swift": "29ded644dd746cda5489493f6ecd31a099e9f759d849de6567e3100a25721dac"
+        },
+        "after_sha256": {
+          "Tests/FounderDeskWorkspaceTests.swift": "b60f3db93278390cd5b6cebf6b4efa89bbc2035628b1ca32f66490eff7199b03"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:05:54.722Z",
+        "ordinal": 1702,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "fd121ca83d77508d94ff91a9c94f27adf9f5904e6430c7f6250fc626ec21311a",
+          "Tests/FounderDeskWorkspaceTests.swift": "b60f3db93278390cd5b6cebf6b4efa89bbc2035628b1ca32f66490eff7199b03"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "a28ad18161c33028b0931a8805159f1c52196db512628c5c73332e36f9d26856",
+          "Tests/FounderDeskWorkspaceTests.swift": "b9d0f8ae65c87908b21dc0a0293e404b97b6301dbcac92214614c5f01e14b49f"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T20:35:43.896Z",
+        "ordinal": 4396,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/FounderDeskWorkspaceTests.swift": "b9d0f8ae65c87908b21dc0a0293e404b97b6301dbcac92214614c5f01e14b49f"
+        },
+        "after_sha256": {
+          "Tests/FounderDeskWorkspaceTests.swift": "5908c02fa467feb0dd6a3dde28b1306c53c160e6e27c270c1f9da1859cad615e"
+        },
+        "milestone": "R4"
+      },
+      {
+        "timestamp": "2026-10-04T20:38:11.947Z",
+        "ordinal": 4456,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/FounderDeskWorkspaceTests.swift": "5908c02fa467feb0dd6a3dde28b1306c53c160e6e27c270c1f9da1859cad615e"
+        },
+        "after_sha256": {
+          "Tests/FounderDeskWorkspaceTests.swift": "f393293bf5bd9ee7388b21b9c3a09c09a2e6f9c54caa5e4b98ab6726f9910869"
+        },
+        "milestone": "R4"
+      },
+      {
+        "timestamp": "2026-10-04T20:39:46.676Z",
+        "ordinal": 4473,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/GameStore.swift": "3bc494be1e93846ad03c0827e6fd2eb8239dbe1d25a8cc1d15999717fc450b3b",
+          "Tests/FounderDeskWorkspaceTests.swift": "f393293bf5bd9ee7388b21b9c3a09c09a2e6f9c54caa5e4b98ab6726f9910869"
+        },
+        "after_sha256": {
+          "App/GameStore.swift": "daad1c791acf9ed91f14c3943e1f6eec1bc2e8a23b00c1dcfebff6e8d53db2ed",
+          "Tests/FounderDeskWorkspaceTests.swift": "01f88bd646b1a7b81fa694491b0d1d25541cd20a2c5f032062e16660bd129c83"
+        },
+        "milestone": "R4"
+      }
+    ],
+    "repair": "Added production conditional Work Session route, two-Attention, cross-sprint reload and launch reachability regression."
+  },
+  {
+    "path": "Tests/FounderGarageRealityTests.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "754dd8b9a6033cedc1d120066e491c25cfd71226f87a3a632aad3c6808976a47",
+    "final_sha256": "02c5f5689d892350a4c31f934f59b58417f23d8decf1f160e299357005e100f2",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T10:28:56.320Z",
+        "ordinal": 2788,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/FounderGarageRealityScene.swift": "8447a9e0ce32264ff9e29e6eac90b7adc9b24312fb6092b416f1d640534057e9",
+          "Tests/FounderGarageRealityTests.swift": "754dd8b9a6033cedc1d120066e491c25cfd71226f87a3a632aad3c6808976a47"
+        },
+        "after_sha256": {
+          "App/FounderGarageRealityScene.swift": "02710af55a70db48808b3bebd9ea6adb8dd3fe9d53b948ab758031c0e5a45fec",
+          "Tests/FounderGarageRealityTests.swift": "b6c4cfdf9b41b8b19b5c4f3a882ea23d089fafb45a56f1911042779359646b10"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:57:54.698Z",
+        "ordinal": 3072,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/FounderGarageRealityTests.swift": "b6c4cfdf9b41b8b19b5c4f3a882ea23d089fafb45a56f1911042779359646b10",
+          "Tests/SignalTVTests.swift": "fb98d6e9879a6c666f72d845cf0cfff76b1bc73b09076c55442a206edda42fc6"
+        },
+        "after_sha256": {
+          "Tests/FounderGarageRealityTests.swift": "02c5f5689d892350a4c31f934f59b58417f23d8decf1f160e299357005e100f2",
+          "Tests/SignalTVTests.swift": "1fdead1829f348a43e1c5ae1617f6369c8168f9b62d641bfb5660b3b3dd593bc"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "Tests/GameStoreTests.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "7f79a4dc0be108fe05fa081b8f783f121d20c336ef27a7de18784ff183e7c219",
+    "final_sha256": "e765520ead9a01f90f69e078b3c09fe1d5df4fe43f8f499f8b35e1eb231ecddc",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T08:54:31.099Z",
+        "ordinal": 1559,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "34498a26406b3b49b53604b8cb03266dd4719b1d70c00911326b4a3e33c664eb",
+          "App/RivalEngine.swift": "6cb674704ee81b9bf2dcea6a68e1eb9e78da1da72693540a7c9270ffde392d01",
+          "App/SignalTVModels.swift": "a1dabc501ccffd42b22592f74b442a34d239500982c89edcadd7117e7082f073",
+          "App/TechComEngine.swift": "93471f36804e169707539f23292b65fb1fa2dd86b8874fc31e31670375bdd62b",
+          "Tests/GameStoreTests.swift": "7f79a4dc0be108fe05fa081b8f783f121d20c336ef27a7de18784ff183e7c219",
+          "App/GameStore.swift": "126f8da444977e4a0b50480d98f32a017fa24df012d93625546c8b8ad1f98d46",
+          "App/TechComScreen.swift": "a2090ce99c881ebf4bcbd53e61de757ffbe22fc7e92511faf8b03368f5088640"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "0b18ddf7e2134468fdd7f34a22b9341098247af3077cb0836f8936c83e015735",
+          "App/RivalEngine.swift": "ed008c3a47548d0a0e3cd03aa1ac7531201b844fbd0cce93dcc5b61c2a2796a7",
+          "App/SignalTVModels.swift": "ceb3e1540ff9d630aac0e9790fb8ac5afbeb13dd0dde360f3daa268670d278e7",
+          "App/TechComEngine.swift": "763468f5722b0b7678af48a5b0ba50670b41167c58983ba2723e4e2695c454a2",
+          "Tests/GameStoreTests.swift": "e765520ead9a01f90f69e078b3c09fe1d5df4fe43f8f499f8b35e1eb231ecddc",
+          "App/GameStore.swift": "db78d4e4c39f756d8ff7ad43f1f3f8eb038ae864b5629b81be098676842907c6",
+          "App/TechComScreen.swift": "e17bcae946fbf288cb8033fb26aa63f160683f5305770db4cb41eaf66a412608"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "Tests/SignalTVTests.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "2cb5f8d4a3135ede8b9b184f0f2b4db8e723e655ca13152045c9b8492c59bd45",
+    "final_sha256": "c83c393e808ae2f4f33b4be9a59cfeacf6ea68d5a50b32c649616bb09fab984c",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T03:20:08.564Z",
+        "ordinal": 171,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "2cb5f8d4a3135ede8b9b184f0f2b4db8e723e655ca13152045c9b8492c59bd45"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "9a37147190eb41fd5956240ad5c3ce223a88bcd2eea2db704c04a8ae9b619593"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T03:20:24.191Z",
+        "ordinal": 185,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "9a37147190eb41fd5956240ad5c3ce223a88bcd2eea2db704c04a8ae9b619593"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "e993f03df0aa1a592f52ff61784774cfa4a32fff0c6008b6dfa756ab314266b6"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T03:36:41.045Z",
+        "ordinal": 644,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "e993f03df0aa1a592f52ff61784774cfa4a32fff0c6008b6dfa756ab314266b6"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "25a0475bc28ccffb1d14f0a84db2f653e37401aecdfeb2fa88a8a6ddf17b301f"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T03:37:41.069Z",
+        "ordinal": 658,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "25a0475bc28ccffb1d14f0a84db2f653e37401aecdfeb2fa88a8a6ddf17b301f"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "c765776b8e33b17198075daf97b0a3872aa45e53ee1bcec239fcf46cab27a0de"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T03:39:49.459Z",
+        "ordinal": 725,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "c765776b8e33b17198075daf97b0a3872aa45e53ee1bcec239fcf46cab27a0de"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "b04d25423c3b6a219c0dd10fed6e97577b124566127ba6de2abd0eaf6b3c0dce"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T03:57:38.622Z",
+        "ordinal": 1189,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "b04d25423c3b6a219c0dd10fed6e97577b124566127ba6de2abd0eaf6b3c0dce"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "4d75a89de43e97f4bc17cfbd7429cda7a59d27f1c2994f681b3921da1de350ce"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T04:15:18.266Z",
+        "ordinal": 1407,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "4d75a89de43e97f4bc17cfbd7429cda7a59d27f1c2994f681b3921da1de350ce"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "2b863258252c90419c21ed015343fa00b308ef9f4b33974865fce55d729a0536"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T08:55:59.368Z",
+        "ordinal": 1565,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "2b863258252c90419c21ed015343fa00b308ef9f4b33974865fce55d729a0536"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "fd121ca83d77508d94ff91a9c94f27adf9f5904e6430c7f6250fc626ec21311a"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:05:54.722Z",
+        "ordinal": 1702,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "fd121ca83d77508d94ff91a9c94f27adf9f5904e6430c7f6250fc626ec21311a",
+          "Tests/FounderDeskWorkspaceTests.swift": "b60f3db93278390cd5b6cebf6b4efa89bbc2035628b1ca32f66490eff7199b03"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "a28ad18161c33028b0931a8805159f1c52196db512628c5c73332e36f9d26856",
+          "Tests/FounderDeskWorkspaceTests.swift": "b9d0f8ae65c87908b21dc0a0293e404b97b6301dbcac92214614c5f01e14b49f"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:07:13.771Z",
+        "ordinal": 1710,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "a28ad18161c33028b0931a8805159f1c52196db512628c5c73332e36f9d26856"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "3260a124832a940d3731636d970805bbc529ba90cc458c969ecc4122562a0778"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:21:03.584Z",
+        "ordinal": 1863,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "3260a124832a940d3731636d970805bbc529ba90cc458c969ecc4122562a0778"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "67f4460133ea5f5ff91294b0c7edcd5fc28d50e2921e2374f55d073573ddf658"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:36:40.602Z",
+        "ordinal": 2098,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "72cdae39cf5c038fe4ca682df963a545beb708146fe0cdd4ed7ef1e6ede98880",
+          "Tests/SignalTVTests.swift": "67f4460133ea5f5ff91294b0c7edcd5fc28d50e2921e2374f55d073573ddf658"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "8a38b390fc14f53540d53523daac15f95c30bd3bb23afa86cc75fe2bfd7a8283",
+          "Tests/SignalTVTests.swift": "33b11574a94dab0ec178272241160b0d7c786c0889a5fa59609cdebd4fa9210e"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:37:18.271Z",
+        "ordinal": 2107,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/MediaNarrativeDirector.swift": "92ac3cef82e33b536e355d94ab28c5eebe67e8a4e93840ccd73393d3a8b7d8c0",
+          "Tests/SignalTVTests.swift": "33b11574a94dab0ec178272241160b0d7c786c0889a5fa59609cdebd4fa9210e"
+        },
+        "after_sha256": {
+          "App/MediaNarrativeDirector.swift": "0e0ec130dbc1a7dedd6d8c6a4ad125199f76fad93dc2f594dcdb2c7f7ba30cb2",
+          "Tests/SignalTVTests.swift": "f1e0e91f300bc7128bfb1019f91e8fd48f8a4bf46ed6861a115f89b9a4dd6240"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:37:56.463Z",
+        "ordinal": 2128,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "f1e0e91f300bc7128bfb1019f91e8fd48f8a4bf46ed6861a115f89b9a4dd6240"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "9692bf5df3791632eab39dd7e224acea1d09d1d21762197100f61bc274f67b02"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:58:52.760Z",
+        "ordinal": 2264,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "9692bf5df3791632eab39dd7e224acea1d09d1d21762197100f61bc274f67b02"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "847b520cfa9ece85a2f52acfdc897e9daacb80d8022462f2f882b0c2ab1003cc"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T09:59:34.179Z",
+        "ordinal": 2279,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "8a38b390fc14f53540d53523daac15f95c30bd3bb23afa86cc75fe2bfd7a8283",
+          "Tests/SignalTVTests.swift": "847b520cfa9ece85a2f52acfdc897e9daacb80d8022462f2f882b0c2ab1003cc"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "b9c276529e2e41756746b2594eac02dedd7209c79229bab3533a3a7a9711dfbe",
+          "Tests/SignalTVTests.swift": "45a55f6c9391ce24c07d8faa92c70d0026c06ae78ecb479087a9333e19c59bbf"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:03:33.409Z",
+        "ordinal": 2321,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "ec9a693ea5ba8dabff5406eaca9b865760db77a4b47c794b8afa19cc905a4354",
+          "Tests/SignalTVTests.swift": "45a55f6c9391ce24c07d8faa92c70d0026c06ae78ecb479087a9333e19c59bbf"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "36f15003b1c41f97eee8b64a0cfb3ec113d16b1518fd4bdbe63457f6f0c9a243",
+          "Tests/SignalTVTests.swift": "fe4d73861e01fa5936f48dd57847d55eb41f1b3b223f9ec33a8024ffd06818d7"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:05:33.994Z",
+        "ordinal": 2365,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "36f15003b1c41f97eee8b64a0cfb3ec113d16b1518fd4bdbe63457f6f0c9a243",
+          "App/FounderGarageRealityScene.swift": "49770ed45ee465feef75967486e53c92ae0ed8ae25432be1d17f1331e00148f4",
+          "App/FounderGarageRealityView.swift": "323a2cc55472d1cbcf07c33a50f5e9ad496c6368b374d3a43ddb735a1cc04801",
+          "App/FounderDeskWorkspace.swift": "60ede92271e281d9cbb56799827ff3cc47bdb6f39a7ec19d0a02cc250639247a",
+          "Tests/SignalTVTests.swift": "fe4d73861e01fa5936f48dd57847d55eb41f1b3b223f9ec33a8024ffd06818d7"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "5e5c384f57ea2ed0201a4a3c0b8b450fff27aa606d4af293ba82b2280dde62f9",
+          "App/FounderGarageRealityScene.swift": "332bc86206303a645dc06aafe0b6c462f4dd2a5d42746741fb94d88861e1cfb4",
+          "App/FounderGarageRealityView.swift": "c5347edb5c7e1c9c8e019ecda5529f985d06fafcbd782b40cf6c4179186053c8",
+          "App/FounderDeskWorkspace.swift": "242343ca069fe18b34c64f1b1234dd38157c3260d86d4353b652b3e05e3e9524",
+          "Tests/SignalTVTests.swift": "fb98d6e9879a6c666f72d845cf0cfff76b1bc73b09076c55442a206edda42fc6"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:57:54.698Z",
+        "ordinal": 3072,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/FounderGarageRealityTests.swift": "b6c4cfdf9b41b8b19b5c4f3a882ea23d089fafb45a56f1911042779359646b10",
+          "Tests/SignalTVTests.swift": "fb98d6e9879a6c666f72d845cf0cfff76b1bc73b09076c55442a206edda42fc6"
+        },
+        "after_sha256": {
+          "Tests/FounderGarageRealityTests.swift": "02c5f5689d892350a4c31f934f59b58417f23d8decf1f160e299357005e100f2",
+          "Tests/SignalTVTests.swift": "1fdead1829f348a43e1c5ae1617f6369c8168f9b62d641bfb5660b3b3dd593bc"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T11:52:20.272Z",
+        "ordinal": 3463,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "1fdead1829f348a43e1c5ae1617f6369c8168f9b62d641bfb5660b3b3dd593bc"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "9ecf1dddd03e96ca133a2185143f556517d3072547e2127a702305c7d66ca2d8"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T11:54:35.230Z",
+        "ordinal": 3492,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "9ecf1dddd03e96ca133a2185143f556517d3072547e2127a702305c7d66ca2d8"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "0dee379be87c2a4c3b17cea4e6e4579a4bb2a14dc48220d55b8e2142fe98cc5a"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T11:56:16.584Z",
+        "ordinal": 3524,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "0dee379be87c2a4c3b17cea4e6e4579a4bb2a14dc48220d55b8e2142fe98cc5a"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "99834664eb7bad9efe741e5f9b08703da3f402242b19194cbd30469c02971f62"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T11:57:46.684Z",
+        "ordinal": 3545,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/SignalTVTests.swift": "99834664eb7bad9efe741e5f9b08703da3f402242b19194cbd30469c02971f62"
+        },
+        "after_sha256": {
+          "Tests/SignalTVTests.swift": "c83c393e808ae2f4f33b4be9a59cfeacf6ea68d5a50b32c649616bb09fab984c"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "Tests/TechComEngineTests.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "8dd59776acaa807d5490b254f5c8da910fc2521a050a03366084b3469aed3fb2",
+    "final_sha256": "2a787c12608891790ed47e8d6c37e3ad57baa39788172c376bc20294425b5feb",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T03:37:00.128Z",
+        "ordinal": 651,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/TechComEngineTests.swift": "8dd59776acaa807d5490b254f5c8da910fc2521a050a03366084b3469aed3fb2"
+        },
+        "after_sha256": {
+          "Tests/TechComEngineTests.swift": "2690d534d86d5145c85050da5ff6f8103d9ad7d440c197e2eb08d2e934cc1887"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T03:46:12.599Z",
+        "ordinal": 924,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/TechComEngineTests.swift": "2690d534d86d5145c85050da5ff6f8103d9ad7d440c197e2eb08d2e934cc1887"
+        },
+        "after_sha256": {
+          "Tests/TechComEngineTests.swift": "c58935030daf040583b4954b6f12b3cdd70b8c08f32d0e5f8ddbe1c9d5d06601"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T03:57:06.629Z",
+        "ordinal": 1182,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/TechComEngineTests.swift": "c58935030daf040583b4954b6f12b3cdd70b8c08f32d0e5f8ddbe1c9d5d06601"
+        },
+        "after_sha256": {
+          "Tests/TechComEngineTests.swift": "2a787c12608891790ed47e8d6c37e3ad57baa39788172c376bc20294425b5feb"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "Tools/ChaosCrew/analyze_traction.py",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": null,
+    "final_sha256": "3f05a177f3e53cab04bb222139984ba87aa9ef807a103131f03cf96eb39683ed",
+    "amendments": [
+      {
+        "timestamp": "2026-10-05T02:24:51.288Z",
+        "ordinal": 5024,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tools/ChaosCrew/analyze_traction.py": null
+        },
+        "after_sha256": {
+          "Tools/ChaosCrew/analyze_traction.py": "2704284a50de380792eb24462c3e3bfbc0652d52b957eab3576251a245146c62"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T08:01:54.426Z",
+        "ordinal": 5090,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tests/CompanyFinanceTests.swift": "61b128caa507bbf8b6fc9e37ec6e0e456d6d09f22547166e5e4a7e64fb4abd0c",
+          "Tools/ChaosCrew/analyze_traction.py": "2704284a50de380792eb24462c3e3bfbc0652d52b957eab3576251a245146c62"
+        },
+        "after_sha256": {
+          "Tests/CompanyFinanceTests.swift": "f12d0acb28f4d9f9d57ca853f4931b77dbd85adef0a48993127e1526b0eb7b63",
+          "Tools/ChaosCrew/analyze_traction.py": "858aa8ac4672e4a2fcb8e08d773078fdb2e0f8e5eefdbdbec560d863e054a4ce"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T08:22:30.560Z",
+        "ordinal": 5220,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tools/ChaosCrew/analyze_traction.py": "858aa8ac4672e4a2fcb8e08d773078fdb2e0f8e5eefdbdbec560d863e054a4ce"
+        },
+        "after_sha256": {
+          "Tools/ChaosCrew/analyze_traction.py": "a827535026d468b92f8687561bbba2afc979063b608180ba44825f1e90ff1a0d"
+        },
+        "milestone": "R5R6"
+      },
+      {
+        "timestamp": "2026-10-05T09:03:40.408Z",
+        "ordinal": 5373,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tools/ChaosCrew/analyze_traction.py": "a827535026d468b92f8687561bbba2afc979063b608180ba44825f1e90ff1a0d",
+          "Tests/CompanyFinanceTests.swift": "342e464b6cf572e8d7c9afadd7e9a1c686e3be1f3f4e9e30420a2167d9a1d1ad",
+          "App/SimulationModels.swift": "c6c5919401f0fe1613240451e61fbc1315d5d8cd883c95287a21a19658dd821b"
+        },
+        "after_sha256": {
+          "Tools/ChaosCrew/analyze_traction.py": "3f05a177f3e53cab04bb222139984ba87aa9ef807a103131f03cf96eb39683ed",
+          "Tests/CompanyFinanceTests.swift": "389b10c3c5f1f908cb32838e1893521833ea9b0ed5c66792f1ac20ac045030e4",
+          "App/SimulationModels.swift": "ac87e3c37d96d6ac2b66fa4b256d39db68cb427e6bf03a0e5d713ca8f7440193"
+        },
+        "milestone": "R5R6"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "Tools/SoloCanon/tests/test_narrative_preflight.py",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "01c12b74290cc3ce30e324481164403755d4e2020b428be9d211b167166a1627",
+    "final_sha256": "348eff1e25772ea373b84dd585870c78d5bd0c7c1c1d7f66fad7c81ce0bc6f59",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T09:07:39.588Z",
+        "ordinal": 1721,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tools/SoloCanon/tests/test_narrative_preflight.py": "01c12b74290cc3ce30e324481164403755d4e2020b428be9d211b167166a1627"
+        },
+        "after_sha256": {
+          "Tools/SoloCanon/tests/test_narrative_preflight.py": "348eff1e25772ea373b84dd585870c78d5bd0c7c1c1d7f66fad7c81ce0bc6f59"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "Tools/SoloCanon/tests/test_runtime_gateway.py",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "9c4227db6476b5d95abe72d21f6ea658ffaeab3a1f02860949dcdc2ec2da6a34",
+    "final_sha256": "fa46b468d0b3dda7868813edd7f0d99b908dcefc21562743750db6e4f510acd3",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T09:09:21.193Z",
+        "ordinal": 1781,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "Tools/SoloCanon/tests/test_runtime_gateway.py": "9c4227db6476b5d95abe72d21f6ea658ffaeab3a1f02860949dcdc2ec2da6a34"
+        },
+        "after_sha256": {
+          "Tools/SoloCanon/tests/test_runtime_gateway.py": "fa46b468d0b3dda7868813edd7f0d99b908dcefc21562743750db6e4f510acd3"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  },
+  {
+    "path": "UITests/Build32_6_1ProductionContinuityUITests.swift",
+    "classification": "EXACT PATCH REPLAY",
+    "baseline_sha256": "aa77abe4770cd27a30c426347c793e32fe4bd4485cb7500de9ad674b6d247ce0",
+    "final_sha256": "d42b5c6daf1a567c65ddd29ce484733b27b8479ef5dd73ea7ee7f14ffd07a468",
+    "amendments": [
+      {
+        "timestamp": "2026-10-04T10:07:03.886Z",
+        "ordinal": 2399,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "UITests/Build32_6_1ProductionContinuityUITests.swift": "aa77abe4770cd27a30c426347c793e32fe4bd4485cb7500de9ad674b6d247ce0"
+        },
+        "after_sha256": {
+          "UITests/Build32_6_1ProductionContinuityUITests.swift": "1bc468fe2e8bb8435125163d7b2883fc58751c5ddf5cdac1a3880a6c03df63dc"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T10:24:03.558Z",
+        "ordinal": 2621,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "App/SignalTVView.swift": "1ed3d65e8620262ef371dfbd817c2dd09e0471fbaa643f3fe6ffc572f6aaa7ee",
+          "UITests/Build32_6_1ProductionContinuityUITests.swift": "1bc468fe2e8bb8435125163d7b2883fc58751c5ddf5cdac1a3880a6c03df63dc"
+        },
+        "after_sha256": {
+          "App/SignalTVView.swift": "91c5f40451b8890c53c5dd3d024735d2b178e2aa289cd4ac2904bcc95c76aa63",
+          "UITests/Build32_6_1ProductionContinuityUITests.swift": "9a1bd9d33087904ccefa3db5310decaead9dc720339a470a9fdce7a89c89b9a5"
+        },
+        "milestone": "R2"
+      },
+      {
+        "timestamp": "2026-10-04T11:21:43.590Z",
+        "ordinal": 3286,
+        "classification": "EXACT PATCH REPLAY",
+        "before_sha256": {
+          "UITests/Build32_6_1ProductionContinuityUITests.swift": "9a1bd9d33087904ccefa3db5310decaead9dc720339a470a9fdce7a89c89b9a5"
+        },
+        "after_sha256": {
+          "UITests/Build32_6_1ProductionContinuityUITests.swift": "d42b5c6daf1a567c65ddd29ce484733b27b8479ef5dd73ea7ee7f14ffd07a468"
+        },
+        "milestone": "R2"
+      }
+    ],
+    "repair": null
+  }
+]

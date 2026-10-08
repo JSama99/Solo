@@ -966,6 +966,7 @@ struct EvidenceEntry: Codable, Identifiable {
   var workSessionFindings: [WorkSessionFinding]
   var workSessionCausalAttribution: WorkSessionCausalAttribution?
   var hindsightNotes: [String]
+  var productObservation: ProductTractionPeriod?
 
   var reviewAttempted: Bool { reviewed }
   var actualQualityRevealed: Bool { actualQuality != nil }
@@ -975,7 +976,7 @@ struct EvidenceEntry: Codable, Identifiable {
     case verdict, note, reportedQuality, actualQuality, verificationState
     case overclaimAmount, evidenceCompleteness, correlatedFailureIdentifier
     case workSessionAgentQuality, workSessionFounderReviewQuality, workSessionDeliveredQuality
-    case workSessionFindings, workSessionMistakes, workSessionCausalAttribution, hindsightNotes
+    case workSessionFindings, workSessionMistakes, workSessionCausalAttribution, hindsightNotes, productObservation
   }
 
   init(
@@ -1000,7 +1001,8 @@ struct EvidenceEntry: Codable, Identifiable {
     workSessionDeliveredQuality: Int? = nil,
     workSessionFindings: [WorkSessionFinding] = [],
     workSessionCausalAttribution: WorkSessionCausalAttribution? = nil,
-    hindsightNotes: [String] = []
+    hindsightNotes: [String] = [],
+    productObservation: ProductTractionPeriod? = nil
   ) {
     self.id = id
     self.venture = venture
@@ -1024,6 +1026,7 @@ struct EvidenceEntry: Codable, Identifiable {
     self.workSessionFindings = workSessionFindings
     self.workSessionCausalAttribution = workSessionCausalAttribution
     self.hindsightNotes = hindsightNotes
+    self.productObservation = productObservation
   }
 
   init(from decoder: Decoder) throws {
@@ -1058,6 +1061,7 @@ struct EvidenceEntry: Codable, Identifiable {
       ?? []
     workSessionCausalAttribution = try container.decodeIfPresent(WorkSessionCausalAttribution.self, forKey: .workSessionCausalAttribution)
     hindsightNotes = try container.decodeIfPresent([String].self, forKey: .hindsightNotes) ?? []
+    productObservation = try container.decodeIfPresent(ProductTractionPeriod.self, forKey: .productObservation)
   }
 
   func encode(to encoder: Encoder) throws {
@@ -1084,6 +1088,7 @@ struct EvidenceEntry: Codable, Identifiable {
     try container.encode(workSessionFindings, forKey: .workSessionFindings)
     try container.encodeIfPresent(workSessionCausalAttribution, forKey: .workSessionCausalAttribution)
     try container.encode(hindsightNotes, forKey: .hindsightNotes)
+    try container.encodeIfPresent(productObservation, forKey: .productObservation)
   }
 }
 
@@ -1400,6 +1405,8 @@ struct CareerSave: Codable {
   var operatingCalendar: OperatingCalendar
   var workSessions: [WorkSessionRecord]
   var productLaunchOperation: ProductLaunchOperation?
+  var launchedProduct: LaunchedProductState?
+  var productLaunchPreparationState: ProductLaunchPreparationState
   var agentOperations: AgentOperationsState
 
   private enum CodingKeys: String, CodingKey {
@@ -1412,7 +1419,7 @@ struct CareerSave: Codable {
     case recentObjectiveKinds, companyFlags, activeObligations, decisionHistory, completedObjectives, completedVentureObjectives, ventureObjective, thesis, thesisHistory, awaitingThesisSelection, pendingChapterMilestone
     case techComHeadlines, techComRivals, latentDefects, poachingOffer, exposedRivalIDs
     case activeDivergence, divergenceRecords, forksUsedThisVenture, doctrineProfile, unicornIdentity
-    case rivalDiscontinuities, publicMediaEvents, processedCoverageEventIDs, finance, operatingCalendar, workSessions, productLaunchOperation, agentOperations
+    case rivalDiscontinuities, publicMediaEvents, processedCoverageEventIDs, finance, operatingCalendar, workSessions, productLaunchOperation, launchedProduct, productLaunchPreparationState, agentOperations
   }
 
   init(
@@ -1474,6 +1481,8 @@ struct CareerSave: Codable {
     operatingCalendar: OperatingCalendar = OperatingCalendar(),
     workSessions: [WorkSessionRecord] = [],
     productLaunchOperation: ProductLaunchOperation? = nil,
+    launchedProduct: LaunchedProductState? = nil,
+    productLaunchPreparationState: ProductLaunchPreparationState = .init(),
     agentOperations: AgentOperationsState = .balanced
   ) {
     self.founderName = founderName
@@ -1534,6 +1543,8 @@ struct CareerSave: Codable {
     self.operatingCalendar = operatingCalendar
     self.workSessions = workSessions
     self.productLaunchOperation = productLaunchOperation
+    self.launchedProduct = launchedProduct
+    self.productLaunchPreparationState = productLaunchPreparationState
     self.agentOperations = agentOperations
   }
 
@@ -1612,6 +1623,8 @@ struct CareerSave: Codable {
     operatingCalendar = try container.decodeIfPresent(OperatingCalendar.self, forKey: .operatingCalendar) ?? OperatingCalendar()
     workSessions = try container.decodeIfPresent([WorkSessionRecord].self, forKey: .workSessions) ?? []
     productLaunchOperation = try container.decodeIfPresent(ProductLaunchOperation.self, forKey: .productLaunchOperation)
+    launchedProduct = try container.decodeIfPresent(LaunchedProductState.self, forKey: .launchedProduct)
+    productLaunchPreparationState = try container.decodeIfPresent(ProductLaunchPreparationState.self, forKey: .productLaunchPreparationState) ?? .init()
     agentOperations = try container.decodeIfPresent(AgentOperationsState.self, forKey: .agentOperations) ?? .balanced
   }
 }

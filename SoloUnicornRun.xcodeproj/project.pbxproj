@@ -36,6 +36,7 @@
 		A5A100000000000000000001 /* SignalTVModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A100000000000000000011 /* SignalTVModels.swift */; };
 		A5A100000000000000000002 /* SignalTVView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A100000000000000000012 /* SignalTVView.swift */; };
 		A5A100000000000000000003 /* SignalTVTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A100000000000000000013 /* SignalTVTests.swift */; };
+		A5A100000000000000000004 /* MediaNarrativeDirector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A100000000000000000014 /* MediaNarrativeDirector.swift */; };
 		AA0000000000000000000001 /* Divergence.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000001 /* Divergence.swift */; };
 		AA0000000000000000000002 /* ForkPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000002 /* ForkPromptView.swift */; };
 		AA0000000000000000000003 /* DivergenceIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000003 /* DivergenceIdentityTests.swift */; };
@@ -233,6 +234,7 @@
 		A5A100000000000000000011 /* SignalTVModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalTVModels.swift; sourceTree = "<group>"; };
 		A5A100000000000000000012 /* SignalTVView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalTVView.swift; sourceTree = "<group>"; };
 		A5A100000000000000000013 /* SignalTVTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalTVTests.swift; sourceTree = "<group>"; };
+		A5A100000000000000000014 /* MediaNarrativeDirector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaNarrativeDirector.swift; sourceTree = "<group>"; };
 		AA1000000000000000000001 /* Divergence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Divergence.swift; sourceTree = "<group>"; };
 		AA1000000000000000000002 /* ForkPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForkPromptView.swift; sourceTree = "<group>"; };
 		AA1000000000000000000003 /* DivergenceIdentityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DivergenceIdentityTests.swift; sourceTree = "<group>"; };
@@ -485,6 +487,7 @@
 				B33000000000000000000012 /* AIOperationsFloor.swift */,
 				A5A100000000000000000011 /* SignalTVModels.swift */,
 				A5A100000000000000000012 /* SignalTVView.swift */,
+				A5A100000000000000000014 /* MediaNarrativeDirector.swift */,
 				FD3270000000000000000011 /* FounderDeskWorkspace.swift */,
 				FD3270000000000000000012 /* FounderDeskWorkspaceModel.swift */,
 				FD3275000000000000000011 /* FounderDevicePresentation.swift */,
@@ -845,6 +848,7 @@
 				B33000000000000000000002 /* AIOperationsFloor.swift in Sources */,
 				A5A100000000000000000001 /* SignalTVModels.swift in Sources */,
 				A5A100000000000000000002 /* SignalTVView.swift in Sources */,
+				A5A100000000000000000004 /* MediaNarrativeDirector.swift in Sources */,
 				FD3270000000000000000001 /* FounderDeskWorkspace.swift in Sources */,
 				FD3270000000000000000002 /* FounderDeskWorkspaceModel.swift in Sources */,
 				FD3275000000000000000001 /* FounderDevicePresentation.swift in Sources */,

@@ -123,10 +123,11 @@ class NarrativePreflightTests(unittest.TestCase):
         self.assertLess(pack["selected_record_ids"].index("entity.public_media_event"),
                         pack["selected_record_ids"].index("system.narrative_director"))
 
-    def test_director_architecture_is_not_runtime_p1(self):
+    def test_director_runtime_correction_preserves_accepted_authority(self):
         record = self.store.records["system.narrative_director"]
         self.assertEqual(record["authority"]["level"], "P2")
-        self.assertEqual(record["facts"]["runtime_state"], "not_implemented")
+        self.assertEqual(record["facts"]["runtime_state"], "implemented")
+        self.assertEqual(len(record["facts"]["implemented_event_slices"]), 5)
 
     def test_worker_handoff_has_no_canon_or_publication_authority(self):
         _, pack = self.preflight()

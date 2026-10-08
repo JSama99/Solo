@@ -1258,7 +1258,9 @@ final class FounderGarageRealityTests: XCTestCase {
     let spatial = FounderGarageSpatialSpecification.standard
     let rearWallFrontZ = spatial.architecture.rearWall.position.z + spatial.room.wallThickness / 2
 
-    XCTAssertEqual(spatial.anchors.signalTV.position.z, rearWallFrontZ + spatial.media.signalTV.z / 2, accuracy: 0.0001)
+    // The production wall mount clears the authored rear-wall conduit.
+    XCTAssertEqual(spatial.anchors.signalTV.position.z, rearWallFrontZ + 0.16, accuracy: 0.0001)
+    XCTAssertLessThan(spatial.anchors.signalTV.position.y + spatial.media.signalTV.y / 2, spatial.room.ceilingHeight)
     XCTAssertEqual(spatial.anchors.fundingBoard.position.z, rearWallFrontZ + spatial.media.fundingBoard.z / 2, accuracy: 0.0001)
     XCTAssertLessThan(spatial.anchors.signalTV.position.x, 0)
     XCTAssertGreaterThan(spatial.anchors.fundingBoard.position.x, 0)
@@ -2293,6 +2295,26 @@ final class FounderGarageRealityTests: XCTestCase {
     assertTransform(controller.camera.transform, equals: original)
     XCTAssertEqual(controller.camera.camera.fieldOfViewInDegrees, originalFOV)
     XCTAssertFalse(controller.restoreInteractionFocus(reduceMotion: true))
+  }
+
+  @MainActor
+  func testSignalTVFocusWidensOnlyTVLensAndPreservesSeatedEyeAndReturn() {
+    let world = FounderGarageRealityWorld()
+    let configuration = FounderGarageCameraConfiguration(spatial: world.spatialSpecification)
+    let tv = configuration.interactionRecipe(for: .signalTV)
+    XCTAssertEqual(tv.position, configuration.seatedPlayerState.eyePosition)
+    XCTAssertEqual(tv.lookTarget, world.spatialSpecification.anchors.signalTV.position)
+    XCTAssertEqual(tv.fieldOfView, 75)
+    XCTAssertEqual(configuration.interactionRecipe(for: .phone).fieldOfView, 52)
+    XCTAssertEqual(configuration.interactionRecipe(for: .computer).fieldOfView, 54)
+    let controller = world.cameraController
+    let before = controller.camera.transform
+    let lens = controller.camera.camera.fieldOfViewInDegrees
+    XCTAssertTrue(controller.focus(on: .signalTV, reduceMotion: true))
+    XCTAssertEqual(controller.camera.camera.fieldOfViewInDegrees, 75)
+    XCTAssertTrue(controller.restoreInteractionFocus(reduceMotion: true))
+    assertTransform(controller.camera.transform, equals: before)
+    XCTAssertEqual(controller.camera.camera.fieldOfViewInDegrees, lens)
   }
 
   @MainActor

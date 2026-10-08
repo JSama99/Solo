@@ -12,16 +12,21 @@ final class TechComEngineTests: XCTestCase {
     XCTAssertFalse(results.contains { $0.text.contains("{") })
   }
 
-  func testThrottleCapsLoudSprintWithoutDroppingEventHeadlinePriority() {
+  func testPrivateReviewCannotTakePublicHeadlineSlot() {
     let task = SoloTask(title: "Proof", detail: "", role: .engineering, impact: .momentum(2))
     let agent = SoloAgent(id: "a", name: "Avery", initials: "AV", role: .engineering, modelFamily: "M", reliability: 80, calibration: 0.7, drift: 0, trust: 60)
     let result = VisibleTaskResult(reportedQuality: 80, actualQuality: 60, verificationState: .overclaimed, overclaimAmount: 20, evidenceCompleteness: 80, confidenceRangeLabel: "55–85", knownOperationalRisk: "Normal operational variance", correlatedFailureDetected: false)
+    var sprint = sprintResult()
+    sprint.headline = "Known risks need founder attention"
     var generator = SeededRandomNumberGenerator(seed: 2)
-    let events: [PresentationCoordinator.Event] = [.assignment(id: UUID(), taskID: task.id, agentID: agent.id, restored: false), .review(id: UUID(), taskID: task.id, agentID: agent.id, result: result, evidenceChanged: true), .sprint(id: UUID(), result: sprintResult())]
+    let events: [PresentationCoordinator.Event] = [.assignment(id: UUID(), taskID: task.id, agentID: agent.id, restored: false), .review(id: UUID(), taskID: task.id, agentID: agent.id, result: result, evidenceChanged: true), .sprint(id: UUID(), result: sprint)]
     let headlines = TechComEngine.headlines(snapshot: snapshot(tasks: [task], agents: [agent]), events: events, generator: &generator)
     XCTAssertEqual(headlines.count, TechComEngine.maximumHeadlinesPerSprint)
-    XCTAssertEqual(headlines.filter { $0.category == .trend }.count, 0)
-    XCTAssertTrue(headlines.contains { $0.text.contains("overclaimed by 20") })
+    XCTAssertEqual(headlines.filter { $0.category == .trend }.count, 1)
+    XCTAssertFalse(headlines.contains { $0.text.contains("overclaimed") || $0.text.contains("actual 60") })
+    XCTAssertFalse(headlines.contains { $0.text.contains("Known risks") })
+    XCTAssertTrue(headlines.contains { $0.text.contains("takes on") })
+    XCTAssertTrue(headlines.contains { $0.text.contains("closes sprint") })
   }
 
   func testRivalsAreDeterministicAndClaimsNeverTrailActuals() {
@@ -32,6 +37,32 @@ final class TechComEngineTests: XCTestCase {
       XCTAssertGreaterThanOrEqual(rival.claimedTrackRecord, rival.actualTrackRecord)
       XCTAssertGreaterThanOrEqual(rival.claimedRevenue, rival.actualRevenue)
       XCTAssertGreaterThanOrEqual(rival.claimedMomentum, rival.actualMomentum)
+    }
+  }
+
+  func testIndustryTrendsDoNotDependOnPrivateReviewOrAgentState() {
+    var task = SoloTask(title: "Private proof", detail: "", role: .engineering, impact: .momentum(2))
+    task.isReviewed = true
+    task.result = TaskResult(
+      actualQuality: 40, reportedQuality: 90, evidenceCompleteness: 80,
+      correlatedFailureIdentifier: nil, immediateEffects: SimulationEffects(),
+      delayedEffects: SimulationEffects(), confidenceLowerBound: 70,
+      confidenceUpperBound: 95, knownOperationalRisk: "Normal operational variance"
+    )
+    let agent = SoloAgent(id: "stacks", name: "Stacks", initials: "ST", role: .engineering,
+      modelFamily: "M", reliability: 80, calibration: 0.7, drift: 80, trust: 60)
+    for seed in UInt64(0)..<20 {
+      var privateGenerator = SeededRandomNumberGenerator(seed: seed)
+      var publicGenerator = privateGenerator
+      let privateHeadlines = TechComEngine.headlines(
+        snapshot: snapshot(tasks: [task], agents: [agent]), events: [], generator: &privateGenerator
+      )
+      let publicHeadlines = TechComEngine.headlines(
+        snapshot: snapshot(), events: [], generator: &publicGenerator
+      )
+      XCTAssertEqual(privateHeadlines.map(\.text), publicHeadlines.map(\.text))
+      XCTAssertEqual(privateGenerator, publicGenerator)
+      XCTAssertEqual(publicHeadlines.count, TechComEngine.maximumHeadlinesPerSprint)
     }
   }
 

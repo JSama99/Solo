@@ -748,15 +748,17 @@ private struct EvidenceScreen: View {
               }
               Text(entry.task).font(.headline)
               Text(entry.agent).font(.caption.weight(.semibold))
-              HStack {
-                Text("Reported \(entry.reportedQuality)")
-                if let actual = entry.actualQuality {
-                  Text("•")
-                  Text("Verified \(actual)")
+              if entry.productObservation == nil {
+                HStack {
+                  Text("Reported \(entry.reportedQuality)")
+                  if let actual = entry.actualQuality {
+                    Text("•")
+                    Text("Verified \(actual)")
+                  }
                 }
+                .font(.caption)
+                .foregroundStyle(.secondary)
               }
-              .font(.caption)
-              .foregroundStyle(.secondary)
               Text(entry.note).font(.caption).foregroundStyle(.secondary)
             }
             .soloCard()

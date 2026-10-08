@@ -1294,6 +1294,22 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     app.terminate()
   }
 
+  func testSignalTVProductionGarageScreenCapture() throws {
+    let app = XCUIApplication()
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-realitykit"]
+    app.launch()
+    enterFreshProductionCareer(in: app)
+    XCTAssertTrue(app.buttons["founderGarage.recenter"].waitForExistence(timeout: 20))
+    // Garage Overview faces the exterior door. Turn the normal seated Free
+    // Look toward the rear-wall television instead of capturing that door.
+    app.coordinate(withNormalizedOffset: CGVector(dx: 0.65, dy: 0.45))
+      .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.425, dy: 0.39)))
+    sleep(3)
+    capture("SIGNAL_TV_PRODUCTION_GARAGE_SCREEN", in: app)
+    XCTAssertTrue(app.buttons["founderGarage.recenter"].isHittable)
+    app.terminate()
+  }
+
   func testRealityKitLookOutFocusAndReturn() throws {
     let app = XCUIApplication()
     app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-realitykit"]

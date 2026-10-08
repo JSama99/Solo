@@ -5,6 +5,7 @@ import SwiftUI
 struct FounderGarageRealityView: View {
   var presentation: FounderWorldPresentationModel
   var isActive: Bool = true
+  var publicSignalTVEvents: [PublicMediaEvent] = []
   var onOpenFounderComputer: () -> Void
   var onOpenFounderPhone: () -> Void = {}
   var onOpenFounderTablet: () -> Void = {}
@@ -58,6 +59,7 @@ struct FounderGarageRealityView: View {
             content.subscribe(to: SceneEvents.Update.self, on: nil, handler)
           }
         }
+        try? world.applySignalTVBroadcast(publicSignalTVEvents)
         world.apply(
           displayedPresentation,
           interactionFeedback: founderComputerFeedbackState,
@@ -71,6 +73,7 @@ struct FounderGarageRealityView: View {
           }
         )
       } update: { _ in
+        try? world.applySignalTVBroadcast(publicSignalTVEvents)
         world.apply(
           displayedPresentation,
           interactionFeedback: founderComputerFeedbackState,
@@ -762,7 +765,7 @@ struct FounderGarageRealityView: View {
               Button("Open iPhone", systemImage: "iphone", action: onOpenFounderPhone)
               Button("Open iPad", systemImage: "ipad.landscape", action: onOpenFounderTablet)
               Button("Open Server", systemImage: "server.rack", action: onOpenFounderServer)
-              Button("Open Funding Board", systemImage: "pin.fill", action: onOpenFundingBoard)
+              Button("Open Founder Strategy Board", systemImage: "pin.fill", action: onOpenFundingBoard)
             } label: {
               cameraControlLabel("WORKSTATION")
             }

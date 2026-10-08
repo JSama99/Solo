@@ -336,6 +336,34 @@ enum ProductLaunchOutcomeClass: String, Codable, CaseIterable, Sendable {
   var title: String { rawValue.capitalized }
 }
 
+/// Completed canonical work retained for launch, not a Founder-facing payload.
+/// TaskResult preserves original hidden/delivered truth; Evidence is never used
+/// to reconstruct it. One record per track belongs to the current venture.
+struct ProductLaunchPreparationRecord: Codable, Hashable {
+  var venture: Int
+  var sprint: Int
+  var taskID: UUID
+  var taskTitle: String
+  var agentID: String
+  var urgency: TaskUrgency
+  var result: TaskResult
+  var resolution: TaskResolutionChoice
+}
+
+struct ProductLaunchPreparationState: Codable, Hashable {
+  static let agentIDs = ["aurora", "stacks", "brio"]
+  var records: [String: ProductLaunchPreparationRecord] = [:]
+
+  mutating func retain(_ record: ProductLaunchPreparationRecord) {
+    guard Self.agentIDs.contains(record.agentID) else { return }
+    if let prior = records[record.agentID] {
+      guard prior.venture == record.venture, record.sprint >= prior.sprint,
+            record.taskID != prior.taskID else { return }
+    }
+    records[record.agentID] = record
+  }
+}
+
 struct ProductLaunchAgentPreparation: Codable, Hashable, Sendable {
   var visibleQuality: Int
   var evidenceCompleteness: Int
@@ -988,4 +1016,263 @@ struct CachedTaskReport: Codable, Hashable {
   var agentID: String
   var intent: SprintIntent
   var result: TaskResult
+}
+
+// MARK: - P3 persistent aggregate product traction
+
+enum ProductFocus: String, Codable, CaseIterable, Identifiable {
+  case improveProduct, grow, monetize, researchMarket
+  var id: Self { self }
+  var operatingCost: Int {
+    switch self {
+    case .improveProduct: ProductTractionTuning.improvementCost
+    case .grow: ProductTractionTuning.growthCost
+    case .monetize: ProductTractionTuning.monetizationCost
+    case .researchMarket: ProductTractionTuning.researchCost
+    }
+  }
+  var title: String {
+    switch self { case .improveProduct: "Improve Product"; case .grow: "Grow"
+    case .monetize: "Monetize"; case .researchMarket: "Research Market" }
+  }
+  var tradeoff: String {
+    switch self {
+    case .improveProduct: "Stacks supports reliability; less immediate acquisition."
+    case .grow: "Brio supports acquisition; higher burn, no retention shortcut. Recent Grow cycles reduce extra reach."
+    case .monetize: "Earn more per paying customer; pricing pressure can increase churn."
+    case .researchMarket: "Aurora supports market evidence; less immediate growth."
+    }
+  }
+}
+
+enum ProductFitState: String, Codable {
+  case unknown = "Unknown", testing = "Testing", weak = "Weak", promising = "Promising"
+  case strong = "Strong", breakout = "Breakout", declining = "Declining"
+}
+
+struct ProductTractionPeriod: Codable, Hashable {
+  let cycle: Int
+  let day: Int
+  let focus: ProductFocus?
+  let acquired: Int
+  let activated: Int
+  let churned: Int
+  let retained: Int
+  let customers: Int
+  let payingCustomers: Int
+  let revenue: Int
+  let operatingCost: Int
+  let observedRetention: Int
+}
+
+/// Persisted simulation state. UI must consume ProductTractionPresentation,
+/// never the quality/alignment/value truth retained from canonical launch.
+struct LaunchedProductState: Codable, Hashable {
+  let id: String
+  let productType: ProductType
+  let launchDay: Int
+  let seed: UInt64
+  var quality: Int
+  var problemAlignment: Int
+  var priceValue: Int
+  var revenuePerCustomer: Int
+  var customers = 0
+  var completedCycles = 0
+  var researchCycles = 0
+  /// Optional so existing version-20 products decode with no accumulated effort.
+  var researchEffortRemainder: Int? = nil
+  var pendingFocus: ProductFocus?
+  var history: [ProductTractionPeriod] = []
+  var nextCycle: Int { completedCycles + 1 }
+  var nextCycleDay: Int { launchDay + nextCycle * ProductTractionTuning.periodDays }
+}
+
+struct ProductTractionSupport {
+  var research: Int
+  var product: Int
+  var acquisition: Int
+  var retention: Int
+
+  /// Existing reliability, calibration, drift and workload affect execution.
+  /// Hidden judgment stays simulation-side and is never a displayed score.
+  init(agents: [SoloAgent], operations: AgentOperationsState, tasks: [SoloTask]) {
+    func capacity(_ id: String, _ domains: [AgentOperationalDomain]) -> Int {
+      guard let agent = agents.first(where: { $0.id == id }) else { return 0 }
+      let profile = operations.profile(for: id)
+      let urgency = tasks.first(where: { $0.assignedAgentID == id })?.urgency
+      let load = AgentOperationsPolicy.workload(profile: profile, assignmentUrgency: urgency)
+      let judgment = max(0, min(100, Int(Double(agent.reliability) * agent.calibration)
+        - Int(agent.drift) - max(0, load - 100)))
+      return min(100, domains.reduce(0) { $0 + profile.allocation(for: $1) } * judgment / 100)
+    }
+    research = capacity("aurora", [.marketResearch, .evidenceVerification])
+    product = capacity("stacks", [.productDevelopment, .reliability, .technicalDebt])
+    acquisition = capacity("brio", [.acquisition, .brand])
+    retention = capacity("brio", [.retention])
+  }
+
+  init(research: Int, product: Int, acquisition: Int, retention: Int) {
+    self.research = research; self.product = product
+    self.acquisition = acquisition; self.retention = retention
+  }
+}
+
+struct ProductTractionPresentation: Equatable {
+  let name: String
+  let segment: String
+  let customers: Int
+  let payingCustomers: Int
+  let revenue: Int
+  let fit: ProductFitState
+  let confidence: String
+  let observation: String
+  let pricingEvidence: String
+  let nextCycle: Int
+  let nextCycleDay: Int
+  let chosenFocus: ProductFocus?
+}
+
+enum ProductTractionTuning {
+  static let periodDays = 7
+  static let historyLimit = 8
+  static let maximumCustomers = 50_000
+  static let minimumRetention = 30
+  static let maximumRetention = 96
+  static let baselineAcquisition = 2
+  static let growthAcquisition = 15
+  static let growthCost = 60
+  static let improvementCost = 24
+  static let researchCost = 18
+  static let monetizationCost = 12
+  static let focusAttentionCost = 1
+  static func unitRevenue(_ type: ProductType) -> Int {
+    switch type { case .saas: 12; case .consumerApp: 3; case .hardware: 18; case .marketplace: 6 }
+  }
+  static func segment(_ type: ProductType) -> String {
+    switch type { case .saas: "Business teams"; case .consumerApp: "App users"
+    case .hardware: "Repeat buyers"; case .marketplace: "Marketplace participants" }
+  }
+}
+
+/// Pure domain resolution. GameStore owns timing, state, Evidence and finance.
+/// Period-local draws never consume or reorder the career RNG stream.
+enum ProductTractionEngine {
+  static func launched(operation: ProductLaunchOperation, result: ProductLaunchResolution,
+                       type: ProductType, day: Int) -> LaunchedProductState? {
+    guard [.mixed, .strong, .breakout].contains(result.overall) else { return nil }
+    return LaunchedProductState(id: "product-\(operation.id)", productType: type,
+      launchDay: day, seed: operation.deterministicSeed,
+      quality: clamp(result.technicalScore), problemAlignment: clamp(operation.resolutionTruth.auroraQuality),
+      priceValue: clamp((operation.resolutionTruth.auroraQuality + result.marketScore) / 2),
+      revenuePerCustomer: ProductTractionTuning.unitRevenue(type))
+  }
+
+  static func step(_ previous: LaunchedProductState, day: Int,
+                   support: ProductTractionSupport) -> LaunchedProductState? {
+    guard day == previous.nextCycleDay else { return nil }
+    var state = previous
+    let focus = state.pendingFocus
+    var rng = SeededRandomNumberGenerator(seed: periodKey(state, day: day))
+    // Fixed draw ordering, independent of focus or whether customers exist.
+    let acquisitionNoise = rng.integer(in: -2...2)
+    let retentionNoise = rng.integer(in: -2...2)
+    let cost = focus?.operatingCost ?? 0
+    switch focus {
+    case .improveProduct:
+      state.quality = clamp(state.quality + min(6, max(0, support.product) / 10))
+    case .researchMarket:
+      // Preserve legitimate fractional effort even when allocations change.
+      // Missing optional remainder in existing saves means zero, not fabricated work.
+      let effort = max(0, min(60, support.research))
+      if effort > 0 {
+        let accumulated = max(0, min(14, state.researchEffortRemainder ?? 0)) + effort
+        state.problemAlignment = clamp(state.problemAlignment + accumulated / 15)
+        state.researchEffortRemainder = accumulated % 15
+        state.researchCycles += 1
+      }
+    case .monetize:
+      state.revenuePerCustomer = min(ProductTractionTuning.unitRevenue(state.productType) * 2, state.revenuePerCustomer + 2)
+      state.priceValue = clamp(state.priceValue - 5)
+    case .grow, nil: break
+    }
+    let acquisitionEffort = max(0, min(100, support.acquisition))
+    let recentGrowthCycles = previous.history.suffix(3).filter { $0.focus == .grow }.count
+    let opportunity = ProductTractionTuning.baselineAcquisition + acquisitionEffort / 4
+      + (focus == .grow ? (ProductTractionTuning.growthAcquisition + acquisitionEffort / 3) / (1 + recentGrowthCycles) : 0)
+    let slowExecution = focus == .improveProduct || focus == .researchMarket
+    let acquired = max(0, (opportunity + acquisitionNoise) / (slowExecution ? 2 : 1))
+    let satisfaction = (state.quality * 50 + state.problemAlignment * 30 + state.priceValue * 20) / 100
+    let activationRate = max(20, min(95, (state.problemAlignment + state.quality) / 2))
+    let activated = acquired * activationRate / 100
+    // Retention cannot be bought by acquisition spending. Support helps service
+    // delivery, but the product/fit/value blend dominates and remains bounded.
+    let retention = min(ProductTractionTuning.maximumRetention,
+      max(ProductTractionTuning.minimumRetention, 25 + satisfaction * 70 / 100
+        + max(0, min(100, support.retention)) / 20 + retentionNoise))
+    let retained = previous.customers * retention / 100
+    let churned = previous.customers - retained
+    let customers = min(ProductTractionTuning.maximumCustomers, retained + activated)
+    let paying = customers * max(20, min(95, state.priceValue)) / 100
+    let revenue = paying * state.revenuePerCustomer
+    state.customers = customers
+    state.completedCycles += 1
+    state.pendingFocus = nil
+    state.history.append(ProductTractionPeriod(cycle: state.completedCycles, day: day, focus: focus,
+      acquired: acquired, activated: activated, churned: churned, retained: retained,
+      customers: customers, payingCustomers: paying, revenue: revenue, operatingCost: cost,
+      observedRetention: previous.customers == 0 ? 0 : retained * 100 / previous.customers))
+    state.history = Array(state.history.suffix(ProductTractionTuning.historyLimit))
+    return state
+  }
+
+  static func presentation(_ state: LaunchedProductState) -> ProductTractionPresentation {
+    let recent = state.history.suffix(3)
+    let last = recent.last
+    let measured = recent.filter { $0.retained + $0.churned > 0 }
+    let exposure = measured.reduce(0) { $0 + $1.retained + $1.churned }
+    let retained = measured.reduce(0) { $0 + $1.retained }
+    let retention = exposure == 0 ? 0 : retained * 100 / exposure
+    let netGrowth = recent.reduce(0) { $0 + $1.activated - $1.churned }
+    let fit: ProductFitState
+    if state.completedCycles == 0 { fit = .unknown }
+    else if measured.count < 2 { fit = .testing }
+    else if netGrowth < 0 && retention < 75 { fit = .declining }
+    else if retention >= 90 && (last?.payingCustomers ?? 0) >= 180 && netGrowth > 0 { fit = .breakout }
+    else if retention >= 82 && (last?.payingCustomers ?? 0) >= 60 && netGrowth > 0 { fit = .strong }
+    else if retention >= 74 && netGrowth > 0 { fit = .promising }
+    else { fit = .weak }
+    let observation: String
+    if let last {
+      observation = "\(last.acquired) acquired · \(last.activated) activated · \(last.churned) churned this cycle."
+        + (exposure > 0 ? " Repeat retention: \(retention)% across \(exposure) customer observations." : "")
+    } else { observation = "No customer cycle observed yet. Advance operating time to test the launch." }
+    return ProductTractionPresentation(name: state.productType.name, segment: ProductTractionTuning.segment(state.productType),
+      customers: state.customers, payingCustomers: last?.payingCustomers ?? 0, revenue: last?.revenue ?? 0,
+      fit: fit, confidence: measured.count >= 2 && exposure >= 20 && state.researchCycles > 0 ? "Moderate" : "Low",
+      observation: observation,
+      pricingEvidence: state.researchCycles >= 2 ? "Market research has added pricing evidence; keep testing repeat usage." : "Pricing sensitivity remains unresolved.",
+      nextCycle: state.nextCycle, nextCycleDay: state.nextCycleDay, chosenFocus: state.pendingFocus)
+  }
+
+  static func periodID(_ state: LaunchedProductState, day: Int) -> String { "\(state.id)-day-\(day)" }
+
+  static func evidenceID(_ state: LaunchedProductState, day: Int) -> UUID {
+    let high = periodKey(state, day: day)
+    let low = SeededRandomNumberGenerator.mixed(high ^ 0x45564944454E4345)
+    return UUID(uuid: (UInt8(truncatingIfNeeded: high >> 56), UInt8(truncatingIfNeeded: high >> 48),
+      UInt8(truncatingIfNeeded: high >> 40), UInt8(truncatingIfNeeded: high >> 32),
+      UInt8(truncatingIfNeeded: high >> 24), UInt8(truncatingIfNeeded: high >> 16),
+      UInt8(truncatingIfNeeded: high >> 8), UInt8(truncatingIfNeeded: high),
+      UInt8(truncatingIfNeeded: low >> 56), UInt8(truncatingIfNeeded: low >> 48),
+      UInt8(truncatingIfNeeded: low >> 40), UInt8(truncatingIfNeeded: low >> 32),
+      UInt8(truncatingIfNeeded: low >> 24), UInt8(truncatingIfNeeded: low >> 16),
+      UInt8(truncatingIfNeeded: low >> 8), UInt8(truncatingIfNeeded: low)))
+  }
+
+  private static func periodKey(_ state: LaunchedProductState, day: Int) -> UInt64 {
+    var key = state.seed ^ UInt64(day)
+    for byte in "traction-v1|\(state.id)".utf8 { key ^= UInt64(byte); key &*= 0x100000001B3 }
+    return SeededRandomNumberGenerator.mixed(key)
+  }
+  private static func clamp(_ value: Int) -> Int { min(100, max(0, value)) }
 }

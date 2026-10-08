@@ -164,6 +164,7 @@ struct FounderDeskWorkspace: View {
       FounderGarageRealityView(
         presentation: garageCameraPresentation(worldPresentation),
         isActive: navigation.selection == .overview,
+        publicSignalTVEvents: projection.signalTVEvents,
         onOpenFounderComputer: { select(.computer) },
         onOpenFounderPhone: { select(.phone) },
         onOpenFounderTablet: { select(.tablet) },
@@ -440,7 +441,7 @@ struct FounderDeskWorkspace: View {
     .allowsHitTesting(visible && navigation.lookOutActive)
     .accessibilityHidden(!visible || !navigation.lookOutActive)
     .accessibilityLabel("Signal TV")
-    .accessibilityValue(environmentProjection.signalTVEvents.first.map { "\($0.program.rawValue). \($0.headline)" } ?? "Market Pulse")
+    .accessibilityValue(NarrativeStoryCompetition.selectPrimaryStory(from: environmentProjection.signalTVEvents).map { "\($0.program.rawValue). \($0.headline)" } ?? "Market Pulse")
     .accessibilityHint("Opens the current broadcast, Market Pulse, Rival Watch, and recent public headlines.")
     .accessibilityIdentifier("signal-tv-hotspot")
   }
