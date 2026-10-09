@@ -1,0 +1,133 @@
+{
+  "schema_version": "1.0",
+  "graph_id": "solo-c11-owner-acceptance",
+  "name": "C1.1 explicit owner acceptance closure",
+  "description": "Preserve prior seven-step run; one additional control-step budget allows existing Loop completion check after evidence acceptance. Same verified source and scoped owner authorization.",
+  "max_total_steps": 8,
+  "workspace_policy": {
+    "allowed_commands": [
+      "python3"
+    ],
+    "allow_absolute_artifact_paths": false
+  },
+  "nodes": [
+    {
+      "id": "canon",
+      "kind": "command",
+      "title": "canon",
+      "command": [
+        "python3",
+        "-B",
+        "Tools/SoloCanon/validate_canon.py"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "ledger",
+      "kind": "command",
+      "title": "ledger",
+      "command": [
+        "python3",
+        "-B",
+        "Tools/FailureLedger/validate.py"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "ledger-tests",
+      "kind": "command",
+      "title": "ledger-tests",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/FailureLedger/tests"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "c1-contracts",
+      "kind": "command",
+      "title": "c1-contracts",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ChaosCrew/tests"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "study-audit",
+      "kind": "command",
+      "title": "study-audit",
+      "command": [
+        "python3",
+        "-B",
+        "-c",
+        "import sys; from pathlib import Path; sys.path.insert(0,'Tools/ChaosCrew'); import c1; r=Path.cwd(); e=r/'Documentation/ChaosCrew/C1.1/Evidence'; assert c1.manifest(r)==c1.read(e/'source-manifest.json'); s=c1.read(e/'study-summary.json'); assert s['scenarios']==200; [(c1.audit(c1.read(e/(k+'.json'))), c1.sha((e/(k+'.json')).read_bytes())==v or (_ for _ in ()).throw(ValueError(k))) for k,v in s['replayFingerprints'].items()]; assert not c1.read(r/'Documentation/ChaosCrew/C1.1/Comparison.json')['afterViolations']; c1.validate_candidate(c1.read(r/'FailureLedger/candidates/CF-c1-ca78b88c9c0e.json'),r); print('PASS: exact source, 200 current traces, repaired invariant and candidate review hashes')"
+      ],
+      "timeout_seconds": 60,
+      "depends_on": [
+        "canon",
+        "ledger",
+        "ledger-tests",
+        "c1-contracts"
+      ],
+      "outputs": [
+        {
+          "path": "Documentation/ChaosCrew/C1.1/Evidence/source-manifest.json"
+        },
+        {
+          "path": "Documentation/ChaosCrew/C1.1/Comparison.json"
+        },
+        {
+          "path": "Documentation/ChaosCrew/C1.1/Review/FindingReview.json"
+        },
+        {
+          "path": "FailureLedger/candidates/CF-c1-ca78b88c9c0e.json"
+        }
+      ]
+    },
+    {
+      "id": "owner-review",
+      "kind": "human_gate",
+      "title": "Explicit owner acceptance of C1.1 verification evidence",
+      "depends_on": [
+        "study-audit"
+      ],
+      "consumes_from": [
+        "study-audit"
+      ],
+      "instructions": "Review bounded GameStore repair, before/after evidence and candidate. Do not infer authorization for broader changes or Failure Ledger promotion."
+    },
+    {
+      "id": "accept-evidence",
+      "kind": "promotion",
+      "title": "Logical acceptance of verification evidence only",
+      "depends_on": [
+        "owner-review",
+        "study-audit"
+      ],
+      "consumes_from": [
+        "study-audit"
+      ],
+      "outputs": [
+        {
+          "path": "Documentation/ChaosCrew/C1.1/Comparison.json"
+        }
+      ],
+      "metadata": {
+        "scope": "verification_evidence_only",
+        "failure_ledger_promotion": false,
+        "git_mutation": false
+      }
+    }
+  ]
+}

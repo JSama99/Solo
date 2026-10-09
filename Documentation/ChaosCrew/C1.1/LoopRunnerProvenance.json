@@ -1,0 +1,20 @@
+{
+  "path": "/Users/jermainenelson/Documents/solo-loop-system-v3-v3.1-preview",
+  "gitHEAD": null,
+  "reason": "Existing installed package directory is not a Git checkout",
+  "sourceFiles": {
+    "solo_loop/__init__.py": "78501e2b8825f62a8ca2b79aefba898b838d6179e3bfcee14e5dbbafb0e5ded9",
+    "solo_loop/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+    "solo_loop/cli.py": "d6f4479242b670c4e4d6d360047c36da099709d2e3d41197bca84139aa12f572",
+    "solo_loop/demo_tasks.py": "001f48892e0ee3243cc29f30c068499d0f3360d1c647326218f15c074e65b3df",
+    "solo_loop/executor.py": "6ca55b43564a357363fd446de4664591d0d2a1c5b0d3d90fc0b9017205e940a3",
+    "solo_loop/graph.py": "98d8a521f077fc12d6d0728ce4e4089fe5f2fa7074aebf70ca5dcdd7115b2f34",
+    "solo_loop/integrations/__init__.py": "a7186b8c7fd0b3884ab6abc4c035adeef08dbc492566338dcef8cb874159380d",
+    "solo_loop/integrations/solo_repo.py": "dfe26f4cde7886a89b3f90ebbcb0b1dc08e71308a84dd8bd80bcbe5e2cf42e50",
+    "solo_loop/ledger.py": "78dbe88b9c1161b815dbe1a44e976c06ad64728303309a36601157c18c875959",
+    "solo_loop/model.py": "453a0980b9af070c16d18749aa6bddccf57dbdc7954ebaa99fa032db6be6736e",
+    "solo_loop/runner.py": "fe9a672a3e8cb9ad8407fd238e5c42fe8b49b6353d83e2cf6b4c7f226ddbe18c",
+    "solo_loop/store.py": "d19975fa313cd68a220eea93c899fc61c1a042f75b61d09aa52eb503f34bc4bb",
+    "solo_loop/util.py": "494802e17707db4c02f6507ef22dc2e6ca3cf0bdf1fa021c1d22eb5fb8eda6d7"
+  }
+}

@@ -41,3 +41,11 @@ Observed outcome: The traversal-only retry failed again.
 Why rejected: Retry alone did not correct the production divergence.
 Reconsideration: New readiness/collision evidence or a diagnosed environment change.
 Evidence: EV-014
+
+## FL-015 — Task and cached-report identity guards alone
+
+Reason attempted: Correct the original save_reload:tasks finding with a bounded restoration change.
+Observed outcome: Intermediate 200-scenario study still reproduced save_reload:evidence in seed 18279; minimized to 22 actions.
+Why rejected: Evidence restoration still selected a different agent entry by task UUID alone.
+Reconsideration: Not a complete correction unless Evidence restoration also respects its existing agent identity.
+Evidence: EV-020, EV-022

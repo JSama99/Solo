@@ -50,7 +50,7 @@
     "locator": "retainCompletedProductLaunchPreparation; beginProductLaunch; commitSprint; saveVersion",
     "path": "App/GameStore.swift",
     "scope": "current_source",
-    "sha256": "daad1c791acf9ed91f14c3943e1f6eec1bc2e8a23b00c1dcfebff6e8d53db2ed",
+    "sha256": "14bda60267fada40c6a13d78275b0483584b1406fe0f92648c3d69aeafb884f3",
     "summary": "Current preparation authority, Coverage discrepancy and persistence seams."
   },
   {
@@ -151,5 +151,59 @@
     "scope": "current_source",
     "sha256": "c93ca6c60f9a68da07fcef19be2886281ce29933b750b07630f28287908d36bc",
     "summary": "Committed R8 provenance identifies independent R7 source and archive hashes."
+  },
+  {
+    "id": "EV-018",
+    "kind": "OWNER_STATEMENT",
+    "locator": "Scope and explicit review/publish authorization",
+    "path": "Documentation/ChaosCrew/Acceptance/OwnerDecision.md",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "82a0940239b1a5461a1eae6eeaee3ae867fdefe7fcae3f037faca6b3c12f868e",
+    "summary": "Scope and explicit review/publish authorization"
+  },
+  {
+    "id": "EV-019",
+    "kind": "HISTORICAL_REPORT",
+    "locator": "Verified root cause, before/after gates and current bounded correction",
+    "path": "Documentation/ChaosCrew/C1.1/Report.md",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "08b4e68c70d0de376cb1cc55e0e72fc2b09b3911e1f53edb2efdc7ab54d97aee",
+    "summary": "Verified root cause, before/after gates and current bounded correction"
+  },
+  {
+    "id": "EV-020",
+    "kind": "PRIMARY_SOURCE",
+    "locator": "Original, intermediate and final deterministic classifications",
+    "path": "Documentation/ChaosCrew/C1.1/Comparison.json",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "4cb334bcc84885506a10e062372271968ef0247a287cdf99bd36a8ae03c283b6",
+    "summary": "Original, intermediate and final deterministic classifications"
+  },
+  {
+    "id": "EV-021",
+    "kind": "PRIMARY_SOURCE",
+    "locator": "Original 17-action task persistence reproduction",
+    "path": "Documentation/ChaosCrew/C1/Evidence/fuzz-v1-s18195-min-save_reload_tasks.json",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "ff2888e8e629be4f5f692c66ed3467f279e00618bebf3d3d5fc19a9a90c91977",
+    "summary": "Original 17-action task persistence reproduction"
+  },
+  {
+    "id": "EV-022",
+    "kind": "PRIMARY_SOURCE",
+    "locator": "22-action residual Evidence reproduction before identity guard",
+    "path": "Documentation/ChaosCrew/C1.1/Evidence/c11-evidence-before.json",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "07c1c911746a0c78de8ee69e80bc80329fc6e55af7b6591e8eaf81c6c7b5661c",
+    "summary": "22-action residual Evidence reproduction before identity guard"
+  },
+  {
+    "id": "EV-023",
+    "kind": "PRIMARY_SOURCE",
+    "locator": "Explicit owner gate and completed verification evidence acceptance",
+    "path": "Documentation/ChaosCrew/Acceptance/LoopAcceptance.json",
+    "scope": "historical_evidence_not_current_test",
+    "sha256": "dab76daccc49098701b0527ec1f0d260eb0a25af19bbad908d5c67ee51bc2ef1",
+    "summary": "Explicit owner gate and completed verification evidence acceptance"
   }
 ]
