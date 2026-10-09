@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.0",
+  "graph_id": "solo-chaos-crew-c1-verification",
+  "name": "C1 completed study verification",
+  "description": "Existing Loop verifies completed isolated GameStore study artifacts. No gameplay execution, promotion or repairs.",
+  "max_total_steps": 6,
+  "workspace_policy": {
+    "allowed_commands": [
+      "python3"
+    ],
+    "allow_absolute_artifact_paths": false
+  },
+  "nodes": [
+    {
+      "id": "canon",
+      "kind": "command",
+      "title": "canon",
+      "command": [
+        "python3",
+        "-B",
+        "Tools/SoloCanon/validate_canon.py"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "failure-ledger",
+      "kind": "command",
+      "title": "failure-ledger",
+      "command": [
+        "python3",
+        "-B",
+        "Tools/FailureLedger/validate.py"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "contract-tests",
+      "kind": "command",
+      "title": "contract-tests",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ChaosCrew/tests"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "study-audit",
+      "kind": "command",
+      "title": "study-audit",
+      "command": [
+        "python3",
+        "-B",
+        "-c",
+        "import sys,json,hashlib; from pathlib import Path; sys.path.insert(0,'Tools/ChaosCrew'); import c1; r=Path.cwd(); e=r/'Documentation/ChaosCrew/C1/Evidence'; assert c1.manifest(r)==c1.read(e/'source-manifest.json'); s=c1.read(e/'study-summary.json'); assert s['launchScenarios']==100 and s['fuzzScenarios']==100; [(c1.audit(c1.read(e/(k+'.json'))), c1.sha((e/(k+'.json')).read_bytes())==v or (_ for _ in ()).throw(ValueError(k))) for k,v in s['replayFingerprints'].items()]; c1.validate_candidate(c1.read(r/'FailureLedger/candidates/CF-c1-ca78b88c9c0e.json'),r); print('PASS: source, 200 replay hashes, public allowlist and F1 candidate')"
+      ],
+      "timeout_seconds": 60,
+      "depends_on": [
+        "canon",
+        "failure-ledger",
+        "contract-tests"
+      ],
+      "outputs": [
+        {
+          "path": "Documentation/ChaosCrew/C1/Evidence/source-manifest.json"
+        },
+        {
+          "path": "Documentation/ChaosCrew/C1/Reports/coverage.json"
+        },
+        {
+          "path": "FailureLedger/candidates/CF-c1-ca78b88c9c0e.json"
+        }
+      ]
+    },
+    {
+      "id": "human-review",
+      "kind": "human_gate",
+      "title": "Review C1 evidence before logical acceptance",
+      "depends_on": [
+        "study-audit"
+      ],
+      "consumes_from": [
+        "study-audit"
+      ],
+      "instructions": "Review C1 report and candidate. This gate does not promote F1 findings or authorize gameplay changes."
+    },
+    {
+      "id": "accept-evidence",
+      "kind": "promotion",
+      "title": "Logical acceptance of C1 verification evidence only",
+      "depends_on": [
+        "human-review",
+        "study-audit"
+      ],
+      "consumes_from": [
+        "study-audit"
+      ],
+      "outputs": [
+        {
+          "path": "Documentation/ChaosCrew/C1/Reports/coverage.json"
+        }
+      ],
+      "metadata": {
+        "scope": "verification_evidence_only",
+        "failure_ledger_promotion": false,
+        "git_mutation": false
+      }
+    }
+  ]
+}

@@ -26,6 +26,12 @@ class FailureLedgerTests(unittest.TestCase):
         for e in read_json(ROOT/'FailureLedger/evidence.json'):
             dest=self.root/e['path'];dest.parent.mkdir(parents=True,exist_ok=True)
             shutil.copyfile(ROOT/e['path'],dest)
+        # Candidate evidence is not part of the historical evidence registry.
+        # Copy those dependencies too so real candidates remain valid in the lab fixture.
+        for candidate in sorted((ROOT/'FailureLedger/candidates').glob('*.json')):
+            for ref in validate_candidate(read_json(candidate),ROOT)['evidenceReferences']:
+                dest=self.root/ref['path'];dest.parent.mkdir(parents=True,exist_ok=True)
+                shutil.copyfile(ROOT/ref['path'],dest)
         for r in Ledger(ROOT).records:
             for t in r['relatedTests']:
                 dest=self.root/t.split('::')[0];dest.parent.mkdir(parents=True,exist_ok=True)
@@ -34,7 +40,7 @@ class FailureLedgerTests(unittest.TestCase):
     def edit(self, name, change):
         path=self.root/name;value=read_json(path);change(value);path.write_bytes(canonical_bytes(value))
     def test_valid_records(self):
-        self.assertEqual(len(Ledger(self.root).records),14)
+        self.assertEqual(len(Ledger(self.root).records),15)
     def test_invalid_classification(self):
         self.edit('FailureLedger/records/FL-001.json',lambda r:r.update(classification='UNSUPPORTED'))
         with self.assertRaisesRegex(LedgerError,'classification'):Ledger(self.root)

@@ -3325,7 +3325,10 @@ final class GameStore {
   private func restoreLegacyWorkSessionCausalQuality() {
     for session in workSessions where session.completed && session.completionApplied {
       guard let deliveredQuality = session.deliveredQuality else { continue }
+      // A task ID survives reassignment. Legacy quality belongs to the session's
+      // agent, not a newer report produced by another agent for the same task.
       if let taskIndex = tasks.firstIndex(where: { $0.id == session.assignmentID }),
+         tasks[taskIndex].assignedAgentID == session.agentID,
          var result = tasks[taskIndex].result,
          !result.hasCanonicalWorkSessionOutcome {
         result.restoreLegacyWorkSessionOutcome(
@@ -3335,14 +3338,21 @@ final class GameStore {
         )
         tasks[taskIndex].result = result
       }
-      if let cacheIndex = reportCache.firstIndex(where: { $0.taskID == session.assignmentID }),
+      if let cacheIndex = reportCache.firstIndex(where: {
+        $0.taskID == session.assignmentID && $0.agentID == session.agentID
+      }),
          !reportCache[cacheIndex].result.hasCanonicalWorkSessionOutcome {
         reportCache[cacheIndex].result.applyWorkSessionOutcome(
           deliveredQuality: deliveredQuality,
           founderReviewQuality: session.founderReviewQuality,
         )
       }
-      if let evidenceIndex = evidence.firstIndex(where: { $0.taskInstanceID == session.assignmentID.uuidString }) {
+      // Evidence stores the canonical agent name rather than its ID, as in
+      // legacy task/evidence migration. Do not rewrite another agent's review.
+      if let agentName = agents.first(where: { $0.id == session.agentID })?.name,
+         let evidenceIndex = evidence.firstIndex(where: {
+           $0.taskInstanceID == session.assignmentID.uuidString && $0.agent == agentName
+         }) {
         evidence[evidenceIndex].workSessionAgentQuality = session.agentPotentialQuality
         evidence[evidenceIndex].workSessionFounderReviewQuality = session.founderReviewQuality
         evidence[evidenceIndex].workSessionDeliveredQuality = deliveredQuality

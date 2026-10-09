@@ -1,0 +1,22 @@
+{
+  "beforeFingerprint": "1cd8603413402d400770cbb0be73ba1798445640df10ceaa26f1eca329f20c7a",
+  "afterFingerprint": "46d66dc70899c33d900c232e735b89670c5cb7ed8ff6c8620d3070db811dccb9",
+  "changedManifestFiles": {
+    "App/GameStore.swift": {
+      "before": "daad1c791acf9ed91f14c3943e1f6eec1bc2e8a23b00c1dcfebff6e8d53db2ed",
+      "after": "14bda60267fada40c6a13d78275b0483584b1406fe0f92648c3d69aeafb884f3"
+    },
+    "FailureLedger/evidence.json": {
+      "before": "a7b12e9130ab8a07231f87d7b5fff6165d2e93dadee4da3426fd3f8d351265d8",
+      "after": "a4af323c52b097749ac3ac59577846149fff04b6b11feacc0e6092d17cc31693"
+    },
+    "Tests/ChaosCrewMissionTests.swift": {
+      "before": "6aad1ae6df852c156ef6268adafcc9df02394b101adaba5409a5396fe03c4b88",
+      "after": "1f280a5a29f9ca88b9877e852e1a21c669aaafd6e0229c4b93fe87b6f653d61b"
+    },
+    "Tools/FailureLedger/tests/test_ledger.py": {
+      "before": "2dd54bb8569fb0844102195e5059dc972c25c076996b7477adcb006be42c4721",
+      "after": "6278891905d50ae3702bf3e30584f11b43a55557a72698410ab449cbd37bb840"
+    }
+  }
+}
