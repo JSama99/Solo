@@ -1515,7 +1515,18 @@ final class GameStore {
   }
 
   func workSession(for taskID: UUID) -> WorkSessionRecord? {
-    workSessions.first(where: { $0.assignmentID == taskID })
+    // Current work follows its assignment owner; expired tasks remain readable as history.
+    if tasks.contains(where: { $0.id == taskID }) {
+      return activeWorkSessionIndex(for: taskID).map { workSessions[$0] }
+    }
+    return workSessions.first(where: { $0.assignmentID == taskID })
+  }
+
+  private func activeWorkSessionIndex(for taskID: UUID) -> Int? {
+    guard let agentID = tasks.first(where: { $0.id == taskID })?.assignedAgentID else { return nil }
+    return workSessions.firstIndex(where: {
+      $0.assignmentID == taskID && $0.agentID == agentID
+    })
   }
 
   @discardableResult
@@ -1535,12 +1546,12 @@ final class GameStore {
 
   @discardableResult
   func prepareWorkSession(taskID: UUID, expectedFamily: WorkSessionFamily? = nil) -> Bool {
-    if let existing = workSession(for: taskID) {
-      return expectedFamily == nil || existing.family == expectedFamily
-    }
     guard let task = tasks.first(where: { $0.id == taskID }),
-          let agentID = task.assignedAgentID,
-          let agent = agents.first(where: { $0.id == agentID }),
+          let agentID = task.assignedAgentID else { return false }
+    if let index = activeWorkSessionIndex(for: taskID) {
+      return expectedFamily == nil || workSessions[index].family == expectedFamily
+    }
+    guard let agent = agents.first(where: { $0.id == agentID }),
           let potential = task.result?.workSessionPotentialQuality,
           let family = WorkSessionEngine.family(for: task, agentID: agentID),
           expectedFamily == nil || expectedFamily == family else { return false }
@@ -1613,7 +1624,7 @@ final class GameStore {
   @discardableResult
   func beginManualWorkSession(taskID: UUID) -> Bool {
     guard prepareWorkSession(taskID: taskID),
-          let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }) else { return false }
+          let index = activeWorkSessionIndex(for: taskID) else { return false }
     if workSessions[index].path == .manualReview { return true }
     guard workSessions[index].path == nil, !workSessions[index].completed else { return false }
     let cost = workSessions[index].founderAttentionCost
@@ -1632,7 +1643,7 @@ final class GameStore {
 
   @discardableResult
   func classifyEvidence(taskID: UUID, action: EvidenceTriageAction) -> Bool {
-    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }) else { return false }
+    guard let index = activeWorkSessionIndex(for: taskID) else { return false }
     guard WorkSessionEngine.record(action, in: &workSessions[index]) else { return false }
     if workSessions[index].decisions.count == workSessions[index].cards.count {
       _ = WorkSessionEngine.completeManual(&workSessions[index])
@@ -1663,7 +1674,7 @@ final class GameStore {
   @discardableResult
   func delegateWorkSession(taskID: UUID) -> Bool {
     guard prepareWorkSession(taskID: taskID),
-          let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }) else { return false }
+          let index = activeWorkSessionIndex(for: taskID) else { return false }
     // Charged before the path is committed, and only once, exactly like
     // `beginManualWorkSession`. `review()` skips its own charge whenever a
     // completed session exists, so this is the single point at which a
@@ -1717,7 +1728,7 @@ final class GameStore {
 
   @discardableResult
   func selectSystemsReviewStep(taskID: UUID, stepID: String) -> Bool {
-    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+    guard let index = activeWorkSessionIndex(for: taskID),
           WorkSessionEngine.selectSystemStep(stepID, in: &workSessions[index]) else { return false }
     save()
     return true
@@ -1725,7 +1736,7 @@ final class GameStore {
 
   @discardableResult
   func removeSystemsReviewStep(taskID: UUID, stepID: String) -> Bool {
-    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+    guard let index = activeWorkSessionIndex(for: taskID),
           WorkSessionEngine.removeSystemStep(stepID, in: &workSessions[index]) else { return false }
     save()
     return true
@@ -1733,7 +1744,7 @@ final class GameStore {
 
   @discardableResult
   func resetSystemsReview(taskID: UUID) -> Bool {
-    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+    guard let index = activeWorkSessionIndex(for: taskID),
           WorkSessionEngine.resetSystemsSequence(&workSessions[index]) else { return false }
     save()
     return true
@@ -1741,7 +1752,7 @@ final class GameStore {
 
   @discardableResult
   func submitSystemsReview(taskID: UUID) -> Bool {
-    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+    guard let index = activeWorkSessionIndex(for: taskID),
           WorkSessionEngine.completeSystemsReview(&workSessions[index]) else { return false }
     applyWorkSessionOutcome(at: index)
     save()
@@ -1750,7 +1761,7 @@ final class GameStore {
 
   @discardableResult
   func selectCampaignOption(taskID: UUID, slot: CampaignSlot, optionID: String) -> Bool {
-    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+    guard let index = activeWorkSessionIndex(for: taskID),
           WorkSessionEngine.selectCampaignOption(optionID, slot: slot, in: &workSessions[index]) else { return false }
     save()
     return true
@@ -1758,7 +1769,7 @@ final class GameStore {
 
   @discardableResult
   func resetCampaignCalibration(taskID: UUID) -> Bool {
-    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+    guard let index = activeWorkSessionIndex(for: taskID),
           WorkSessionEngine.resetCampaignSelection(&workSessions[index]) else { return false }
     save()
     return true
@@ -1766,7 +1777,7 @@ final class GameStore {
 
   @discardableResult
   func submitCampaignCalibration(taskID: UUID) -> Bool {
-    guard let index = workSessions.firstIndex(where: { $0.assignmentID == taskID }),
+    guard let index = activeWorkSessionIndex(for: taskID),
           WorkSessionEngine.completeCampaignCalibration(&workSessions[index]) else { return false }
     applyWorkSessionOutcome(at: index)
     save()
@@ -1779,13 +1790,18 @@ final class GameStore {
           !workSessions[sessionIndex].completionApplied,
           let delivered = workSessions[sessionIndex].deliveredQuality,
           let taskIndex = tasks.firstIndex(where: { $0.id == workSessions[sessionIndex].assignmentID }),
+          tasks[taskIndex].assignedAgentID == workSessions[sessionIndex].agentID,
           var result = tasks[taskIndex].result else { return }
     result.applyWorkSessionOutcome(
       deliveredQuality: delivered,
       founderReviewQuality: workSessions[sessionIndex].founderReviewQuality
     )
     tasks[taskIndex].result = result
-    if let cacheIndex = reportCache.firstIndex(where: { $0.taskID == workSessions[sessionIndex].assignmentID }) {
+    if let cacheIndex = reportCache.firstIndex(where: {
+      $0.venture == venture && $0.sprint == sprint
+        && $0.taskID == workSessions[sessionIndex].assignmentID
+        && $0.agentID == workSessions[sessionIndex].agentID && $0.intent == intent
+    }) {
       reportCache[cacheIndex].result = result
     }
     workSessions[sessionIndex].completionApplied = true
@@ -2827,6 +2843,9 @@ final class GameStore {
   }
 
   private func recordEvidence(task: SoloTask, agent: SoloAgent, result: TaskResult) {
+    let session = workSessions.first(where: {
+      $0.assignmentID == task.id && $0.agentID == agent.id
+    })
     if let index = evidence.firstIndex(where: {
       $0.venture == venture
         && $0.sprint == sprint
@@ -2842,7 +2861,7 @@ final class GameStore {
       evidence[index].verificationState = result.verificationState
       evidence[index].overclaimAmount = actual.map { max(0, evidence[index].reportedQuality - $0) } ?? 0
       evidence[index].correlatedFailureIdentifier = result.correlatedFailureIdentifier
-      if let session = workSession(for: task.id) {
+      if let session {
         evidence[index].workSessionAgentQuality = session.agentPotentialQuality
         evidence[index].workSessionFounderReviewQuality = session.founderReviewQuality
         evidence[index].workSessionDeliveredQuality = session.deliveredQuality
@@ -2882,12 +2901,12 @@ final class GameStore {
         overclaimAmount: actual == nil ? 0 : result.overclaimAmount,
         evidenceCompleteness: result.evidenceCompleteness,
         correlatedFailureIdentifier: result.correlatedFailureIdentifier,
-        workSessionAgentQuality: workSession(for: task.id)?.agentPotentialQuality,
-        workSessionFounderReviewQuality: workSession(for: task.id)?.founderReviewQuality,
-        workSessionDeliveredQuality: workSession(for: task.id)?.deliveredQuality,
-        workSessionFindings: workSession(for: task.id)?.findings ?? [],
-        workSessionCausalAttribution: workSession(for: task.id)?.causalAttribution,
-        hindsightNotes: workSession(for: task.id)?.hindsightExplanations ?? []
+        workSessionAgentQuality: session?.agentPotentialQuality,
+        workSessionFounderReviewQuality: session?.founderReviewQuality,
+        workSessionDeliveredQuality: session?.deliveredQuality,
+        workSessionFindings: session?.findings ?? [],
+        workSessionCausalAttribution: session?.causalAttribution,
+        hindsightNotes: session?.hindsightExplanations ?? []
       ),
       at: 0
     )
@@ -3352,7 +3371,11 @@ final class GameStore {
       if let agentName = agents.first(where: { $0.id == session.agentID })?.name,
          let evidenceIndex = evidence.firstIndex(where: {
            $0.taskInstanceID == session.assignmentID.uuidString && $0.agent == agentName
-         }) {
+         }),
+         // These optional fields are absent in the prototype representation.
+         // Canonical Evidence may contain a later Founder cross-check or rework.
+         evidence[evidenceIndex].workSessionAgentQuality == nil,
+         evidence[evidenceIndex].workSessionDeliveredQuality == nil {
         evidence[evidenceIndex].workSessionAgentQuality = session.agentPotentialQuality
         evidence[evidenceIndex].workSessionFounderReviewQuality = session.founderReviewQuality
         evidence[evidenceIndex].workSessionDeliveredQuality = deliveredQuality

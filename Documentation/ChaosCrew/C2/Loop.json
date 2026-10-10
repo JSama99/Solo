@@ -1,0 +1,131 @@
+{
+  "schema_version": "1.0",
+  "graph_id": "solo-chaos-crew-c2-verification",
+  "name": "C2 Agent Laboratory observation verification",
+  "description": "Existing Loop runner verifies C2 source, replay audit and observation-only F1 candidates. No production correction, promotion or Git mutation.",
+  "max_total_steps": 7,
+  "workspace_policy": {
+    "allowed_commands": [
+      "python3"
+    ],
+    "allow_absolute_artifact_paths": false
+  },
+  "nodes": [
+    {
+      "id": "canon",
+      "kind": "command",
+      "title": "canon",
+      "command": [
+        "python3",
+        "-B",
+        "Tools/SoloCanon/validate_canon.py"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "ledger",
+      "kind": "command",
+      "title": "ledger",
+      "command": [
+        "python3",
+        "-B",
+        "Tools/FailureLedger/validate.py"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "ledger-tests",
+      "kind": "command",
+      "title": "ledger-tests",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/FailureLedger/tests"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "c1-contracts",
+      "kind": "command",
+      "title": "c1-contracts",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ChaosCrew/tests"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "c2-study-audit",
+      "kind": "command",
+      "title": "C2 replay and F1 audit",
+      "command": [
+        "python3",
+        "-B",
+        "Tools/ChaosCrew/c2.py",
+        "summarize",
+        "--evidence",
+        "/Users/jermainenelson/Documents/Solo-Reconstruction/Documentation/ChaosCrew/C2/FinalEvidence",
+        "--output",
+        "/Users/jermainenelson/Documents/Solo-Reconstruction/Documentation/ChaosCrew/C2/Reports"
+      ],
+      "timeout_seconds": 120,
+      "depends_on": [
+        "canon",
+        "ledger",
+        "ledger-tests",
+        "c1-contracts"
+      ],
+      "outputs": [
+        {
+          "path": "Documentation/ChaosCrew/C2/Reports/coverage.json"
+        },
+        {
+          "path": "Documentation/ChaosCrew/C2/FinalEvidence/source-manifest.json"
+        }
+      ]
+    },
+    {
+      "id": "owner-review",
+      "kind": "human_gate",
+      "title": "Explicit owner review of C2 observations",
+      "depends_on": [
+        "c2-study-audit"
+      ],
+      "consumes_from": [
+        "c2-study-audit"
+      ],
+      "instructions": "Review bounded Agent Laboratory evidence and observation-only F1 candidates. This gate does not authorize gameplay corrections, Canon changes or incident promotion."
+    },
+    {
+      "id": "accept-evidence",
+      "kind": "promotion",
+      "title": "Logical acceptance of verification evidence only",
+      "depends_on": [
+        "owner-review",
+        "c2-study-audit"
+      ],
+      "consumes_from": [
+        "c2-study-audit"
+      ],
+      "outputs": [
+        {
+          "path": "Documentation/ChaosCrew/C2/Reports/coverage.json"
+        }
+      ],
+      "metadata": {
+        "scope": "verification_evidence_only",
+        "failure_ledger_promotion": false,
+        "git_mutation": false
+      }
+    }
+  ]
+}

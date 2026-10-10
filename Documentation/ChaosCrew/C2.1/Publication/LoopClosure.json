@@ -1,0 +1,130 @@
+{
+  "schema_version": "1.0",
+  "graph_id": "solo-c2-c21-publication-status-closure",
+  "name": "Separate C2/C2.1 publication verification and Loop status closure",
+  "description": "Repeat the accepted verification graph with eight-step budget; preserve original blocked seven-step record, accepted source and owner decision. No gameplay, Ledger promotion, commit or push.",
+  "max_total_steps": 8,
+  "workspace_policy": {
+    "allowed_commands": [
+      "python3"
+    ],
+    "allow_absolute_artifact_paths": false
+  },
+  "nodes": [
+    {
+      "id": "canon",
+      "kind": "command",
+      "title": "canon",
+      "command": [
+        "python3",
+        "-B",
+        "Tools/SoloCanon/validate_canon.py"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "ledger",
+      "kind": "command",
+      "title": "ledger",
+      "command": [
+        "python3",
+        "-B",
+        "Tools/FailureLedger/validate.py"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "ledger-tests",
+      "kind": "command",
+      "title": "ledger-tests",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/FailureLedger/tests"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "c1-contracts",
+      "kind": "command",
+      "title": "c1-contracts",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ChaosCrew/tests"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "c21-study-audit",
+      "kind": "command",
+      "title": "C2.1 source and before/after study audit",
+      "command": [
+        "python3",
+        "-B",
+        "Tools/ChaosCrew/c21.py",
+        "--evidence",
+        "Documentation/ChaosCrew/C2.1/Study",
+        "--output",
+        "Documentation/ChaosCrew/C2.1/Publication/Audit"
+      ],
+      "timeout_seconds": 120,
+      "depends_on": [
+        "canon",
+        "ledger",
+        "ledger-tests",
+        "c1-contracts"
+      ],
+      "outputs": [
+        {
+          "path": "Documentation/ChaosCrew/C2.1/Publication/Audit/Comparison.json"
+        },
+        {
+          "path": "Documentation/ChaosCrew/C2.1/Study/source-manifest.json"
+        }
+      ]
+    },
+    {
+      "id": "owner-review",
+      "kind": "human_gate",
+      "title": "Explicit owner review of C2 observations",
+      "depends_on": [
+        "c21-study-audit"
+      ],
+      "consumes_from": [
+        "c21-study-audit"
+      ],
+      "instructions": "Validate the existing explicit owner acceptance and its durable hash-verified copy. This is a separately labelled verification-only closure of the accepted C2.1 milestone; no new gameplay or Failure Ledger promotion authority."
+    },
+    {
+      "id": "accept-evidence",
+      "kind": "promotion",
+      "title": "Logical acceptance of verification evidence only",
+      "depends_on": [
+        "owner-review",
+        "c21-study-audit"
+      ],
+      "consumes_from": [
+        "c21-study-audit"
+      ],
+      "outputs": [
+        {
+          "path": "Documentation/ChaosCrew/C2.1/Publication/Audit/Comparison.json"
+        }
+      ],
+      "metadata": {
+        "scope": "verification_evidence_only",
+        "failure_ledger_promotion": false,
+        "git_mutation": false
+      }
+    }
+  ]
+}

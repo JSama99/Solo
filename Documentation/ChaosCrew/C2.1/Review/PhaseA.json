@@ -1,0 +1,27 @@
+{
+  "AppSourceUnchanged": true,
+  "findings": [
+    {
+      "id": "CF-c2-95f4e5a6cf0f",
+      "group": "ASSIGNMENT_AGENT_IDENTITY",
+      "proven": true
+    },
+    {
+      "id": "CF-c2-c1c0dda08525",
+      "group": "ASSIGNMENT_AGENT_IDENTITY",
+      "proven": true
+    },
+    {
+      "id": "CF-c2-c83e56adeb2a",
+      "group": "CANONICAL_VERSUS_LEGACY_RESTORATION",
+      "proven": true
+    },
+    {
+      "id": "CF-c2-cf0e171ef9e7",
+      "group": "ASSIGNMENT_AGENT_IDENTITY",
+      "proven": true
+    }
+  ],
+  "privateSnapshots": 84,
+  "noPromotion": true
+}

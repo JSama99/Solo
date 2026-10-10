@@ -1,0 +1,203 @@
+{
+  "acceptedSourceVerified": true,
+  "archives": [
+    {
+      "bytes": 3271326992,
+      "name": "source-and-evidence.tar.gz",
+      "sha256": "95aef67010ab73af6a140cb99679e6580fb55892055ab82b3040667ce11375ee"
+    },
+    {
+      "bytes": 2157702,
+      "name": "final-source-and-evidence-overlay.tar.gz",
+      "sha256": "c8ba076de2b0cc274f05378f338923286ac717149c242131de75d3234dd97d63"
+    },
+    {
+      "bytes": 2234096,
+      "name": "repair-source-and-evidence-overlay.tar.gz",
+      "sha256": "0525432bebb2b667d5f3ef8bb9cf10bb8b8f374e2de6b318a98d971e6303c75a"
+    },
+    {
+      "bytes": 106789,
+      "name": "private-causal-captures.tar.gz",
+      "sha256": "4ae348d9f6ca402e890cadac4a414fb6f093c1008905cfd58245a050f32934a2"
+    }
+  ],
+  "checkpointFilesVerified": 7924,
+  "checkpointVerification": {
+    "filesVerified": 7924,
+    "independentExtraction": "PASS",
+    "originalC2ArchivesUnchanged": "PASS",
+    "overlayFiles": 455,
+    "privateArchiveSHA256": "4ae348d9f6ca402e890cadac4a414fb6f093c1008905cfd58245a050f32934a2",
+    "privateCaptureHashes": "PASS",
+    "privateFilesVerified": 168,
+    "repairOverlayBytes": 2234096,
+    "repairOverlaySHA256": "0525432bebb2b667d5f3ef8bb9cf10bb8b8f374e2de6b318a98d971e6303c75a",
+    "restored400ReplayComparison": "PASS",
+    "restoredF1": "PASS",
+    "restoredSourceFingerprint": "PASS",
+    "sourceFingerprint": "901ce704c9c059f248009b0461e7da08f797a4a49098160275f29c0ece968200"
+  },
+  "comparison": {
+    "actionCoverage": {
+      "agentDecision": 778,
+      "allocation": 1929,
+      "approve": 1500,
+      "assign": 4042,
+      "autonomy": 755,
+      "beginLaunch": 100,
+      "commit": 852,
+      "decisions": 100,
+      "delegate": 1863,
+      "execute": 100,
+      "finishLaunch": 100,
+      "manual": 1043,
+      "newCareer": 100,
+      "prepare": 1957,
+      "preset": 1945,
+      "publicity": 100,
+      "release": 100,
+      "reload": 2664,
+      "resolve": 200,
+      "review": 3625,
+      "route": 2141,
+      "sessionStep": 2480,
+      "submitSession": 1041,
+      "taskResolution": 1885
+    },
+    "actionResults": {
+      "accepted": 15533,
+      "rejected_by_design": 15767,
+      "unavailable": 100
+    },
+    "afterClassifications": {
+      "REACHABLE": 99,
+      "SEARCH_EXHAUSTED": 301
+    },
+    "afterDiagnosticOccurrences": {},
+    "attemptedActions": 31400,
+    "authority": "engineering_review_pending_owner_acceptance",
+    "beforeClassifications": {
+      "INVARIANT_FAILURE": 131,
+      "REACHABLE": 41,
+      "SEARCH_EXHAUSTED": 228
+    },
+    "beforeDiagnosticOccurrences": {
+      "evidence_provenance": 1410,
+      "save_reload:evidence": 6,
+      "save_reload:reportCache": 25,
+      "stale_session_application": 53
+    },
+    "elapsedSeconds": 565.8484920416668,
+    "memoryMeasurement": null,
+    "originalC2SourceFingerprint": "2794faf488926ac52af08a87b31a949e09d60cdbd7f2ba6d79246d02f660bc04",
+    "promotion": false,
+    "replayMismatches": 0,
+    "replayedActions": 31400,
+    "residualViolations": 0,
+    "scenarios": {
+      "agent-assignment": 100,
+      "agent-evidence": 100,
+      "agent-lifecycle": 100,
+      "agent-trust": 100
+    },
+    "sourceFingerprint": "901ce704c9c059f248009b0461e7da08f797a4a49098160275f29c0ece968200"
+  },
+  "comparisonSHA256": "f5679a7c4f3c614a464f9e46050c5e704f98de835b8bf29fc8e24deef9da6220",
+  "durableAcceptanceCopyVerified": true,
+  "historicalVerification": {
+    "C2StudyTestsPassed": 1,
+    "canonTestsPassed": 357,
+    "failureLedgerTestsPassed": 34,
+    "finalSourceFingerprint": "901ce704c9c059f248009b0461e7da08f797a4a49098160275f29c0ece968200",
+    "focusedTestsPassed": 12,
+    "iPadBuild": "PASS",
+    "iPhoneBuild": "PASS",
+    "loopChainHead": "60a20692a5b9297aff1bb37ba160ac9c0ff6392bd1fcdfafee6c8a03bb1a148a",
+    "loopRun": "solo-chaos-crew-c21-verification-05306dc8a5",
+    "loopVerificationNodesPassed": 5,
+    "nativeTestsPassed": 1069,
+    "nativeTestsSkipped": 1,
+    "originalC2SourceFingerprint": "2794faf488926ac52af08a87b31a949e09d60cdbd7f2ba6d79246d02f660bc04",
+    "originalGameStoreSHA256": "14bda60267fada40c6a13d78275b0483584b1406fe0f92648c3d69aeafb884f3",
+    "ownerGateApproved": false,
+    "promotionExecuted": false,
+    "protectedAudit": {
+      "CanonAcceptedLedgerPackagesProjectScheme": "UNCHANGED",
+      "HEAD": "27b8f8de0dcfc230755acaaa1958c9c7853e9eee",
+      "attribution": "CoreSimulator log records Xcode GUI PID37967 boot/install/launch at 19:06; current task uses CLI dedicated lab destinations",
+      "branch": "codex/controlled-reconstruction",
+      "originalC2ArtifactsAndCandidateFiles": "UNCHANGED",
+      "originalC2TestSource": "PRESERVED_IN_BASELINE",
+      "otherAvailableCheckouts": "UNCHANGED",
+      "ownerConfirmation": "Yes, separate owner-device activity",
+      "ownerDeviceWritesByThisPass": false,
+      "ownerIPadSnapshot": "UNCHANGED",
+      "ownerIPhoneSnapshot": "CHANGED_BY_SEPARATE_ACTIVITY"
+    },
+    "repairedGameStoreSHA256": "2afea14376f35b562d5b7845dfa3f1ac3a8a72042859ec14f2f2627bc4b6ff53",
+    "reviewSourceFingerprint": "39938a7b1e47a1f670f8acc476c0308e5bc837bc66f52943232fe46fef61f6f8",
+    "toolingTestsPassed": 17
+  },
+  "originalCandidates": [
+    {
+      "candidateSHA256": "f156a2ebceabcc941f89a44dc65488c041c7f1cfe199cf1ac8dd8b424f563838",
+      "classification": "VERIFIED_PRODUCTION_DEFECT",
+      "evidenceReferences": [
+        {
+          "path": "Documentation/ChaosCrew/C2/FinalEvidence/agent-assignment-v2-s19006-min-save_reload_reportCache.json",
+          "sha256": "1bb6e46662d9bf1ea531a16ca5a6b52ebc7d48968349e7aa8039736a4cbf7372"
+        }
+      ],
+      "id": "CF-c2-95f4e5a6cf0f",
+      "rootCauseGroup": "ASSIGNMENT_AGENT_IDENTITY"
+    },
+    {
+      "candidateSHA256": "b805f7262b7d8ad340b63b8d63f1eb231eb8ba8a1cbecb817009b5696efd23fe",
+      "classification": "VERIFIED_PRODUCTION_DEFECT",
+      "evidenceReferences": [
+        {
+          "path": "Documentation/ChaosCrew/C2/FinalEvidence/agent-assignment-v2-s19001-min-stale_session_application.json",
+          "sha256": "a47f82c7c0968f2d4b41a1c1be7dc2416f736ff3901b8ae799db706bd855b276"
+        }
+      ],
+      "id": "CF-c2-c1c0dda08525",
+      "rootCauseGroup": "ASSIGNMENT_AGENT_IDENTITY"
+    },
+    {
+      "candidateSHA256": "5031c67ddd94aa472d3b2f8f1aa14fd4249f33b02061ddb67d73a91759ba9fa9",
+      "classification": "VERIFIED_PRODUCTION_DEFECT",
+      "evidenceReferences": [
+        {
+          "path": "Documentation/ChaosCrew/C2/FinalEvidence/agent-assignment-v2-s19027-min-save_reload_evidence.json",
+          "sha256": "864114dd3e970f088620ff3ecbf3777f3e50aa55dd6651a8261e43aecd982b65"
+        }
+      ],
+      "id": "CF-c2-c83e56adeb2a",
+      "rootCauseGroup": "CANONICAL_VERSUS_LEGACY_RESTORATION"
+    },
+    {
+      "candidateSHA256": "d25d895bf3fc10a3c11dc054316694ac9d03297c2bf25b13d06a17ee550c20d1",
+      "classification": "VERIFIED_PRODUCTION_DEFECT",
+      "evidenceReferences": [
+        {
+          "path": "Documentation/ChaosCrew/C2/FinalEvidence/agent-assignment-v2-s19000-min-evidence_provenance.json",
+          "sha256": "94f7b8f4a55e9856bf6bdaf0d16da7d34bf1a7ebdabab74788e43c083e909b33"
+        }
+      ],
+      "id": "CF-c2-cf0e171ef9e7",
+      "rootCauseGroup": "ASSIGNMENT_AGENT_IDENTITY"
+    }
+  ],
+  "originalLoopFiles": {
+    ".run.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "evidence.jsonl": "d5f771188991efad542fc9c6a619df626e32e9e040ec174cfbdc32554f5865e7",
+    "graph.json": "297651abf8c9b46f9350058a27c453f1844a8cfbb1dcf516723a5bb371b62389",
+    "state.json": "7e2dcb4d95d1318a13f2d3f4594f2d99bedd53069f906bec55196eaae4ce0504"
+  },
+  "ownerAcceptanceSHA256": "8cd255f341e8ec2e534e9750837552093c29db6edc580c324af646d421c753e4",
+  "preservedC2InputsVerified": 892,
+  "productionSourceSHA256": "2afea14376f35b562d5b7845dfa3f1ac3a8a72042859ec14f2f2627bc4b6ff53",
+  "sourceFingerprint": "901ce704c9c059f248009b0461e7da08f797a4a49098160275f29c0ece968200",
+  "verificationScope": "Current source/evidence/hash audits; native tests and builds are verified historical results, not rerun in publication pass."
+}
