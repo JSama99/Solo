@@ -1,0 +1,28 @@
+{
+  "C3_started": false,
+  "HEAD": "27b8f8de0dcfc230755acaaa1958c9c7853e9eee",
+  "accept_evidence": "promoted",
+  "acceptance_files": {
+    "evidence.jsonl": "d5f771188991efad542fc9c6a619df626e32e9e040ec174cfbdc32554f5865e7",
+    "graph.json": "297651abf8c9b46f9350058a27c453f1844a8cfbb1dcf516723a5bb371b62389",
+    "state.json": "7e2dcb4d95d1318a13f2d3f4594f2d99bedd53069f906bec55196eaae4ce0504"
+  },
+  "accepted_at": "2026-10-09T23:56:16.470830+00:00",
+  "all_nodes_successful": true,
+  "branch": "codex/controlled-reconstruction",
+  "evidence_chain_head": "54f3fb0193efa16dfd4e1f652fc38b1504b6f57c57c8e6f9d6596ee2fe36d829",
+  "evidence_chain_verified": true,
+  "failure_ledger_incident_or_rule_promotion": false,
+  "git_commit_push_merge": false,
+  "original_checkpoint_hashes": {
+    "private-causal-captures.tar.gz": "4ae348d9f6ca402e890cadac4a414fb6f093c1008905cfd58245a050f32934a2",
+    "repair-source-and-evidence-overlay.tar.gz": "0525432bebb2b667d5f3ef8bb9cf10bb8b8f374e2de6b318a98d971e6303c75a"
+  },
+  "owner_review": "passed",
+  "owner_statement": "I accept",
+  "run_id": "solo-chaos-crew-c21-verification-05306dc8a5",
+  "runner_discrepancy": "max_total_steps_exceeded at exactly seven steps after all nodes succeeded; runner checks budget before terminal completion. Frozen graph and run history preserved without alteration.",
+  "runner_status": "blocked",
+  "scope": "C2.1 bounded production repair and verification evidence",
+  "sourceFingerprint": "901ce704c9c059f248009b0461e7da08f797a4a49098160275f29c0ece968200"
+}

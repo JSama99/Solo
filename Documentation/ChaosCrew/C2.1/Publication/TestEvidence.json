@@ -1,0 +1,57 @@
+{
+  "acceptedResults": {
+    "C2StudyTestsPassed": 1,
+    "canonTestsPassed": 357,
+    "failureLedgerTestsPassed": 34,
+    "finalSourceFingerprint": "901ce704c9c059f248009b0461e7da08f797a4a49098160275f29c0ece968200",
+    "focusedTestsPassed": 12,
+    "iPadBuild": "PASS",
+    "iPhoneBuild": "PASS",
+    "loopChainHead": "60a20692a5b9297aff1bb37ba160ac9c0ff6392bd1fcdfafee6c8a03bb1a148a",
+    "loopRun": "solo-chaos-crew-c21-verification-05306dc8a5",
+    "loopVerificationNodesPassed": 5,
+    "nativeTestsPassed": 1069,
+    "nativeTestsSkipped": 1,
+    "originalC2SourceFingerprint": "2794faf488926ac52af08a87b31a949e09d60cdbd7f2ba6d79246d02f660bc04",
+    "originalGameStoreSHA256": "14bda60267fada40c6a13d78275b0483584b1406fe0f92648c3d69aeafb884f3",
+    "ownerGateApproved": false,
+    "promotionExecuted": false,
+    "protectedAudit": {
+      "CanonAcceptedLedgerPackagesProjectScheme": "UNCHANGED",
+      "HEAD": "27b8f8de0dcfc230755acaaa1958c9c7853e9eee",
+      "attribution": "CoreSimulator log records Xcode GUI PID37967 boot/install/launch at 19:06; current task uses CLI dedicated lab destinations",
+      "branch": "codex/controlled-reconstruction",
+      "originalC2ArtifactsAndCandidateFiles": "UNCHANGED",
+      "originalC2TestSource": "PRESERVED_IN_BASELINE",
+      "otherAvailableCheckouts": "UNCHANGED",
+      "ownerConfirmation": "Yes, separate owner-device activity",
+      "ownerDeviceWritesByThisPass": false,
+      "ownerIPadSnapshot": "UNCHANGED",
+      "ownerIPhoneSnapshot": "CHANGED_BY_SEPARATE_ACTIVITY"
+    },
+    "repairedGameStoreSHA256": "2afea14376f35b562d5b7845dfa3f1ac3a8a72042859ec14f2f2627bc4b6ff53",
+    "reviewSourceFingerprint": "39938a7b1e47a1f670f8acc476c0308e5bc837bc66f52943232fe46fef61f6f8",
+    "toolingTestsPassed": 17
+  },
+  "currentLoopRun": "solo-c2-c21-publication-status-closure-ee2bfbce8f",
+  "currentLoopStatus": "completed",
+  "currentVerificationNodesPassed": 5,
+  "limitations": [
+    "One native test skipped its separately required Reconstruction lab guard.",
+    "Bounded roster/starting careers, 80 actions and four sprint attempts; no rendered UI disclosure or visual/audio/haptic acceptance.",
+    "One Product Launch seed was exhausted before and after; 99/100 reached launch in both studies."
+  ],
+  "rawLogSHA256": {
+    "c21-before.log": "3cc7c4925c4c7ecf1775fc52b79ff4bc2a022cb54c7dfd9c002c3db0916fb7a4",
+    "c21-broader.log": "e4f492722c8113355f3592af4be7d9c2bf2b3d445e4a9807a2e9986d534c3e96",
+    "c21-canon-tests.log": "c139a98d2f0ff8fb31ed2f8da4ec5edc03f5d929394abd500f93faadea27ccdb",
+    "c21-focused.log": "e47c9f3c770f2d367eda603ab9e9e615c107463decaa6c6dd3c3a9f49259c8c1",
+    "c21-ipad-build.log": "41a06d2cd99302857be8c4cbad29ebd9fa897cc54c05fc0fafadc3843b895906",
+    "c21-ledger-tests.log": "0386dbb66c4c12f9cd5dbd39a2852fe029f917a007a321fd7e6b36ed3cb23d61",
+    "c21-loop.log": "db9d303925410de439443266bf90c5d040e04f1101c7c282467052ae05fb3e40",
+    "c21-repair-build-retry.log": "898824d150b2e3f3dc408c23d81b50bf95d69b7f399f1dae36ab1d0aa75fba22",
+    "c21-study.log": "561fc64d06d4120dde7b3fc15d79b716d0548ab5d11e6c710c167061973d8a01",
+    "c21-tools-tests.log": "ecb2481fe4fc37e099494fd2eac56322269cfb68a6d7b32b8bde0a57efe94e8a"
+  },
+  "scope": "Historical accepted C2.1 tests/builds, current source and artifact hash verification; no fresh native test or build claim."
+}

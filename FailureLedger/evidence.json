@@ -50,7 +50,7 @@
     "locator": "retainCompletedProductLaunchPreparation; beginProductLaunch; commitSprint; saveVersion",
     "path": "App/GameStore.swift",
     "scope": "current_source",
-    "sha256": "14bda60267fada40c6a13d78275b0483584b1406fe0f92648c3d69aeafb884f3",
+    "sha256": "2afea14376f35b562d5b7845dfa3f1ac3a8a72042859ec14f2f2627bc4b6ff53",
     "summary": "Current preparation authority, Coverage discrepancy and persistence seams."
   },
   {

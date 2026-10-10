@@ -1,0 +1,130 @@
+{
+  "schema_version": "1.0",
+  "graph_id": "solo-chaos-crew-c21-verification",
+  "name": "C2.1 bounded agent causal integrity repair verification",
+  "description": "Verify current source, exact C2 rerun and separate reviews; preserve owner gate and observation-only candidates.",
+  "max_total_steps": 7,
+  "workspace_policy": {
+    "allowed_commands": [
+      "python3"
+    ],
+    "allow_absolute_artifact_paths": false
+  },
+  "nodes": [
+    {
+      "id": "canon",
+      "kind": "command",
+      "title": "canon",
+      "command": [
+        "python3",
+        "-B",
+        "Tools/SoloCanon/validate_canon.py"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "ledger",
+      "kind": "command",
+      "title": "ledger",
+      "command": [
+        "python3",
+        "-B",
+        "Tools/FailureLedger/validate.py"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "ledger-tests",
+      "kind": "command",
+      "title": "ledger-tests",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/FailureLedger/tests"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "c1-contracts",
+      "kind": "command",
+      "title": "c1-contracts",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "Tools/ChaosCrew/tests"
+      ],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "c21-study-audit",
+      "kind": "command",
+      "title": "C2.1 source and before/after study audit",
+      "command": [
+        "python3",
+        "-B",
+        "Tools/ChaosCrew/c21.py",
+        "--evidence",
+        "Documentation/ChaosCrew/C2.1/Study",
+        "--output",
+        "Documentation/ChaosCrew/C2.1/Reports"
+      ],
+      "timeout_seconds": 120,
+      "depends_on": [
+        "canon",
+        "ledger",
+        "ledger-tests",
+        "c1-contracts"
+      ],
+      "outputs": [
+        {
+          "path": "Documentation/ChaosCrew/C2.1/Reports/Comparison.json"
+        },
+        {
+          "path": "Documentation/ChaosCrew/C2.1/Study/source-manifest.json"
+        }
+      ]
+    },
+    {
+      "id": "owner-review",
+      "kind": "human_gate",
+      "title": "Explicit owner review of C2 observations",
+      "depends_on": [
+        "c21-study-audit"
+      ],
+      "consumes_from": [
+        "c21-study-audit"
+      ],
+      "instructions": "Explicitly review C2.1 source repair, historical compatibility gates and original candidate reviews. No incident or prevention-rule promotion is authorized by this run."
+    },
+    {
+      "id": "accept-evidence",
+      "kind": "promotion",
+      "title": "Logical acceptance of verification evidence only",
+      "depends_on": [
+        "owner-review",
+        "c21-study-audit"
+      ],
+      "consumes_from": [
+        "c21-study-audit"
+      ],
+      "outputs": [
+        {
+          "path": "Documentation/ChaosCrew/C2.1/Reports/Comparison.json"
+        }
+      ],
+      "metadata": {
+        "scope": "verification_evidence_only",
+        "failure_ledger_promotion": false,
+        "git_mutation": false
+      }
+    }
+  ]
+}

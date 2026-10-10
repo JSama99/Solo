@@ -1,0 +1,76 @@
+{
+  "acceptedSourceFingerprint": "901ce704c9c059f248009b0461e7da08f797a4a49098160275f29c0ece968200",
+  "diagnosis": "Runner completion-order defect at an exact budget boundary: _drive checks total_steps >= max_total_steps before terminal completion. Seven nodes require seven counted steps; budget eight allows the final completion check. Separate run completed without engine changes.",
+  "evidenceChainHead": "5f5ea42e96c76259b01932c853b91f6ff8e676d3b673839d2a4690c1f4e91c5f",
+  "evidenceChainVerified": true,
+  "executionBudget": 8,
+  "failureLedgerPromotion": false,
+  "gitMutationByLoop": false,
+  "graphSHA256": "860d9b1510b3719b72cb07dd60f5a01552b76b82622dca0e82c4ba1f95e37aab",
+  "loopEngineUnchanged": true,
+  "nodes": {
+    "accept-evidence": {
+      "attempts": 1,
+      "decision_note": null,
+      "last_error": null,
+      "recovery_cycles": 0,
+      "status": "promoted"
+    },
+    "c1-contracts": {
+      "attempts": 1,
+      "decision_note": null,
+      "last_error": null,
+      "recovery_cycles": 0,
+      "status": "passed"
+    },
+    "c21-study-audit": {
+      "attempts": 1,
+      "decision_note": null,
+      "last_error": null,
+      "recovery_cycles": 0,
+      "status": "passed"
+    },
+    "canon": {
+      "attempts": 1,
+      "decision_note": null,
+      "last_error": null,
+      "recovery_cycles": 0,
+      "status": "passed"
+    },
+    "ledger": {
+      "attempts": 1,
+      "decision_note": null,
+      "last_error": null,
+      "recovery_cycles": 0,
+      "status": "passed"
+    },
+    "ledger-tests": {
+      "attempts": 1,
+      "decision_note": null,
+      "last_error": null,
+      "recovery_cycles": 0,
+      "status": "passed"
+    },
+    "owner-review": {
+      "attempts": 1,
+      "decision_note": "Existing owner decision: I accept. OwnerAcceptance.json and durable copy verified byte-for-byte at accepted source 901ce704c9c059f248009b0461e7da08f797a4a49098160275f29c0ece968200. Current user expressly authorized a separately labelled verification run to close the Loop budget discrepancy. Verification evidence only; no incident/rule promotion, gameplay change, commit, push or C3.",
+      "last_error": null,
+      "recovery_cycles": 0,
+      "status": "passed"
+    }
+  },
+  "originalRunId": "solo-chaos-crew-c21-verification-05306dc8a5",
+  "originalRunStatus": "blocked",
+  "originalRunUnchanged": true,
+  "requiredActionsUnfinished": false,
+  "runFileHashes": {
+    ".run.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "evidence.jsonl": "27b779d864343ab2ea0d701ae0991ae26bf40345235be8628160ca3078df4df3",
+    "graph.json": "8feafd17a8ef2fe5b0e27de1eda5e1c3e17c098a28b60d6b4217d4f6d6bacf35",
+    "state.json": "b53c6c8728a0cd9cf1402a9f19f883fd80bf434b0b11b767193aad823b28fd95"
+  },
+  "runId": "solo-c2-c21-publication-status-closure-ee2bfbce8f",
+  "runnerStatus": "completed",
+  "status": "LOOP STATUS RESOLVED",
+  "stepsUsed": 7
+}

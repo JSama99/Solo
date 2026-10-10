@@ -1,0 +1,15 @@
+{
+  "sourceFingerprint": "901ce704c9c059f248009b0461e7da08f797a4a49098160275f29c0ece968200",
+  "repairOverlaySHA256": "0525432bebb2b667d5f3ef8bb9cf10bb8b8f374e2de6b318a98d971e6303c75a",
+  "repairOverlayBytes": 2234096,
+  "privateArchiveSHA256": "4ae348d9f6ca402e890cadac4a414fb6f093c1008905cfd58245a050f32934a2",
+  "privateFilesVerified": 168,
+  "filesVerified": 7924,
+  "overlayFiles": 455,
+  "independentExtraction": "PASS",
+  "restoredSourceFingerprint": "PASS",
+  "restored400ReplayComparison": "PASS",
+  "restoredF1": "PASS",
+  "privateCaptureHashes": "PASS",
+  "originalC2ArchivesUnchanged": "PASS"
+}
