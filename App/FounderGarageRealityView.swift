@@ -861,7 +861,7 @@ struct FounderGarageRealityView: View {
 
   private var founderModeAllowsDeviceAccess: Bool {
     !walkingEnabled
-      && world.cameraController.playerSpatialState.navigationMode == .seated
+      && world.cameraController.navigationMode == .seated
   }
 
   private var primaryInteractionPrompt: GarageInteractionFeedbackSnapshot? {

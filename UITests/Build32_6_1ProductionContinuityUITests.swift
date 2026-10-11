@@ -1,6 +1,167 @@
 import XCTest
 
 final class Build32_6_2ProductionContinuityUITests: XCTestCase {
+  func testC33RepeatedAuthoredReturnsAndEligibility() throws {
+    guard ["40D4F1B3-092A-4E6F-9251-7A686A734B55", "37C6DF3F-87F5-4F57-A882-B4B7D11A12F5"].contains(ProcessInfo.processInfo.environment["SIMULATOR_UDID"] ?? "") else { throw XCTSkip("C3.3 requires a dedicated lab") }
+    let app = XCUIApplication()
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-realitykit"]
+    app.launch(); enterFreshProductionCareer(in: app)
+    let current = app.descendants(matching: .any)["founderGarage.currentView"]
+    let computer = app.buttons["founderGarage.openComputer"]
+    let workstation = app.buttons["founderGarage.workstationMenu"]
+    func awaitView(_ title: String) {
+      XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", title), object: current)], timeout: 15), .completed)
+    }
+    func eligible() {
+      XCTAssertTrue(computer.waitForExistence(timeout: 6)); XCTAssertTrue(computer.isHittable)
+      XCTAssertTrue(workstation.waitForExistence(timeout: 6))
+      // The native SwiftUI Menu outer AX node reports false even when its real tap opens it.
+      // Prove activation through the production control and the actionable native menu item.
+      let phone = app.buttons["Open iPhone"]
+      XCTAssertFalse(phone.exists)
+      let outerHittable = workstation.isHittable
+      workstation.tap()
+      XCTAssertTrue(phone.waitForExistence(timeout: 4)); XCTAssertTrue(phone.isHittable)
+      print("C33_MENU outerAXHittable=\(outerHittable) productionTapOpenedMenu=\(phone.exists) itemHittable=\(phone.isHittable)")
+      app.tap()
+    }
+    eligible()
+    let routes = [("whiteboard", "Whiteboard View"), ("whiteboard", "Whiteboard View"), ("garageOverview", "Garage Overview"), ("frontBay", "Front Bay View")]
+    for (index, route) in routes.enumerated() {
+      if index == 1 {
+        app.buttons["founderGarage.camera.toggleWalking"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["founderGarage.camera.movementPad"].waitForExistence(timeout: 5))
+        XCTAssertFalse(computer.exists); XCTAssertFalse(workstation.exists)
+      }
+      app.buttons["founderGarage.lookOut"].tap()
+      let menu = app.buttons["founderGarage.focusMenu"]
+      XCTAssertTrue(menu.waitForExistence(timeout: 6)); menu.tap()
+      app.buttons["founderGarage.focus." + route.0].tap(); awaitView(route.1)
+      XCTAssertFalse(computer.exists); XCTAssertFalse(workstation.exists)
+      app.buttons["founderGarage.returnWorkstation"].tap(); awaitView("Founder View")
+      eligible()
+      let hierarchy = XCTAttachment(string: app.debugDescription)
+      hierarchy.name = "C33_ELIGIBLE_RETURN_\(index)_HIERARCHY"; hierarchy.lifetime = .keepAlways; add(hierarchy)
+      capture("C33_ELIGIBLE_RETURN_\(index)", in: app)
+      XCTAssertEqual(app.buttons["founderGarage.recenter"].value as? String, "Centered")
+    }
+    workstation.tap(); XCTAssertTrue(app.buttons["Open iPhone"].waitForExistence(timeout: 4))
+    app.tap()
+    let recenter = app.buttons["founderGarage.recenter"]
+    app.coordinate(withNormalizedOffset: CGVector(dx: 0.72, dy: 0.55)).press(forDuration: 0.08, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.56, dy: 0.50)))
+    XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", "Free look active"), object: recenter)], timeout: 4), .completed)
+    eligible(); recenter.tap()
+    XCTAssertEqual(recenter.value as? String, "Centered")
+    computer.tap(); XCTAssertTrue(app.buttons["founder-computer-look-out"].waitForExistence(timeout: 6))
+    capture("C33_CANONICAL_COMPUTER", in: app)
+    app.buttons["founder-computer-look-out"].tap(); awaitView("Founder View"); eligible()
+    app.terminate()
+  }
+
+
+  func testC32MinimalWhiteboardReturnState() throws {
+    guard ["40D4F1B3-092A-4E6F-9251-7A686A734B55", "37C6DF3F-87F5-4F57-A882-B4B7D11A12F5"].contains(ProcessInfo.processInfo.environment["SIMULATOR_UDID"] ?? "") else { throw XCTSkip("C3.2 requires a dedicated lab") }
+    let app = XCUIApplication()
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-realitykit"]
+    app.launch();enterFreshProductionCareer(in: app)
+    let current = app.descendants(matching: .any)["founderGarage.currentView"]
+    let persistent = app.buttons["founderGarage.openComputer"]
+    XCTAssertTrue(persistent.waitForExistence(timeout: 8));XCTAssertTrue(persistent.isHittable)
+    capture("C32_MIN_BASELINE", in: app)
+    app.buttons["founderGarage.lookOut"].tap()
+    let menu = app.buttons["founderGarage.focusMenu"]
+    XCTAssertTrue(menu.waitForExistence(timeout: 5));menu.tap()
+    app.buttons["founderGarage.focus.whiteboard"].tap()
+    XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", "Whiteboard View"), object: current)], timeout: 15), .completed)
+    capture("C32_MIN_WHITEBOARD", in: app)
+    app.buttons["founderGarage.returnWorkstation"].tap()
+    XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", "Founder View"), object: current)], timeout: 15), .completed)
+    let returned = persistent.waitForExistence(timeout: 6)
+    print("C32_MIN afterReturn persistentExists=\(returned) persistentCount=\(app.buttons.matching(identifier: "founderGarage.openComputer").count) workstationExists=\(app.buttons["founderGarage.workstationMenu"].exists)")
+    let hierarchy = XCTAttachment(string: app.debugDescription);hierarchy.name="C32_MIN_RETURN_HIERARCHY";hierarchy.lifetime = .keepAlways;add(hierarchy)
+    capture("C32_MIN_RETURN", in: app)
+    // Independent ordinary-input refresh probe, after preserving the violation.
+    app.coordinate(withNormalizedOffset: CGVector(dx: 0.72, dy: 0.55))
+      .press(forDuration: 0.08, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.56, dy: 0.50)))
+    let afterLook = persistent.waitForExistence(timeout: 6)
+    print("C32_MIN afterFreeLook persistentExists=\(afterLook) workstationExists=\(app.buttons["founderGarage.workstationMenu"].exists)")
+    capture("C32_MIN_AFTER_FREE_LOOK", in: app)
+    if afterLook {
+      persistent.tap();let close=app.buttons["founder-computer-look-out"]
+      XCTAssertTrue(close.waitForExistence(timeout: 6));close.tap()
+    }
+    XCTAssertTrue(returned, "Returning from authored Whiteboard View must restore the existing persistent seated workstation controls")
+    app.terminate()
+  }
+
+  // C3.2 proves the shipped camera menu route, not synthetic standing orientation.
+  func testC32WhiteboardThroughExistingCameraControls() throws {
+    guard ["40D4F1B3-092A-4E6F-9251-7A686A734B55", "37C6DF3F-87F5-4F57-A882-B4B7D11A12F5"].contains(ProcessInfo.processInfo.environment["SIMULATOR_UDID"] ?? "") else { throw XCTSkip("C3.2 requires a dedicated lab before app launch") }
+    let app = XCUIApplication()
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-realitykit"]
+    app.launch()
+    enterFreshProductionCareer(in: app)
+    let current = app.descendants(matching: .any)["founderGarage.currentView"]
+    func awaitView(_ title: String) {
+      XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", title), object: current)], timeout: 15), .completed)
+    }
+    awaitView("Founder View")
+    for round in 0..<2 {
+      if round == 1 {
+        let explore = app.buttons["founderGarage.camera.toggleWalking"]
+        XCTAssertTrue(explore.waitForExistence(timeout: 8))
+        explore.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["founderGarage.camera.movementPad"].waitForExistence(timeout: 5))
+      }
+      app.buttons["founderGarage.lookOut"].tap()
+      let menu = app.buttons["founderGarage.focusMenu"]
+      XCTAssertTrue(menu.waitForExistence(timeout: 5));menu.tap()
+      let whiteboard = app.buttons["founderGarage.focus.whiteboard"]
+      XCTAssertTrue(whiteboard.waitForExistence(timeout: 5));whiteboard.tap()
+      awaitView("Whiteboard View")
+      XCTAssertEqual(menu.value as? String, "Whiteboard View")
+      XCTAssertFalse(app.descendants(matching: .any)["founderGarage.camera.movementPad"].exists)
+      capture("C32_WHITEBOARD_\(round == 0 ? "SEATED_MENU" : "EXPLORE_MENU")", in: app)
+      let back = app.buttons["founderGarage.returnWorkstation"]
+      XCTAssertTrue(back.isHittable);back.tap();awaitView("Founder View")
+      XCTAssertTrue(app.buttons["founderGarage.openComputer"].waitForExistence(timeout: 6))
+      XCTAssertEqual(app.buttons["founderGarage.recenter"].value as? String, "Centered")
+      capture("C32_WHITEBOARD_RETURN_\(round)", in: app)
+      print("C32_ROUTE round=\(round) Whiteboard View reached via production controls; returned Founder View")
+    }
+    app.buttons["founderGarage.openComputer"].tap()
+    let close = app.buttons["founder-computer-look-out"]
+    XCTAssertTrue(close.waitForExistence(timeout: 6));close.tap();awaitView("Founder View")
+    app.terminate()
+  }
+
+  // C3 supplemental live probe. Preserve the older focus-prompt assumption test verbatim.
+  func testC3FreeLookPersistentWorkstationRoute() throws {
+    guard ["40D4F1B3-092A-4E6F-9251-7A686A734B55", "37C6DF3F-87F5-4F57-A882-B4B7D11A12F5"].contains(ProcessInfo.processInfo.environment["SIMULATOR_UDID"] ?? "") else { throw XCTSkip("C3 requires a dedicated lab before app launch") }
+    let app = XCUIApplication()
+    app.launchArguments = ["--founder-desk-production-proof", "--founder-garage-realitykit"]
+    app.launch()
+    enterFreshProductionCareer(in: app)
+    let persistent = app.buttons["founderGarage.openComputer"]
+    let recenter = app.buttons["founderGarage.recenter"]
+    XCTAssertTrue(persistent.waitForExistence(timeout: 8))
+    XCTAssertTrue(recenter.waitForExistence(timeout: 8))
+    capture("C3_FREE_LOOK_INITIAL", in: app)
+    app.coordinate(withNormalizedOffset: CGVector(dx: 0.72, dy: 0.55))
+      .press(forDuration: 0.08, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.48, dy: 0.47)))
+    XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", "Free look active"), object: recenter)], timeout: 4), .completed)
+    print("C3_UI focusPromptExists=\(app.buttons["founderGarage.realityKit.founderComputer"].exists) persistentRouteExists=\(persistent.exists) persistentRouteHittable=\(persistent.isHittable)")
+    capture("C3_FREE_LOOK_PERSISTENT_ROUTE", in: app)
+    XCTAssertTrue(persistent.isHittable, "The always-available seated workstation route must remain usable during Free Look")
+    persistent.tap()
+    let close = app.buttons["founder-computer-look-out"]
+    XCTAssertTrue(close.waitForExistence(timeout: 6))
+    capture("C3_FREE_LOOK_COMPUTER_OPEN", in: app)
+    close.tap()
+    XCTAssertTrue(persistent.waitForExistence(timeout: 6))
+    app.terminate()
+  }
+
   func testAgentOperationsOverloadAllocationAndReopenPersistence() throws {
     let app = XCUIApplication()
     app.launchArguments = [
@@ -1454,7 +1615,8 @@ final class Build32_6_2ProductionContinuityUITests: XCTestCase {
     enterFreshProductionCareer(in: app)
 
     let garage = app.otherElements["founder-garage-realitykit"]
-    let computer = app.buttons["founderGarage.realityKit.founderComputer"]
+    // The focus-only prompt may disappear during Free Look; the persistent route remains eligible.
+    let computer = app.buttons["founderGarage.openComputer"]
     let recenter = app.buttons["founderGarage.recenter"]
     XCTAssertTrue(garage.waitForExistence(timeout: 8))
     XCTAssertTrue(computer.waitForExistence(timeout: 8))

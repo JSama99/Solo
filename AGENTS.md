@@ -4,7 +4,7 @@ SOLO: UNICORN RUN is a native SwiftUI iOS simulation game.
 
 ## Canonical project
 
-- Repository: `/Users/jermainenelson/Documents/Solo`
+- Repository: `/Users/jermainenelson/Documents/Solo-Latest`
 - Xcode project: `SoloUnicornRun.xcodeproj`
 - Scheme: `Solo Unicorn Run`
 - Primary app source: `App/`
