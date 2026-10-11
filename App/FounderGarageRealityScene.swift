@@ -5314,7 +5314,7 @@ struct FounderGarageCameraConfiguration {
 
 /// Endpoints are installed under the bridge's interrupt-safe fade, avoiding travel through furniture.
 @MainActor
-final class FounderGarageCameraController {
+final class FounderGarageCameraController: Observable {
   struct Snapshot {
     var mode: String
     var position: SIMD3<Float>
@@ -5351,7 +5351,26 @@ final class FounderGarageCameraController {
   let camera: PerspectiveCamera
   let spatial: FounderGarageSpatialSpecification
   private(set) var state: FounderGarageCameraState = .founderPOV
-  private(set) var playerSpatialState: FounderGaragePlayerSpatialState
+  private let navigationObservation = ObservationRegistrar()
+  private(set) var playerSpatialState: FounderGaragePlayerSpatialState {
+    willSet {
+      if newValue.navigationMode != playerSpatialState.navigationMode {
+        navigationObservation.willSet(self, keyPath: \.navigationMode)
+      }
+    }
+    didSet {
+      if oldValue.navigationMode != playerSpatialState.navigationMode {
+        navigationObservation.didSet(self, keyPath: \.navigationMode)
+      }
+    }
+  }
+
+  /// Observe navigation changes without invalidating the HUD for per-frame pose updates.
+  /// The existing spatial state remains the sole navigation authority.
+  var navigationMode: FounderGarageNavigationMode {
+    navigationObservation.access(self, keyPath: \.navigationMode)
+    return playerSpatialState.navigationMode
+  }
   private(set) var diagnostics = Diagnostics()
   private var lastReducedMotion: Bool?
   private var targetLook = FounderLookOrientation.neutral

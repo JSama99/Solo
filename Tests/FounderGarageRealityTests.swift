@@ -1,8 +1,60 @@
+import Observation
 import RealityKit
 import XCTest
 @testable import Solo_Unicorn_Run
 
 final class FounderGarageRealityTests: XCTestCase {
+  @MainActor
+  func testC33NavigationObservationAcrossReducedAndAnimatedReturns() {
+    final class Notification: @unchecked Sendable { var changed = false }
+    for reduced in [false, true] {
+      let controller = FounderGarageCameraController(camera: PerspectiveCamera(), spatial: .standard)
+      controller.transition(to: .founderPOV, reduceMotion: reduced)
+      for target: FounderGarageCameraState in [.whiteboard, .founderPOV, .garageOverview, .founderPOV, .frontBay, .founderPOV] {
+        let previous = controller.navigationMode
+        let notification = Notification()
+        _ = withObservationTracking { controller.navigationMode } onChange: { notification.changed = true }
+        controller.transition(to: target, reduceMotion: reduced)
+        XCTAssertTrue(notification.changed)
+        XCTAssertNotEqual(previous, controller.navigationMode)
+        XCTAssertEqual(controller.navigationMode == .seated, target == .founderPOV)
+        controller.advance(deltaTime: 1.0 / 60.0)
+        print("C33_MODE reduced=\(reduced) target=\(target) mode=\(controller.navigationMode) notified=\(notification.changed)")
+      }
+    }
+  }
+
+
+  @MainActor
+  func testC33CanonicalNavigationObservationRegression() {
+    let world = FounderGarageRealityWorld()
+    var model = makePresentation()
+    world.apply(model, reduceMotion: true)
+    model.cameraState = .whiteboard
+    world.apply(model, reduceMotion: true)
+    final class Notification: @unchecked Sendable { var changed = false }
+    let notification = Notification()
+    let before = withObservationTracking {
+      world.cameraController.navigationMode == .seated
+    } onChange: { notification.changed = true }
+    model.cameraState = .founderPOV
+    world.apply(model, reduceMotion: true)
+    let after = world.cameraController.playerSpatialState.navigationMode == .seated
+    print("C33_CAUSE beforeEligible=\(before) afterEligible=\(after) notified=\(notification.changed) camera=\(world.cameraController.state)")
+    XCTAssertFalse(before)
+    XCTAssertTrue(after, "Return installs seated navigation synchronously")
+    XCTAssertTrue(notification.changed, "Canonical return must invalidate the seated eligibility reader")
+    let poseNotification = Notification()
+    _ = withObservationTracking { world.cameraController.navigationMode } onChange: { poseNotification.changed = true }
+    world.cameraController.setLookOrientation(FounderLookOrientation(yaw: 0.1, pitch: 0))
+    world.cameraController.advance(deltaTime: 1.0 / 60.0)
+    XCTAssertFalse(poseNotification.changed, "Free Look pose updates do not change navigation eligibility")
+    world.cameraController.beginWalking(reduceMotion: true)
+    XCTAssertTrue(poseNotification.changed, "Leaving the seat invalidates eligibility")
+    XCTAssertEqual(world.cameraController.navigationMode, .walking)
+  }
+
+
   func testD13WhiteboardFeedbackConsumesExistingC1IdentityAndSharedTiming() throws {
     let zone = try XCTUnwrap(
       FounderGarageSpatialSpecification.standard.facilityTier0InteractionSpace?

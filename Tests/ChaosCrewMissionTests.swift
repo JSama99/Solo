@@ -1,5 +1,9 @@
 import XCTest
 import CryptoKit
+import RealityKit
+import simd
+import UIKit
+import SwiftUI
 @testable import Solo_Unicorn_Run
 
 // Test tooling only. No implementation of simulation eligibility or resolution.
@@ -17,6 +21,7 @@ private struct ChaosMission: Codable, Equatable {
   var relevantFailurePrecedents = ["FL-001", "FL-002", "FL-003", "FL-004", "FL-005"]
   var invariants = ["attention_bounds", "rejection_scope", "preparation_single_use", "launch_prerequisites", "product_identity", "finance_dedup", "save_version", "save_reload", "seeded_replay", "review_once", "venture_scope", "public_allowlist", "lab_isolation"]
   var agentScenario: AgentScenario? = nil
+  var worldScenario: WorldScenario? = nil
   var allowedActions = ChaosActionKind.c1Kinds.map(\.rawValue)
   var successCondition = "resolved launch or completed bounded search"
   var failureCondition = "source-backed invariant violation; exhaustion is inconclusive"
@@ -984,5 +989,444 @@ final class ChaosCrewMissionTests: XCTestCase {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent("C1-Evidence")
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
     try ChaosEncoding.bytes(value).write(to: directory.appendingPathComponent(name), options: .atomic)
+  }
+}
+
+// C3 extends the shared mission/encoding contracts. These types execute only in XCTest.
+private struct WorldScenario: Codable, Equatable {
+  var version = "3"
+  var startingScene = "garage"
+  let startingFounderPose: [Float]
+  var cameraMode = "founderPOV"
+  var movementInputProfile = "explicit fixed-step commands; authored endpoints separately labelled probes"
+  var targetInteractions = ["computer", "phone", "tablet", "chair", "whiteboard", "door"]
+  let deviceProfile: String
+  let reduceMotionEnabled: Bool
+  var maximumTransitions = 4
+  var maximumFramesPerAction = 240
+  var observationScope = "unrendered production RealityKit entities and exposed controllers; not SwiftUI/GPU proof"
+}
+private struct WorldAction: Codable, Equatable {
+  let action: String
+  var option = 0
+  var frames = 1
+  var lateral: Float = 0
+  var forward: Float = 0
+  var yaw: Float = 0
+  static let commands = ["computer", "phone", "tablet", "walk", "move", "stop", "look", "camera", "recenter", "chair", "chairExit", "cancelChair", "whiteboard", "authoredWhiteboardProbe", "door", "requestTraversal", "enterHandoff", "returnGarage", "atlantisMove", "atlantisTurn", "teardown", "recreate", "saveReload", "invalidDestination"]
+}
+private struct WorldObservation: Codable, Equatable {
+  let scene: String
+  let founderPosition: [Float]
+  let cameraPosition: [Float]
+  let cameraRotation: [Float]
+  let heading: Float
+  let velocity: [Float]
+  let cameraMode: String
+  let cameraTransition: String?
+  let reduceMotion: Bool
+  let collision: String
+  let motionState: String
+  let navigationMode: String
+  let interactionPhase: String
+  let eligibility: [String: Bool]
+  let architectureReady: Bool
+  let founderReady: Bool
+  let doorOpen: Bool
+  let loadedDistricts: [String]
+  let entityCounts: [String: Int]
+  let handoffs: Int
+  let finite: Bool
+}
+private struct WorldStep: Codable, Equatable {
+  let input: WorldAction
+  let result: String
+  let beforeFingerprint: String
+  let afterFingerprint: String
+  let observation: WorldObservation
+  let violations: [String]
+}
+private struct WorldReplay: Codable, Equatable {
+  var schemaVersion = "1"
+  let mission: ChaosMission
+  let simulatorModel: String
+  let runtime: String
+  let labID: String
+  let initialStateFingerprint: String
+  let steps: [WorldStep]
+  let finalStateFingerprint: String
+  let classification: String
+  var replayFingerprint: String { (try? ChaosEncoding.hash(self)) ?? "ENCODING_ERROR" }
+}
+@MainActor
+private final class ChaosWorldAdapter {
+  static let labs = [ChaosProductionAdapter.labID, "37C6DF3F-87F5-4F57-A882-B4B7D11A12F5"]
+  let mission: ChaosMission
+  var garage: FounderGarageRealityWorld
+  var atlantis: AtlantisRealityWorld?
+  var groundingProbe: AtlantisGrounding?
+  var handoff: FounderAtlantisTraversalHandoff?
+  var handoffs = 0
+  var transitionCount = 0
+  var steps: [WorldStep] = []
+  var initial = ""
+  let controlled: Bool
+  var loadSeconds: Double = 0
+  static func isolation() throws {
+    guard labs.contains(ProcessInfo.processInfo.environment["SIMULATOR_UDID"] ?? "") else { throw XCTSkip("C3 requires a positively identified dedicated lab; no world or store constructed") }
+  }
+  init(mission: ChaosMission, controlled: Bool = false) throws {
+    try Self.isolation()
+    self.mission = mission; self.controlled = controlled
+    garage = FounderGarageRealityWorld()
+  }
+  var reduced: Bool { mission.worldScenario!.reduceMotionEnabled }
+  func initialize() async throws {
+    let started = ProcessInfo.processInfo.systemUptime
+    await garage.requestGarageArchitecture(.bundledProductionAsset(name: "founder_garage_v8"), descriptor: .facilityTier0V8)?.value
+    await (try garage.requestProductionFounder())?.value
+    guard case .ready = garage.architectureLoadState, case .ready = garage.assetLoadState else { throw NSError(domain: "C3.HARNESS_BLOCKED.asset_readiness", code: 1) }
+    garage.cameraController.transition(to: .founderPOV, reduceMotion: reduced)
+    garage.configureAtlantisTraversal { [weak self] handoff in self?.handoff = handoff; self?.handoffs += 1 }
+    garage.deferAtlantisCameraParking(true)
+    loadSeconds += ProcessInfo.processInfo.systemUptime - started
+    initial = try ChaosEncoding.hash(observe())
+  }
+  func observe() -> WorldObservation {
+    let s = garage.cameraController.snapshot
+    let isAtlantis = garage.isFounderPresentedInAtlantis
+    let position = isAtlantis ? atlantis!.playerRoot.position : s.playerPosition
+    let camera = isAtlantis ? atlantis!.camera : garage.entities.camera
+    let cp = camera.position(relativeTo: isAtlantis ? atlantis!.root : garage.entities.root)
+    let rotation = camera.orientation(relativeTo: isAtlantis ? atlantis!.root : garage.entities.root).vector
+    let heading = isAtlantis ? atlantis!.heading : s.bodyHeading
+    let values = [position.x, position.y, position.z, cp.x, cp.y, cp.z, rotation.x, rotation.y, rotation.z, rotation.w, heading, s.velocity.x, s.velocity.y, s.velocity.z]
+    func safe(_ x: Float) -> Float { x.isFinite ? x : 0 }
+    func count(_ e: Entity) -> Int { 1 + e.children.reduce(0) { $0 + count($1) } }
+    func occurrence(_ e: Entity) -> Int { (e.id == garage.activeFounderVisualAdapter.rig.anchor.id ? 1 : 0) + e.children.reduce(0) { $0 + occurrence($1) } }
+    let arch: Bool = { if case .ready = garage.architectureLoadState { return true }; return false }()
+    let founder: Bool = { if case .ready = garage.assetLoadState { return true }; return false }()
+    return WorldObservation(scene: isAtlantis ? "atlantisFounderOwnership" : "garageFounderOwnership", founderPosition: [position.x,position.y,position.z].map(safe), cameraPosition: [cp.x,cp.y,cp.z].map(safe), cameraRotation: [rotation.x,rotation.y,rotation.z,rotation.w].map(safe), heading: safe(heading), velocity: [s.velocity.x,s.velocity.y,s.velocity.z].map(safe), cameraMode: garage.cameraController.state.rawValue, cameraTransition: s.transition.map { String(describing: $0) }, reduceMotion: s.reduceMotion, collision: s.collision, motionState: garage.founderAvatarController.locomotion.state.rawValue, navigationMode: s.mode, interactionPhase: garage.interactionCoordinator.phase.rawValue, eligibility: ["computer":garage.interaction(for:garage.entities.founderComputerInteractionTarget) == .openFounderComputer,"phone":garage.interaction(for:garage.entities.iPhone) == .openFounderPhone,"tablet":garage.interaction(for:garage.entities.iPad) == .openFounderTablet,"chair":garage.chairInteractionAvailable,"whiteboard":garage.whiteboardInteractionFocused,"door":garage.garageDoorControlAvailable], architectureReady: arch, founderReady: founder, doorOpen: garage.garageDoorState.isOpen, loadedDistricts: atlantis?.loadedNames.sorted() ?? [], entityCounts: ["founderOccurrences":occurrence(garage.entities.root)+(atlantis.map { occurrence($0.root) } ?? 0),"garage":count(garage.entities.root),"atlantis":atlantis.map { count($0.root) } ?? 0], handoffs: handoffs, finite: values.allSatisfy(\.isFinite))
+  }
+  @discardableResult func apply(_ action: WorldAction) async throws -> WorldStep {
+    guard steps.count < mission.actionBudget, action.option >= 0, action.frames >= 1, action.frames <= mission.worldScenario!.maximumFramesPerAction, [action.lateral,action.forward,action.yaw].allSatisfy(\.isFinite) else { throw NSError(domain:"C3.resource_budget",code:1) }
+    let before = observe(), hash = try ChaosEncoding.hash(before)
+    let saveBefore = UserDefaults.standard.data(forKey: GameStore.saveKey)
+    let reduced = self.reduced
+    var result = "accepted", diagnostics: [String] = []
+    switch action.action {
+    case "computer", "phone", "tablet":
+      let entity = action.action == "computer" ? garage.entities.founderComputerInteractionTarget : action.action == "phone" ? garage.entities.iPhone : garage.entities.iPad
+      let actual = garage.interaction(for: entity)
+      let intended: FounderWorldInteraction = action.action == "computer" ? .openFounderComputer : action.action == "phone" ? .openFounderPhone : .openFounderTablet
+      result = actual == nil ? "rejected_by_design" : "accepted"
+      if let actual, actual != intended { diagnostics.append("INCORRECT_INTERACTION_TARGET") }
+    case "walk":
+      garage.cameraController.beginWalking(reduceMotion: reduced)
+      result = garage.cameraController.snapshot.mode == "walking" ? "accepted" : "rejected_by_design"
+    case "move", "stop":
+      if garage.cameraController.snapshot.mode != "walking" { result = "rejected_by_design" }
+      else {
+        garage.cameraController.setMovementIntent(action.action == "stop" ? .idle : .init(lateral:action.lateral,forward:action.forward))
+        for _ in 0..<action.frames { garage.advanceSession(deltaTime: TimeInterval(FounderGarageCameraConfiguration.fixedStep)) }
+      }
+    case "look": garage.cameraController.setLookOrientation(.init(yaw: action.yaw, pitch: 0)); for _ in 0..<action.frames { garage.advanceSession(deltaTime:TimeInterval(FounderGarageCameraConfiguration.fixedStep)) }
+    case "camera": garage.cameraController.transition(to:FounderGarageCameraState.allCases[action.option % FounderGarageCameraState.allCases.count],reduceMotion:reduced); for _ in 0..<action.frames { garage.advanceSession(deltaTime:TimeInterval(FounderGarageCameraConfiguration.fixedStep)) }
+    case "recenter": garage.cameraController.recenterFounderPOV(reduceMotion:reduced)
+    case "chair": result = garage.requestChairInteraction(reduceMotion:reduced) ? "accepted" : "rejected_by_design"
+    case "chairExit": result = garage.requestChairExit(reduceMotion:reduced) ? "accepted" : "rejected_by_design"
+    case "cancelChair": garage.cancelChairInteraction()
+    case "whiteboard": result = garage.requestWhiteboardObservation() ? "accepted" : "rejected_by_design"
+    case "authoredWhiteboardProbe":
+      guard let target = garage.spatialSpecification.facilityTier0InteractionSpace?.founderInteractionTarget(for:.whiteboard) else { result="unsupported_action"; break }
+      result = garage.cameraController.beginInteractionStanding(at:target.approach,reduceMotion:reduced) ? "accepted" : "rejected_by_design"
+    case "door": garage.setGarageDoor(action.option == 0 ? .closed : .open,reduceMotion:reduced)
+    case "requestTraversal":
+      let old = handoffs; garage.requestAtlantisTraversalIfNeeded(); result = old == handoffs ? "rejected_by_design" : "accepted_transition"
+    case "enterHandoff":
+      guard transitionCount < mission.worldScenario!.maximumTransitions else { throw NSError(domain:"C3.transition_budget",code:1) }
+      guard let handoff, !garage.isFounderPresentedInAtlantis else { result="rejected_by_design"; break }
+      let world: AtlantisRealityWorld
+      if let current = atlantis { world = current } else { let manifest = try AtlantisAssetManifest.load(); world = AtlantisRealityWorld(manifest:manifest); groundingProbe=AtlantisGrounding(traversal:manifest.traversal); atlantis=world }
+      let started = ProcessInfo.processInfo.systemUptime
+      guard await world.prepareFounderGarageExterior() else { result="unsupported_action"; break }
+      loadSeconds += ProcessInfo.processInfo.systemUptime-started
+      world.enterFromFounderGarage(handoff); garage.transferFounderPresentation(to:world,reduceMotion:reduced)
+      if simd_distance(world.playerRoot.position, AtlantisSpatialContract.fromFounderGarage(handoff.garagePosition)) > 0.0001 { diagnostics.append("INVALID_WORLD_TRANSITION") }
+      transitionCount += 1; result="accepted_transition"
+    case "returnGarage":
+      guard let world=atlantis, garage.isFounderPresentedInAtlantis else { result="rejected_by_design"; break }
+      guard transitionCount < mission.worldScenario!.maximumTransitions else { throw NSError(domain:"C3.transition_budget",code:1) }
+      garage.restoreFounderPresentation(from:world); handoff=nil; transitionCount += 1; result="accepted_transition"
+    case "atlantisMove":
+      guard garage.isFounderPresentedInAtlantis, let world=atlantis else { result="rejected_by_design"; break }
+      let p=world.playerRoot.position
+      for _ in 0..<action.frames { world.move(input:action.forward,delta:Double(FounderGarageCameraConfiguration.fixedStep)) }
+      if p == world.playerRoot.position, action.forward != 0 { result="rejected_by_design" }
+      let next=world.playerRoot.position
+      if let ground=groundingProbe?.height(at:next,loaded:world.loadedNames,referenceHeight:next.y), abs(ground-next.y)>0.0001 { diagnostics.append("COLLISION_OR_GROUNDING") }
+    case "atlantisTurn": guard let world=atlantis, garage.isFounderPresentedInAtlantis else {result="rejected_by_design";break};world.turn(action.yaw)
+    case "teardown": garage.stopCameraUpdates(); atlantis?.stop()
+    case "recreate":
+      if garage.isFounderPresentedInAtlantis, let world=atlantis { garage.restoreFounderPresentation(from:world) }
+      garage.stopCameraUpdates();atlantis?.stop();atlantis=nil;garage=FounderGarageRealityWorld();handoff=nil;await (try garage.requestProductionFounder())?.value
+      await garage.requestGarageArchitecture(.bundledProductionAsset(name:"founder_garage_v8"),descriptor:.facilityTier0V8)?.value
+      garage.configureAtlantisTraversal { [weak self] h in self?.handoff=h;self?.handoffs += 1 };garage.deferAtlantisCameraParking(true)
+      garage.cameraController.transition(to:.founderPOV,reduceMotion:reduced)
+    case "saveReload", "invalidDestination": result="unsupported_action" // No public world persistence/request API; never fake a save or invalid request.
+    default: result="unsupported_action"
+    }
+    let observed=observe()
+    if !observed.finite { diagnostics.append("INVALID_MOVEMENT_STATE") }
+    if observed.reduceMotion && observed.cameraTransition != nil { diagnostics.append("REDUCE_MOTION_VIOLATION") }
+    if observed.entityCounts["founderOccurrences"] != 1 { diagnostics.append("DUPLICATE_SCENE_ENTITY") }
+    if result == "rejected_by_design", action.action != "atlantisMove", hash != (try ChaosEncoding.hash(observed)) { diagnostics.append("REJECTED_WORLD_MUTATION") }
+    if action.action == "stop", action.frames >= 120, garage.interactionCoordinator.phase == .idle, simd_length(garage.cameraController.snapshot.velocity)>0.001 { diagnostics.append("INVALID_MOVEMENT_STATE") }
+    if UserDefaults.standard.data(forKey:GameStore.saveKey) != saveBefore { diagnostics.append("SAVE_RELOAD_WORLD_STATE") }
+    if controlled && action.action == "computer" && result == "accepted" { diagnostics.append("synthetic_incorrect_interaction_target") }
+    let step=WorldStep(input:action,result:diagnostics.isEmpty ? result : "invariant_violation",beforeFingerprint:hash,afterFingerprint:try ChaosEncoding.hash(observed),observation:observed,violations:diagnostics)
+    steps.append(step);return step
+  }
+  func replay() throws -> WorldReplay {
+    let cls = steps.contains{$0.result == "invariant_violation"} ? "INVARIANT_FAILURE" : steps.contains{$0.result == "accepted_transition"} || steps.contains{$0.input.action == "computer" && $0.result == "accepted"} ? "REACHABLE" : "SEARCH_EXHAUSTED"
+    return WorldReplay(mission:mission,simulatorModel:mission.worldScenario!.deviceProfile,runtime:ProcessInfo.processInfo.operatingSystemVersionString,labID:ProcessInfo.processInfo.environment["SIMULATOR_UDID"]!,initialStateFingerprint:initial,steps:steps,finalStateFingerprint:try ChaosEncoding.hash(observe()),classification:cls)
+  }
+  func stop() { garage.stopCameraUpdates();atlantis?.stop() }
+}
+
+@MainActor
+final class ChaosCrewWorldTests: XCTestCase {
+  private func mission(_ seed: UInt64 = 20_000, id: String = "world-garage") throws -> ChaosMission {
+    try ChaosWorldAdapter.isolation()
+    let fp=ProcessInfo.processInfo.environment["C1_SOURCE_FINGERPRINT"] ?? ""
+    guard fp.count == 64 else { throw XCTSkip("C3 source fingerprint required") }
+    let pose=FounderGarageCameraConfiguration(spatial:.standard).seatedPlayerState.playerPose
+    let lab=ProcessInfo.processInfo.environment["SIMULATOR_UDID"]!
+    var m=ChaosMission(missionId:id,seed:seed,actionBudget:24,objective:"bounded production spatial contracts; rendering gaps explicit",sourceFingerprint:fp)
+    m.missionVersion="3";m.targetSystem="FounderGarageRealityWorld/AtlantisRealityWorld";m.initialStateContract="production v8 Garage and production Founder loaded; canonical seated pose; no GameStore constructed"
+    m.allowedActions=WorldAction.commands;m.invariants=["finite_spatial_state","interaction_target","rejection_scope","reduce_motion","handoff_transform","grounding","save_domain_isolation"]
+    m.worldScenario=WorldScenario(startingFounderPose:[pose.position.x,pose.position.y,pose.position.z,pose.heading],deviceProfile:lab == ChaosProductionAdapter.labID ? "iPhone 17 Pro Max" : "iPad Air 11-inch (M4)",reduceMotionEnabled:seed % 2 == 0)
+    m.relevantFailurePrecedents=["FL-002","FL-003","FL-010","FL-011","FL-014","FL-015"];m.relevantCanonRecords=["location.founder_garage","location.atlantis","rule.reduce_motion_visual","rule.presentation_separation","rule.determinism"]
+    return m
+  }
+  private func run(_ m: ChaosMission, actions: [WorldAction], controlled: Bool = false) async throws -> WorldReplay {
+    let w=try ChaosWorldAdapter(mission:m,controlled:controlled);defer{w.stop()};try await w.initialize()
+    for a in actions {try await w.apply(a)}
+    return try w.replay()
+  }
+  private func write<T: Encodable>(_ value: T, name: String) throws {
+    let dir=FileManager.default.temporaryDirectory.appendingPathComponent("C3-World-Evidence")
+    try FileManager.default.createDirectory(at:dir,withIntermediateDirectories:true)
+    try ChaosEncoding.bytes(value).write(to:dir.appendingPathComponent(name),options:.atomic)
+  }
+  // C1's bounded deletion-search strategy adapted for asynchronous real asset initialization.
+  // Keeps causal command, observed scene and exact diagnostic; same chunk schedule and bounded retries.
+  private func minimize(_ original: WorldReplay, invariant: String, controlled: Bool = false) async throws -> WorldReplay {
+    let causal=try XCTUnwrap(original.steps.first{$0.violations.contains(invariant)})
+    var actions=original.steps.map(\.input), chunk=max(1,original.steps.count/2), attempts=0
+    func preserves(_ r: WorldReplay)->Bool {r.steps.contains{$0.input == causal.input && $0.observation.scene == causal.observation.scene && $0.violations.contains(invariant)}}
+    while chunk>=1 && attempts<64 {
+      var index=0,changed=false
+      while index<actions.count && attempts<64 {
+        let next=Array(actions[..<index])+Array(actions[min(actions.count,index+chunk)...]);attempts += 1
+        let candidate=try await run(original.mission,actions:next,controlled:controlled)
+        if preserves(candidate){actions=next;changed=true}else{index += chunk}
+      }
+      if chunk == 1 && !changed{break};chunk=max(1,chunk/2)
+    }
+    let result=try await run(original.mission,actions:actions,controlled:controlled)
+    return preserves(result) ? result : original
+  }
+  func testC3GarageVerticalSliceExactReplay() async throws {
+    let m=try mission(),actions:[WorldAction]=[.init(action:"computer"),.init(action:"walk"),.init(action:"move",frames:120,forward:1),.init(action:"stop",frames:120),.init(action:"camera",option:1,frames:120),.init(action:"camera",frames:120)]
+    let first=try await run(m,actions:actions),repeated=try await run(m,actions:actions)
+    XCTAssertEqual(first,repeated);XCTAssertTrue(first.steps.allSatisfy{$0.violations.isEmpty});XCTAssertNotEqual(first.steps[1].observation.founderPosition,first.steps[2].observation.founderPosition)
+    try write(first,name:"gate-a.json")
+  }
+  func testC3ControlledDefectMinimizesAndReplays() async throws {
+    let m=try mission(),original=try await run(m,actions:[.init(action:"look",yaw:0.1),.init(action:"recenter"),.init(action:"computer"),.init(action:"camera",option:1)],controlled:true)
+    let small=try await minimize(original,invariant:"synthetic_incorrect_interaction_target",controlled:true)
+    XCTAssertEqual(small.steps.count,1);let reproduced=try await run(m,actions:small.steps.map(\.input),controlled:true);XCTAssertEqual(reproduced,small)
+    try write(original,name:"controlled-original.json");try write(small,name:"controlled-minimized.json")
+  }
+  func testC3BudgetIsolationAndUnsupportedCoverage() async throws {
+    let w=try ChaosWorldAdapter(mission:mission());defer{w.stop()};try await w.initialize()
+    let before=UserDefaults.standard.data(forKey:GameStore.saveKey)
+    let step=try await w.apply(.init(action:"saveReload"));XCTAssertEqual(step.result,"unsupported_action")
+    do{_ = try await w.apply(.init(action:"move",frames:241));XCTFail("frame budget") }catch{XCTAssertTrue(w.steps.count == 1)}
+    XCTAssertEqual(UserDefaults.standard.data(forKey:GameStore.saveKey),before)
+    XCTAssertEqual(AtlantisS4CameraBias.heroPauseWindow(position:AtlantisSpatialContract.founderGarage,heading:0,reduceMotion:true),false)
+  }
+  func testC3BoundedWorldStudy() async throws {
+    guard ProcessInfo.processInfo.environment["C3_FULL_STUDY"] == "1" else {throw XCTSkip("C3 full study explicit opt-in")}
+    let started=ProcessInfo.processInfo.systemUptime
+    let groups=["world-garage","world-traversal","world-camera","world-lifecycle"]
+    var fingerprints:[String:String]=[:],actionsTotal=0,minimized=Set<String>()
+    for group in groups {for seed in UInt64(20_000)..<20_100 {
+      guard ProcessInfo.processInfo.systemUptime-started<3600 else {throw NSError(domain:"C3.study_time_budget",code:1)}
+      let m=try mission(seed,id:group),w=try ChaosWorldAdapter(mission:m);try await w.initialize()
+      var inputs:[WorldAction]
+      switch group {
+      case "world-garage":inputs=[.init(action:"computer"),.init(action:"phone"),.init(action:"tablet"),.init(action:"walk"),.init(action:"computer"),.init(action:"whiteboard"),.init(action:"move",frames:120,lateral:Float(Int(seed%3)-1),forward:Float(Int(seed%5)-2)/2),.init(action:"stop",frames:120),.init(action:"chair"),.init(action:"stop",frames:240),.init(action:"cancelChair"),.init(action:"authoredWhiteboardProbe"),.init(action:"whiteboard"),.init(action:"whiteboard")]
+      case "world-traversal":inputs=[.init(action:"requestTraversal"),.init(action:"enterHandoff"),.init(action:"door",option:1),.init(action:"walk")]+Array(repeating:.init(action:"move",frames:240,forward:1),count:8)+[.init(action:"requestTraversal"),.init(action:"requestTraversal"),.init(action:"enterHandoff"),.init(action:"enterHandoff"),.init(action:"atlantisMove",frames:120,forward:seed%3 == 0 ? -1 : 1),.init(action:"atlantisTurn",yaw:Float(Int(seed%3)-1)*0.2),.init(action:"atlantisMove",frames:120,forward:1),.init(action:"returnGarage"),.init(action:"returnGarage")]
+      case "world-camera":inputs=[.init(action:"look",frames:120,yaw:Float(Int(seed%9)-4)),.init(action:"recenter"),.init(action:"camera",option:Int(seed%6),frames:120),.init(action:"computer"),.init(action:"camera",frames:120),.init(action:"walk"),.init(action:"move",frames:120,forward:1),.init(action:"look",frames:120,yaw:0.2),.init(action:"stop",frames:120),.init(action:"move",frames:120,forward:-1),.init(action:"stop",frames:120),.init(action:"camera",frames:120)]
+      default:inputs=[.init(action:"computer"),.init(action:"door",option:Int(seed%2)),.init(action:"walk"),.init(action:"move",frames:120,forward:1),.init(action:"teardown"),.init(action:"recreate"),.init(action:"computer"),.init(action:"saveReload"),.init(action:"invalidDestination"),.init(action:"teardown")]
+      }
+      for a in inputs {try await w.apply(a)}
+      let first=try w.replay();let seconds=w.loadSeconds;w.stop()
+      let second=try await run(m,actions:inputs)
+      if first != second {try write(first,name:m.scenarioId+"-expected.json");try write(second,name:m.scenarioId+"-observed.json")}
+      XCTAssertEqual(first,second,m.scenarioId)
+      try write(first,name:m.scenarioId+".json")
+      struct Performance:Encodable {let scenario:String;let unrenderedAssetLoadSeconds:Double;let processFootprintMB:Double;let observationScope:String}
+      try write(Performance(scenario:m.scenarioId,unrenderedAssetLoadSeconds:seconds,processFootprintMB:AtlantisMemory.footprintMB(),observationScope:"simulator process sample; not peak physical-device memory, GPU FPS or rendered load"),name:m.scenarioId+"-performance.json")
+      for diagnostic in Set(first.steps.flatMap(\.violations)).sorted() where minimized.insert(diagnostic).inserted {
+        let small=try await minimize(first,invariant:diagnostic);let reproduced=try await run(m,actions:small.steps.map(\.input));XCTAssertEqual(reproduced,small);try write(small,name:m.scenarioId+"-min-"+diagnostic+".json")
+      }
+      fingerprints[m.scenarioId]=first.replayFingerprint;actionsTotal += first.steps.count
+      print("C3_PROGRESS \(group) seed=\(seed) scenarios=\(fingerprints.count)")
+    }}
+    struct Summary:Encodable {let scenarios:Int;let attemptedActions:Int;let replayedActions:Int;let sourceFingerprint:String;let elapsedSeconds:Double;let replayFingerprints:[String:String]}
+    try write(Summary(scenarios:fingerprints.count,attemptedActions:actionsTotal,replayedActions:actionsTotal,sourceFingerprint:try mission().sourceFingerprint,elapsedSeconds:ProcessInfo.processInfo.systemUptime-started,replayFingerprints:fingerprints),name:"study-summary.json")
+  }
+}
+
+// C3.1 test-only rendered host. Production subscription handlers execute first;
+// observation runs after each real SceneEvents.Update without a replacement update engine.
+@MainActor
+private final class C31ContactRecorder {
+  var names: [String] = []
+  var subscription: EventSubscription?
+}
+@MainActor
+private final class C31RealityHost {
+  let view: UIView
+  let window: UIWindow
+  let priorWindow: UIWindow?
+  let recorder = C31ContactRecorder()
+  var contacts: [String] {recorder.names}
+  init(root: Entity, install: @escaping (RealityViewCameraContent) -> Void) throws {
+    try ChaosWorldAdapter.isolation()
+    let scene=try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap{$0 as? UIWindowScene}.first)
+    priorWindow=scene.windows.first(where:{$0.isKeyWindow})
+    window=UIWindow(windowScene:scene)
+    let record=recorder
+    let controller=UIHostingController(rootView:AnyView(RealityView { content in content.add(root);record.subscription=content.subscribe(to:CollisionEvents.Began.self) { event in record.names.append(event.entityA.name+" / "+event.entityB.name) };install(content) }))
+    window.rootViewController=controller;view=controller.view;window.makeKeyAndVisible()
+  }
+  func close() {recorder.subscription?.cancel();window.isHidden=true;window.rootViewController=nil;priorWindow?.makeKey()}
+  func capture(_ name: String, directory: URL) async throws {
+    let image=UIGraphicsImageRenderer(bounds:window.bounds).image {_ in window.drawHierarchy(in:window.bounds,afterScreenUpdates:true)}
+    guard let data=image.pngData() else {throw NSError(domain:"C31.HARNESS_BLOCKED.capture",code:1)}
+    try data.write(to:directory.appendingPathComponent(name+".png"))
+  }
+}
+private struct C31CameraFrame: Codable {
+  let callback: Int; let elapsed: Double; let delta: Double; let phase: String
+  let forward: Float; let turn: Float; let position: [Float]; let heading: Float
+  let yaw: Float; let camera: [Float]; let sourcePauseWindow: Bool
+}
+@MainActor
+final class ChaosCrewSpatialClosureTests: XCTestCase {
+  private func directory() throws -> URL {
+    try ChaosWorldAdapter.isolation()
+    let d=FileManager.default.temporaryDirectory.appendingPathComponent("C31-Live-Evidence")
+    try FileManager.default.createDirectory(at:d,withIntermediateDirectories:true);return d
+  }
+  private func mission(_ id: String, reduced: Bool) throws -> ChaosMission {
+    let fp=ProcessInfo.processInfo.environment["C1_SOURCE_FINGERPRINT"] ?? ""
+    guard fp.count==64 else {throw XCTSkip("C3.1 source manifest required")}
+    let pose=FounderGarageCameraConfiguration(spatial:.standard).seatedPlayerState.playerPose
+    var m=ChaosMission(missionId:id,seed:reduced ? 20100 : 20101,actionBudget:24,objective:"focused C3.1 real callback observation",sourceFingerprint:fp)
+    m.missionVersion="3";m.targetSystem="FounderGarageRealityWorld/AtlantisRealityWorld";m.allowedActions=WorldAction.commands
+    m.worldScenario=WorldScenario(startingFounderPose:[pose.position.x,pose.position.y,pose.position.z,pose.heading],deviceProfile:ProcessInfo.processInfo.environment["SIMULATOR_UDID"]==ChaosProductionAdapter.labID ? "iPhone 17 Pro Max" : "iPad Air 11-inch (M4)",reduceMotionEnabled:reduced)
+    return m
+  }
+  private func wait(_ predicate: () -> Bool, seconds: Double, label: String) async throws {
+    let start=ProcessInfo.processInfo.systemUptime
+    while !predicate() {
+      if ProcessInfo.processInfo.systemUptime-start>seconds {throw NSError(domain:"C31.HARNESS_BLOCKED.timeout."+label,code:1)}
+      try await Task.sleep(for:.milliseconds(20))
+    }
+  }
+  private func write<T:Encodable>(_ value:T,name:String) throws {try ChaosEncoding.bytes(value).write(to:directory().appendingPathComponent(name))}
+  func testC31LiveCameraHeldReleasePauseRestart() async throws {try await camera(reduced:false)}
+  func testC31LiveCameraReduceMotion() async throws {try await camera(reduced:true)}
+  private func camera(reduced: Bool) async throws {
+    let client=try ChaosWorldAdapter(mission:mission("world-camera-c31",reduced:reduced));defer{client.stop()};try await client.initialize()
+    // Reuse the original C3 production command sequence to obtain a real handoff.
+    try await client.apply(.init(action:"door",option:1));try await client.apply(.init(action:"walk"))
+    for _ in 0..<8 {try await client.apply(.init(action:"move",frames:240,forward:1))}
+    try await client.apply(.init(action:"requestTraversal"));try await client.apply(.init(action:"enterHandoff"))
+    let world=try XCTUnwrap(client.atlantis);XCTAssertTrue(client.garage.isFounderPresentedInAtlantis)
+    world.setFounderReduceMotion(reduced)
+    var frames:[C31CameraFrame]=[], elapsed:Double=0, phase="ready", callback=0
+    let host=try C31RealityHost(root:world.root) { content in world.subscribe { handler in content.subscribe(to:SceneEvents.Update.self) { event in
+      handler(event);elapsed += event.deltaTime;callback += 1
+      let p=world.playerRoot.position,c=world.camera.position(relativeTo:world.root)
+      frames.append(.init(callback:callback,elapsed:elapsed,delta:event.deltaTime,phase:phase,forward:world.walkInput,turn:world.turnInput,position:[p.x,p.y,p.z],heading:world.heading,yaw:world.cameraYawOffset,camera:[c.x,c.y,c.z],sourcePauseWindow:AtlantisS4CameraBias.heroPauseWindow(position:p,heading:world.heading,reduceMotion:reduced)))
+    }}}
+    defer{host.close()}
+    try await wait({callback>=5},seconds:15,label:"scene_callbacks")
+    let route=try XCTUnwrap((try AtlantisAssetManifest.load()).traversal.routes.first{$0.name=="Founder_ToStartup_Walk"})
+    let corner=SIMD3<Float>(route.points[0][0],route.points[0][1],route.points[0][2])
+    func face(_ target: SIMD3<Float>) {let d=target-world.playerRoot.position;let requested=atan2(-d.x,-d.z);world.turn(atan2(sin(requested-world.heading),cos(requested-world.heading)))}
+    phase="approach_source_corner";face(corner);world.setMovementIntent(forward:1,turn:0)
+    try await wait({simd_length(SIMD2<Float>(world.playerRoot.position.x-corner.x,world.playerRoot.position.z-corner.z))<0.25},seconds:15,label:"source_corner")
+    world.setMovementIntent(forward:0,turn:0)
+    let a=SIMD3<Float>(route.points[0][0],route.points[0][1],route.points[0][2]),b=SIMD3<Float>(route.points[1][0],route.points[1][1],route.points[1][2])
+    face(b);phase="held_forward";world.setMovementIntent(forward:1,turn:0)
+    try await wait({AtlantisS4CameraBias.heroPauseWindow(position:world.playerRoot.position,heading:world.heading,reduceMotion:false)},seconds:30,label:"hero_window")
+    // Remain held through actual callbacks in the accepted policy window.
+    let heldStart=callback;try await wait({callback>=heldStart+10},seconds:5,label:"held_samples")
+    phase="released";world.setMovementIntent(forward:0,turn:0);let releaseElapsed=elapsed
+    try await wait({elapsed-releaseElapsed>=1.25},seconds:5,label:"pause_callbacks")
+    try await host.capture(reduced ? "camera-reduce-motion-pause" : "camera-pause",directory:directory())
+    phase="restart";world.setMovementIntent(forward:1,turn:0);let restartElapsed=elapsed
+    try await wait({elapsed-restartElapsed>=0.5},seconds:5,label:"restart_callbacks")
+    phase="stop_after_restart";world.setMovementIntent(forward:0,turn:0)
+    let held=frames.filter{$0.phase=="held_forward" && $0.forward>0.1 && $0.sourcePauseWindow}
+    let released=frames.filter{$0.phase=="released"}, restarted=frames.filter{$0.phase=="restart"}
+    XCTAssertFalse(frames.isEmpty);XCTAssertTrue(frames.allSatisfy{($0.position+$0.camera+[$0.heading,$0.yaw]).allSatisfy(\.isFinite)})
+    let epsilon=Float.ulpOfOne*64
+    if reduced {XCTAssertTrue(frames.allSatisfy{abs($0.yaw)<=epsilon})}
+    else {
+      XCTAssertFalse(held.isEmpty);XCTAssertTrue(held.allSatisfy{abs($0.yaw)<=epsilon},"Active held input must remain centered")
+      XCTAssertTrue(released.contains{abs($0.yaw-AtlantisS4CameraBias.contextualYaw)<=epsilon},"Source-defined pause endpoint")
+      XCTAssertTrue(restarted.contains{abs($0.yaw)<=epsilon},"Source-defined centered restart endpoint")
+      for (old,next) in zip(restarted,restarted.dropFirst()) {XCTAssertLessThanOrEqual(abs(next.yaw),abs(old.yaw)+epsilon)}
+    }
+    struct Result:Encodable {let sourceFingerprint:String;let lab:String;let scope:String;let reduced:Bool;let frames:[C31CameraFrame];let collisionContacts:[String];let handoffReplay:WorldReplay}
+    try write(Result(sourceFingerprint:client.mission.sourceFingerprint,lab:ProcessInfo.processInfo.environment["SIMULATOR_UDID"]!,scope:"live test-hosted RealityView contract host; production callbacks/commands; not SwiftUI touch-phase proof",reduced:reduced,frames:frames,collisionContacts:host.contacts,handoffReplay:try client.replay()),name:reduced ? "camera-reduce-motion.json" : "camera-phases.json")
+  }
+  func testC31IdleWhiteboardMovementAndPhysicalObservations() async throws {
+    let client=try ChaosWorldAdapter(mission:mission("world-whiteboard-c31",reduced:false));defer{client.stop()};try await client.initialize()
+    let world=client.garage,target=try XCTUnwrap(world.spatialSpecification.facilityTier0InteractionSpace?.founderInteractionTarget(for:.whiteboard))
+    XCTAssertEqual(world.interactionCoordinator.phase,.idle)
+    var observations:[WorldObservation]=[],frames=0
+    let host=try C31RealityHost(root:world.entities.root) { content in world.subscribeToCameraUpdates {handler in content.subscribe(to:SceneEvents.Update.self) {event in handler(event);frames += 1;if frames%6==0 {observations.append(client.observe())}}} };defer{host.close()}
+    world.cameraController.beginWalking(reduceMotion:false)
+    let started=ProcessInfo.processInfo.systemUptime
+    // Controller-owned movement only. No pose consumption, walkability override or alignment.
+    while ProcessInfo.processInfo.systemUptime-started<10 {
+      let pose=world.cameraController.playerSpatialState.playerPose,d=target.approach.position-pose.position
+      if simd_length(SIMD2<Float>(d.x,d.z))<target.positionToleranceMeters*0.5 {break}
+      let right=SIMD3<Float>(cos(pose.heading),0,sin(pose.heading)),forward=SIMD3<Float>(sin(pose.heading),0,-cos(pose.heading))
+      let velocity=simd_length(d)>0.0001 ? simd_normalize(d)*min(1,simd_length(d)) : .zero
+      world.cameraController.setMovementIntent(.init(lateral:simd_dot(velocity,right),forward:simd_dot(velocity,forward)))
+      try await Task.sleep(for:.milliseconds(30))
+    }
+    world.cameraController.setMovementIntent(.idle);let stop=frames;try await wait({frames>=stop+30},seconds:5,label:"whiteboard_stop")
+    let pose=world.cameraController.playerSpatialState.playerPose
+    let targetHeading=atan2(target.interaction.facingDirection.x,-target.interaction.facingDirection.z)
+    world.cameraController.setLookOrientation(.init(yaw:atan2(sin(targetHeading-pose.heading),cos(targetHeading-pose.heading)),pitch:0))
+    let look=frames;try await wait({frames>=look+60},seconds:5,label:"whiteboard_look")
+    let eligible=world.whiteboardInteractionFocused,accepted=world.requestWhiteboardObservation()
+    XCTAssertEqual(world.interactionCoordinator.phase,.idle);XCTAssertEqual(accepted,eligible)
+    if accepted {world.cameraController.transition(to:.whiteboard,reduceMotion:false)}
+    try await host.capture("whiteboard-idle-approach",directory:directory())
+    func bodies(_ e:Entity)->Int {(e.components[PhysicsBodyComponent.self] == nil ? 0 : 1)+e.children.reduce(0){$0+bodies($1)}}
+    struct Result:Encodable {let sourceFingerprint:String;let lab:String;let observations:[WorldObservation];let targetPosition:[Float];let targetHeading:Float;let tolerance:Float;let facingTolerance:Float;let eligible:Bool;let accepted:Bool;let phase:String;let contacts:[String];let physicsBodies:Int;let scope:String}
+    try write(Result(sourceFingerprint:client.mission.sourceFingerprint,lab:ProcessInfo.processInfo.environment["SIMULATOR_UDID"]!,observations:observations,targetPosition:[target.approach.position.x,target.approach.position.y,target.approach.position.z],targetHeading:targetHeading,tolerance:target.positionToleranceMeters,facingTolerance:target.facingToleranceRadians,eligible:eligible,accepted:accepted,phase:world.interactionCoordinator.phase.rawValue,contacts:host.contacts,physicsBodies:bodies(world.entities.root),scope:"actual rendered contract host, canonical idle start and production movement/look/eligibility; no artificial successful pose or result"),name:"whiteboard-live.json")
   }
 }

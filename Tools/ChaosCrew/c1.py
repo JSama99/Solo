@@ -41,6 +41,9 @@ def manifest(root):
     return {'schemaVersion':'1','baseline':'817b67cb7ee439711af200ddaef541e6c8bf0364','sourceFingerprint':sha(canonical(files)),'files':files}
 
 def audit(replay):
+    if replay.get('mission',{}).get('missionVersion') == '3':
+        import c3
+        return c3.audit(replay)
     c2 = replay.get('mission',{}).get('missionVersion') == '2'
     mission_keys = MISSION_KEYS | ({'agentScenario'} if c2 else set())
     if set(replay) != REPLAY_KEYS or set(replay['mission']) != mission_keys: raise ValueError('replay public allowlist mismatch')
